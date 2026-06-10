@@ -51,3 +51,4 @@ Before a cost-bearing action, state:
 - Treat the existing Fly machine and volume as already-provisioned resources that may accrue usage. Do not scale, redeploy, resize, or create more resources without approval.
 - Enjin Wallet Daemon may remain a local operator process, but do not submit live Enjin operations or fund a Fuel Tank without approval.
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, CI, or load-smoke step.
+- Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.

@@ -13,6 +13,7 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 - Game runtime target: Fly app `mochi-social-game`.
 - Website preview target: Mochirii Vercel preview route `/games/mochi-social`.
 - Chain target: Enjin Canary only.
+- Local no-cost commits may leave the game branch ahead of GitHub. In that state `npm run alpha:rc-audit` must remain red at `github.local-branch-sync` until the user explicitly approves a push/CI-triggering sync.
 
 ## Operator Sequence
 
@@ -107,7 +108,7 @@ Manual gates:
 - Enjin Canary managed wallet, Fuel Tank sponsorship, Wallet Daemon signing, one hot-to-cold proof, one finalized cold-to-hot proof, and one fixed-listing proof are submitted through `POST /integration/alpha/enjin/submit` and recorded in the chain ledger.
 - `npm run alpha:enjin-operator-smoke` proves the private Enjin route fails closed; live Canary smoke is operator-approved only and requires explicit smoke request/transaction IDs.
 - `npm run alpha:external-gates` passes with the Fly URL, Vercel preview URL, Supabase preview ref, and operator-confirmed Enjin readiness flags set.
-- `npm run alpha:rc-audit` passes after local, site, PR, provider, and handoff evidence all agree that Alpha RC Ready is true.
+- `npm run alpha:rc-audit` passes after local branch sync, site, PR, provider, and handoff evidence all agree that Alpha RC Ready is true.
 - A 10-25 tester load-smoke report is attached to the PR or release checklist.
 
 ## Tester Guide

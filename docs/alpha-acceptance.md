@@ -79,7 +79,7 @@ For live Enjin completion, the operator must also provide non-public server env/
 
 ## Alpha RC Audit
 
-`npm run alpha:rc-audit` reads the game repo, sibling Mochirii repo, latest external gate report, GitHub PR state, and no-secret operator checklists. It writes `reports/alpha-rc-audit.json` and exits non-zero until every explicit Alpha RC requirement has direct evidence. This audit is the final pre-tester stoplight; it should remain red while Fly billing, live preview URLs, or Enjin Canary readiness are incomplete.
+`npm run alpha:rc-audit` reads the game repo, sibling Mochirii repo, latest external gate report, local Git branch sync, GitHub PR state, and no-secret operator checklists. It writes `reports/alpha-rc-audit.json` and exits non-zero until every explicit Alpha RC requirement has direct evidence. This audit is the final pre-tester stoplight; it should remain red while Fly billing, live preview URLs, Enjin Canary readiness, or local-vs-remote branch drift are incomplete.
 
 ## Two-tab Presence Gate
 

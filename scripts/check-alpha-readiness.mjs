@@ -124,7 +124,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',
-    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'provider.external-gates', 'github.game-pr', 'github.site-pr', 'Mochirii', 'mochirii-mochi-social-alpha-operator-next-steps.md']
+    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'provider.external-gates', 'github.local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'Mochirii', 'mochirii-mochi-social-alpha-operator-next-steps.md']
   }
 ];
 

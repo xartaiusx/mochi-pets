@@ -13,6 +13,7 @@ const requirements = [];
 addStaticRequirements();
 addSiteRequirements();
 addProviderGateRequirements();
+addLocalBranchRequirements();
 addPrRequirements();
 addLocalHandoffRequirements();
 
@@ -176,6 +177,59 @@ function addPrRequirements() {
   checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', '258');
 }
 
+function addLocalBranchRequirements() {
+  const branch = command('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const head = command('git', ['rev-parse', 'HEAD']);
+  const upstream = command('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = command('git', ['status', '--porcelain']);
+  const baseEvidence = {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(head.stdout),
+    upstream: firstLine(upstream.stdout)
+  };
+
+  if (!branch.ok || !head.ok || !upstream.ok || !worktree.ok) {
+    add('github.local-branch-sync', 'unverified', 'Local Git branch/upstream state could not be verified.', {
+      ...baseEvidence,
+      branchError: sanitize(branch.stderr),
+      headError: sanitize(head.stderr),
+      upstreamError: sanitize(upstream.stderr),
+      worktreeError: sanitize(worktree.stderr)
+    });
+    return;
+  }
+
+  const counts = command('git', ['rev-list', '--left-right', '--count', `${baseEvidence.upstream}...HEAD`]);
+  if (!counts.ok) {
+    add('github.local-branch-sync', 'unverified', 'Local Git ahead/behind count could not be verified.', {
+      ...baseEvidence,
+      stderr: sanitize(counts.stderr)
+    });
+    return;
+  }
+
+  const [behindText = '0', aheadText = '0'] = firstLine(counts.stdout).split(/\s+/);
+  const behind = Number.parseInt(behindText, 10);
+  const ahead = Number.parseInt(aheadText, 10);
+  const dirtyStatus = worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line));
+  const ok = Number.isFinite(ahead) && Number.isFinite(behind) && ahead === 0 && behind === 0 && dirtyStatus.length === 0;
+
+  add(
+    'github.local-branch-sync',
+    ok ? 'pass' : 'fail',
+    ok
+      ? 'Local branch matches upstream and the worktree is clean, so remote PR checks apply to this source.'
+      : 'Local branch/worktree differs from upstream; remote PR checks do not prove this local source.',
+    {
+      ...baseEvidence,
+      ahead,
+      behind,
+      dirtyFiles: dirtyStatus.length,
+      dirtyStatus: dirtyStatus.slice(0, 20)
+    }
+  );
+}
+
 function addLocalHandoffRequirements() {
   requireLocalFile('handoff.game-checklist', resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'), [
     'This file is intentionally no-secret',
@@ -286,6 +340,10 @@ function parseJson(text) {
   } catch {
     return null;
   }
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
 }
 
 function defaultCredsDir() {
