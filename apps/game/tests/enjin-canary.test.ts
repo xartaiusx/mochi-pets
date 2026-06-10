@@ -16,6 +16,7 @@ import {
   normalizeEnjinTransactionState,
   pollEnjinTransaction,
   submitColdToHotBurnProof,
+  submitFixedListingProof,
   submitHotToColdCertificateProof
 } from '../src/integration/enjin-canary';
 
@@ -86,7 +87,15 @@ describe('Enjin Canary orchestration helpers', () => {
     expect(burnPlan.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
     expect(burnPlan.variables.idempotencyKey).toBe(input.requestId);
     expect(burnPlan.variables.fuelTank).toBe('tank-1');
-    expect(buildFixedListingMutation({ ...input, price: '1000' }, config).variables.salt).toBe(input.requestId);
+    const listingPlan = buildFixedListingMutation({ ...input, price: '1000' }, config);
+    expect(listingPlan.query).toContain('CreateTransaction(');
+    expect(listingPlan.query).toContain('createListing:');
+    expect(listingPlan.query).toContain('listingData: { type: FIXED_PRICE }');
+    expect(listingPlan.query).not.toContain('AUCTION');
+    expect(listingPlan.query).not.toContain('CreateListing(');
+    expect(listingPlan.variables.idempotencyKey).toBe(input.requestId);
+    expect(listingPlan.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
+    expect(listingPlan.variables.fuelTank).toBe('tank-1');
     expect(buildGetTransactionQuery('tx-1', config).variables.uuid).toBe('tx-1');
   });
 
@@ -193,6 +202,40 @@ describe('Enjin Canary orchestration helpers', () => {
     expect(action.payload.transactionState).toBe('BROADCAST');
     expect(finality.state).toBe('FINALIZED');
     expect(finality.extrinsicHash).toBe('0x123');
+  });
+
+  it('submits fixed listing proof as a Canary fixed-price transaction', async () => {
+    const seenBodies: { query: string; variables: Record<string, unknown> }[] = [];
+    const fetchImpl = async (_url: string | URL | Request, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body || '{}')) as { query: string; variables: Record<string, unknown> };
+      seenBodies.push(body);
+      if (body.query.includes('CreateManagedWallet')) return jsonResponse({ data: { CreateManagedWallet: true } });
+      if (body.query.includes('GetManagedWallet')) {
+        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-social-alpha:player-1', publicKey: '0xabc' } } });
+      }
+      return jsonResponse({ data: { CreateTransaction: { uuid: 'tx-listing', action: 'Marketplace.create_listing', state: 'PENDING' } } });
+    };
+
+    const action = await submitFixedListingProof({
+      requestId: 'chain-listing-1',
+      playerId: 'player-1',
+      tokenId: '7',
+      amount: 1,
+      price: '1000000000000000000',
+      itemId: 'momo-canary-certificate'
+    }, readyConfig(), fetchImpl as typeof fetch);
+    const listingBody = seenBodies.find((body) => body.query.includes('createListing:'));
+
+    expect(listingBody?.query).toContain('network: CANARY');
+    expect(listingBody?.query).toContain('listingData: { type: FIXED_PRICE }');
+    expect(listingBody?.query).not.toContain('AUCTION');
+    expect(listingBody?.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
+    expect(listingBody?.variables.fuelTank).toBe('tank-1');
+    expect(listingBody?.variables.idempotencyKey).toBe('chain-listing-1');
+    expect(action.type).toBe('chain.operation_update');
+    expect(action.payload.chainRequestId).toBe('chain-listing-1');
+    expect(action.payload.enjinTransactionUuid).toBe('tx-listing');
+    expect(action.payload.transactionState).toBe('PENDING');
   });
 });
 

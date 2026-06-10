@@ -37,6 +37,7 @@ fly secrets set ENJIN_FUEL_TANK_ID="..."
    - `ensureManagedWallet` calls `CreateManagedWallet` and `GetManagedWallet`.
    - `submitHotToColdCertificateProof` mints the selected rare certificate to the managed cold wallet with `fuelTank` and `idempotencyKey`.
    - `submitColdToHotBurnProof` burns from the managed cold wallet with `signerExternalId`, `fuelTank`, and `idempotencyKey`.
+   - `submitFixedListingProof` creates only a `FIXED_PRICE` marketplace listing through `CreateTransaction(transaction: { createListing: ... })`; auctions stay disabled for alpha.
    - Both submission helpers return a `chain.operation_update` action for the Mochirii ledger bridge.
 5. A backend worker or operator poll reads the transaction state from Enjin Platform with `pollEnjinTransaction`.
 6. Only when state is `FINALIZED`, Mochirii records `finalized_at` and applies hot/cold inventory movement.
@@ -62,4 +63,5 @@ External smoke requires real Canary credentials and remains an operator step:
 - `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, and `ENJIN_FUEL_TANK_ID` are set only as Fly secrets.
 - `CreateManagedWallet` and `GetManagedWallet` work for the tester's `mochi-social-alpha:<supabase-user-id>` external id.
 - A selected rare certificate reaches `FINALIZED`.
+- One fixed-price listing proof returns a transaction UUID. The listing id itself is expected only after finality/event indexing.
 - The matching Supabase chain operation records transaction UUID, state, finalized time, and ledger event.

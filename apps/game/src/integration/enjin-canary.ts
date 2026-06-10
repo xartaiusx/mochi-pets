@@ -18,6 +18,10 @@ export interface ChainOperationInput {
   signerExternalId?: string;
 }
 
+export interface FixedListingInput extends ChainOperationInput {
+  price: string;
+}
+
 export type EnjinTransactionState = 'PENDING' | 'BROADCAST' | 'FINALIZED' | 'FAILED' | 'ABANDONED' | 'TIMEOUT';
 
 export interface ChainOperationUpdateInput {
@@ -170,21 +174,31 @@ mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount
   } satisfies EnjinGraphqlPlan;
 }
 
-export function buildFixedListingMutation(input: ChainOperationInput & { price: string }, config = getEnjinCanaryConfig()) {
+export function buildFixedListingMutation(input: FixedListingInput, config = getEnjinCanaryConfig()) {
   return {
     operation: 'fixed-listing',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $price: BigInt!, $salt: String!) {
-  CreateListing(
-    makeAssetId: { collectionId: $collectionId, tokenId: { integer: $tokenId } }
-    takeAssetId: { collectionId: 0, tokenId: { integer: 0 } }
-    amount: $amount
-    price: $price
-    salt: $salt
-    listingData: { type: FIXED_PRICE }
+mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $price: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
+  CreateTransaction(
+    network: ${config.network}
+    chain: MATRIX
+    signerExternalId: $signerExternalId
+    fuelTank: $fuelTank
+    idempotencyKey: $idempotencyKey
+    transaction: {
+      createListing: {
+        makeAssetId: { collectionId: $collectionId, tokenId: $tokenId }
+        takeAssetId: { collectionId: 0, tokenId: 0 }
+        amount: $amount
+        price: $price
+        usesWhitelist: false
+        listingData: { type: FIXED_PRICE }
+      }
+    }
   ) {
-    id
+    uuid
+    action
     state
   }
 }`.trim(),
@@ -193,7 +207,9 @@ mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amo
       tokenId: input.tokenId,
       amount: input.amount,
       price: input.price,
-      salt: input.requestId
+      signerExternalId: input.signerExternalId || buildManagedWalletExternalId(input.playerId),
+      fuelTank: config.fuelTankId,
+      idempotencyKey: input.requestId
     }
   } satisfies EnjinGraphqlPlan;
 }
@@ -286,6 +302,27 @@ export async function submitColdToHotBurnProof(
 ) {
   await ensureManagedWallet(input.playerId, config, fetchImpl);
   const transactionResponse = await executeEnjinGraphqlPlan(buildColdToHotBurnMutation(input, config), config, fetchImpl);
+  const transaction = parseSubmittedTransaction(transactionResponse);
+  return buildChainOperationUpdateAction({
+    requestId: `${input.requestId}:enjin-submit`,
+    playerId: input.playerId,
+    chainRequestId: input.requestId,
+    transactionState: transaction.state,
+    enjinTransactionUuid: transaction.uuid,
+    extrinsicHash: transaction.extrinsicHash,
+    itemId: input.itemId,
+    tokenId: input.tokenId,
+    amount: input.amount
+  });
+}
+
+export async function submitFixedListingProof(
+  input: FixedListingInput,
+  config = getEnjinCanaryConfig(),
+  fetchImpl: typeof fetch = fetch
+) {
+  await ensureManagedWallet(input.playerId, config, fetchImpl);
+  const transactionResponse = await executeEnjinGraphqlPlan(buildFixedListingMutation(input, config), config, fetchImpl);
   const transaction = parseSubmittedTransaction(transactionResponse);
   return buildChainOperationUpdateAction({
     requestId: `${input.requestId}:enjin-submit`,
