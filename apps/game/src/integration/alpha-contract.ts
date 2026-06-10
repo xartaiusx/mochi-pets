@@ -53,7 +53,8 @@ export type AlphaActionType =
   | 'market.fixed_list'
   | 'trade.direct_offer'
   | 'chain.withdraw_request'
-  | 'chain.deposit_request';
+  | 'chain.deposit_request'
+  | 'chain.operation_update';
 
 export interface AlphaActionEnvelope {
   requestId: string;

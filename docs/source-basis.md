@@ -8,6 +8,7 @@ These are the credible sources used for the initial architecture.
 - Vercel Docs: Vercel Functions are not the WebSocket game server; Vercel can consume the game URL from environment variables in the separate website repo.
 - Fly.io Docs: Dockerfile deployment and persistent Fly Volumes for runtime save storage.
 - Supabase Docs: browser auth sessions, JWT/access-token handling, `onAuthStateChange`, and server-side `getUser(jwt)` token validation.
+- Enjin Docs: Canary testnet for proof-of-concept work, Platform GraphQL transaction creation, managed wallets, Fuel Tanks, Wallet Daemon signing, and finalized transaction state handling.
 
 ## Implementation Rule
 

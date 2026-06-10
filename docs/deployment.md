@@ -38,3 +38,5 @@ Alpha RC server-only secrets and config:
 Add the future Vercel domain to `RPG_ALLOWED_ORIGINS` before embedding in production.
 
 Do not put Supabase service-role keys, Enjin Wallet Daemon seeds, or Wallet Daemon passphrases in the game runtime. The Wallet Daemon must run as a separate service with no inbound ports.
+
+For the Canary operator sequence, managed-wallet id convention, Fuel Tank setup, and finality rules, see [`docs/enjin-canary-alpha.md`](enjin-canary-alpha.md).

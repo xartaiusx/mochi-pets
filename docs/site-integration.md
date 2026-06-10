@@ -62,6 +62,16 @@ Recommended website flow:
 3. On sign-out, send `{ type: "MOCHI_SOCIAL_SIGN_OUT", protocolVersion: 1 }`.
 4. Treat `MOCHI_SOCIAL_AUTH_STATE` as display/status only; the game server remains authoritative.
 
+## Chain Finality Contract
+
+The game backend may send `chain.withdraw_request`, `chain.deposit_request`, and `chain.operation_update` through `/integration/alpha/action`.
+
+- `chain.withdraw_request` stages a no-real-value hot-to-cold Canary proof.
+- `chain.deposit_request` stages a no-real-value cold-to-hot Canary proof.
+- `chain.operation_update` records the Enjin transaction UUID, optional listing ID, state, and finality evidence for an existing request.
+- The Mochirii Edge Function must reject finality updates without a matching request id.
+- Hot inventory can only be credited after the Enjin state is `FINALIZED`.
+
 ## Closed Alpha Route
 
 The Mochirii website should expose the closed alpha at `/games/mochi-social` and read `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.

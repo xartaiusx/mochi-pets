@@ -183,7 +183,16 @@ function createHud() {
   hud.querySelectorAll<HTMLButtonElement>('[data-alpha-action]').forEach((button) => {
     button.addEventListener('click', () => {
       const actionType = button.dataset.alphaAction as AlphaActionType;
-      void performAlphaAction(actionType);
+      const payload = actionType === 'chain.withdraw_request'
+        ? {
+            itemId: 'momo-canary-certificate',
+            tokenId: '1',
+            amount: 1,
+            entityType: 'chain_operation',
+            entityId: 'momo-canary-certificate'
+          }
+        : {};
+      void performAlphaAction(actionType, payload);
     });
   });
 

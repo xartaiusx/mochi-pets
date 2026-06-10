@@ -13,15 +13,31 @@ export interface ChainOperationInput {
   playerId: string;
   tokenId: string;
   amount: number;
+  itemId?: string;
   recipient?: string;
   signerExternalId?: string;
+}
+
+export type EnjinTransactionState = 'PENDING' | 'BROADCAST' | 'FINALIZED' | 'FAILED' | 'ABANDONED' | 'TIMEOUT';
+
+export interface ChainOperationUpdateInput {
+  requestId: string;
+  playerId: string;
+  chainRequestId: string;
+  transactionState: string;
+  enjinTransactionUuid?: string;
+  enjinListingId?: string;
+  extrinsicHash?: string;
+  itemId?: string;
+  tokenId?: string;
+  amount?: number;
 }
 
 export function getEnjinCanaryConfig(env = process.env): EnjinCanaryConfig {
   return {
     platformUrl: env.ENJIN_PLATFORM_URL || 'https://platform.canary.enjin.io/graphql',
     platformToken: env.ENJIN_PLATFORM_TOKEN,
-    network: (env.ENJIN_NETWORK === 'ENJIN' ? 'ENJIN' : 'CANARY') as EnjinNetwork,
+    network: 'CANARY',
     collectionId: env.ENJIN_COLLECTION_ID,
     fuelTankId: env.ENJIN_FUEL_TANK_ID
   };
@@ -35,15 +51,36 @@ export function buildManagedWalletExternalId(playerId: string) {
   return `mochi-social-alpha:${playerId}`;
 }
 
+export function buildCreateManagedWalletMutation(playerId: string) {
+  return {
+    operation: 'create-managed-wallet',
+    idempotencyKey: buildManagedWalletExternalId(playerId),
+    query: `
+mutation MochiSocialCreateManagedWallet($externalId: String!) {
+  CreateManagedWallet(externalId: $externalId) {
+    id
+    account {
+      publicKey
+      address
+    }
+  }
+}`.trim(),
+    variables: {
+      externalId: buildManagedWalletExternalId(playerId)
+    }
+  };
+}
+
 export function buildHotToColdMintMutation(input: ChainOperationInput, config = getEnjinCanaryConfig()) {
   return {
     operation: 'hot-to-cold-mint',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!) {
+mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $fuelTank: String) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
+    fuelTank: $fuelTank
     transaction: {
       mintToken: {
         recipient: $recipient
@@ -61,7 +98,8 @@ mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tok
       recipient: input.recipient,
       collectionId: config.collectionId,
       tokenId: input.tokenId,
-      amount: input.amount
+      amount: input.amount,
+      fuelTank: config.fuelTankId
     }
   };
 }
@@ -71,11 +109,12 @@ export function buildColdToHotBurnMutation(input: ChainOperationInput, config = 
     operation: 'cold-to-hot-burn',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!) {
+mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!, $fuelTank: String) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
     signerExternalId: $signerExternalId
+    fuelTank: $fuelTank
     transaction: {
       burnToken: {
         collectionId: $collectionId
@@ -93,7 +132,8 @@ mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount
       collectionId: config.collectionId,
       tokenId: input.tokenId,
       amount: input.amount,
-      signerExternalId: input.signerExternalId || buildManagedWalletExternalId(input.playerId)
+      signerExternalId: input.signerExternalId || buildManagedWalletExternalId(input.playerId),
+      fuelTank: config.fuelTankId
     }
   };
 }
@@ -126,6 +166,61 @@ mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amo
   };
 }
 
+export function buildGetTransactionQuery(enjinTransactionUuid: string, config = getEnjinCanaryConfig()) {
+  return {
+    operation: 'get-transaction',
+    query: `
+query MochiSocialGetTransaction($uuid: String!) {
+  GetTransaction(network: ${config.network}, uuid: $uuid) {
+    uuid
+    state
+    extrinsicHash
+  }
+}`.trim(),
+    variables: {
+      uuid: enjinTransactionUuid
+    }
+  };
+}
+
+export function normalizeEnjinTransactionState(state: string): EnjinTransactionState | null {
+  const normalized = state.trim().toUpperCase();
+  if (['PENDING', 'BROADCAST', 'FINALIZED', 'FAILED', 'ABANDONED', 'TIMEOUT'].includes(normalized)) {
+    return normalized as EnjinTransactionState;
+  }
+  return null;
+}
+
+export function buildChainOperationUpdateAction(input: ChainOperationUpdateInput) {
+  const state = normalizeEnjinTransactionState(input.transactionState);
+  if (!state) {
+    throw new Error(`Unsupported Enjin transaction state: ${input.transactionState}`);
+  }
+
+  return {
+    requestId: input.requestId,
+    type: 'chain.operation_update',
+    playerId: input.playerId,
+    payload: {
+      chainRequestId: input.chainRequestId,
+      transactionState: state,
+      enjinTransactionUuid: input.enjinTransactionUuid,
+      enjinListingId: input.enjinListingId,
+      extrinsicHash: input.extrinsicHash,
+      itemId: input.itemId,
+      tokenId: input.tokenId,
+      amount: input.amount,
+      noRealValue: true,
+      chainNetwork: 'CANARY'
+    }
+  } as const;
+}
+
 export function canCreditHotInventory(transactionState: string) {
-  return transactionState === 'FINALIZED';
+  return normalizeEnjinTransactionState(transactionState) === 'FINALIZED';
+}
+
+export function isTerminalEnjinState(transactionState: string) {
+  const state = normalizeEnjinTransactionState(transactionState);
+  return state === 'FINALIZED' || state === 'FAILED' || state === 'ABANDONED' || state === 'TIMEOUT';
 }
