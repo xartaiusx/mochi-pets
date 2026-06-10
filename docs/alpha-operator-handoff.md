@@ -2,6 +2,8 @@
 
 This handoff keeps Mochi Social Alpha RC closed, no-real-value, and preview-only. It is for the human operator who has access to Fly, Vercel, Supabase, Enjin Platform, and the Wallet Daemon host.
 
+For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gates, Supabase authority, Enjin state handling, Fuel Tank dispatch, WebSocket presence, and Discord boundaries, follow [`docs/codex-external-ops.md`](codex-external-ops.md).
+
 ## Starting Point
 
 - Game repo PR: `xartaiusx/mochi-social`, branch `codex/mochi-social-alpha-rc`.
@@ -13,9 +15,10 @@ This handoff keeps Mochi Social Alpha RC closed, no-real-value, and preview-only
 ## Operator Sequence
 
 1. Confirm both PRs are reviewed and the local verification commands in the game and website repos pass.
-2. Create or confirm the Enjin Canary project, `Mochi Social Alpha` collection, managed-wallet policy, and Canary Fuel Tank.
-3. Start the Wallet Daemon on a separate host or service with no inbound ports. Back up the seed/passphrase outside Git and outside chat.
-4. Set Fly secrets for the game runtime:
+2. Resolve GitHub Actions billing/budget blocks and require a green `Verify Mochi Social` check before merge.
+3. Create or confirm the Enjin Canary project, `Mochi Social Alpha` collection, managed-wallet policy, and Canary Fuel Tank.
+4. Start the cloud Wallet Daemon as an outbound-only signer with no inbound ports. Back up the seed/passphrase outside Git and outside chat.
+5. Set Fly secrets for the game runtime:
    - `SUPABASE_URL`
    - `SUPABASE_PUBLISHABLE_KEY`
    - `MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL`
@@ -26,12 +29,12 @@ This handoff keeps Mochi Social Alpha RC closed, no-real-value, and preview-only
    - `ENJIN_COLLECTION_ID`
    - `ENJIN_FUEL_TANK_ID`
    - `RPG_ALLOWED_ORIGINS`
-5. Deploy the game preview to Fly with `RPG_SAVE_DIR=/data/saves` and a mounted `/data` volume.
-6. Set the Mochirii Vercel preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL` to the Fly game URL.
-7. Deploy the Mochirii preview branch and Supabase preview Edge Functions.
-8. Grant only signed-in 18+ testers through the Mochirii admin allowlist.
-9. Require tester terms before iframe render.
-10. Run the acceptance checks below before inviting testers.
+6. Deploy the game preview to Fly with `RPG_SAVE_DIR=/data/saves` and a mounted `/data` volume.
+7. Set the Mochirii Vercel preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL` to the Fly game URL.
+8. Deploy the Mochirii preview branch and Supabase preview Edge Functions.
+9. Grant only signed-in 18+ testers through the Mochirii admin allowlist.
+10. Require tester terms before iframe render.
+11. Run the acceptance checks below before inviting testers.
 
 ## Acceptance Commands
 

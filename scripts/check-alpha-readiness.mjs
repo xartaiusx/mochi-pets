@@ -15,7 +15,23 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon']
+    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md']
+  },
+  {
+    file: 'docs/codex-external-ops.md',
+    includes: [
+      'Source Hierarchy',
+      'Source Basis',
+      'Secret Entry Protocol',
+      'Preview Environment Matrix',
+      'CI Gate Checklist',
+      'Supabase Authority Matrix',
+      'Enjin Canary State Machine',
+      'Fuel Tank Dispatch Contract',
+      'WebSocket And Presence Verification',
+      'Discord Boundary',
+      'Computer Use'
+    ]
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -27,7 +43,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'Wallet Daemon', 'Stop at Alpha RC Ready']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md']
   },
   {
     file: 'docs/site-integration.md',

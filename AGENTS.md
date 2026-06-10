@@ -44,9 +44,12 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 ## Alpha RC Goal
 
 - The active alpha goal lives at `docs/goals/mochi-social-alpha-rc.md`.
+- External account and deployment behavior lives at `docs/codex-external-ops.md`.
 - Alpha RC stops at a closed preview release candidate: no production, no Enjin mainnet, no real-money value, and no open creator marketplace.
 - Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.
 - The local alpha acceptance and load-smoke commands verify public endpoints and no-real-value fallback ledger writes. They complement, but do not replace, the manual two-tab multiplayer visual gate.
+- For external operations, use official docs first, repo docs second, live dashboards/CLI for current state, and memory only for preferences/history.
+- Use CLI for reproducible checks, Chrome for logged-in dashboards, Computer Use only when CLI/Chrome are insufficient, and dashboard-only flow for payment details, seed phrases, passphrases, MFA, and private account confirmations.
 
 ## Implementation Notes
 
