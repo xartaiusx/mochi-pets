@@ -2,6 +2,8 @@
 
 Mochi Social alpha uses Enjin Canary only. Do not configure Enjin mainnet, paid assets, cashout, or production marketplace behavior for this release candidate.
 
+Enjin work is no-cost gated. Do not create/fund Fuel Tanks, request faucets, mint, burn, transfer, list, or submit any live chain transaction unless the user explicitly approves that exact action after a cost note. Local configured-preview stubs and fail-closed operator smoke checks are preferred until approval.
+
 ## Source Basis
 
 - Enjin recommends Canary testnet for proof-of-concept work before immutable mainnet use.

@@ -48,7 +48,7 @@ The script writes `reports/alpha-local-acceptance.json` as a local, ignored evid
 
 `npm run alpha:load-smoke` simulates 10-25 testers against the HTTP alpha contract. It opens `/play` concurrently, records chat and emote actions through `/integration/alpha/action`, and verifies the no-real-value fallback ledger entries.
 
-This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_LOAD_PLAYERS=10` through `25`; the default is `25`. The script writes `reports/alpha-load-smoke.json`.
+This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_LOAD_PLAYERS=10` through `25`; the default is `25`. The script writes `reports/alpha-load-smoke.json`. Run this against `localhost` by default. Hosted Fly/Vercel/Supabase load smoke can increase usage and requires explicit user approval.
 
 ## Private Enjin Operator Smoke
 
@@ -94,6 +94,7 @@ Keep the manual movement check until a later canvas-aware automation can assert 
 
 ## Alpha RC Stop Point
 
-Alpha RC Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, load smoke, Mochirii preview checks, admin/terms/feedback checks, Enjin Canary smoke, rollback notes, tester guide, and source/asset ledgers are complete.
+Alpha RC Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved load smoke, Mochirii preview checks, admin/terms/feedback checks, approved Enjin Canary smoke, rollback notes, tester guide, and source/asset ledgers are complete.
 
 Do not use this checklist to promote production, Enjin mainnet, paid assets, cashout, open UGC, or public launch.
+Do not use this checklist to add billing usage. Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any hosted, CI, provider, Fuel Tank, or live chain action.

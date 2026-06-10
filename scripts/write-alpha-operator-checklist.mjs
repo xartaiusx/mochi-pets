@@ -79,6 +79,8 @@ Generated: ${generatedAt}
 
 This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into Codex chat, Git, PR comments, screenshots, or reports.
 
+No-cost rule: do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun Actions, or push CI-triggering branches without explicit user approval for that exact action. Prefer local checks and read-only provider status commands.
+
 ## Local Credential Files
 
 ${fileList}
@@ -102,13 +104,13 @@ Current target:
 - Volume: ${flyVolume}
 - Save mount: /data
 
-Private operator step first:
+Read-only checks are allowed:
 
-1. Open https://fly.io/dashboard/artaius/billing.
-2. Add payment information or buy credit privately.
-3. Do not ask Codex to type or store payment details.
+1. Inspect existing Fly app status.
+2. Inspect existing Fly secret names.
+3. Run local checks and local smoke.
 
-After billing is complete, run from the game repo:
+Only after explicit user approval for possible Fly charges, run from the game repo:
 
 \`\`\`powershell
 $fly = Join-Path $env:USERPROFILE ".fly\\bin\\flyctl.exe"
@@ -117,7 +119,7 @@ if (!(Test-Path $fly)) { $fly = "flyctl" }
 & $fly volumes create ${flyVolume} --size 1 --region ${flyRegion} -a ${flyApp}
 \`\`\`
 
-Then set Fly secrets privately. The values come from the Supabase preview key file, the generated game bridge token file, the Enjin dashboard, and the Vercel preview origin:
+Only after explicit user approval for deploy/secret changes, set Fly secrets privately. The values come from the Supabase preview key file, the generated game bridge token file, the Enjin dashboard, and the Vercel preview origin:
 
 \`\`\`powershell
 $flySecrets = @(
@@ -145,13 +147,13 @@ Current required outcome:
 1. Enjin Platform settings show Wallet Daemon status Connected.
 2. The daemon signing address is known to the operator and backed up outside Git/chat.
 3. The Mochi Social Alpha collection reaches FINALIZED on Canary.
-4. The Canary Fuel Tank ID/address is recorded privately.
+4. The Canary Fuel Tank ID/address is recorded privately after explicit approval to create or fund it.
 5. One managed wallet, one rare certificate operation, and one fixed listing proof are recorded through the game operator route.
 
 Cloud Wallet Daemon path:
 
 1. Keep one Enjin Platform API token ready. The dashboard may show that a token exists, but Codex should not read or print it.
-2. Deploy the official Wallet Daemon as an outbound-only cloud signer. The Enjin docs describe AWS CloudFormation as the simplest managed path; use the current official template/link from the docs or Enjin settings.
+2. Deploy the official Wallet Daemon as an outbound-only cloud signer only after explicit approval for any cloud resources. The Enjin docs describe AWS CloudFormation as the simplest managed path; use the current official template/link from the docs or Enjin settings.
 3. Enter PLATFORM_KEY=<private-enjin-platform-token> and KEY_PASS=<private-wallet-daemon-passphrase> privately in the cloud secret fields.
 4. Save the generated mnemonic/seed backup and passphrase in a password manager or encrypted vault only.
 5. Verify Enjin Platform settings changes from Not Connected to Connected.
@@ -169,7 +171,7 @@ $env:MOCHI_SOCIAL_ENJIN_COLLECTION_READY="true"
 $env:MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY="true"
 npm run smoke
 npm run alpha:local-acceptance
-$env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
+$env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke # Hosted load smoke requires explicit approval.
 npm run alpha:browser-presence
 npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates

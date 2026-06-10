@@ -11,6 +11,10 @@ The game runtime needs a long-lived server process and multiplayer transport. Ve
 
 ## Fly Setup
 
+Fly operations are no-cost gated. Read-only checks such as `fly status`, `fly secrets list`, and `npm run smoke` against an already-running URL are allowed. Creating apps, creating or resizing volumes, deploying, scaling, cloning Machines, changing regions, or running hosted load tests can add usage or charges and requires fresh user approval. See [`docs/no-cost-operations.md`](no-cost-operations.md).
+
+Cost-bearing example. Do not run this block without explicit user approval:
+
 ```powershell
 fly launch --no-deploy --name mochi-social-game
 fly volumes create mochi_social_data --size 1 --region sjc
@@ -18,7 +22,7 @@ fly secrets set SUPABASE_URL="..." SUPABASE_PUBLISHABLE_KEY="..."
 fly deploy
 ```
 
-If Fly app creation returns a payment or billing prompt, stop and hand the browser dashboard to the operator. Codex must not enter payment details. After billing is complete, use the explicit app/volume path so the preview environment stays predictable:
+If Fly app creation returns a payment or billing prompt, stop and hand the browser dashboard to the operator. Codex must not enter payment details. If the user explicitly approves app or volume creation, use the explicit app/volume path so the preview environment stays predictable:
 
 ```powershell
 $fly = Join-Path $env:USERPROFILE ".fly\bin\flyctl.exe"

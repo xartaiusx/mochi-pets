@@ -4,6 +4,8 @@ This handoff keeps Mochi Social Alpha RC closed, no-real-value, and preview-only
 
 For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gates, Supabase authority, Enjin state handling, Fuel Tank dispatch, WebSocket presence, and Discord boundaries, follow [`docs/codex-external-ops.md`](codex-external-ops.md).
 
+For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-operations.md). Do not deploy, scale, push CI-triggering branches, run hosted load smoke, create provider resources, fund Fuel Tanks, or submit live Enjin transactions without explicit user approval for that exact action.
+
 ## Starting Point
 
 - Game repo PR: `xartaiusx/mochi-social`, branch `codex/mochi-social-alpha-rc`.
@@ -15,8 +17,8 @@ For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gat
 ## Operator Sequence
 
 1. Confirm both PRs are reviewed and the local verification commands in the game and website repos pass.
-2. Resolve GitHub Actions billing/budget blocks and require a green `Verify Mochi Social` check before merge.
-3. Create or confirm the Enjin Canary project, `Mochi Social Alpha` collection, managed-wallet policy, and Canary Fuel Tank.
+2. Resolve GitHub Actions billing/budget blocks and require a green `Verify Mochi Social` check before merge, but do not rerun or trigger Actions without explicit approval.
+3. Create or confirm the Enjin Canary project, `Mochi Social Alpha` collection, managed-wallet policy, and Canary Fuel Tank only after the user approves any cost-bearing chain or provider action.
 4. Start the cloud Wallet Daemon as an outbound-only signer with no inbound ports. Back up the seed/passphrase outside Git and outside chat.
 5. Set Fly secrets for the game runtime:
    - `SUPABASE_URL`
@@ -29,9 +31,9 @@ For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gat
    - `ENJIN_COLLECTION_ID`
    - `ENJIN_FUEL_TANK_ID`
    - `RPG_ALLOWED_ORIGINS`
-6. Deploy the game preview to Fly with `RPG_SAVE_DIR=/data/saves` and a mounted `/data` volume.
-7. Set the Mochirii Vercel preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL` to the Fly game URL.
-8. Deploy the Mochirii preview branch and Supabase preview Edge Functions.
+6. Deploy the game preview to Fly with `RPG_SAVE_DIR=/data/saves` and a mounted `/data` volume only after explicit deploy approval.
+7. Set the Mochirii Vercel preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL` to the Fly game URL only after confirming the preview environment will not add charges.
+8. Deploy the Mochirii preview branch and Supabase preview Edge Functions only after explicit deploy approval.
 9. Grant only signed-in 18+ testers through the Mochirii admin allowlist.
 10. Require tester terms before iframe render.
 11. Run the acceptance checks below before inviting testers.
@@ -48,7 +50,7 @@ The generated file goes to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-oper
 
 - Fly billing is complete. Fly app `mochi-social-game` is deployed in `sjc` with volume `mochi_social_data` mounted at `/data`, and the public smoke check passes at `https://mochi-social-game.fly.dev`.
 - Enjin Wallet Daemon is running as a separate local operator service. Enjin Platform settings show daemon status online before continuing to collection and Fuel Tank work.
-- Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations.
+- Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations. These stay blocked until the user explicitly approves cost-bearing chain/provider actions.
 - The Enjin console account state and Platform settings are live dashboard truth; do not infer readiness from docs alone.
 
 ## Acceptance Commands
@@ -75,7 +77,7 @@ npm run alpha:rc-audit
 Game preview:
 
 ```powershell
-$env:MOCHI_SOCIAL_BASE_URL="https://<fly-preview-host>"
+$env:MOCHI_SOCIAL_BASE_URL="https://<fly-preview-host>" # Requires explicit hosted-smoke approval.
 npm run smoke
 $env:MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE="true"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_ALLOW_EDGE="true"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke

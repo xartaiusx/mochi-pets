@@ -4,7 +4,7 @@
 
 Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate. The alpha is a 2D RPGJS cozy social pet vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification.
 
-Stop at Alpha RC Ready. Do not deploy production, do not use Enjin mainnet, do not enable real-money value, and do not open UGC uploads.
+Stop at Alpha RC Ready. Do not deploy production, do not use Enjin mainnet, do not enable real-money value, do not open UGC uploads, and do not perform any action that can add charges to connected accounts without explicit user approval for that exact action.
 
 Recommended slash goal:
 
@@ -52,11 +52,11 @@ Recommended slash goal:
 5. Verification and handoff.
    - Run game install/typecheck/lint/test/build/smoke.
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
-   - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke`.
+   - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke` locally by default. Hosted load smoke requires explicit user approval.
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence`, then complete the manual RPGJS sprite/movement check.
    - Run the private Enjin operator route smoke with `npm run alpha:enjin-operator-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
-   - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon.
+   - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon, with no-cost gates for every provider action.
 
 ## Public Contract
 
@@ -125,4 +125,4 @@ npm run lint
 npm run build
 ```
 
-External operator steps stay interactive: Fly/Vercel/Supabase/Enjin login, secret entry, Wallet Daemon seed creation, Fuel Tank funding, and preview deploy promotion.
+External operator steps stay interactive and no-cost gated: Fly/Vercel/Supabase/Enjin login, secret entry, Wallet Daemon seed creation, Fuel Tank funding, hosted load smoke, CI reruns, branch pushes, and preview deploy promotion.

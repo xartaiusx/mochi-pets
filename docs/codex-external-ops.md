@@ -33,6 +33,12 @@ When source behavior conflicts with repo intent, stop and record the conflict be
 - Use the in-app browser for local or public preview testing that does not require the user's signed-in Chrome profile.
 - Use dashboard-only flow for payment details, recovery phrases, seed/passphrase creation, and any provider step that requires MFA or private account confirmation.
 
+## No-Cost Default
+
+Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any external operation. Provider interactions are read-only by default. Do not create resources, deploy, scale, fund, mint, submit chain operations, trigger hosted load tests, rerun Actions, or push branches that trigger CI unless the user explicitly approves that exact action after a cost note.
+
+When a needed Alpha RC step may add charges, record the blocked gate and the no-cost alternative instead of proceeding. Local tests and local smoke checks are preferred until hosted work is approved.
+
 ## Secret Entry Protocol
 
 - The user types payment details, API tokens, seed phrases, passphrases, and one-time codes privately.
@@ -86,11 +92,12 @@ Supabase Edge Function secret ownership:
 ## CI Gate Checklist
 
 1. Resolve GitHub Actions billing, payment, and budget blocks before deployment work.
-2. Rerun the latest failed game PR workflow.
+2. Rerun the latest failed game PR workflow only after explicit user approval, because reruns can consume Actions usage.
 3. Require green `Verify Mochi Social` before merge.
 4. Keep check names unique before enabling required status checks.
 5. Enable branch protection only after the first successful check run exists.
 6. Do not merge while the job has zero steps, no log, or a billing/runner failure.
+7. Do not push branches only to refresh checks unless the user approves the CI-triggering push.
 
 ## Supabase Authority Matrix
 

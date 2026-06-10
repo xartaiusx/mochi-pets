@@ -15,7 +15,11 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md']
+    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md']
+  },
+  {
+    file: 'docs/no-cost-operations.md',
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'push branches that trigger CI', 'Fuel Tanks', 'hosted load tests', 'Current Cost Posture']
   },
   {
     file: 'docs/codex-external-ops.md',
@@ -30,7 +34,8 @@ const checks = [
       'Fuel Tank Dispatch Contract',
       'WebSocket And Presence Verification',
       'Discord Boundary',
-      'Computer Use'
+      'Computer Use',
+      'No-Cost Default'
     ]
   },
   {
