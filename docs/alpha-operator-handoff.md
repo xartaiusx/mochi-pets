@@ -67,6 +67,8 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/sa
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
+npm run alpha:operator-checklist
+npm run alpha:rc-audit
 ```
 
 Game preview:
@@ -79,6 +81,8 @@ $env:MOCHI_SOCIAL_LOAD_ALLOW_EDGE="true"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; n
 npm run alpha:browser-presence
 npm run alpha:enjin-operator-smoke
 $env:MOCHI_SOCIAL_GAME_URL="https://<fly-preview-host>"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"; npm run alpha:external-gates
+npm run alpha:operator-checklist
+npm run alpha:rc-audit
 ```
 
 Mochirii repo:
@@ -99,6 +103,7 @@ Manual gates:
 - Enjin Canary managed wallet, Fuel Tank sponsorship, Wallet Daemon signing, one hot-to-cold proof, one finalized cold-to-hot proof, and one fixed-listing proof are submitted through `POST /integration/alpha/enjin/submit` and recorded in the chain ledger.
 - `npm run alpha:enjin-operator-smoke` proves the private Enjin route fails closed; live Canary smoke is operator-approved only and requires explicit smoke request/transaction IDs.
 - `npm run alpha:external-gates` passes with the Fly URL, Vercel preview URL, Supabase preview ref, and operator-confirmed Enjin readiness flags set.
+- `npm run alpha:rc-audit` passes after local, site, PR, provider, and handoff evidence all agree that Alpha RC Ready is true.
 - A 10-25 tester load-smoke report is attached to the PR or release checklist.
 
 ## Tester Guide

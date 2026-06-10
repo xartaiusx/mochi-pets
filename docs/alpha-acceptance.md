@@ -26,6 +26,7 @@ npm run alpha:browser-presence
 npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
 npm run alpha:operator-checklist
+npm run alpha:rc-audit
 ```
 
 The acceptance script verifies:
@@ -71,6 +72,10 @@ npm run alpha:external-gates
 For live Enjin completion, the operator must also provide non-public server env/secrets and set local confirmation flags only after dashboard verification: `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, `ENJIN_FUEL_TANK_ID`, `MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED=true`, `MOCHI_SOCIAL_ENJIN_COLLECTION_READY=true`, and `MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY=true`.
 
 `npm run alpha:operator-checklist` writes the current no-secret handoff to the local credentials folder. Treat it as a checklist only; it is not evidence that private provider gates are complete.
+
+## Alpha RC Audit
+
+`npm run alpha:rc-audit` reads the game repo, sibling Mochirii repo, latest external gate report, GitHub PR state, and no-secret operator checklists. It writes `reports/alpha-rc-audit.json` and exits non-zero until every explicit Alpha RC requirement has direct evidence. This audit is the final pre-tester stoplight; it should remain red while Fly billing, live preview URLs, or Enjin Canary readiness are incomplete.
 
 ## Two-tab Presence Gate
 

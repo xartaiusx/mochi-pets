@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:rc-audit"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -39,11 +39,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md', 'Current Private Gates']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:rc-audit', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md', 'Current Private Gates']
   },
   {
     file: 'docs/site-integration.md',
@@ -108,6 +108,10 @@ const checks = [
   {
     file: 'scripts/write-alpha-operator-checklist.mjs',
     includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'npm run alpha:external-gates']
+  },
+  {
+    file: 'scripts/check-alpha-rc-audit.mjs',
+    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'provider.external-gates', 'github.game-pr', 'github.site-pr', 'Mochirii', 'mochirii-mochi-social-alpha-operator-next-steps.md']
   }
 ];
 

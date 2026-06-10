@@ -16,6 +16,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Private Enjin operator route smoke against a running server: `npm run alpha:enjin-operator-smoke`
 - External Alpha RC gate audit: `npm run alpha:external-gates`
 - Write no-secret local operator checklist: `npm run alpha:operator-checklist`
+- Requirement-by-requirement Alpha RC audit: `npm run alpha:rc-audit`
 - Typecheck: `npm run typecheck`
 - Lint: `npm run lint`
 - Test: `npm test`
@@ -53,6 +54,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.
 - The local alpha acceptance and load-smoke commands verify public endpoints and no-real-value fallback ledger writes. `npm run alpha:browser-presence` verifies two same-browser tabs render the game canvas, HUD, and `Nearby: 2 testers` presence chip. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and does not submit live Enjin operations by default. `npm run alpha:external-gates` audits GitHub, Fly, Supabase, live game/site contract, and operator-confirmed Enjin readiness without printing secret values. Manual RPGJS sprite/movement inspection still completes the visual multiplayer gate.
 - `npm run alpha:operator-checklist` may write a no-secret handoff file under `C:\Users\xtyty\Desktop\Creds`; it must contain placeholders and secret names only, never secret values.
+- `npm run alpha:rc-audit` writes `reports/alpha-rc-audit.json` and fails until every game, site, provider, PR, and handoff gate proves Alpha RC Ready.
 - For external operations, use official docs first, repo docs second, live dashboards/CLI for current state, and memory only for preferences/history.
 - Use CLI for reproducible checks, Chrome for logged-in dashboards, Computer Use only when CLI/Chrome are insufficient, and dashboard-only flow for payment details, seed phrases, passphrases, MFA, and private account confirmations.
 
