@@ -99,6 +99,8 @@ Game repo:
 
 ```powershell
 npm install
+npm run secret-scan
+npm run alpha:readiness
 npm run typecheck
 npm run lint
 npm test

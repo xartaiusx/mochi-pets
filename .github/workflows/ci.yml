@@ -23,6 +23,12 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Secret scan
+        run: npm run secret-scan
+
+      - name: Alpha readiness
+        run: npm run alpha:readiness
+
       - name: Typecheck
         run: npm run typecheck
 

@@ -8,6 +8,8 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 
 - Install: `npm install`
 - Dev game: `npm run dev:game`
+- Secret scan: `npm run secret-scan`
+- Alpha readiness: `npm run alpha:readiness`
 - Typecheck: `npm run typecheck`
 - Lint: `npm run lint`
 - Test: `npm test`
