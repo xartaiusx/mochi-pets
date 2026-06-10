@@ -28,6 +28,37 @@ fly secrets set ENJIN_COLLECTION_ID="..."
 fly secrets set ENJIN_FUEL_TANK_ID="..."
 ```
 
+## Cloud Wallet Daemon Gate
+
+The alpha path uses a cloud Wallet Daemon, not local Docker. Enjin's Wallet Daemon signs Platform transactions by polling outbound for pending work, so the host must not expose inbound ports.
+
+Required private inputs:
+
+- Enjin Platform API token as `PLATFORM_KEY`.
+- Wallet Daemon passphrase as `KEY_PASS`.
+- Persistent encrypted `wallet.seed` storage and a separate seed/passphrase backup in a password manager or encrypted vault.
+
+Official Enjin docs currently document AWS CloudFormation as the simplest managed cloud path. Use the current Enjin docs or dashboard link for the template, then:
+
+```powershell
+read -rsp "Enjin Platform API token: " PLATFORM_TOKEN
+printf "\n"
+
+aws cloudformation create-stack \
+  --stack-name EnjinWalletDaemon \
+  --template-url "https://enjin-iac-templates.s3.us-east-2.amazonaws.com/wallet-daemon.yml" \
+  --capabilities CAPABILITY_IAM \
+  --parameters \
+    ParameterKey=PlatformApiToken,ParameterValue="$PLATFORM_TOKEN" \
+    ParameterKey=WalletDaemonImage,ParameterValue=<current-official-enjin-wallet-daemon-image>
+
+unset PLATFORM_TOKEN
+```
+
+After stack creation, inspect CloudWatch startup logs privately. The first run generates the seed material and prints the wallet addresses. Record only non-secret identifiers needed by the game handoff, such as the signing address, collection ID, Fuel Tank ID/address, and finalized Enjin transaction UUIDs. Never paste the mnemonic, `wallet.seed`, `KEY_PASS`, or raw Platform token into Codex chat, Git, PR comments, screenshots, or local reports.
+
+Do not create the `Mochi Social Alpha` collection until the daemon can sign. The Enjin Platform settings page should move from `Not Connected` to `Connected`, then collection creation should submit a transaction and eventually reach `FINALIZED`.
+
 ## Alpha Operation Flow
 
 1. Game backend creates or reuses the managed wallet external id for the signed-in tester.
@@ -107,6 +138,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator
 External smoke requires real Canary credentials and remains an operator step:
 
 - Wallet Daemon running with no inbound ports.
+- Enjin Platform settings show Wallet Daemon status `Connected`.
 - Fuel Tank can sponsor the expected transaction.
 - `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, and `ENJIN_FUEL_TANK_ID` are set only as Fly secrets.
 - `CreateManagedWallet` and `GetManagedWallet` work for the tester's `mochi-social-alpha:<supabase-user-id>` external id.

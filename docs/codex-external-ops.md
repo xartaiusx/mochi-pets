@@ -37,6 +37,7 @@ When source behavior conflicts with repo intent, stop and record the conflict be
 
 - The user types payment details, API tokens, seed phrases, passphrases, and one-time codes privately.
 - Codex may verify only secret names, digests, creation timestamps, deployment status, health checks, or successful API responses.
+- Repo scripts may write no-secret operator checklists into `C:\Users\xtyty\Desktop\Creds`; those files must contain placeholders, secret names, statuses, and commands only.
 - Never print, summarize, screenshot, commit, or paste secret values.
 - Never store secrets in `.env`, docs, PR comments, local ledger output, screenshots, or chat.
 - Rotate `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, Enjin Platform token, and Wallet Daemon credentials if a secret value is exposed.
@@ -53,6 +54,8 @@ When source behavior conflicts with repo intent, stop and record the conflict be
 | Supabase authority | Mochirii Supabase preview branch | migrations, Edge Functions, RLS, allowlist, terms, feedback, ledger |
 | Chain | Enjin Canary | `Mochi Social Alpha` collection and Canary Fuel Tank |
 | Signer | Cloud Wallet Daemon | outbound-only, no inbound ports |
+
+Use `npm run alpha:operator-checklist` to refresh the local no-secret checklist for this matrix and the current external gate report.
 
 Game/Fly env ownership:
 

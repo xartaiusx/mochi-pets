@@ -18,6 +18,15 @@ fly secrets set SUPABASE_URL="..." SUPABASE_PUBLISHABLE_KEY="..."
 fly deploy
 ```
 
+If Fly app creation returns a payment or billing prompt, stop and hand the browser dashboard to the operator. Codex must not enter payment details. After billing is complete, use the explicit app/volume path so the preview environment stays predictable:
+
+```powershell
+$fly = Join-Path $env:USERPROFILE ".fly\bin\flyctl.exe"
+if (!(Test-Path $fly)) { $fly = "flyctl" }
+& $fly apps create mochi-social-game
+& $fly volumes create mochi_social_data --size 1 --region sea -a mochi-social-game
+```
+
 Runtime env defaults:
 
 - `PORT=8080`
@@ -40,3 +49,9 @@ Add the future Vercel domain to `RPG_ALLOWED_ORIGINS` before embedding in produc
 Do not put Supabase service-role keys, Enjin Wallet Daemon seeds, or Wallet Daemon passphrases in the game runtime. The Wallet Daemon must run as a separate service with no inbound ports.
 
 For the Canary operator sequence, managed-wallet id convention, Fuel Tank setup, and finality rules, see [`docs/enjin-canary-alpha.md`](enjin-canary-alpha.md).
+
+To refresh the local no-secret operator handoff in `C:\Users\xtyty\Desktop\Creds`, run:
+
+```powershell
+npm run alpha:operator-checklist
+```

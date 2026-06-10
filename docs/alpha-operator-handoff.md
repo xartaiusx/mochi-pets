@@ -36,6 +36,20 @@ For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gat
 10. Require tester terms before iframe render.
 11. Run the acceptance checks below before inviting testers.
 
+Run this whenever the local private handoff folder needs a fresh no-secret checklist:
+
+```powershell
+npm run alpha:operator-checklist
+```
+
+The generated file goes to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md` by default. It may list local credential filenames, required secret names, gate status, and placeholder commands. It must not contain raw secret values.
+
+## Current Private Gates
+
+- Fly app creation must wait for the operator to complete Fly billing/payment privately.
+- Enjin Platform currently needs a connected Wallet Daemon signing account before the `Mochi Social Alpha` collection can be submitted safely.
+- The Enjin console account state and Platform settings are live dashboard truth; do not infer readiness from docs alone.
+
 ## Acceptance Commands
 
 Game repo local:

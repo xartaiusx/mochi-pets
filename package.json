@@ -23,6 +23,7 @@
     "alpha:browser-presence": "node scripts/check-alpha-browser-presence.mjs",
     "alpha:enjin-operator-smoke": "node scripts/check-enjin-operator-smoke.mjs",
     "alpha:external-gates": "node scripts/check-alpha-external-gates.mjs",
+    "alpha:operator-checklist": "node scripts/write-alpha-operator-checklist.mjs",
     "typecheck": "npm --workspace @mochi-social/game run typecheck",
     "lint": "npm --workspace @mochi-social/game run lint",
     "test": "npm --workspace @mochi-social/game run test",

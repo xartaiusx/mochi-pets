@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:external-gates"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -39,11 +39,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md', 'Current Private Gates']
   },
   {
     file: 'docs/site-integration.md',
@@ -51,11 +51,11 @@ const checks = [
   },
   {
     file: 'docs/deployment.md',
-    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'Wallet Daemon must run as a separate service with no inbound ports']
+    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist']
   },
   {
     file: 'docs/enjin-canary-alpha.md',
-    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction', '/integration/alpha/enjin/submit', 'x-mochi-social-server-token', 'confirmNoRealValue=true', 'alpha:enjin-operator-smoke']
+    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction', '/integration/alpha/enjin/submit', 'x-mochi-social-server-token', 'confirmNoRealValue=true', 'alpha:enjin-operator-smoke', 'Cloud Wallet Daemon Gate', 'AWS CloudFormation', 'KEY_PASS', 'PLATFORM_KEY']
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -104,6 +104,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-external-gates.mjs',
     includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
+  },
+  {
+    file: 'scripts/write-alpha-operator-checklist.mjs',
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'npm run alpha:external-gates']
   }
 ];
 
