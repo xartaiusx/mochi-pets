@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -23,7 +23,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'Two-tab Presence Gate', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'Two-tab Presence Gate', 'no-real-value fallback ledger']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'Wallet Daemon', 'Stop at Alpha RC Ready']
   },
   {
     file: 'docs/site-integration.md',
@@ -68,6 +72,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', 'Open two browser tabs']
+  },
+  {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'simulated testers', 'HTTP alpha contract load smoke']
   }
 ];
 

@@ -52,6 +52,7 @@ Recommended slash goal:
 5. Verification and handoff.
    - Run game install/typecheck/lint/test/build/smoke.
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
+   - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon.
 
@@ -108,6 +109,7 @@ npm test
 npm run build
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
+$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
 ```
 
 Mochirii repo:

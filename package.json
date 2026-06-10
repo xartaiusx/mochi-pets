@@ -19,6 +19,7 @@
     "secret-scan": "node scripts/check-secrets.mjs",
     "alpha:readiness": "node scripts/check-alpha-readiness.mjs",
     "alpha:local-acceptance": "node scripts/check-local-alpha-acceptance.mjs",
+    "alpha:load-smoke": "node scripts/check-alpha-load-smoke.mjs",
     "typecheck": "npm --workspace @mochi-social/game run typecheck",
     "lint": "npm --workspace @mochi-social/game run lint",
     "test": "npm --workspace @mochi-social/game run test",

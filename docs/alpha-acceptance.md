@@ -20,6 +20,8 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"
 $env:RPG_SAVE_DIR=".local/saves"
 npm run smoke
 npm run alpha:local-acceptance
+$env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
+npm run alpha:load-smoke
 ```
 
 The acceptance script verifies:
@@ -36,6 +38,12 @@ By default the script expects local fallback mode and checks `.local/saves/alpha
 
 The script writes `reports/alpha-local-acceptance.json` as a local, ignored evidence artifact.
 
+## Load Smoke
+
+`npm run alpha:load-smoke` simulates 10-25 testers against the HTTP alpha contract. It opens `/play` concurrently, records chat and emote actions through `/integration/alpha/action`, and verifies the no-real-value fallback ledger entries.
+
+This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_LOAD_PLAYERS=10` through `25`; the default is `25`. The script writes `reports/alpha-load-smoke.json`.
+
 ## Two-tab Presence Gate
 
 The scripted route checks do not prove visual multiplayer presence. Before marking Alpha RC Ready, perform this manual gate:
@@ -50,6 +58,6 @@ This manual gate stays required until the repo adopts a browser automation depen
 
 ## Alpha RC Stop Point
 
-Alpha RC Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, Mochirii preview checks, admin/terms/feedback checks, Enjin Canary smoke, rollback notes, tester guide, and source/asset ledgers are complete.
+Alpha RC Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, load smoke, Mochirii preview checks, admin/terms/feedback checks, Enjin Canary smoke, rollback notes, tester guide, and source/asset ledgers are complete.
 
 Do not use this checklist to promote production, Enjin mainnet, paid assets, cashout, open UGC, or public launch.
