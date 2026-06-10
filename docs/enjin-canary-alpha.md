@@ -84,6 +84,15 @@ Example body shape:
 
 The endpoint returns the generated `chain.operation_update` payload and the ledger bridge response. It never accepts refresh tokens, service-role keys, Wallet Daemon seeds, or Wallet Daemon passphrases.
 
+Run the fail-closed smoke against any preview or local runtime:
+
+```powershell
+$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"
+npm run alpha:enjin-operator-smoke
+```
+
+For a local non-production server started with a throwaway `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, set `MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN` to the same value to also verify the tokened no-Enjin-secrets response. A live Canary poll is disabled unless an operator sets `MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE=true`, `MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID`, and `MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID` for an already-approved transaction. Do not paste production tokens into chat or commit them.
+
 ## Verification
 
 ```powershell
@@ -92,6 +101,7 @@ npm run lint
 npm test
 npm run build
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
+$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 ```
 
 External smoke requires real Canary credentials and remains an operator step:

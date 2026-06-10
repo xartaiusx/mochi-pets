@@ -23,6 +23,7 @@ npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
 npm run alpha:browser-presence
+npm run alpha:enjin-operator-smoke
 ```
 
 The acceptance script verifies:
@@ -45,6 +46,12 @@ The script writes `reports/alpha-local-acceptance.json` as a local, ignored evid
 `npm run alpha:load-smoke` simulates 10-25 testers against the HTTP alpha contract. It opens `/play` concurrently, records chat and emote actions through `/integration/alpha/action`, and verifies the no-real-value fallback ledger entries.
 
 This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_LOAD_PLAYERS=10` through `25`; the default is `25`. The script writes `reports/alpha-load-smoke.json`.
+
+## Private Enjin Operator Smoke
+
+`npm run alpha:enjin-operator-smoke` verifies `POST /integration/alpha/enjin/submit` fails closed without the private game server token. When testing a local server that was started with a non-production `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, set `MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN` to the same value to also verify the tokened no-Enjin-secrets path returns `enjin_canary_not_configured`.
+
+The smoke refuses to submit or poll live Enjin by default when the runtime reports `enjinCanaryConfigured=true`. Only an operator should opt into live Canary smoke with `MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE=true`, `MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID`, and `MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID` after an approved Canary transaction exists. The script writes `reports/enjin-operator-smoke.json`.
 
 ## Two-tab Presence Gate
 

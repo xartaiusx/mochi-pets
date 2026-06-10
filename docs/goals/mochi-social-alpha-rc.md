@@ -54,6 +54,7 @@ Recommended slash goal:
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
    - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke`.
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence`, then complete the manual RPGJS sprite/movement check.
+   - Run the private Enjin operator route smoke with `npm run alpha:enjin-operator-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon.
 
@@ -112,6 +113,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
+$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 ```
 
 Mochirii repo:
