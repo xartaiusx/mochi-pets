@@ -5,6 +5,10 @@ import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MO
 const TOKEN_KEY = 'mochiSocial.accessToken';
 const EXPIRES_KEY = 'mochiSocial.accessTokenExpiresAt';
 const ALPHA_STATE_KEY = 'mochiSocial.alphaState';
+const PRESENCE_CHANNEL = 'mochi-social-presence';
+const PRESENCE_TAB_KEY = 'mochiSocial.presenceTabId';
+const PRESENCE_STORAGE_PREFIX = 'mochiSocial.presence.';
+const PRESENCE_TTL_MS = 4000;
 
 interface AlphaHudState {
   petId?: string;
@@ -14,6 +18,12 @@ interface AlphaHudState {
   tradeProof: boolean;
   canaryRequested: boolean;
   chat: string[];
+}
+
+interface PresenceMessage {
+  type: 'MOCHI_SOCIAL_LOCAL_PRESENCE';
+  tabId: string;
+  at: number;
 }
 
 function defaultAlphaState(): AlphaHudState {
@@ -69,6 +79,7 @@ function isBridgeMessage(value: unknown): value is BridgeMessage {
 
 export function installMochiSocialBridge() {
   createHud();
+  installLocalTabPresence();
   void loadAlphaStatus();
 
   window.addEventListener('message', (event) => {
@@ -109,6 +120,7 @@ function createHud() {
       <strong>Mochi Social</strong>
       <span data-auth-label>Guest</span>
       <span data-token-label>Token: 0/1</span>
+      <span data-presence-label>Nearby: 1 tester</span>
     </div>
     <div class="mochi-hud__alpha">
       <span data-alpha-label>Closed Canary alpha - no real value</span>
@@ -206,6 +218,100 @@ function createHud() {
 
   window.addEventListener('mochi-social-alpha-state', renderState);
   renderState();
+}
+
+function installLocalTabPresence() {
+  const label = document.querySelector<HTMLElement>('[data-presence-label]');
+  if (!label) return;
+
+  const presenceLabel = label;
+  const tabId = getPresenceTabId();
+  const peers = new Map<string, number>();
+  const storageKey = `${PRESENCE_STORAGE_PREFIX}${tabId}`;
+  const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(PRESENCE_CHANNEL) : null;
+
+  function remember(message: PresenceMessage) {
+    if (message.tabId !== tabId) {
+      peers.set(message.tabId, message.at);
+    }
+    render();
+  }
+
+  function render() {
+    const cutoff = Date.now() - PRESENCE_TTL_MS;
+    for (const [peerId, lastSeen] of peers) {
+      if (lastSeen < cutoff) peers.delete(peerId);
+    }
+
+    const count = peers.size + 1;
+    presenceLabel.dataset.presenceCount = String(count);
+    presenceLabel.textContent = count === 1 ? 'Nearby: 1 tester' : `Nearby: ${count} testers`;
+  }
+
+  function readStoragePeers() {
+    const cutoff = Date.now() - PRESENCE_TTL_MS;
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!key?.startsWith(PRESENCE_STORAGE_PREFIX) || key === storageKey) continue;
+
+      try {
+        const message = JSON.parse(localStorage.getItem(key) || 'null') as PresenceMessage | null;
+        if (message?.type === 'MOCHI_SOCIAL_LOCAL_PRESENCE' && message.at >= cutoff) {
+          remember(message);
+        }
+      } catch {
+        // Ignore stale local presence records from older alpha builds.
+      }
+    }
+  }
+
+  function publish() {
+    const message: PresenceMessage = {
+      type: 'MOCHI_SOCIAL_LOCAL_PRESENCE',
+      tabId,
+      at: Date.now()
+    };
+
+    channel?.postMessage(message);
+    localStorage.setItem(storageKey, JSON.stringify(message));
+    readStoragePeers();
+    render();
+  }
+
+  channel?.addEventListener('message', (event: MessageEvent<PresenceMessage>) => {
+    if (event.data?.type === 'MOCHI_SOCIAL_LOCAL_PRESENCE') {
+      remember(event.data);
+    }
+  });
+
+  window.addEventListener('storage', (event) => {
+    if (!event.key?.startsWith(PRESENCE_STORAGE_PREFIX) || !event.newValue) return;
+
+    try {
+      const message = JSON.parse(event.newValue) as PresenceMessage;
+      if (message.type === 'MOCHI_SOCIAL_LOCAL_PRESENCE') remember(message);
+    } catch {
+      // Ignore malformed storage events; presence is only a local visual cue.
+    }
+  });
+
+  const timer = window.setInterval(publish, 1000);
+  window.addEventListener('pagehide', () => {
+    window.clearInterval(timer);
+    channel?.close();
+    localStorage.removeItem(storageKey);
+  });
+
+  publish();
+}
+
+function getPresenceTabId() {
+  const existing = sessionStorage.getItem(PRESENCE_TAB_KEY);
+  if (existing) return existing;
+
+  const tabId = crypto.randomUUID();
+  sessionStorage.setItem(PRESENCE_TAB_KEY, tabId);
+  return tabId;
 }
 
 function readAlphaState(): AlphaHudState {

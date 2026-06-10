@@ -45,9 +45,23 @@ const ALPHA_EDGE_FUNCTIONS = {
   feedback: 'submit-mochi-social-feedback'
 } as const;
 
+const ALPHA_ACTION_TYPES = [
+  'chat.send',
+  'emote.send',
+  'pet.befriend',
+  'pet.care',
+  'market.fixed_list',
+  'trade.direct_offer',
+  'chain.withdraw_request',
+  'chain.deposit_request',
+  'chain.operation_update'
+] as const;
+
+type AlphaActionType = (typeof ALPHA_ACTION_TYPES)[number];
+
 interface AlphaActionEnvelope {
   requestId: string;
-  type: string;
+  type: AlphaActionType;
   playerId?: string;
   payload: Record<string, unknown>;
 }
@@ -304,6 +318,7 @@ function isAlphaActionEnvelope(value: unknown): value is AlphaActionEnvelope {
     typeof candidate.requestId === 'string' &&
     candidate.requestId.length > 8 &&
     typeof candidate.type === 'string' &&
+    ALPHA_ACTION_TYPES.includes(candidate.type as AlphaActionType) &&
     typeof candidate.payload === 'object' &&
     candidate.payload !== null
   );

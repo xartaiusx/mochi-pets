@@ -67,11 +67,11 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
-    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request']
+    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label']
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', 'ALPHA_ACTION_TYPES.includes']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',

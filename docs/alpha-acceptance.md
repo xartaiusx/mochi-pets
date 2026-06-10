@@ -49,10 +49,11 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 The scripted route checks do not prove visual multiplayer presence. Before marking Alpha RC Ready, perform this manual gate:
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
-2. Move both players after the scene loads.
-3. Verify each tab shows the other player sprite in the same town.
-4. Interact with the NPC, chest, and habitat/care loop in at least one tab.
-5. Record the date, browser, game URL, and result in the PR or release checklist.
+2. Confirm both tabs show the game canvas, HUD, and a `Nearby: 2 testers` presence chip.
+3. Move both players after the scene loads.
+4. Verify each tab shows the other player sprite in the same town.
+5. Interact with the NPC, chest, and habitat/care loop in at least one tab.
+6. Record the date, browser, game URL, and result in the PR or release checklist.
 
 This manual gate stays required until the repo adopts a browser automation dependency and committed two-tab visual test.
 

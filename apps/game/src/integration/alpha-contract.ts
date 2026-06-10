@@ -45,16 +45,19 @@ export const SERVER_ENV_CONTRACT = [
   'ENJIN_FUEL_TANK_ID'
 ] as const;
 
-export type AlphaActionType =
-  | 'chat.send'
-  | 'emote.send'
-  | 'pet.befriend'
-  | 'pet.care'
-  | 'market.fixed_list'
-  | 'trade.direct_offer'
-  | 'chain.withdraw_request'
-  | 'chain.deposit_request'
-  | 'chain.operation_update';
+export const ALPHA_ACTION_TYPES = [
+  'chat.send',
+  'emote.send',
+  'pet.befriend',
+  'pet.care',
+  'market.fixed_list',
+  'trade.direct_offer',
+  'chain.withdraw_request',
+  'chain.deposit_request',
+  'chain.operation_update'
+] as const;
+
+export type AlphaActionType = (typeof ALPHA_ACTION_TYPES)[number];
 
 export interface AlphaActionEnvelope {
   requestId: string;
@@ -70,6 +73,7 @@ export function isAlphaActionEnvelope(value: unknown): value is AlphaActionEnvel
     typeof candidate.requestId === 'string' &&
     candidate.requestId.length > 8 &&
     typeof candidate.type === 'string' &&
+    ALPHA_ACTION_TYPES.includes(candidate.type as AlphaActionType) &&
     typeof candidate.payload === 'object' &&
     candidate.payload !== null
   );
