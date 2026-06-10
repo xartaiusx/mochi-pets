@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:external-gates"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -43,7 +43,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md']
   },
   {
     file: 'docs/site-integration.md',
@@ -100,6 +100,10 @@ const checks = [
   {
     file: 'scripts/check-enjin-operator-smoke.mjs',
     includes: ['/integration/alpha/enjin/submit', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE', 'MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID', 'MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID', 'enjin_canary_not_configured', 'invalid_game_server_token']
+  },
+  {
+    file: 'scripts/check-alpha-external-gates.mjs',
+    includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
   }
 ];
 

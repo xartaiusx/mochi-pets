@@ -24,6 +24,7 @@ $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
 npm run alpha:browser-presence
 npm run alpha:enjin-operator-smoke
+npm run alpha:external-gates
 ```
 
 The acceptance script verifies:
@@ -52,6 +53,21 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 `npm run alpha:enjin-operator-smoke` verifies `POST /integration/alpha/enjin/submit` fails closed without the private game server token. When testing a local server that was started with a non-production `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, set `MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN` to the same value to also verify the tokened no-Enjin-secrets path returns `enjin_canary_not_configured`.
 
 The smoke refuses to submit or poll live Enjin by default when the runtime reports `enjinCanaryConfigured=true`. Only an operator should opt into live Canary smoke with `MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE=true`, `MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID`, and `MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID` after an approved Canary transaction exists. The script writes `reports/enjin-operator-smoke.json`.
+
+## External Gate Audit
+
+`npm run alpha:external-gates` checks live Alpha RC gates without printing secret values. It verifies GitHub PR status, Supabase preview secret names, Fly authentication/app/volume/secret names, live game contract, Mochirii site contract, and operator-confirmed Enjin readiness flags.
+
+Before Alpha RC Ready, run it with the Fly game URL and Vercel preview origin:
+
+```powershell
+$env:MOCHI_SOCIAL_GAME_URL="https://<fly-preview-host>"
+$env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"
+$env:MOCHI_SOCIAL_SUPABASE_PROJECT_REF="<supabase-preview-ref>"
+npm run alpha:external-gates
+```
+
+For live Enjin completion, the operator must also provide non-public server env/secrets and set local confirmation flags only after dashboard verification: `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, `ENJIN_FUEL_TANK_ID`, `MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED=true`, `MOCHI_SOCIAL_ENJIN_COLLECTION_READY=true`, and `MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY=true`.
 
 ## Two-tab Presence Gate
 
