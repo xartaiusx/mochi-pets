@@ -85,6 +85,21 @@ async function run() {
   assert(invalidAction.status === 400, 'Invalid alpha action should return 400.');
   assert(invalidAction.body.error === 'invalid_alpha_action', 'Invalid alpha action must use invalid_alpha_action error.');
 
+  const privateEnjinSubmit = await postJson('/integration/alpha/enjin/submit', {
+    operation: 'poll-transaction',
+    requestId: `${runId}-enjin-private`,
+    playerId: 'local-acceptance-player',
+    tokenId: '1',
+    amount: 1,
+    enjinTransactionUuid: 'tx-local-proof',
+    confirmNoRealValue: true
+  }, 'private enjin operator submit without token');
+  assert([401, 503].includes(privateEnjinSubmit.status), 'Private Enjin operator submit must fail closed without the game server token.');
+  assert(
+    ['invalid_game_server_token', 'enjin_operator_disabled'].includes(privateEnjinSubmit.body.error),
+    'Private Enjin operator submit must use a token-gating error.'
+  );
+
   if (allowEdgeMode && alphaStatus.body.supabaseEdgeConfigured) {
     return;
   }

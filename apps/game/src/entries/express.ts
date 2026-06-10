@@ -58,6 +58,7 @@ const ALPHA_ACTION_TYPES = [
 ] as const;
 
 type AlphaActionType = (typeof ALPHA_ACTION_TYPES)[number];
+type EnjinOperatorOperation = 'hot-to-cold-certificate' | 'cold-to-hot-burn' | 'fixed-listing' | 'poll-transaction';
 
 interface AlphaActionEnvelope {
   requestId: string;
@@ -73,6 +74,42 @@ interface EnjinCanaryRuntime {
   mode: 'configured' | 'configured-preview-stub';
   message: string;
   requiredServerEnv: string[];
+}
+
+interface EnjinOperatorEnvelope {
+  operation?: EnjinOperatorOperation;
+  requestId?: string;
+  playerId?: string;
+  tokenId?: string;
+  amount?: number;
+  itemId?: string;
+  price?: string;
+  enjinTransactionUuid?: string;
+  confirmNoRealValue?: boolean;
+}
+
+type EnjinTransactionState = 'PENDING' | 'BROADCAST' | 'FINALIZED' | 'FAILED' | 'ABANDONED' | 'TIMEOUT';
+
+interface EnjinCanaryConfig {
+  platformUrl: string;
+  platformToken?: string;
+  network: 'CANARY';
+  collectionId?: string;
+  fuelTankId?: string;
+}
+
+interface EnjinOperatorInput {
+  requestId: string;
+  playerId: string;
+  tokenId: string;
+  amount: number;
+  itemId?: string;
+}
+
+interface EnjinSubmittedTransaction {
+  uuid: string;
+  state: EnjinTransactionState;
+  extrinsicHash?: string;
 }
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -96,7 +133,7 @@ app.use((req, res, next) => {
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-mochi-social-server-token');
   next();
 });
 
@@ -162,6 +199,60 @@ app.post('/integration/alpha/action', async (req, res) => {
   res.status(forwarded.status).json(forwarded.body);
 });
 
+app.post('/integration/alpha/enjin/submit', async (req, res) => {
+  const tokenResult = requireGameServerToken(req);
+  if (!tokenResult.ok) {
+    res.status(tokenResult.status).json({
+      ok: false,
+      error: tokenResult.error,
+      message: tokenResult.message
+    });
+    return;
+  }
+
+  const envelope = req.body as EnjinOperatorEnvelope;
+  if (!isEnjinOperatorEnvelope(envelope)) {
+    res.status(400).json({
+      ok: false,
+      error: 'invalid_enjin_operator_request',
+      message: 'Enjin operator submission requires operation, requestId, playerId, tokenId, amount, and confirmNoRealValue=true.'
+    });
+    return;
+  }
+
+  const enjinConfig = getEnjinCanaryConfig();
+  const chainRuntime = createEnjinCanaryRuntime(enjinConfig);
+  if (!enjinCanaryReady(enjinConfig)) {
+    res.status(409).json({
+      ok: false,
+      error: 'enjin_canary_not_configured',
+      chainRuntime,
+      message: 'Configure Enjin Canary Platform token, collection, and Fuel Tank before operator submissions.'
+    });
+    return;
+  }
+
+  try {
+    const updateAction = await buildEnjinOperatorUpdateAction(envelope);
+    const forwarded = await forwardAlphaAction(updateAction as AlphaActionEnvelope);
+    res.status(forwarded.status).json({
+      ok: forwarded.body.ok === true,
+      noRealValue: true,
+      chainRuntime,
+      operation: envelope.operation,
+      updateAction,
+      ledger: forwarded.body
+    });
+  } catch (error) {
+    res.status(502).json({
+      ok: false,
+      error: 'enjin_operator_submission_failed',
+      chainRuntime,
+      message: error instanceof Error ? error.message : 'Enjin Canary operator submission failed.'
+    });
+  }
+});
+
 app.post('/integration/auth/verify', async (req, res) => {
   const accessToken = typeof req.body?.accessToken === 'string' ? req.body.accessToken : undefined;
   const result = await validateSupabaseAccessTokenForExpress(accessToken);
@@ -218,6 +309,31 @@ function getBearerToken(req: Request) {
   const header = req.headers.authorization;
   if (!header || Array.isArray(header)) return undefined;
   return header.replace(/^Bearer\s+/i, '').trim() || undefined;
+}
+
+function requireGameServerToken(req: Request) {
+  const expected = process.env.MOCHI_SOCIAL_GAME_SERVER_TOKEN;
+  if (!expected) {
+    return {
+      ok: false as const,
+      status: 503,
+      error: 'enjin_operator_disabled',
+      message: 'Set MOCHI_SOCIAL_GAME_SERVER_TOKEN before enabling private Enjin operator submissions.'
+    };
+  }
+
+  const header = req.headers['x-mochi-social-server-token'];
+  const provided = Array.isArray(header) ? header[0] : header;
+  if (provided !== expected) {
+    return {
+      ok: false as const,
+      status: 401,
+      error: 'invalid_game_server_token',
+      message: 'Private Enjin operator submissions require the game server token.'
+    };
+  }
+
+  return { ok: true as const };
 }
 
 function createGameManifestForExpress(origin: string, version: string) {
@@ -283,6 +399,41 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
   };
 }
 
+async function buildEnjinOperatorUpdateAction(envelope: Required<Pick<EnjinOperatorEnvelope, 'operation' | 'requestId' | 'playerId' | 'tokenId' | 'amount' | 'confirmNoRealValue'>> & EnjinOperatorEnvelope) {
+  const input = {
+    requestId: envelope.requestId,
+    playerId: envelope.playerId,
+    tokenId: envelope.tokenId,
+    amount: envelope.amount,
+    itemId: envelope.itemId || 'momo-canary-certificate'
+  };
+
+  if (envelope.operation === 'hot-to-cold-certificate') {
+    return submitHotToColdCertificateProof(input);
+  }
+
+  if (envelope.operation === 'cold-to-hot-burn') {
+    return submitColdToHotBurnProof(input);
+  }
+
+  if (envelope.operation === 'fixed-listing') {
+    if (!envelope.price) {
+      throw new Error('fixed-listing requires price in the smallest Canary marketplace unit.');
+    }
+    return submitFixedListingProof({ ...input, price: envelope.price });
+  }
+
+  if (envelope.operation === 'poll-transaction') {
+    if (!envelope.enjinTransactionUuid) {
+      throw new Error('poll-transaction requires enjinTransactionUuid.');
+    }
+    const transaction = await pollEnjinTransaction(envelope.enjinTransactionUuid);
+    return buildPolledChainOperationUpdateAction(input, transaction);
+  }
+
+  throw new Error(`Unsupported Enjin operator operation: ${envelope.operation}`);
+}
+
 async function appendLocalAlphaLedger(action: AlphaActionEnvelope) {
   const ledgerDir = resolve(process.env.RPG_SAVE_DIR ?? '.local/saves');
   await mkdir(ledgerDir, { recursive: true });
@@ -337,6 +488,26 @@ function isAlphaActionEnvelope(value: unknown): value is AlphaActionEnvelope {
   );
 }
 
+function isEnjinOperatorEnvelope(value: unknown): value is Required<Pick<EnjinOperatorEnvelope, 'operation' | 'requestId' | 'playerId' | 'tokenId' | 'amount' | 'confirmNoRealValue'>> & EnjinOperatorEnvelope {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as EnjinOperatorEnvelope;
+  const operations: EnjinOperatorOperation[] = ['hot-to-cold-certificate', 'cold-to-hot-burn', 'fixed-listing', 'poll-transaction'];
+  return (
+    typeof candidate.operation === 'string' &&
+    operations.includes(candidate.operation) &&
+    typeof candidate.requestId === 'string' &&
+    candidate.requestId.length > 8 &&
+    typeof candidate.playerId === 'string' &&
+    candidate.playerId.length > 8 &&
+    typeof candidate.tokenId === 'string' &&
+    candidate.tokenId.length > 0 &&
+    typeof candidate.amount === 'number' &&
+    Number.isFinite(candidate.amount) &&
+    candidate.amount > 0 &&
+    candidate.confirmNoRealValue === true
+  );
+}
+
 function getSupabaseEdgeConfig() {
   return {
     functionsUrl: process.env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL,
@@ -361,11 +532,11 @@ function buildAlphaActionRequest(action: AlphaActionEnvelope) {
   };
 }
 
-function getEnjinCanaryConfig() {
+function getEnjinCanaryConfig(): EnjinCanaryConfig {
   return {
     platformUrl: process.env.ENJIN_PLATFORM_URL || 'https://platform.canary.enjin.io/graphql',
     platformToken: process.env.ENJIN_PLATFORM_TOKEN,
-    network: process.env.ENJIN_NETWORK === 'ENJIN' ? 'ENJIN' : 'CANARY',
+    network: 'CANARY',
     collectionId: process.env.ENJIN_COLLECTION_ID,
     fuelTankId: process.env.ENJIN_FUEL_TANK_ID
   };
@@ -373,6 +544,282 @@ function getEnjinCanaryConfig() {
 
 function enjinCanaryReady(config = getEnjinCanaryConfig()) {
   return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId && config.fuelTankId);
+}
+
+function buildManagedWalletExternalId(playerId: string) {
+  return `mochi-social-alpha:${playerId}`;
+}
+
+async function executeEnjinGraphql(operation: string, query: string, variables: Record<string, unknown>, config = getEnjinCanaryConfig()) {
+  if (!enjinCanaryReady(config)) {
+    throw new Error('Enjin Canary is not ready. Configure Platform token, Canary collection, and Fuel Tank before submitting operations.');
+  }
+
+  const response = await fetch(config.platformUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config.platformToken}`
+    },
+    body: JSON.stringify({ query, variables })
+  });
+  const body = await response.json().catch(() => null) as unknown;
+  if (!response.ok) {
+    throw new Error(`Enjin Platform ${operation} failed with HTTP ${response.status}.`);
+  }
+  if (hasGraphqlErrors(body)) {
+    throw new Error(`Enjin Platform ${operation} failed: ${body.errors.map((error) => error.message).join('; ')}`);
+  }
+  return responseData(body);
+}
+
+async function ensureManagedWallet(playerId: string, config = getEnjinCanaryConfig()) {
+  const externalId = buildManagedWalletExternalId(playerId);
+  await executeEnjinGraphql(
+    'create-managed-wallet',
+    `
+mutation MochiSocialCreateManagedWallet($externalId: String!) {
+  CreateManagedWallet(externalId: $externalId)
+}`.trim(),
+    { externalId },
+    config
+  );
+
+  const data = await executeEnjinGraphql(
+    'get-managed-wallet',
+    `
+query MochiSocialGetManagedWallet($externalId: String!) {
+  GetManagedWallet(network: ${config.network}, chain: MATRIX, externalId: $externalId) {
+    publicKey
+    externalId
+  }
+}`.trim(),
+    { externalId },
+    config
+  );
+  const wallet = data.GetManagedWallet as { publicKey?: unknown; externalId?: unknown } | null | undefined;
+  if (!wallet?.publicKey || !wallet.externalId) {
+    throw new Error('Enjin managed wallet lookup did not return publicKey and externalId.');
+  }
+  return {
+    publicKey: String(wallet.publicKey),
+    externalId: String(wallet.externalId)
+  };
+}
+
+async function submitHotToColdCertificateProof(input: EnjinOperatorInput) {
+  const config = getEnjinCanaryConfig();
+  const wallet = await ensureManagedWallet(input.playerId, config);
+  const transaction = parseSubmittedTransaction(await executeEnjinGraphql(
+    'hot-to-cold-mint',
+    `
+mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $fuelTank: String!, $idempotencyKey: String!) {
+  CreateTransaction(
+    network: ${config.network}
+    chain: MATRIX
+    fuelTank: $fuelTank
+    idempotencyKey: $idempotencyKey
+    transaction: {
+      mintToken: {
+        recipient: $recipient
+        collectionId: $collectionId
+        tokenId: $tokenId
+        amount: $amount
+      }
+    }
+  ) {
+    uuid
+    state
+    extrinsicHash
+  }
+}`.trim(),
+    {
+      recipient: wallet.publicKey,
+      collectionId: config.collectionId,
+      tokenId: input.tokenId,
+      amount: input.amount,
+      fuelTank: config.fuelTankId,
+      idempotencyKey: input.requestId
+    },
+    config
+  ));
+  return buildChainOperationUpdateAction(input, transaction);
+}
+
+async function submitColdToHotBurnProof(input: EnjinOperatorInput) {
+  const config = getEnjinCanaryConfig();
+  await ensureManagedWallet(input.playerId, config);
+  const transaction = parseSubmittedTransaction(await executeEnjinGraphql(
+    'cold-to-hot-burn',
+    `
+mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
+  CreateTransaction(
+    network: ${config.network}
+    chain: MATRIX
+    signerExternalId: $signerExternalId
+    fuelTank: $fuelTank
+    idempotencyKey: $idempotencyKey
+    transaction: {
+      burnToken: {
+        collectionId: $collectionId
+        tokenId: $tokenId
+        amount: $amount
+        removeTokenStorage: false
+      }
+    }
+  ) {
+    uuid
+    state
+    extrinsicHash
+  }
+}`.trim(),
+    {
+      collectionId: config.collectionId,
+      tokenId: input.tokenId,
+      amount: input.amount,
+      signerExternalId: buildManagedWalletExternalId(input.playerId),
+      fuelTank: config.fuelTankId,
+      idempotencyKey: input.requestId
+    },
+    config
+  ));
+  return buildChainOperationUpdateAction(input, transaction);
+}
+
+async function submitFixedListingProof(input: EnjinOperatorInput & { price: string }) {
+  const config = getEnjinCanaryConfig();
+  await ensureManagedWallet(input.playerId, config);
+  const transaction = parseSubmittedTransaction(await executeEnjinGraphql(
+    'fixed-listing',
+    `
+mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $price: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
+  CreateTransaction(
+    network: ${config.network}
+    chain: MATRIX
+    signerExternalId: $signerExternalId
+    fuelTank: $fuelTank
+    idempotencyKey: $idempotencyKey
+    transaction: {
+      createListing: {
+        makeAssetId: { collectionId: $collectionId, tokenId: $tokenId }
+        takeAssetId: { collectionId: 0, tokenId: 0 }
+        amount: $amount
+        price: $price
+        usesWhitelist: false
+        listingData: { type: FIXED_PRICE }
+      }
+    }
+  ) {
+    uuid
+    action
+    state
+    extrinsicHash
+  }
+}`.trim(),
+    {
+      collectionId: config.collectionId,
+      tokenId: input.tokenId,
+      amount: input.amount,
+      price: input.price,
+      signerExternalId: buildManagedWalletExternalId(input.playerId),
+      fuelTank: config.fuelTankId,
+      idempotencyKey: input.requestId
+    },
+    config
+  ));
+  return buildChainOperationUpdateAction(input, transaction);
+}
+
+async function pollEnjinTransaction(enjinTransactionUuid: string) {
+  const config = getEnjinCanaryConfig();
+  return parseSubmittedTransaction(
+    await executeEnjinGraphql(
+      'get-transaction',
+      `
+query MochiSocialGetTransaction($uuid: String!) {
+  GetTransaction(network: ${config.network}, uuid: $uuid) {
+    uuid
+    state
+    extrinsicHash
+  }
+}`.trim(),
+      { uuid: enjinTransactionUuid },
+      config
+    ),
+    'GetTransaction'
+  );
+}
+
+function buildChainOperationUpdateAction(input: EnjinOperatorInput, transaction: EnjinSubmittedTransaction) {
+  return {
+    requestId: `${input.requestId}:enjin-submit`,
+    type: 'chain.operation_update',
+    playerId: input.playerId,
+    payload: {
+      chainRequestId: input.requestId,
+      transactionState: transaction.state,
+      enjinTransactionUuid: transaction.uuid,
+      extrinsicHash: transaction.extrinsicHash,
+      itemId: input.itemId,
+      tokenId: input.tokenId,
+      amount: input.amount,
+      noRealValue: true,
+      chainNetwork: 'CANARY'
+    }
+  } as const;
+}
+
+function buildPolledChainOperationUpdateAction(input: EnjinOperatorInput, transaction: EnjinSubmittedTransaction) {
+  return {
+    requestId: `${input.requestId}:enjin-poll:${Date.now().toString(36)}`,
+    type: 'chain.operation_update',
+    playerId: input.playerId,
+    payload: {
+      chainRequestId: input.requestId,
+      transactionState: transaction.state,
+      enjinTransactionUuid: transaction.uuid,
+      extrinsicHash: transaction.extrinsicHash,
+      itemId: input.itemId,
+      tokenId: input.tokenId,
+      amount: input.amount,
+      noRealValue: true,
+      chainNetwork: 'CANARY'
+    }
+  } as const;
+}
+
+function parseSubmittedTransaction(data: Record<string, unknown>, fieldName = 'CreateTransaction'): EnjinSubmittedTransaction {
+  const transaction = data[fieldName] as { uuid?: unknown; state?: unknown; extrinsicHash?: unknown } | null | undefined;
+  const state = normalizeEnjinTransactionState(String(transaction?.state || ''));
+  if (!transaction?.uuid || !state) {
+    throw new Error(`Enjin ${fieldName} response did not include a supported uuid/state pair.`);
+  }
+  return {
+    uuid: String(transaction.uuid),
+    state,
+    extrinsicHash: transaction.extrinsicHash ? String(transaction.extrinsicHash) : undefined
+  };
+}
+
+function normalizeEnjinTransactionState(state: string): EnjinTransactionState | null {
+  const normalized = state.trim().toUpperCase();
+  if (['PENDING', 'BROADCAST', 'FINALIZED', 'FAILED', 'ABANDONED', 'TIMEOUT'].includes(normalized)) {
+    return normalized as EnjinTransactionState;
+  }
+  return null;
+}
+
+function hasGraphqlErrors(value: unknown): value is { errors: { message: string }[] } {
+  const candidate = value as { errors?: unknown };
+  return Array.isArray(candidate?.errors) && candidate.errors.some((error) => typeof (error as { message?: unknown }).message === 'string');
+}
+
+function responseData(value: unknown) {
+  const candidate = value as { data?: unknown };
+  if (!candidate?.data || typeof candidate.data !== 'object') {
+    throw new Error('Enjin Platform response did not include data.');
+  }
+  return candidate.data as Record<string, unknown>;
 }
 
 function createEnjinCanaryRuntime(config = getEnjinCanaryConfig()): EnjinCanaryRuntime {

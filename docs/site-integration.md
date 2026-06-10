@@ -72,6 +72,7 @@ The game backend may send `chain.withdraw_request`, `chain.deposit_request`, and
 - The Mochirii Edge Function must reject finality updates without a matching request id.
 - Hot inventory can only be credited after the Enjin state is `FINALIZED`.
 - Game-side Enjin helpers create or find the tester managed wallet, submit Fuel Tank sponsored Canary transactions with an `idempotencyKey`, create fixed-price listing proofs through `CreateTransaction(transaction: { createListing: ... })`, then forward `chain.operation_update` through the same server-token Edge bridge.
+- Private Enjin submissions use `POST /integration/alpha/enjin/submit` with `x-mochi-social-server-token`; this endpoint is an operator/backend route, not a website iframe route.
 
 ## Closed Alpha Route
 

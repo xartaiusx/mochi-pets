@@ -46,6 +46,44 @@ Failed, abandoned, or timed-out operations stay in the audit log and do not cred
 
 When Enjin/Fly secrets are absent, `/integration/alpha/status` and local `chain.*` action responses must expose `mode="configured-preview-stub"`. That stub is still no-real-value and Canary-only; it proves the game and ledger path while telling testers that Enjin Platform, Fuel Tank, and Wallet Daemon signing are not configured yet.
 
+## Private Operator Endpoint
+
+The Fly game runtime exposes a private operator route for Canary proof submission:
+
+```text
+POST /integration/alpha/enjin/submit
+```
+
+This route is not for browser clients or the Mochirii website. It requires:
+
+- `x-mochi-social-server-token` matching the Fly secret `MOCHI_SOCIAL_GAME_SERVER_TOKEN`.
+- `confirmNoRealValue=true` in the JSON body.
+- Enjin Canary readiness: `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, and `ENJIN_FUEL_TANK_ID`.
+- A matching pending `chain.*_request` already recorded in Mochirii Supabase when forwarding to Edge Functions.
+
+Supported operations:
+
+- `hot-to-cold-certificate`: submits a managed-wallet mint proof for the Momo Canary certificate.
+- `cold-to-hot-burn`: submits a managed-wallet burn proof.
+- `fixed-listing`: submits a `FIXED_PRICE` marketplace listing proof. Requires `price`.
+- `poll-transaction`: reads `GetTransaction` and forwards the latest state as `chain.operation_update`. Requires `enjinTransactionUuid`.
+
+Example body shape:
+
+```json
+{
+  "operation": "hot-to-cold-certificate",
+  "requestId": "existing-chain-request-id",
+  "playerId": "supabase-user-id",
+  "tokenId": "1",
+  "amount": 1,
+  "itemId": "momo-canary-certificate",
+  "confirmNoRealValue": true
+}
+```
+
+The endpoint returns the generated `chain.operation_update` payload and the ledger bridge response. It never accepts refresh tokens, service-role keys, Wallet Daemon seeds, or Wallet Daemon passphrases.
+
 ## Verification
 
 ```powershell
@@ -62,6 +100,7 @@ External smoke requires real Canary credentials and remains an operator step:
 - Fuel Tank can sponsor the expected transaction.
 - `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, and `ENJIN_FUEL_TANK_ID` are set only as Fly secrets.
 - `CreateManagedWallet` and `GetManagedWallet` work for the tester's `mochi-social-alpha:<supabase-user-id>` external id.
+- `/integration/alpha/enjin/submit` fails closed without `x-mochi-social-server-token`.
 - A selected rare certificate reaches `FINALIZED`.
 - One fixed-price listing proof returns a transaction UUID. The listing id itself is expected only after finality/event indexing.
 - The matching Supabase chain operation records transaction UUID, state, finalized time, and ledger event.

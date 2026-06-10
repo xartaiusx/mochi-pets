@@ -47,7 +47,7 @@ const checks = [
   },
   {
     file: 'docs/site-integration.md',
-    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })']
+    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit']
   },
   {
     file: 'docs/deployment.md',
@@ -55,7 +55,7 @@ const checks = [
   },
   {
     file: 'docs/enjin-canary-alpha.md',
-    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction']
+    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction', '/integration/alpha/enjin/submit', 'x-mochi-social-server-token', 'confirmNoRealValue=true']
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -71,7 +71,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub', 'config.fuelTankId']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -87,7 +87,7 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
-    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', 'Open two browser tabs', 'configured-preview-stub']
+    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'Open two browser tabs', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-alpha-load-smoke.mjs',
