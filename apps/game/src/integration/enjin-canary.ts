@@ -33,6 +33,24 @@ export interface ChainOperationUpdateInput {
   amount?: number;
 }
 
+export interface EnjinGraphqlPlan {
+  operation: string;
+  idempotencyKey?: string;
+  query: string;
+  variables: Record<string, unknown>;
+}
+
+export interface EnjinManagedWallet {
+  externalId: string;
+  publicKey: string;
+}
+
+export interface EnjinSubmittedTransaction {
+  uuid: string;
+  state: EnjinTransactionState;
+  extrinsicHash?: string;
+}
+
 export function getEnjinCanaryConfig(env = process.env): EnjinCanaryConfig {
   return {
     platformUrl: env.ENJIN_PLATFORM_URL || 'https://platform.canary.enjin.io/graphql',
@@ -57,18 +75,28 @@ export function buildCreateManagedWalletMutation(playerId: string) {
     idempotencyKey: buildManagedWalletExternalId(playerId),
     query: `
 mutation MochiSocialCreateManagedWallet($externalId: String!) {
-  CreateManagedWallet(externalId: $externalId) {
-    id
-    account {
-      publicKey
-      address
+  CreateManagedWallet(externalId: $externalId)
+}`.trim(),
+    variables: {
+      externalId: buildManagedWalletExternalId(playerId)
     }
+  } satisfies EnjinGraphqlPlan;
+}
+
+export function buildGetManagedWalletQuery(playerId: string, config = getEnjinCanaryConfig()) {
+  return {
+    operation: 'get-managed-wallet',
+    query: `
+query MochiSocialGetManagedWallet($externalId: String!) {
+  GetManagedWallet(network: ${config.network}, chain: MATRIX, externalId: $externalId) {
+    publicKey
+    externalId
   }
 }`.trim(),
     variables: {
       externalId: buildManagedWalletExternalId(playerId)
     }
-  };
+  } satisfies EnjinGraphqlPlan;
 }
 
 export function buildHotToColdMintMutation(input: ChainOperationInput, config = getEnjinCanaryConfig()) {
@@ -76,11 +104,12 @@ export function buildHotToColdMintMutation(input: ChainOperationInput, config = 
     operation: 'hot-to-cold-mint',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $fuelTank: String) {
+mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $fuelTank: String!, $idempotencyKey: String!) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
     fuelTank: $fuelTank
+    idempotencyKey: $idempotencyKey
     transaction: {
       mintToken: {
         recipient: $recipient
@@ -99,9 +128,10 @@ mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tok
       collectionId: config.collectionId,
       tokenId: input.tokenId,
       amount: input.amount,
-      fuelTank: config.fuelTankId
+      fuelTank: config.fuelTankId,
+      idempotencyKey: input.requestId
     }
-  };
+  } satisfies EnjinGraphqlPlan;
 }
 
 export function buildColdToHotBurnMutation(input: ChainOperationInput, config = getEnjinCanaryConfig()) {
@@ -109,12 +139,13 @@ export function buildColdToHotBurnMutation(input: ChainOperationInput, config = 
     operation: 'cold-to-hot-burn',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!, $fuelTank: String) {
+mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
     signerExternalId: $signerExternalId
     fuelTank: $fuelTank
+    idempotencyKey: $idempotencyKey
     transaction: {
       burnToken: {
         collectionId: $collectionId
@@ -133,9 +164,10 @@ mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount
       tokenId: input.tokenId,
       amount: input.amount,
       signerExternalId: input.signerExternalId || buildManagedWalletExternalId(input.playerId),
-      fuelTank: config.fuelTankId
+      fuelTank: config.fuelTankId,
+      idempotencyKey: input.requestId
     }
-  };
+  } satisfies EnjinGraphqlPlan;
 }
 
 export function buildFixedListingMutation(input: ChainOperationInput & { price: string }, config = getEnjinCanaryConfig()) {
@@ -163,7 +195,7 @@ mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amo
       price: input.price,
       salt: input.requestId
     }
-  };
+  } satisfies EnjinGraphqlPlan;
 }
 
 export function buildGetTransactionQuery(enjinTransactionUuid: string, config = getEnjinCanaryConfig()) {
@@ -180,7 +212,101 @@ query MochiSocialGetTransaction($uuid: String!) {
     variables: {
       uuid: enjinTransactionUuid
     }
-  };
+  } satisfies EnjinGraphqlPlan;
+}
+
+export async function executeEnjinGraphqlPlan(
+  plan: EnjinGraphqlPlan,
+  config = getEnjinCanaryConfig(),
+  fetchImpl: typeof fetch = fetch
+) {
+  assertEnjinCanaryReady(config);
+
+  const response = await fetchImpl(config.platformUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config.platformToken}`
+    },
+    body: JSON.stringify({
+      query: plan.query,
+      variables: plan.variables
+    })
+  });
+
+  const body = await response.json().catch(() => null) as unknown;
+  if (!response.ok) {
+    throw new Error(`Enjin Platform ${plan.operation} failed with HTTP ${response.status}.`);
+  }
+  if (hasGraphqlErrors(body)) {
+    throw new Error(`Enjin Platform ${plan.operation} failed: ${body.errors.map((error) => error.message).join('; ')}`);
+  }
+  return body;
+}
+
+export async function ensureManagedWallet(
+  playerId: string,
+  config = getEnjinCanaryConfig(),
+  fetchImpl: typeof fetch = fetch
+): Promise<EnjinManagedWallet> {
+  await executeEnjinGraphqlPlan(buildCreateManagedWalletMutation(playerId), config, fetchImpl);
+  const walletResponse = await executeEnjinGraphqlPlan(buildGetManagedWalletQuery(playerId, config), config, fetchImpl);
+  return parseManagedWallet(walletResponse);
+}
+
+export async function submitHotToColdCertificateProof(
+  input: ChainOperationInput,
+  config = getEnjinCanaryConfig(),
+  fetchImpl: typeof fetch = fetch
+) {
+  const wallet = await ensureManagedWallet(input.playerId, config, fetchImpl);
+  const transactionResponse = await executeEnjinGraphqlPlan(
+    buildHotToColdMintMutation({ ...input, recipient: input.recipient || wallet.publicKey }, config),
+    config,
+    fetchImpl
+  );
+  const transaction = parseSubmittedTransaction(transactionResponse);
+  return buildChainOperationUpdateAction({
+    requestId: `${input.requestId}:enjin-submit`,
+    playerId: input.playerId,
+    chainRequestId: input.requestId,
+    transactionState: transaction.state,
+    enjinTransactionUuid: transaction.uuid,
+    extrinsicHash: transaction.extrinsicHash,
+    itemId: input.itemId,
+    tokenId: input.tokenId,
+    amount: input.amount
+  });
+}
+
+export async function submitColdToHotBurnProof(
+  input: ChainOperationInput,
+  config = getEnjinCanaryConfig(),
+  fetchImpl: typeof fetch = fetch
+) {
+  await ensureManagedWallet(input.playerId, config, fetchImpl);
+  const transactionResponse = await executeEnjinGraphqlPlan(buildColdToHotBurnMutation(input, config), config, fetchImpl);
+  const transaction = parseSubmittedTransaction(transactionResponse);
+  return buildChainOperationUpdateAction({
+    requestId: `${input.requestId}:enjin-submit`,
+    playerId: input.playerId,
+    chainRequestId: input.requestId,
+    transactionState: transaction.state,
+    enjinTransactionUuid: transaction.uuid,
+    extrinsicHash: transaction.extrinsicHash,
+    itemId: input.itemId,
+    tokenId: input.tokenId,
+    amount: input.amount
+  });
+}
+
+export async function pollEnjinTransaction(
+  enjinTransactionUuid: string,
+  config = getEnjinCanaryConfig(),
+  fetchImpl: typeof fetch = fetch
+) {
+  const response = await executeEnjinGraphqlPlan(buildGetTransactionQuery(enjinTransactionUuid, config), config, fetchImpl);
+  return parseSubmittedTransaction(response, 'GetTransaction');
 }
 
 export function normalizeEnjinTransactionState(state: string): EnjinTransactionState | null {
@@ -223,4 +349,49 @@ export function canCreditHotInventory(transactionState: string) {
 export function isTerminalEnjinState(transactionState: string) {
   const state = normalizeEnjinTransactionState(transactionState);
   return state === 'FINALIZED' || state === 'FAILED' || state === 'ABANDONED' || state === 'TIMEOUT';
+}
+
+function assertEnjinCanaryReady(config: EnjinCanaryConfig) {
+  if (!enjinCanaryReady(config)) {
+    throw new Error('Enjin Canary is not ready. Configure Platform token, Canary collection, and Fuel Tank before submitting operations.');
+  }
+}
+
+function hasGraphqlErrors(value: unknown): value is { errors: { message: string }[] } {
+  const candidate = value as { errors?: unknown };
+  return Array.isArray(candidate?.errors) && candidate.errors.some((error) => typeof (error as { message?: unknown }).message === 'string');
+}
+
+function responseData(value: unknown) {
+  const candidate = value as { data?: unknown };
+  if (!candidate?.data || typeof candidate.data !== 'object') {
+    throw new Error('Enjin Platform response did not include data.');
+  }
+  return candidate.data as Record<string, unknown>;
+}
+
+function parseManagedWallet(value: unknown): EnjinManagedWallet {
+  const data = responseData(value);
+  const wallet = data.GetManagedWallet as Partial<EnjinManagedWallet> | null | undefined;
+  if (!wallet?.externalId || !wallet.publicKey) {
+    throw new Error('Enjin managed wallet lookup did not return publicKey and externalId.');
+  }
+  return {
+    externalId: String(wallet.externalId),
+    publicKey: String(wallet.publicKey)
+  };
+}
+
+function parseSubmittedTransaction(value: unknown, fieldName = 'CreateTransaction'): EnjinSubmittedTransaction {
+  const data = responseData(value);
+  const transaction = data[fieldName] as { uuid?: unknown; state?: unknown; extrinsicHash?: unknown } | null | undefined;
+  const state = normalizeEnjinTransactionState(String(transaction?.state || ''));
+  if (!transaction?.uuid || !state) {
+    throw new Error(`Enjin ${fieldName} response did not include a supported uuid/state pair.`);
+  }
+  return {
+    uuid: String(transaction.uuid),
+    state,
+    extrinsicHash: transaction.extrinsicHash ? String(transaction.extrinsicHash) : undefined
+  };
 }

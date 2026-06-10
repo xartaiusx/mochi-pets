@@ -47,7 +47,7 @@ const checks = [
   },
   {
     file: 'docs/site-integration.md',
-    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`']
+    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions']
   },
   {
     file: 'docs/deployment.md',
@@ -55,7 +55,7 @@ const checks = [
   },
   {
     file: 'docs/enjin-canary-alpha.md',
-    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports']
+    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'pollEnjinTransaction']
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -63,7 +63,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/enjin-canary.ts',
-    includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
+    includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -75,7 +75,7 @@ const checks = [
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
-    includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update']
+    includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update', 'submits hot-to-cold certificate proof', 'polls Enjin finality']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',

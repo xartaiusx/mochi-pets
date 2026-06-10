@@ -33,8 +33,12 @@ fly secrets set ENJIN_FUEL_TANK_ID="..."
 1. Game backend creates or reuses the managed wallet external id for the signed-in tester.
 2. Tester stages a `chain.withdraw_request` or `chain.deposit_request`.
 3. Mochirii Edge Functions record the request in `mochi_social_chain_operations` with `status="pending"` and append a no-real-value ledger event.
-4. Game backend submits an Enjin Canary transaction plan and stores the returned transaction UUID through `chain.operation_update`.
-5. A backend worker or operator poll reads the transaction state from Enjin Platform.
+4. Game backend uses the tested Enjin helper path:
+   - `ensureManagedWallet` calls `CreateManagedWallet` and `GetManagedWallet`.
+   - `submitHotToColdCertificateProof` mints the selected rare certificate to the managed cold wallet with `fuelTank` and `idempotencyKey`.
+   - `submitColdToHotBurnProof` burns from the managed cold wallet with `signerExternalId`, `fuelTank`, and `idempotencyKey`.
+   - Both submission helpers return a `chain.operation_update` action for the Mochirii ledger bridge.
+5. A backend worker or operator poll reads the transaction state from Enjin Platform with `pollEnjinTransaction`.
 6. Only when state is `FINALIZED`, Mochirii records `finalized_at` and applies hot/cold inventory movement.
 
 Failed, abandoned, or timed-out operations stay in the audit log and do not credit hot inventory.
@@ -55,5 +59,7 @@ External smoke requires real Canary credentials and remains an operator step:
 
 - Wallet Daemon running with no inbound ports.
 - Fuel Tank can sponsor the expected transaction.
+- `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, and `ENJIN_FUEL_TANK_ID` are set only as Fly secrets.
+- `CreateManagedWallet` and `GetManagedWallet` work for the tester's `mochi-social-alpha:<supabase-user-id>` external id.
 - A selected rare certificate reaches `FINALIZED`.
 - The matching Supabase chain operation records transaction UUID, state, finalized time, and ledger event.

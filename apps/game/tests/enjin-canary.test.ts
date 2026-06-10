@@ -5,13 +5,18 @@ import {
   buildCreateManagedWalletMutation,
   buildFixedListingMutation,
   buildGetTransactionQuery,
+  buildGetManagedWalletQuery,
   buildHotToColdMintMutation,
   buildManagedWalletExternalId,
   canCreditHotInventory,
   enjinCanaryReady,
+  executeEnjinGraphqlPlan,
   getEnjinCanaryConfig,
   isTerminalEnjinState,
-  normalizeEnjinTransactionState
+  normalizeEnjinTransactionState,
+  pollEnjinTransaction,
+  submitColdToHotBurnProof,
+  submitHotToColdCertificateProof
 } from '../src/integration/enjin-canary';
 
 describe('Enjin Canary orchestration helpers', () => {
@@ -52,6 +57,8 @@ describe('Enjin Canary orchestration helpers', () => {
   it('builds deterministic managed wallet ids', () => {
     expect(buildManagedWalletExternalId('player-1')).toBe('mochi-social-alpha:player-1');
     expect(buildCreateManagedWalletMutation('player-1').variables.externalId).toBe('mochi-social-alpha:player-1');
+    expect(buildCreateManagedWalletMutation('player-1').query).toContain('CreateManagedWallet(externalId: $externalId)');
+    expect(buildGetManagedWalletQuery('player-1').query).toContain('GetManagedWallet(network: CANARY, chain: MATRIX');
   });
 
   it('builds idempotent hot/cold GraphQL operation plans', () => {
@@ -73,8 +80,11 @@ describe('Enjin Canary orchestration helpers', () => {
     const mintPlan = buildHotToColdMintMutation(input, config);
     const burnPlan = buildColdToHotBurnMutation(input, config);
     expect(mintPlan.idempotencyKey).toBe(input.requestId);
+    expect(mintPlan.query).toContain('idempotencyKey: $idempotencyKey');
+    expect(mintPlan.variables.idempotencyKey).toBe(input.requestId);
     expect(mintPlan.variables.fuelTank).toBe('tank-1');
     expect(burnPlan.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
+    expect(burnPlan.variables.idempotencyKey).toBe(input.requestId);
     expect(burnPlan.variables.fuelTank).toBe('tank-1');
     expect(buildFixedListingMutation({ ...input, price: '1000' }, config).variables.salt).toBe(input.requestId);
     expect(buildGetTransactionQuery('tx-1', config).variables.uuid).toBe('tx-1');
@@ -113,4 +123,92 @@ describe('Enjin Canary orchestration helpers', () => {
       transactionState: 'CONFUSED'
     })).toThrow(/Unsupported Enjin/);
   });
+
+  it('executes Enjin GraphQL plans with bearer auth and blocks incomplete config', async () => {
+    const config = readyConfig();
+    const calls: { url: string; init: RequestInit }[] = [];
+    const fetchImpl = async (url: string | URL | Request, init?: RequestInit) => {
+      calls.push({ url: String(url), init: init || {} });
+      return jsonResponse({ data: { CreateManagedWallet: true } });
+    };
+
+    await executeEnjinGraphqlPlan(buildCreateManagedWalletMutation('player-1'), config, fetchImpl as typeof fetch);
+
+    expect(calls[0].url).toBe('https://platform.canary.enjin.io/graphql');
+    expect((calls[0].init.headers as Record<string, string>).Authorization).toBe('Bearer test-token');
+    expect(JSON.parse(String(calls[0].init.body)).variables.externalId).toBe('mochi-social-alpha:player-1');
+    await expect(executeEnjinGraphqlPlan(buildCreateManagedWalletMutation('player-1'), getEnjinCanaryConfig({}), fetchImpl as typeof fetch)).rejects.toThrow(/not ready/);
+  });
+
+  it('submits hot-to-cold certificate proof through managed wallet lookup and transaction update action', async () => {
+    const seenQueries: string[] = [];
+    const fetchImpl = async (_url: string | URL | Request, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body || '{}')) as { query: string };
+      seenQueries.push(body.query);
+      if (body.query.includes('CreateManagedWallet')) return jsonResponse({ data: { CreateManagedWallet: true } });
+      if (body.query.includes('GetManagedWallet')) {
+        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-social-alpha:player-1', publicKey: '0xabc' } } });
+      }
+      return jsonResponse({ data: { CreateTransaction: { uuid: 'tx-hot-cold', state: 'PENDING', extrinsicHash: null } } });
+    };
+
+    const action = await submitHotToColdCertificateProof({
+      requestId: 'chain-request-1',
+      playerId: 'player-1',
+      tokenId: '7',
+      amount: 1,
+      itemId: 'momo-canary-certificate'
+    }, readyConfig(), fetchImpl as typeof fetch);
+
+    expect(seenQueries).toHaveLength(3);
+    expect(action.type).toBe('chain.operation_update');
+    expect(action.requestId).toBe('chain-request-1:enjin-submit');
+    expect(action.payload.chainRequestId).toBe('chain-request-1');
+    expect(action.payload.enjinTransactionUuid).toBe('tx-hot-cold');
+    expect(action.payload.transactionState).toBe('PENDING');
+  });
+
+  it('submits cold-to-hot burn proof and polls Enjin finality', async () => {
+    const fetchImpl = async (_url: string | URL | Request, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body || '{}')) as { query: string };
+      if (body.query.includes('CreateManagedWallet')) return jsonResponse({ data: { CreateManagedWallet: true } });
+      if (body.query.includes('GetManagedWallet')) {
+        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-social-alpha:player-1', publicKey: '0xabc' } } });
+      }
+      if (body.query.includes('GetTransaction')) {
+        return jsonResponse({ data: { GetTransaction: { uuid: 'tx-cold-hot', state: 'FINALIZED', extrinsicHash: '0x123' } } });
+      }
+      return jsonResponse({ data: { CreateTransaction: { uuid: 'tx-cold-hot', state: 'BROADCAST' } } });
+    };
+
+    const action = await submitColdToHotBurnProof({
+      requestId: 'chain-request-2',
+      playerId: 'player-1',
+      tokenId: '7',
+      amount: 1,
+      itemId: 'momo-canary-certificate'
+    }, readyConfig(), fetchImpl as typeof fetch);
+    const finality = await pollEnjinTransaction('tx-cold-hot', readyConfig(), fetchImpl as typeof fetch);
+
+    expect(action.payload.transactionState).toBe('BROADCAST');
+    expect(finality.state).toBe('FINALIZED');
+    expect(finality.extrinsicHash).toBe('0x123');
+  });
 });
+
+function readyConfig() {
+  return getEnjinCanaryConfig({
+    ENJIN_PLATFORM_URL: 'https://platform.canary.enjin.io/graphql',
+    ENJIN_PLATFORM_TOKEN: 'test-token',
+    ENJIN_COLLECTION_ID: '123',
+    ENJIN_FUEL_TANK_ID: 'tank-1',
+    ENJIN_NETWORK: 'CANARY'
+  });
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
