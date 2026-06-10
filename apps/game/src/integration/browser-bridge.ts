@@ -265,9 +265,15 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   writeAlphaState(state);
 
   try {
+    const accessToken = localStorage.getItem(TOKEN_KEY);
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     await fetch('/integration/alpha/action', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         requestId,
         type,

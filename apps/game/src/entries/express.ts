@@ -122,7 +122,18 @@ app.post('/integration/alpha/action', async (req, res) => {
     return;
   }
 
-  const forwarded = await forwardAlphaAction(action);
+  const accessToken = getBearerToken(req);
+  const authResult = await validateSupabaseAccessTokenForExpress(accessToken);
+  if (!authResult.ok && process.env.SUPABASE_AUTH_REQUIRED === 'true') {
+    res.status(401).json(authResult);
+    return;
+  }
+
+  const actionWithIdentity: AlphaActionEnvelope = authResult.ok && authResult.mode === 'linked' && authResult.userId
+    ? { ...action, playerId: authResult.userId }
+    : action;
+
+  const forwarded = await forwardAlphaAction(actionWithIdentity);
   res.status(forwarded.status).json(forwarded.body);
 });
 
@@ -176,6 +187,12 @@ function getAllowedOrigins() {
   const defaults = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'];
   const configured = process.env.RPG_ALLOWED_ORIGINS?.split(',').map((origin) => origin.trim()) ?? [];
   return new Set([...defaults, ...configured].filter(Boolean));
+}
+
+function getBearerToken(req: Request) {
+  const header = req.headers.authorization;
+  if (!header || Array.isArray(header)) return undefined;
+  return header.replace(/^Bearer\s+/i, '').trim() || undefined;
 }
 
 function createGameManifestForExpress(origin: string, version: string) {
