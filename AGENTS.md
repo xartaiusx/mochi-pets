@@ -10,6 +10,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Dev game: `npm run dev:game`
 - Secret scan: `npm run secret-scan`
 - Alpha readiness: `npm run alpha:readiness`
+- Local alpha acceptance against a running server: `npm run alpha:local-acceptance`
 - Typecheck: `npm run typecheck`
 - Lint: `npm run lint`
 - Test: `npm test`
@@ -44,6 +45,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - The active alpha goal lives at `docs/goals/mochi-social-alpha-rc.md`.
 - Alpha RC stops at a closed preview release candidate: no production, no Enjin mainnet, no real-money value, and no open creator marketplace.
 - Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.
+- The local alpha acceptance command verifies public endpoints and no-real-value fallback ledger writes. It complements, but does not replace, the manual two-tab multiplayer visual gate.
 
 ## Implementation Notes
 

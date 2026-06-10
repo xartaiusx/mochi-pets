@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -19,7 +19,11 @@ const checks = [
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
-    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence']
+    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['npm run alpha:local-acceptance', 'Two-tab Presence Gate', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/site-integration.md',
@@ -60,6 +64,10 @@ const checks = [
   {
     file: 'apps/game/scripts/smoke.mjs',
     includes: ['/integration/alpha/status', 'closed Enjin Canary alpha contract', 'fixed-price/no-auction']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', 'Open two browser tabs']
   }
 ];
 

@@ -31,7 +31,10 @@ For endpoint checks against a running server:
 ```powershell
 $env:MOCHI_SOCIAL_BASE_URL='http://localhost:3000'
 npm run smoke
+npm run alpha:local-acceptance
 ```
+
+`npm run alpha:local-acceptance` expects the local fallback ledger unless `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` is set for a preview runtime. See `docs/alpha-acceptance.md` for the full Alpha RC gate, including the required two-tab visual presence check.
 
 ## Deployment Boundary
 

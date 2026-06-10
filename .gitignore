@@ -3,6 +3,7 @@ dist/
 .vite/
 .turbo/
 coverage/
+reports/*.json
 .local/
 .env
 .env.*
