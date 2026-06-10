@@ -7,6 +7,7 @@ import { createRpgServerTransport } from '@rpgjs/server/node';
 import { createClient } from '@supabase/supabase-js';
 import { WebSocketServer } from 'ws';
 import startServer from '../server';
+import type { EnjinOperatorEnvelope, EnjinOperatorOperation, ValidEnjinOperatorEnvelope } from '../integration/enjin-operator-contract';
 
 const ALPHA_FEATURES = {
   alpha: {
@@ -57,8 +58,14 @@ const ALPHA_ACTION_TYPES = [
   'chain.operation_update'
 ] as const;
 
+const ENJIN_OPERATOR_OPERATIONS: EnjinOperatorOperation[] = [
+  'hot-to-cold-certificate',
+  'cold-to-hot-burn',
+  'fixed-listing',
+  'poll-transaction'
+];
+
 type AlphaActionType = (typeof ALPHA_ACTION_TYPES)[number];
-type EnjinOperatorOperation = 'hot-to-cold-certificate' | 'cold-to-hot-burn' | 'fixed-listing' | 'poll-transaction';
 
 interface AlphaActionEnvelope {
   requestId: string;
@@ -76,18 +83,6 @@ interface EnjinCanaryRuntime {
   requiredServerEnv: string[];
 }
 
-interface EnjinOperatorEnvelope {
-  operation?: EnjinOperatorOperation;
-  requestId?: string;
-  playerId?: string;
-  tokenId?: string;
-  amount?: number;
-  itemId?: string;
-  price?: string;
-  enjinTransactionUuid?: string;
-  confirmNoRealValue?: boolean;
-}
-
 type EnjinTransactionState = 'PENDING' | 'BROADCAST' | 'FINALIZED' | 'FAILED' | 'ABANDONED' | 'TIMEOUT';
 
 interface EnjinCanaryConfig {
@@ -101,9 +96,14 @@ interface EnjinCanaryConfig {
 interface EnjinOperatorInput {
   requestId: string;
   playerId: string;
+  tokenId?: string;
+  amount?: number;
+  itemId?: string;
+}
+
+interface EnjinAssetOperatorInput extends EnjinOperatorInput {
   tokenId: string;
   amount: number;
-  itemId?: string;
 }
 
 interface EnjinSubmittedTransaction {
@@ -210,12 +210,12 @@ app.post('/integration/alpha/enjin/submit', async (req, res) => {
     return;
   }
 
-  const envelope = req.body as EnjinOperatorEnvelope;
+  const envelope = req.body;
   if (!isEnjinOperatorEnvelope(envelope)) {
     res.status(400).json({
       ok: false,
       error: 'invalid_enjin_operator_request',
-      message: 'Enjin operator submission requires operation, requestId, playerId, tokenId, amount, and confirmNoRealValue=true.'
+      message: 'Enjin operator submission requires operation, requestId, playerId, and confirmNoRealValue=true. Asset submissions require tokenId and amount; fixed listings require price; polling requires enjinTransactionUuid.'
     });
     return;
   }
@@ -399,13 +399,26 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
   };
 }
 
-async function buildEnjinOperatorUpdateAction(envelope: Required<Pick<EnjinOperatorEnvelope, 'operation' | 'requestId' | 'playerId' | 'tokenId' | 'amount' | 'confirmNoRealValue'>> & EnjinOperatorEnvelope) {
-  const input = {
+async function buildEnjinOperatorUpdateAction(envelope: ValidEnjinOperatorEnvelope) {
+  const baseInput = {
     requestId: envelope.requestId,
     playerId: envelope.playerId,
-    tokenId: envelope.tokenId,
-    amount: envelope.amount,
     itemId: envelope.itemId || 'momo-canary-certificate'
+  };
+
+  if (envelope.operation === 'poll-transaction') {
+    const transaction = await pollEnjinTransaction(envelope.enjinTransactionUuid);
+    return buildPolledChainOperationUpdateAction({
+      ...baseInput,
+      tokenId: envelope.tokenId,
+      amount: envelope.amount
+    }, transaction);
+  }
+
+  const input = {
+    ...baseInput,
+    tokenId: envelope.tokenId,
+    amount: envelope.amount
   };
 
   if (envelope.operation === 'hot-to-cold-certificate') {
@@ -417,18 +430,7 @@ async function buildEnjinOperatorUpdateAction(envelope: Required<Pick<EnjinOpera
   }
 
   if (envelope.operation === 'fixed-listing') {
-    if (!envelope.price) {
-      throw new Error('fixed-listing requires price in the smallest Canary marketplace unit.');
-    }
     return submitFixedListingProof({ ...input, price: envelope.price });
-  }
-
-  if (envelope.operation === 'poll-transaction') {
-    if (!envelope.enjinTransactionUuid) {
-      throw new Error('poll-transaction requires enjinTransactionUuid.');
-    }
-    const transaction = await pollEnjinTransaction(envelope.enjinTransactionUuid);
-    return buildPolledChainOperationUpdateAction(input, transaction);
   }
 
   throw new Error(`Unsupported Enjin operator operation: ${envelope.operation}`);
@@ -488,23 +490,44 @@ function isAlphaActionEnvelope(value: unknown): value is AlphaActionEnvelope {
   );
 }
 
-function isEnjinOperatorEnvelope(value: unknown): value is Required<Pick<EnjinOperatorEnvelope, 'operation' | 'requestId' | 'playerId' | 'tokenId' | 'amount' | 'confirmNoRealValue'>> & EnjinOperatorEnvelope {
+function isEnjinOperatorEnvelope(value: unknown): value is ValidEnjinOperatorEnvelope {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as EnjinOperatorEnvelope;
-  const operations: EnjinOperatorOperation[] = ['hot-to-cold-certificate', 'cold-to-hot-burn', 'fixed-listing', 'poll-transaction'];
+
+  if (!hasBaseOperatorFields(candidate)) return false;
+
+  if (candidate.operation === 'poll-transaction') {
+    return typeof candidate.enjinTransactionUuid === 'string' && candidate.enjinTransactionUuid.length > 8;
+  }
+
+  if (!hasTokenAmountFields(candidate)) return false;
+
+  if (candidate.operation === 'fixed-listing') {
+    return typeof candidate.price === 'string' && /^\d+$/.test(candidate.price);
+  }
+
+  return candidate.operation === 'hot-to-cold-certificate' || candidate.operation === 'cold-to-hot-burn';
+}
+
+function hasBaseOperatorFields(candidate: EnjinOperatorEnvelope) {
   return (
     typeof candidate.operation === 'string' &&
-    operations.includes(candidate.operation) &&
+    ENJIN_OPERATOR_OPERATIONS.includes(candidate.operation) &&
     typeof candidate.requestId === 'string' &&
     candidate.requestId.length > 8 &&
     typeof candidate.playerId === 'string' &&
     candidate.playerId.length > 8 &&
+    candidate.confirmNoRealValue === true
+  );
+}
+
+function hasTokenAmountFields(candidate: EnjinOperatorEnvelope) {
+  return (
     typeof candidate.tokenId === 'string' &&
     candidate.tokenId.length > 0 &&
     typeof candidate.amount === 'number' &&
     Number.isFinite(candidate.amount) &&
-    candidate.amount > 0 &&
-    candidate.confirmNoRealValue === true
+    candidate.amount > 0
   );
 }
 
@@ -607,7 +630,7 @@ query MochiSocialGetManagedWallet($externalId: String!) {
   };
 }
 
-async function submitHotToColdCertificateProof(input: EnjinOperatorInput) {
+async function submitHotToColdCertificateProof(input: EnjinAssetOperatorInput) {
   const config = getEnjinCanaryConfig();
   const wallet = await ensureManagedWallet(input.playerId, config);
   const transaction = parseSubmittedTransaction(await executeEnjinGraphql(
@@ -646,7 +669,7 @@ mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tok
   return buildChainOperationUpdateAction(input, transaction);
 }
 
-async function submitColdToHotBurnProof(input: EnjinOperatorInput) {
+async function submitColdToHotBurnProof(input: EnjinAssetOperatorInput) {
   const config = getEnjinCanaryConfig();
   await ensureManagedWallet(input.playerId, config);
   const transaction = parseSubmittedTransaction(await executeEnjinGraphql(
@@ -686,7 +709,7 @@ mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount
   return buildChainOperationUpdateAction(input, transaction);
 }
 
-async function submitFixedListingProof(input: EnjinOperatorInput & { price: string }) {
+async function submitFixedListingProof(input: EnjinAssetOperatorInput & { price: string }) {
   const config = getEnjinCanaryConfig();
   await ensureManagedWallet(input.playerId, config);
   const transaction = parseSubmittedTransaction(await executeEnjinGraphql(

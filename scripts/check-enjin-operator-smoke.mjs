@@ -11,8 +11,6 @@ const allowLiveSmoke = process.env.MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE 
 const liveSmokeRequestId = process.env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID;
 const liveSmokeTransactionUuid = process.env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID;
 const liveSmokePlayerId = process.env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_PLAYER_ID ?? 'operator-smoke-player';
-const liveSmokeTokenId = process.env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TOKEN_ID ?? '1';
-const liveSmokeAmount = Number(process.env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_AMOUNT ?? '1');
 
 const report = {
   ok: false,
@@ -71,13 +69,9 @@ async function run() {
     assert(liveSmokeRequestId && liveSmokeRequestId.length > 8, 'Live Enjin operator smoke requires MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID.');
     assert(liveSmokeTransactionUuid && liveSmokeTransactionUuid.length > 8, 'Live Enjin operator smoke requires MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID.');
     assert(liveSmokePlayerId.length > 8, 'Live Enjin operator smoke requires a player id longer than 8 characters.');
-    assert(liveSmokeTokenId.length > 0, 'Live Enjin operator smoke requires MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TOKEN_ID.');
-    assert(Number.isFinite(liveSmokeAmount) && liveSmokeAmount > 0, 'Live Enjin operator smoke requires a positive MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_AMOUNT.');
     const live = await submitOperatorProbe(operatorToken, 'tokened live Enjin transaction poll', {
       requestId: liveSmokeRequestId,
       playerId: liveSmokePlayerId,
-      tokenId: liveSmokeTokenId,
-      amount: liveSmokeAmount,
       enjinTransactionUuid: liveSmokeTransactionUuid
     });
     assert(live.status >= 200 && live.status < 300, `Live Enjin operator smoke returned HTTP ${live.status}.`);
@@ -112,8 +106,6 @@ async function submitOperatorProbe(token, name, overrides = {}) {
       operation: 'poll-transaction',
       requestId: `operator-smoke-${Date.now().toString(36)}`,
       playerId: 'operator-smoke-player',
-      tokenId: '1',
-      amount: 1,
       enjinTransactionUuid: 'operator-smoke-transaction',
       confirmNoRealValue: true,
       ...overrides

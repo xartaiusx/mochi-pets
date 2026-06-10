@@ -83,6 +83,10 @@ const checks = [
     includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update', 'submits hot-to-cold certificate proof', 'submits fixed listing proof', 'polls Enjin finality']
   },
   {
+    file: 'apps/game/tests/enjin-operator-contract.test.ts',
+    includes: ['allows finality polling without token id or amount fields', 'requires token id and amount for asset-moving submissions', 'requires fixed listing prices to be integer strings', 'keeps the no-real-value confirmation mandatory']
+  },
+  {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['allowlistRequired', 'noRealValue', 'finalityRequired']
   },
