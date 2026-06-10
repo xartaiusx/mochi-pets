@@ -46,8 +46,9 @@ The generated file goes to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-oper
 
 ## Current Private Gates
 
-- Fly app creation must wait for the operator to complete Fly billing/payment privately.
-- Enjin Platform currently needs a connected Wallet Daemon signing account before the `Mochi Social Alpha` collection can be submitted safely.
+- Fly billing is complete. Fly app `mochi-social-game` is deployed in `sjc` with volume `mochi_social_data` mounted at `/data`, and the public smoke check passes at `https://mochi-social-game.fly.dev`.
+- Enjin Wallet Daemon is running as a separate local operator service. Enjin Platform settings show daemon status online before continuing to collection and Fuel Tank work.
+- Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations.
 - The Enjin console account state and Platform settings are live dashboard truth; do not infer readiness from docs alone.
 
 ## Acceptance Commands

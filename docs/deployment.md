@@ -13,7 +13,7 @@ The game runtime needs a long-lived server process and multiplayer transport. Ve
 
 ```powershell
 fly launch --no-deploy --name mochi-social-game
-fly volumes create mochi_social_data --size 1 --region sea
+fly volumes create mochi_social_data --size 1 --region sjc
 fly secrets set SUPABASE_URL="..." SUPABASE_PUBLISHABLE_KEY="..."
 fly deploy
 ```
@@ -24,7 +24,7 @@ If Fly app creation returns a payment or billing prompt, stop and hand the brows
 $fly = Join-Path $env:USERPROFILE ".fly\bin\flyctl.exe"
 if (!(Test-Path $fly)) { $fly = "flyctl" }
 & $fly apps create mochi-social-game
-& $fly volumes create mochi_social_data --size 1 --region sea -a mochi-social-game
+& $fly volumes create mochi_social_data --size 1 --region sjc -a mochi-social-game
 ```
 
 Runtime env defaults:

@@ -48,7 +48,7 @@ When source behavior conflicts with repo intent, stop and record the conflict be
 | --- | --- | --- |
 | Game branch | `xartaiusx/mochi-social` | `codex/mochi-social-alpha-rc` |
 | Site branch | `Mochirii-Wushu/Mochirii` | `codex/mochi-social-alpha-rc` |
-| Game host | Fly | `mochi-social-game`, region `sea` |
+| Game host | Fly | `mochi-social-game`, region `sjc` |
 | Game saves | Fly volume | `mochi_social_data` mounted at `/data` |
 | Site host | Vercel Preview | `/games/mochi-social` |
 | Supabase authority | Mochirii Supabase preview branch | migrations, Edge Functions, RLS, allowlist, terms, feedback, ledger |

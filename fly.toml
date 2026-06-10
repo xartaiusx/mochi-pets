@@ -1,5 +1,5 @@
 app = "mochi-social-game"
-primary_region = "sea"
+primary_region = "sjc"
 
 [build]
   dockerfile = "Dockerfile"
@@ -8,6 +8,8 @@ primary_region = "sea"
   PORT = "8080"
   RPG_SAVE_DIR = "/data/saves"
   SUPABASE_AUTH_REQUIRED = "false"
+  ENJIN_NETWORK = "CANARY"
+  ENJIN_PLATFORM_URL = "https://platform.canary.enjin.io/graphql"
   MOCHI_SOCIAL_PUBLIC_ORIGIN = "https://mochi-social-game.fly.dev"
 
 [mounts]
