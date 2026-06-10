@@ -19,6 +19,25 @@ describe('game manifest', () => {
         provider: 'supabase',
         mode: 'guest-first',
         tokenPolicy: 'access-token-only'
+      },
+      alpha: {
+        allowlistRequired: true,
+        termsRequired: true,
+        noRealValue: true
+      },
+      economy: {
+        mode: 'test-soft-currency',
+        realValue: false
+      },
+      chain: {
+        provider: 'enjin',
+        network: 'CANARY',
+        finalityRequired: true
+      },
+      market: {
+        fixedPrice: true,
+        directTrade: true,
+        auctions: false
       }
     });
   });

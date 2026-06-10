@@ -24,5 +24,17 @@ Runtime env defaults:
 - `RPG_SAVE_DIR=/data/saves`
 - `SUPABASE_AUTH_REQUIRED=false`
 - `RPG_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173`
+- `ENJIN_NETWORK=CANARY`
+
+Alpha RC server-only secrets and config:
+
+- `MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL`: Supabase Edge Functions base URL, usually `https://<project-ref>.supabase.co/functions/v1`.
+- `MOCHI_SOCIAL_GAME_SERVER_TOKEN`: scoped shared secret accepted only by Mochirii alpha Edge Functions.
+- `ENJIN_PLATFORM_URL`: Enjin Platform GraphQL endpoint, defaults to Canary/Core platform examples in docs.
+- `ENJIN_PLATFORM_TOKEN`: Enjin Platform API token. Keep it in Fly secrets only.
+- `ENJIN_COLLECTION_ID`: Mochi Social Alpha collection id.
+- `ENJIN_FUEL_TANK_ID`: Canary Fuel Tank id used to sponsor test transactions.
 
 Add the future Vercel domain to `RPG_ALLOWED_ORIGINS` before embedding in production.
+
+Do not put Supabase service-role keys, Enjin Wallet Daemon seeds, or Wallet Daemon passphrases in the game runtime. The Wallet Daemon must run as a separate service with no inbound ports.

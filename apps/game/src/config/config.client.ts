@@ -26,6 +26,36 @@ export default {
             id: 'chest',
             image: '/spritesheets/chest.png',
             ...Presets.RMSpritesheet(3, 4)
+          },
+          {
+            id: 'spirit-momo',
+            image: '/spritesheets/spirit-momo.png',
+            ...Presets.RMSpritesheet(3, 4)
+          },
+          {
+            id: 'spirit-yuzu',
+            image: '/spritesheets/spirit-yuzu.png',
+            ...Presets.RMSpritesheet(3, 4)
+          },
+          {
+            id: 'spirit-sora',
+            image: '/spritesheets/spirit-sora.png',
+            ...Presets.RMSpritesheet(3, 4)
+          },
+          {
+            id: 'market-board',
+            image: '/spritesheets/market-board.png',
+            ...Presets.RMSpritesheet(3, 4)
+          },
+          {
+            id: 'trade-post',
+            image: '/spritesheets/trade-post.png',
+            ...Presets.RMSpritesheet(3, 4)
+          },
+          {
+            id: 'canary-shrine',
+            image: '/spritesheets/canary-shrine.png',
+            ...Presets.RMSpritesheet(3, 4)
           }
         ]
       }

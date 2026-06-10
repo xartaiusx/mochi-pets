@@ -3,6 +3,7 @@ const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL ?? 'http://localhost:3000').r
 const checks = [
   { path: '/healthz', name: 'health' },
   { path: '/integration/game-manifest.json', name: 'manifest' },
+  { path: '/integration/alpha/status', name: 'alpha status' },
   { path: '/play', name: 'play' },
   { path: '/embed', name: 'embed' }
 ];
@@ -17,6 +18,15 @@ for (const check of checks) {
 const manifest = await fetch(`${baseUrl}/integration/game-manifest.json`).then((response) => response.json());
 if (manifest.name !== 'Mochi Social' || manifest.bridge?.namespace !== 'MOCHI_SOCIAL') {
   throw new Error('Manifest does not expose the Mochi Social integration contract.');
+}
+
+if (manifest.chain?.provider !== 'enjin' || manifest.chain?.network !== 'CANARY' || manifest.alpha?.noRealValue !== true) {
+  throw new Error('Manifest does not expose the closed Enjin Canary alpha contract.');
+}
+
+const alphaStatus = await fetch(`${baseUrl}/integration/alpha/status`).then((response) => response.json());
+if (alphaStatus.market?.fixedPrice !== true || alphaStatus.market?.auctions !== false) {
+  throw new Error('Alpha status does not expose fixed-price/no-auction market scope.');
 }
 
 console.log(`Mochi Social smoke checks passed for ${baseUrl}`);

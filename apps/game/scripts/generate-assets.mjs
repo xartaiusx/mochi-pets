@@ -18,6 +18,12 @@ function main() {
   writePng(join(paths.sprites, 'mochi.png'), drawCharacterSheet({ body: [247, 145, 100, 255], trim: [91, 121, 184, 255] }));
   writePng(join(paths.sprites, 'friend.png'), drawCharacterSheet({ body: [116, 201, 157, 255], trim: [98, 87, 164, 255] }));
   writePng(join(paths.sprites, 'chest.png'), drawChestSheet());
+  writePng(join(paths.sprites, 'spirit-momo.png'), drawSpiritSheet({ body: [249, 159, 186, 255], trim: [255, 232, 238, 255] }));
+  writePng(join(paths.sprites, 'spirit-yuzu.png'), drawSpiritSheet({ body: [246, 196, 88, 255], trim: [255, 244, 169, 255] }));
+  writePng(join(paths.sprites, 'spirit-sora.png'), drawSpiritSheet({ body: [117, 190, 224, 255], trim: [214, 245, 255, 255] }));
+  writePng(join(paths.sprites, 'market-board.png'), drawBoardSheet({ body: [150, 99, 71, 255], trim: [245, 197, 91, 255] }));
+  writePng(join(paths.sprites, 'trade-post.png'), drawBoardSheet({ body: [93, 143, 132, 255], trim: [233, 236, 185, 255] }));
+  writePng(join(paths.sprites, 'canary-shrine.png'), drawShrineSheet());
 }
 
 function drawTilesheet() {
@@ -96,6 +102,59 @@ function drawChestSheet() {
       fill(image, ox + 7, oy + 17, 18, 8, [175, 102, 57, 255]);
       fill(image, ox + 15, oy + 17, 3, 18, [237, 188, 92, 255]);
       fill(image, ox + 13, oy + 25, 7, 5, [77, 52, 42, 255]);
+    }
+  }
+  return image;
+}
+
+function drawSpiritSheet(colors) {
+  const image = makeImage(96, 192, [0, 0, 0, 0]);
+  for (let row = 0; row < 4; row += 1) {
+    for (let col = 0; col < 3; col += 1) {
+      const ox = col * 32;
+      const oy = row * 48;
+      fill(image, ox + 8, oy + 38, 16, 4, [0, 0, 0, 45]);
+      fill(image, ox + 9, oy + 18 + (col % 2), 14, 14, colors.body);
+      fill(image, ox + 7, oy + 22, 18, 9, colors.body);
+      fill(image, ox + 12, oy + 14, 8, 6, colors.trim);
+      fill(image, ox + 12, oy + 23, 2, 2, [33, 36, 39, 255]);
+      fill(image, ox + 19, oy + 23, 2, 2, [33, 36, 39, 255]);
+      fill(image, ox + 14, oy + 29, 6, 2, colors.trim);
+      fill(image, ox + 7, oy + 16, 3, 5, colors.trim);
+      fill(image, ox + 23, oy + 16, 3, 5, colors.trim);
+    }
+  }
+  return image;
+}
+
+function drawBoardSheet(colors) {
+  const image = makeImage(96, 192, [0, 0, 0, 0]);
+  for (let row = 0; row < 4; row += 1) {
+    for (let col = 0; col < 3; col += 1) {
+      const ox = col * 32;
+      const oy = row * 48;
+      fill(image, ox + 7, oy + 38, 18, 4, [0, 0, 0, 50]);
+      fill(image, ox + 9, oy + 17, 14, 20, colors.body);
+      fill(image, ox + 7, oy + 15, 18, 4, colors.trim);
+      fill(image, ox + 11, oy + 22, 10, 2, [255, 255, 255, 160]);
+      fill(image, ox + 11, oy + 27, 10, 2, [255, 255, 255, 120]);
+      fill(image, ox + 14, oy + 37, 4, 5, colors.body);
+    }
+  }
+  return image;
+}
+
+function drawShrineSheet() {
+  const image = makeImage(96, 192, [0, 0, 0, 0]);
+  for (let row = 0; row < 4; row += 1) {
+    for (let col = 0; col < 3; col += 1) {
+      const ox = col * 32;
+      const oy = row * 48;
+      fill(image, ox + 7, oy + 38, 18, 4, [0, 0, 0, 50]);
+      fill(image, ox + 9, oy + 30, 14, 8, [109, 92, 152, 255]);
+      fill(image, ox + 11, oy + 20, 10, 10, [239, 205, 86, 255]);
+      fill(image, ox + 14, oy + 14, 4, 8, [255, 243, 168, 255]);
+      fill(image, ox + 8, oy + 27, 16, 3, [71, 58, 112, 255]);
     }
   }
   return image;

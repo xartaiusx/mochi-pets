@@ -14,6 +14,9 @@ describe('runtime asset paths', () => {
     expect(clientConfig).toContain("image: '/spritesheets/mochi.png'");
     expect(clientConfig).toContain("image: '/spritesheets/friend.png'");
     expect(clientConfig).toContain("image: '/spritesheets/chest.png'");
+    expect(clientConfig).toContain("image: '/spritesheets/spirit-momo.png'");
+    expect(clientConfig).toContain("image: '/spritesheets/market-board.png'");
+    expect(clientConfig).toContain("image: '/spritesheets/canary-shrine.png'");
   });
 
   it('uses tab-scoped multiplayer guest connection ids', () => {

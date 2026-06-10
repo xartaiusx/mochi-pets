@@ -1,11 +1,56 @@
 import express, { type Request } from 'express';
 import { createServer as createHttpServer } from 'node:http';
+import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRpgServerTransport } from '@rpgjs/server/node';
 import { createClient } from '@supabase/supabase-js';
 import { WebSocketServer } from 'ws';
 import startServer from '../server';
+
+const ALPHA_FEATURES = {
+  alpha: {
+    allowlistRequired: true,
+    termsRequired: true,
+    noRealValue: true,
+    testerAge: '18+',
+    access: 'signed-in-allowlist',
+    stopPoint: 'alpha-rc-ready'
+  },
+  economy: {
+    mode: 'test-soft-currency',
+    hotLedger: 'supabase-postgres',
+    coldInventory: 'enjin-managed-wallet',
+    realValue: false
+  },
+  chain: {
+    provider: 'enjin',
+    network: 'CANARY',
+    custody: 'managed-hot-cold',
+    finalityRequired: true
+  },
+  market: {
+    fixedPrice: true,
+    directTrade: true,
+    auctions: false,
+    cashout: false
+  },
+  ugc: 'curated'
+} as const;
+
+const ALPHA_EDGE_FUNCTIONS = {
+  session: 'mochi-social-alpha-session',
+  action: 'mochi-social-alpha-action',
+  admin: 'mochi-social-alpha-admin',
+  feedback: 'submit-mochi-social-feedback'
+} as const;
+
+interface AlphaActionEnvelope {
+  requestId: string;
+  type: string;
+  playerId?: string;
+  payload: Record<string, unknown>;
+}
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const clientDistDir = resolve(currentDir, '../client');
@@ -46,6 +91,39 @@ app.get('/healthz', (_req, res) => {
 
 app.get('/integration/game-manifest.json', (req, res) => {
   res.json(createGameManifestForExpress(getPublicOrigin(req), process.env.npm_package_version ?? '0.1.0'));
+});
+
+app.get('/integration/alpha/status', (_req, res) => {
+  const edgeConfig = getSupabaseEdgeConfig();
+  const enjinConfig = getEnjinCanaryConfig();
+
+  res.json({
+    ok: true,
+    name: 'Mochi Social',
+    alpha: ALPHA_FEATURES.alpha,
+    economy: ALPHA_FEATURES.economy,
+    chain: ALPHA_FEATURES.chain,
+    market: ALPHA_FEATURES.market,
+    ugc: ALPHA_FEATURES.ugc,
+    supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
+    enjinCanaryConfigured: enjinCanaryReady(enjinConfig),
+    edgeFunctions: ALPHA_EDGE_FUNCTIONS
+  });
+});
+
+app.post('/integration/alpha/action', async (req, res) => {
+  const action = req.body;
+  if (!isAlphaActionEnvelope(action)) {
+    res.status(400).json({
+      ok: false,
+      error: 'invalid_alpha_action',
+      message: 'Alpha action requires requestId, type, and payload.'
+    });
+    return;
+  }
+
+  const forwarded = await forwardAlphaAction(action);
+  res.status(forwarded.status).json(forwarded.body);
 });
 
 app.post('/integration/auth/verify', async (req, res) => {
@@ -120,10 +198,55 @@ function createGameManifestForExpress(origin: string, version: string) {
     auth: {
       provider: 'supabase',
       required: process.env.SUPABASE_AUTH_REQUIRED === 'true',
-      mode: 'guest-first',
+      mode: process.env.SUPABASE_AUTH_REQUIRED === 'true' ? 'closed-alpha' : 'guest-first',
       tokenPolicy: 'access-token-only'
+    },
+    ...ALPHA_FEATURES
+  };
+}
+
+async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status: number; body: Record<string, unknown> }> {
+  const request = buildAlphaActionRequest(action);
+  if (request) {
+    try {
+      const response = await fetch(request.url, request.init);
+      const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+      return {
+        status: response.status,
+        body
+      };
+    } catch (error) {
+      return {
+        status: 502,
+        body: {
+          ok: false,
+          error: 'alpha_edge_unreachable',
+          message: error instanceof Error ? error.message : 'Supabase alpha Edge Function could not be reached.'
+        }
+      };
+    }
+  }
+
+  await appendLocalAlphaLedger(action);
+  return {
+    status: 202,
+    body: {
+      ok: true,
+      mode: 'local-alpha-ledger',
+      noRealValue: true,
+      message: 'Alpha action recorded locally. Configure Mochirii Supabase Edge Functions for authoritative preview writes.'
     }
   };
+}
+
+async function appendLocalAlphaLedger(action: AlphaActionEnvelope) {
+  const ledgerDir = resolve(process.env.RPG_SAVE_DIR ?? '.local/saves');
+  await mkdir(ledgerDir, { recursive: true });
+  await appendFile(
+    resolve(ledgerDir, 'alpha-ledger.jsonl'),
+    `${JSON.stringify({ ...action, receivedAt: new Date().toISOString(), noRealValue: true })}\n`,
+    'utf8'
+  );
 }
 
 async function validateSupabaseAccessTokenForExpress(accessToken: string | undefined) {
@@ -155,4 +278,54 @@ async function validateSupabaseAccessTokenForExpress(accessToken: string | undef
   }
 
   return { ok: true, mode: 'linked', userId: data.user.id };
+}
+
+function isAlphaActionEnvelope(value: unknown): value is AlphaActionEnvelope {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<AlphaActionEnvelope>;
+  return (
+    typeof candidate.requestId === 'string' &&
+    candidate.requestId.length > 8 &&
+    typeof candidate.type === 'string' &&
+    typeof candidate.payload === 'object' &&
+    candidate.payload !== null
+  );
+}
+
+function getSupabaseEdgeConfig() {
+  return {
+    functionsUrl: process.env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL,
+    serverToken: process.env.MOCHI_SOCIAL_GAME_SERVER_TOKEN
+  };
+}
+
+function buildAlphaActionRequest(action: AlphaActionEnvelope) {
+  const config = getSupabaseEdgeConfig();
+  if (!config.functionsUrl || !config.serverToken) return null;
+
+  return {
+    url: `${config.functionsUrl.replace(/\/+$/, '')}/${ALPHA_EDGE_FUNCTIONS.action}`,
+    init: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mochi-social-server-token': config.serverToken
+      },
+      body: JSON.stringify(action)
+    }
+  };
+}
+
+function getEnjinCanaryConfig() {
+  return {
+    platformUrl: process.env.ENJIN_PLATFORM_URL || 'https://platform.canary.enjin.io/graphql',
+    platformToken: process.env.ENJIN_PLATFORM_TOKEN,
+    network: process.env.ENJIN_NETWORK === 'ENJIN' ? 'ENJIN' : 'CANARY',
+    collectionId: process.env.ENJIN_COLLECTION_ID,
+    fuelTankId: process.env.ENJIN_FUEL_TANK_ID
+  };
+}
+
+function enjinCanaryReady(config = getEnjinCanaryConfig()) {
+  return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId);
 }

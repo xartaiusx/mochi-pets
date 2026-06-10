@@ -22,6 +22,11 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Keep secrets out of Git. Do not commit `.env`, runtime saves, Fly secrets, Supabase service-role keys, or generated local state.
 - Use only original, project-authored, MIT-compatible, or clearly CC0 assets. Update `docs/asset-ledger.md` for every asset.
 - Keep Supabase service-role keys out of client and game code. The optional bridge only accepts short-lived user access tokens from the parent website.
+- Keep the alpha no-real-value by default: Enjin work targets Canary only, mainnet is out of scope, and all player-facing economy labels must say test/alpha when relevant.
+- Keep the creator surface curated for alpha. Do not add open user uploads, paid assets, cashout, minors support, public launch behavior, or production deploy automation without a later approved plan.
+- Use PR-per-milestone delivery. Work from scoped branches, keep CI green, and record handoff notes when a milestone touches game/site/Supabase/Enjin boundaries.
+- Supabase schema, privileged database writes, tester allowlist, terms acknowledgement, feedback, and admin UI belong in the separate Mochirii website repo. This repo owns the game runtime, contracts, Enjin orchestration, and game-side docs.
+- The game backend may hold a scoped game bridge token in Fly secrets. It must not hold a Supabase service-role key, Enjin wallet seed, or wallet daemon passphrase.
 
 ## Done When Playable
 
@@ -31,6 +36,12 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - The town has collision, one NPC dialog, one chest/item pickup, a minimal HUD, and save-backed player state.
 - `/healthz`, `/play`, `/embed`, and `/integration/game-manifest.json` respond from the game runtime.
 - The website integration contract remains documented and independent from any website repo.
+
+## Alpha RC Goal
+
+- The active alpha goal lives at `docs/goals/mochi-social-alpha-rc.md`.
+- Alpha RC stops at a closed preview release candidate: no production, no Enjin mainnet, no real-money value, and no open creator marketplace.
+- Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.
 
 ## Implementation Notes
 

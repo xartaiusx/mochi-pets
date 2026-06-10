@@ -25,19 +25,18 @@ body {
   top: 12px;
   left: 12px;
   z-index: 20;
-  display: grid;
-  grid-template-columns: auto auto auto;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  align-items: center;
-  max-width: calc(100vw - 24px);
+  width: min(460px, calc(100vw - 24px));
   padding: 7px 9px;
   border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 8px;
   background: rgb(12 23 26 / 76%);
   box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
   font-size: 13px;
-  line-height: 1;
-  pointer-events: none;
+  line-height: 1.2;
+  pointer-events: auto;
 }
 
 #mochi-social-hud strong {
@@ -46,9 +45,9 @@ body {
   white-space: nowrap;
 }
 
-#mochi-social-hud span {
+#mochi-social-hud span,
+#mochi-social-hud button {
   display: inline-flex;
-  min-width: 62px;
   justify-content: center;
   border-radius: 999px;
   background: rgb(255 255 255 / 12%);
@@ -56,13 +55,76 @@ body {
   white-space: nowrap;
 }
 
+#mochi-social-hud button {
+  border: 1px solid rgb(255 255 255 / 18%);
+  color: #f8faf6;
+  cursor: pointer;
+  font: inherit;
+}
+
+#mochi-social-hud button:hover {
+  background: rgb(255 255 255 / 20%);
+}
+
+.mochi-hud__top,
+.mochi-hud__alpha,
+.mochi-hud__actions,
+.mochi-hud__chat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.mochi-hud__top strong {
+  margin-right: auto;
+}
+
+.mochi-hud__alpha span:first-child {
+  background: rgb(255 224 142 / 18%);
+}
+
+.mochi-hud__chat label {
+  display: flex;
+  flex: 1 1 220px;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.mochi-hud__chat label span {
+  flex: 0 0 auto;
+}
+
+.mochi-hud__chat input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 12%);
+  color: #f8faf6;
+  padding: 6px 8px;
+  font: inherit;
+}
+
+.mochi-hud__feed {
+  display: grid;
+  gap: 4px;
+  max-height: 96px;
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}
+
+.mochi-hud__feed li {
+  border-left: 2px solid rgb(255 224 142 / 52%);
+  padding-left: 6px;
+  color: rgb(248 250 246 / 86%);
+}
+
 @media (max-width: 520px) {
   #mochi-social-hud {
-    grid-template-columns: 1fr auto;
     font-size: 12px;
-  }
-
-  #mochi-social-hud strong {
-    grid-column: 1 / -1;
   }
 }
