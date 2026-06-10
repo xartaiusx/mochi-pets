@@ -22,6 +22,7 @@
     "alpha:load-smoke": "node scripts/check-alpha-load-smoke.mjs",
     "alpha:browser-presence": "node scripts/check-alpha-browser-presence.mjs",
     "alpha:enjin-operator-smoke": "node scripts/check-enjin-operator-smoke.mjs",
+    "alpha:built-server-smoke": "node scripts/check-built-server-smoke.mjs",
     "alpha:external-gates": "node scripts/check-alpha-external-gates.mjs",
     "alpha:operator-checklist": "node scripts/write-alpha-operator-checklist.mjs",
     "alpha:rc-audit": "node scripts/check-alpha-rc-audit.mjs",

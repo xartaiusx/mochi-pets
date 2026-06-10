@@ -14,6 +14,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Local 10-25 tester HTTP load smoke against a running server: `npm run alpha:load-smoke`
 - Local two-tab browser presence smoke against a running server: `npm run alpha:browser-presence`
 - Private Enjin operator route smoke against a running server: `npm run alpha:enjin-operator-smoke`
+- Local built Express server smoke after `npm run build`: `npm run alpha:built-server-smoke`
 - External Alpha RC gate audit: `npm run alpha:external-gates`
 - Write no-secret local operator checklist: `npm run alpha:operator-checklist`
 - Requirement-by-requirement Alpha RC audit: `npm run alpha:rc-audit`
@@ -53,7 +54,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - External account and deployment behavior lives at `docs/codex-external-ops.md`.
 - Alpha RC stops at a closed preview release candidate: no production, no Enjin mainnet, no real-money value, and no open creator marketplace.
 - Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.
-- The local alpha acceptance and load-smoke commands verify public endpoints and no-real-value fallback ledger writes. `npm run alpha:browser-presence` verifies two same-browser tabs render the game canvas, HUD, and `Nearby: 2 testers` presence chip. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and does not submit live Enjin operations by default. `npm run alpha:external-gates` audits GitHub, Fly, Supabase, live game/site contract, and operator-confirmed Enjin readiness without printing secret values. Manual RPGJS sprite/movement inspection still completes the visual multiplayer gate.
+- The local alpha acceptance and load-smoke commands verify public endpoints and no-real-value fallback ledger writes. `npm run alpha:browser-presence` verifies two same-browser tabs render the game canvas, HUD, and `Nearby: 2 testers` presence chip. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and does not submit live Enjin operations by default. `npm run alpha:built-server-smoke` starts the built Express runtime locally with throwaway env and catches server-bundle runtime issues before any deploy. `npm run alpha:external-gates` audits GitHub, Fly, Supabase, live game/site contract, and operator-confirmed Enjin readiness without printing secret values. Manual RPGJS sprite/movement inspection still completes the visual multiplayer gate.
 - `npm run alpha:operator-checklist` may write a no-secret handoff file under `C:\Users\xtyty\Desktop\Creds`; it must contain placeholders and secret names only, never secret values.
 - `npm run alpha:rc-audit` writes `reports/alpha-rc-audit.json` and fails until every game, site, provider, PR, and handoff gate proves Alpha RC Ready.
 - For external operations, use official docs first, repo docs second, live dashboards/CLI for current state, and memory only for preferences/history.
