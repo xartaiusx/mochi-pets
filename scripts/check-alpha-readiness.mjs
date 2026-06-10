@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -35,15 +35,15 @@ const checks = [
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
-    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance']
+    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'Two-tab Presence Gate', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md']
   },
   {
     file: 'docs/site-integration.md',
@@ -92,6 +92,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'simulated testers', 'HTTP alpha contract load smoke']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['playwright-core', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'Nearby: 2 testers', 'data-presence-label', 'canvas']
   }
 ];
 

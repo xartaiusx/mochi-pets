@@ -12,6 +12,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Alpha readiness: `npm run alpha:readiness`
 - Local alpha acceptance against a running server: `npm run alpha:local-acceptance`
 - Local 10-25 tester HTTP load smoke against a running server: `npm run alpha:load-smoke`
+- Local two-tab browser presence smoke against a running server: `npm run alpha:browser-presence`
 - Typecheck: `npm run typecheck`
 - Lint: `npm run lint`
 - Test: `npm test`
@@ -47,7 +48,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - External account and deployment behavior lives at `docs/codex-external-ops.md`.
 - Alpha RC stops at a closed preview release candidate: no production, no Enjin mainnet, no real-money value, and no open creator marketplace.
 - Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.
-- The local alpha acceptance and load-smoke commands verify public endpoints and no-real-value fallback ledger writes. They complement, but do not replace, the manual two-tab multiplayer visual gate.
+- The local alpha acceptance and load-smoke commands verify public endpoints and no-real-value fallback ledger writes. `npm run alpha:browser-presence` verifies two same-browser tabs render the game canvas, HUD, and `Nearby: 2 testers` presence chip. Manual RPGJS sprite/movement inspection still completes the visual multiplayer gate.
 - For external operations, use official docs first, repo docs second, live dashboards/CLI for current state, and memory only for preferences/history.
 - Use CLI for reproducible checks, Chrome for logged-in dashboards, Computer Use only when CLI/Chrome are insufficient, and dashboard-only flow for payment details, seed phrases, passphrases, MFA, and private account confirmations.
 

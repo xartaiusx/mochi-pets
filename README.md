@@ -33,9 +33,10 @@ $env:MOCHI_SOCIAL_BASE_URL='http://localhost:3000'
 npm run smoke
 npm run alpha:local-acceptance
 npm run alpha:load-smoke
+npm run alpha:browser-presence
 ```
 
-`npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the required two-tab visual presence check.
+`npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. `npm run alpha:browser-presence` uses local Chrome or `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to verify two tabs show the playable canvas, HUD, and presence chip. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the remaining manual RPGJS sprite/movement check.
 
 ## Deployment Boundary
 

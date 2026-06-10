@@ -22,6 +22,7 @@ npm run smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
+npm run alpha:browser-presence
 ```
 
 The acceptance script verifies:
@@ -47,7 +48,9 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 
 ## Two-tab Presence Gate
 
-The scripted route checks do not prove visual multiplayer presence. Before marking Alpha RC Ready, perform this manual gate:
+`npm run alpha:browser-presence` opens two pages in one browser context and verifies both tabs render the game canvas, the alpha HUD, and a `Nearby: 2 testers` presence chip. It prefers installed Chrome. If Chrome is installed outside the default Playwright channel, set `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to the browser executable path. Set `MOCHI_SOCIAL_BROWSER_HEADFUL=true` when you want to watch the check run.
+
+The browser smoke proves the HUD-level two-tab presence contract, but canvas-level RPGJS sprite movement still needs human eyes before Alpha RC Ready:
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm both tabs show the game canvas, HUD, and a `Nearby: 2 testers` presence chip.
@@ -56,7 +59,7 @@ The scripted route checks do not prove visual multiplayer presence. Before marki
 5. Interact with the NPC, chest, and habitat/care loop in at least one tab.
 6. Record the date, browser, game URL, and result in the PR or release checklist.
 
-This manual gate stays required until the repo adopts a browser automation dependency and committed two-tab visual test.
+Keep the manual movement check until a later canvas-aware automation can assert both player sprites moving in the same RPGJS scene.
 
 ## Alpha RC Stop Point
 

@@ -20,9 +20,13 @@
     "alpha:readiness": "node scripts/check-alpha-readiness.mjs",
     "alpha:local-acceptance": "node scripts/check-local-alpha-acceptance.mjs",
     "alpha:load-smoke": "node scripts/check-alpha-load-smoke.mjs",
+    "alpha:browser-presence": "node scripts/check-alpha-browser-presence.mjs",
     "typecheck": "npm --workspace @mochi-social/game run typecheck",
     "lint": "npm --workspace @mochi-social/game run lint",
     "test": "npm --workspace @mochi-social/game run test",
     "smoke": "npm --workspace @mochi-social/game run smoke"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.60.0"
   }
 }

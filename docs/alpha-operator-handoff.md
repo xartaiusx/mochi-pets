@@ -50,6 +50,7 @@ npm run build
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
+$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
 ```
 
 Game preview:
@@ -59,6 +60,7 @@ $env:MOCHI_SOCIAL_BASE_URL="https://<fly-preview-host>"
 npm run smoke
 $env:MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE="true"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_ALLOW_EDGE="true"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
+npm run alpha:browser-presence
 ```
 
 Mochirii repo:
@@ -72,7 +74,7 @@ npm run build
 
 Manual gates:
 
-- Two browser tabs show player presence after movement.
+- `npm run alpha:browser-presence` passes, then two browser tabs show player sprites after movement.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.
 - Feedback submission appears in the admin audit view.
