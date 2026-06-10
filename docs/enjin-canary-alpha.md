@@ -39,6 +39,8 @@ fly secrets set ENJIN_FUEL_TANK_ID="..."
 
 Failed, abandoned, or timed-out operations stay in the audit log and do not credit hot inventory.
 
+When Enjin/Fly secrets are absent, `/integration/alpha/status` and local `chain.*` action responses must expose `mode="configured-preview-stub"`. That stub is still no-real-value and Canary-only; it proves the game and ledger path while telling testers that Enjin Platform, Fuel Tank, and Wallet Daemon signing are not configured yet.
+
 ## Verification
 
 ```powershell

@@ -26,6 +26,14 @@ interface PresenceMessage {
   at: number;
 }
 
+interface AlphaActionResponse {
+  chainRuntime?: {
+    mode?: string;
+    message?: string;
+  };
+  message?: string;
+}
+
 function defaultAlphaState(): AlphaHudState {
   return {
     bond: 0,
@@ -386,7 +394,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    await fetch('/integration/alpha/action', {
+    const response = await fetch('/integration/alpha/action', {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -399,6 +407,15 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         }
       })
     });
+    const body = (await response.json().catch(() => null)) as AlphaActionResponse | null;
+    const chainMessage = type.startsWith('chain.') && body?.chainRuntime?.mode === 'configured-preview-stub'
+      ? body.chainRuntime.message
+      : null;
+    if (chainMessage) {
+      const nextState = readAlphaState();
+      nextState.chat.push(chainMessage);
+      writeAlphaState(nextState);
+    }
   } catch {
     // Local HUD state remains the immediate alpha feedback path.
   }

@@ -29,4 +29,12 @@ if (alphaStatus.market?.fixedPrice !== true || alphaStatus.market?.auctions !== 
   throw new Error('Alpha status does not expose fixed-price/no-auction market scope.');
 }
 
+if (alphaStatus.chainRuntime?.network !== 'CANARY' || !['configured', 'configured-preview-stub'].includes(alphaStatus.chainRuntime?.mode)) {
+  throw new Error('Alpha status does not expose the Enjin Canary runtime mode.');
+}
+
+if (alphaStatus.enjinCanaryConfigured === false && alphaStatus.chainRuntime?.mode !== 'configured-preview-stub') {
+  throw new Error('Unconfigured Enjin Canary runtime must explain configured-preview-stub mode.');
+}
+
 console.log(`Mochi Social smoke checks passed for ${baseUrl}`);

@@ -33,6 +33,7 @@ The acceptance script verifies:
 - `GET /integration/alpha/status`
 - `POST /integration/alpha/action` rejects malformed actions.
 - `chat.send`, `emote.send`, `pet.befriend`, `pet.care`, `market.fixed_list`, `trade.direct_offer`, and `chain.withdraw_request` record to the no-real-value fallback ledger when Mochirii Supabase Edge Functions are not configured.
+- When Enjin secrets are not configured, alpha status and `chain.withdraw_request` responses expose `configured-preview-stub` so testers know the Canary certificate path is staged but not externally submitted.
 
 By default the script expects local fallback mode and checks `.local/saves/alpha-ledger.jsonl`. If testing a preview runtime with Supabase Edge Functions configured, set `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` to limit the script to endpoint and contract checks, then use the Mochirii admin audit views for authoritative ledger proof.
 

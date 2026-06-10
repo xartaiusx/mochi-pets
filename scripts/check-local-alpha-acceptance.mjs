@@ -60,6 +60,14 @@ async function run() {
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
   assert(alphaStatus.body.chain?.network === 'CANARY', 'Alpha status must stay Canary-only.');
   assert(alphaStatus.body.edgeFunctions?.action === 'mochi-social-alpha-action', 'Alpha status must expose the Mochirii action function name.');
+  assert(alphaStatus.body.chainRuntime?.network === 'CANARY', 'Alpha status must expose Enjin Canary runtime details.');
+  if (alphaStatus.body.enjinCanaryConfigured === false) {
+    assert(alphaStatus.body.chainRuntime?.mode === 'configured-preview-stub', 'Missing Enjin env must expose configured-preview-stub mode.');
+    assert(
+      String(alphaStatus.body.chainRuntime?.message || '').includes('configured preview stub'),
+      'Configured preview stub mode must explain the missing Enjin operator setup.'
+    );
+  }
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {
     throw new Error(
@@ -125,6 +133,10 @@ async function run() {
     assert(response.body.ok === true, `${action.type} did not return ok=true.`);
     assert(response.body.mode === 'local-alpha-ledger', `${action.type} did not use the local alpha ledger.`);
     assert(response.body.noRealValue === true, `${action.type} did not preserve no-real-value response.`);
+    if (action.type.startsWith('chain.')) {
+      assert(response.body.chainRuntime?.network === 'CANARY', `${action.type} did not return Enjin Canary runtime details.`);
+      assert(response.body.chainRuntime?.mode === 'configured-preview-stub', `${action.type} must explain configured-preview-stub mode locally.`);
+    }
     report.actions.push({ requestId: action.requestId, type: action.type, status: response.status });
   }
 

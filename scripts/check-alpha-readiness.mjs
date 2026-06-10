@@ -67,11 +67,11 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
-    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label']
+    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'configured-preview-stub']
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', 'ALPHA_ACTION_TYPES.includes']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -83,11 +83,11 @@ const checks = [
   },
   {
     file: 'apps/game/scripts/smoke.mjs',
-    includes: ['/integration/alpha/status', 'closed Enjin Canary alpha contract', 'fixed-price/no-auction']
+    includes: ['/integration/alpha/status', 'closed Enjin Canary alpha contract', 'fixed-price/no-auction', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
-    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', 'Open two browser tabs']
+    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', 'Open two browser tabs', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-alpha-load-smoke.mjs',

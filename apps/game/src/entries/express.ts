@@ -66,6 +66,15 @@ interface AlphaActionEnvelope {
   payload: Record<string, unknown>;
 }
 
+interface EnjinCanaryRuntime {
+  provider: 'enjin';
+  network: 'CANARY';
+  configured: boolean;
+  mode: 'configured' | 'configured-preview-stub';
+  message: string;
+  requiredServerEnv: string[];
+}
+
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const clientDistDir = resolve(currentDir, '../client');
 const mapDistDir = resolve(clientDistDir, 'assets/data');
@@ -110,6 +119,7 @@ app.get('/integration/game-manifest.json', (req, res) => {
 app.get('/integration/alpha/status', (_req, res) => {
   const edgeConfig = getSupabaseEdgeConfig();
   const enjinConfig = getEnjinCanaryConfig();
+  const enjinRuntime = createEnjinCanaryRuntime(enjinConfig);
 
   res.json({
     ok: true,
@@ -120,7 +130,8 @@ app.get('/integration/alpha/status', (_req, res) => {
     market: ALPHA_FEATURES.market,
     ugc: ALPHA_FEATURES.ugc,
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
-    enjinCanaryConfigured: enjinCanaryReady(enjinConfig),
+    enjinCanaryConfigured: enjinRuntime.configured,
+    chainRuntime: enjinRuntime,
     edgeFunctions: ALPHA_EDGE_FUNCTIONS
   });
 });
@@ -259,12 +270,14 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
   }
 
   await appendLocalAlphaLedger(action);
+  const chainRuntime = action.type.startsWith('chain.') ? createEnjinCanaryRuntime() : undefined;
   return {
     status: 202,
     body: {
       ok: true,
       mode: 'local-alpha-ledger',
       noRealValue: true,
+      ...(chainRuntime ? { chainRuntime } : {}),
       message: 'Alpha action recorded locally. Configure Mochirii Supabase Edge Functions for authoritative preview writes.'
     }
   };
@@ -360,4 +373,18 @@ function getEnjinCanaryConfig() {
 
 function enjinCanaryReady(config = getEnjinCanaryConfig()) {
   return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId);
+}
+
+function createEnjinCanaryRuntime(config = getEnjinCanaryConfig()): EnjinCanaryRuntime {
+  const configured = enjinCanaryReady(config);
+  return {
+    provider: 'enjin',
+    network: 'CANARY',
+    configured,
+    mode: configured ? 'configured' : 'configured-preview-stub',
+    message: configured
+      ? 'Enjin Canary is configured for operator-verified hot/cold proof submission.'
+      : 'Enjin Canary is running as a configured preview stub. The certificate request is recorded with no real value until Fly secrets, Enjin Platform, Fuel Tank, and Wallet Daemon signing are configured.',
+    requiredServerEnv: ['ENJIN_PLATFORM_TOKEN', 'ENJIN_COLLECTION_ID', 'ENJIN_FUEL_TANK_ID']
+  };
 }
