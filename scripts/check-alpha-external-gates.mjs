@@ -190,6 +190,7 @@ function checkSiteContract() {
 
   const result = command('npm', ['run', 'check:mochi-social-game-contract'], {
     cwd: siteRepoPath,
+    shell: process.platform === 'win32',
     env: {
       ...process.env,
       MOCHI_SOCIAL_GAME_CONTRACT_URL: gameUrl,
@@ -232,7 +233,7 @@ function command(commandName, args, options = {}) {
     cwd: options.cwd || root,
     env: options.env || process.env,
     encoding: 'utf8',
-    shell: false
+    shell: Boolean(options.shell)
   });
   return {
     ok: result.status === 0,

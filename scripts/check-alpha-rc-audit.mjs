@@ -216,7 +216,7 @@ function requireTextIncludes(id, description, file, snippets, label) {
 }
 
 function checkPr(id, repo, pr, requiredCheckName) {
-  const result = command('gh', ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup']);
+  const result = command(resolveGh(), ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup']);
   if (!result.ok) {
     add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, pr, stderr: sanitize(result.stderr) });
     return;
@@ -273,6 +273,11 @@ function command(commandName, args) {
     stdout: result.stdout || '',
     stderr: result.stderr || result.error?.message || ''
   };
+}
+
+function resolveGh() {
+  if (process.env.GH_CLI_PATH) return process.env.GH_CLI_PATH;
+  return process.platform === 'win32' ? 'gh.exe' : 'gh';
 }
 
 function parseJson(text) {
