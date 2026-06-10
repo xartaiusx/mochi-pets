@@ -1,0 +1,36 @@
+app = "mochi-social-game"
+primary_region = "sea"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  RPG_SAVE_DIR = "/data/saves"
+  SUPABASE_AUTH_REQUIRED = "false"
+  MOCHI_SOCIAL_PUBLIC_ORIGIN = "https://mochi-social-game.fly.dev"
+
+[mounts]
+  source = "mochi_social_data"
+  destination = "/data"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.http_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/healthz"
+    protocol = "http"

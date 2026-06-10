@@ -1,0 +1,51 @@
+{
+  "name": "@mochi-social/game",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mochi Social multiplayer browser RPG runtime.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/generate-assets.mjs",
+    "dev": "cross-env RPG_TYPE=mmorpg vite --host 0.0.0.0 --port 3000",
+    "prebuild": "node scripts/generate-assets.mjs",
+    "build": "cross-env RPG_TYPE=mmorpg vite build",
+    "start": "node dist/server/express.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@canvasengine/presets": "2.0.0-rc.4",
+    "@rpgjs/action-battle": "5.0.0-beta.17",
+    "@rpgjs/client": "5.0.0-beta.17",
+    "@rpgjs/common": "5.0.0-beta.16",
+    "@rpgjs/server": "5.0.0-beta.17",
+    "@rpgjs/tiledmap": "5.0.0-beta.17",
+    "@rpgjs/ui-css": "5.0.0-beta.14",
+    "@rpgjs/vite": "5.0.0-beta.17",
+    "@signe/di": "^3.0.1",
+    "@supabase/supabase-js": "^2.90.0",
+    "canvasengine": "2.0.0-rc.4",
+    "express": "^5.2.1",
+    "pixi.js": "^8.19.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@canvasengine/compiler": "2.0.0-rc.4",
+    "@eslint/js": "^10.0.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.19.1",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.0.0",
+    "globals": "^16.5.0",
+    "path-browserify": "^1.0.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.61.0",
+    "vite": "^8.0.16",
+    "vitest": "^4.0.16"
+  }
+}

@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+remote_name="$1"
+remote_url="$2"
+
+if [ "$remote_name" = "upstream" ] || printf '%s' "$remote_url" | grep -qi 'RSamaium/RPG-JS'; then
+  echo "Blocked push to RPGJS upstream. Push Mochi Social work to origin only." >&2
+  exit 1
+fi
