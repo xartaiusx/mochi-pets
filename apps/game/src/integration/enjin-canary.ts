@@ -44,7 +44,7 @@ export function getEnjinCanaryConfig(env = process.env): EnjinCanaryConfig {
 }
 
 export function enjinCanaryReady(config = getEnjinCanaryConfig()) {
-  return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId);
+  return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId && config.fuelTankId);
 }
 
 export function buildManagedWalletExternalId(playerId: string) {

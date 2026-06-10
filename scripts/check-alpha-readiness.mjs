@@ -63,7 +63,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/enjin-canary.ts',
-    includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'normalizeEnjinTransactionState', 'canCreditHotInventory']
+    includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -71,11 +71,11 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub', 'config.fuelTankId']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
-    includes: ['keeps operation planners Canary-only', 'only credits hot inventory after finalized chain state', 'chain.operation_update']
+    includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',

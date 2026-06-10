@@ -372,7 +372,7 @@ function getEnjinCanaryConfig() {
 }
 
 function enjinCanaryReady(config = getEnjinCanaryConfig()) {
-  return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId);
+  return Boolean(config.platformUrl && config.platformToken && config.network === 'CANARY' && config.collectionId && config.fuelTankId);
 }
 
 function createEnjinCanaryRuntime(config = getEnjinCanaryConfig()): EnjinCanaryRuntime {

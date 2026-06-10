@@ -30,7 +30,23 @@ describe('Enjin Canary orchestration helpers', () => {
     });
 
     expect(config.network).toBe('CANARY');
+    expect(enjinCanaryReady(config)).toBe(false);
     expect(buildGetTransactionQuery('tx-1', config).query).toContain('network: CANARY');
+  });
+
+  it('requires a Canary Fuel Tank before reporting Enjin readiness', () => {
+    expect(enjinCanaryReady(getEnjinCanaryConfig({
+      ENJIN_PLATFORM_TOKEN: 'test',
+      ENJIN_COLLECTION_ID: '123',
+      ENJIN_NETWORK: 'CANARY'
+    }))).toBe(false);
+
+    expect(enjinCanaryReady(getEnjinCanaryConfig({
+      ENJIN_PLATFORM_TOKEN: 'test',
+      ENJIN_COLLECTION_ID: '123',
+      ENJIN_FUEL_TANK_ID: 'tank-1',
+      ENJIN_NETWORK: 'CANARY'
+    }))).toBe(true);
   });
 
   it('builds deterministic managed wallet ids', () => {
