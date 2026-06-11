@@ -121,6 +121,7 @@ function addStaticRequirements() {
     'No-secret local Alpha RC evidence summary',
     'alpha-local-evidence.json',
     'alpha-local-evidence.md',
+    'same-suite evidence',
     'browser presence must prove observer-side movement',
     'visual snapshot canvas PNG must be non-empty',
     'built server smoke must prove tokened Enjin route fails closed',

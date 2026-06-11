@@ -31,6 +31,13 @@ assertLocalUrl(browserPresence.data?.baseUrl, 'browser presence baseUrl');
 assertLocalUrl(visualSnapshot.data?.baseUrl, 'visual snapshot baseUrl');
 assertLocalUrl(operatorSmoke.data?.baseUrl, 'operator smoke baseUrl');
 
+const suiteBaseUrl = normalizeUrl(localSuite.data?.baseUrl);
+assertSameBaseUrl(acceptance.data?.baseUrl, suiteBaseUrl, 'local acceptance baseUrl');
+assertSameBaseUrl(loadSmoke.data?.baseUrl, suiteBaseUrl, 'load smoke baseUrl');
+assertSameBaseUrl(browserPresence.data?.baseUrl, suiteBaseUrl, 'browser presence baseUrl');
+assertSameBaseUrl(visualSnapshot.data?.baseUrl, suiteBaseUrl, 'visual snapshot baseUrl');
+assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke baseUrl');
+
 const commandNames = Array.isArray(localSuite.data?.commands)
   ? localSuite.data.commands.map((command) => command.name)
   : [];
@@ -124,9 +131,24 @@ function summarizeReport(report, extra = {}) {
     path: report.path,
     ok: report.data?.ok === true,
     checkedAt: report.data?.checkedAt,
-    baseUrl: report.data?.baseUrl,
+    baseUrl: normalizeUrl(report.data?.baseUrl),
     ...extra
   };
+}
+
+function normalizeUrl(value) {
+  return String(value || '').replace(/\/+$/, '');
+}
+
+function assertSameBaseUrl(value, expected, label) {
+  if (!expected) {
+    failures.push('local suite baseUrl is required for same-suite evidence checks');
+    return;
+  }
+  const actual = normalizeUrl(value);
+  if (actual !== expected) {
+    failures.push(`${label} must match local suite baseUrl for same-suite evidence`);
+  }
 }
 
 function renderMarkdown(summaryReport) {
@@ -151,6 +173,7 @@ ${rows}
 
 - Built Express runtime starts locally and stops after smoke.
 - Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, and private Enjin fail-closed behavior passed.
+- Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
 - Browser and visual evidence stayed localhost-only.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 
