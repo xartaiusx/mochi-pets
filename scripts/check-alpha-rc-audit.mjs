@@ -442,6 +442,16 @@ function addSiteRequirements() {
     'assertNoLeak',
     'Mochi Social preview publishable-key loader self-test OK'
   ]);
+  requireSiteFileIncludes('site.preview-url-self-test', 'Mochirii repo locally self-tests preview URL tracking without leaking unrelated local credential lines before hosted preview checks.', 'scripts/check-mochi-social-preview-url-self-test.mjs', [
+    'Mochi Social preview URL self-test OK',
+    'mochi-social-alpha-vercel-preview.local.txt',
+    'MOCHI_SOCIAL_GAME_URL',
+    'MOCHI_SOCIAL_SITE_PREVIEW_URL',
+    'Local no-secret preview URL file',
+    '## Local Preview URL File',
+    'assertNoLeak',
+    'fakeToken'
+  ]);
   requireSiteFileIncludes('site.checklist', 'Mochirii repo can generate its no-secret website-side operator checklist.', 'scripts/prepare-mochi-social-alpha-operator-checklist.mjs', [
     'mochirii-mochi-social-alpha-operator-next-steps.md',
     'MOCHI_SOCIAL_PREVIEW_ENV_FILE',
