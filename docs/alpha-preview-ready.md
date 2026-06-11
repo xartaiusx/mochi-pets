@@ -71,7 +71,7 @@ Before testers enter the Vercel Preview:
 
 - Pet loop works: befriend, care, inspect, bond, growth, active pet status.
 - HUD works: profile view/status, pet status, inspect detail, chat, emote, market, trade, Canary request.
-- Social loop works: local chat/emote and two-tab presence.
+- Social loop works: local friend proof, chat/emote, and two-tab presence.
 - Economy loop is no-real-value: fixed market proof and direct trade proof stay alpha/test labeled.
 - Chain request stub works: visible Canary request records an audit-only request and explains `configured-preview-stub`.
 - Visual/manual gates work: map prompt review covers NPC, chest, habitat/care, and first-screen composition.

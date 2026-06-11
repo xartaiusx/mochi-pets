@@ -164,7 +164,7 @@ Tell testers:
 - Do not buy, sell, cash out, or represent alpha assets as production assets.
 - Use a desktop browser.
 - Sign in through Mochirii, open `/games/mochi-social`, accept the alpha terms, and wait for the iframe to load.
-- Try the town loop: move, meet one Mochi Spirit, care for it, view the profile status, inspect the HUD, send one local chat message, use one emote, create one test market listing, create one direct trade proof, and request the Canary certificate proof.
+- Try the town loop: move, meet one Mochi Spirit, care for it, view the profile status, add the local friend proof, inspect the HUD, send one local chat message, use one emote, create one test market listing, create one direct trade proof, and request the Canary certificate proof.
 - Report bugs through the Mochirii feedback form. Do not send secrets, wallet seed phrases, or personal payment details in feedback.
 
 ## Rollback

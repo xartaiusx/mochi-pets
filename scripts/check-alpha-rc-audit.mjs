@@ -229,6 +229,8 @@ function addStaticRequirements() {
     'data-alpha-action="pet.care"',
     'data-alpha-local-action="profile.view"',
     'profileViewed',
+    'data-alpha-local-action="friend.add"',
+    'friendProof',
     'data-alpha-local-action="pet.inspect"',
     'lastInspectedPetId',
     'chain.withdraw_request',
