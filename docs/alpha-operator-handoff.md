@@ -77,6 +77,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/sa
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-snapshot
+$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-review
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
 npm run alpha:operator-checklist
@@ -94,6 +95,7 @@ $env:MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE="true"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_ALLOW_EDGE="true"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
 npm run alpha:browser-presence
 npm run alpha:visual-snapshot
+npm run alpha:visual-review
 npm run alpha:enjin-operator-smoke
 $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; $env:MOCHI_SOCIAL_GAME_URL="https://<fly-preview-host>"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"; npm run alpha:external-gates
 npm run alpha:operator-checklist
@@ -114,6 +116,7 @@ Manual gates:
 
 - `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then a human confirms NPC, chest, and habitat/care prompts look correct in the town.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
+- `npm run alpha:visual-review` passes and writes `reports/alpha-visual-review.json` / `.md`, tying screenshot hashes, HUD/presence evidence, HUD action proof, map-object IDs, and habitat coverage to the current local HEAD while keeping rendered NPC/chest/habitat prompts as a pending human review gate.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
 - `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, operator, and built-server reports tied to the same local suite evidence set and current local HEAD. `npm run alpha:rc-audit` fails if that local evidence summary is stale against the current local HEAD, upstream, or dirty state.
 - `npm run alpha:operator-checklist` writes the no-secret ignored `reports/alpha-operator-checklist.json` and local `mochi-social-alpha-operator-next-steps.md` handoff with the current local HEAD, upstream, dirty state, external gate summary, and no-cost approval rule. `npm run alpha:rc-audit` fails if that checklist report is stale against the current local HEAD, upstream, or dirty state.

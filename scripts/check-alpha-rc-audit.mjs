@@ -116,6 +116,7 @@ function addStaticRequirements() {
     'alpha:load-smoke',
     'alpha:browser-presence',
     'alpha:visual-snapshot',
+    'alpha:visual-review',
     'alpha:enjin-operator-smoke',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN',
@@ -134,6 +135,7 @@ function addStaticRequirements() {
     'current HEAD',
     'browser presence must prove observer-side movement',
     'visual snapshot canvas PNG must be non-empty',
+    'visual review must keep rendered prompt interaction as a manual pre-RC gate',
     'built server smoke must prove tokened Enjin route fails closed',
     'local-only'
   ]);
@@ -208,6 +210,16 @@ function addStaticRequirements() {
     'manualReview',
     'createHash',
     'canvas'
+  ]);
+  requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab presence, HUD action proof, map-object coverage, and manual prompt limitations to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
+    'alpha-visual-review.json',
+    'alpha-visual-review.md',
+    'readGitState',
+    'manualPromptGate',
+    'pending-human-review',
+    'observerMovement',
+    'token-chest',
+    'Lantern Garden'
   ]);
   requireFileIncludes('game.map-object-contract', 'Map-object contract test verifies stable town event IDs, prompts, save sources, habitat, and collision evidence.', 'apps/game/tests/map-object-contract.test.ts', [
     'Mochi town map object contract',

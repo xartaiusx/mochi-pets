@@ -14,6 +14,7 @@ const acceptance = readJson('reports/alpha-local-acceptance.json');
 const loadSmoke = readJson('reports/alpha-load-smoke.json');
 const browserPresence = readJson('reports/alpha-browser-presence.json');
 const visualSnapshot = readJson('reports/alpha-visual-snapshot.json');
+const visualReview = readJson('reports/alpha-visual-review.json');
 const operatorSmoke = readJson('reports/enjin-operator-smoke.json');
 const gitState = readGitState();
 
@@ -23,6 +24,7 @@ assertReport('local acceptance', acceptance);
 assertReport('load smoke', loadSmoke);
 assertReport('browser presence', browserPresence);
 assertReport('visual snapshot', visualSnapshot);
+assertReport('visual review', visualReview);
 assertReport('Enjin operator smoke', operatorSmoke);
 
 assertLocalUrl(localSuite.data?.baseUrl, 'local suite baseUrl');
@@ -31,6 +33,7 @@ assertLocalUrl(acceptance.data?.baseUrl, 'local acceptance baseUrl');
 assertLocalUrl(loadSmoke.data?.baseUrl, 'load smoke baseUrl');
 assertLocalUrl(browserPresence.data?.baseUrl, 'browser presence baseUrl');
 assertLocalUrl(visualSnapshot.data?.baseUrl, 'visual snapshot baseUrl');
+assertLocalUrl(visualReview.data?.baseUrl, 'visual review baseUrl');
 assertLocalUrl(operatorSmoke.data?.baseUrl, 'operator smoke baseUrl');
 
 const suiteBaseUrl = normalizeUrl(localSuite.data?.baseUrl);
@@ -38,14 +41,16 @@ assertSameBaseUrl(acceptance.data?.baseUrl, suiteBaseUrl, 'local acceptance base
 assertSameBaseUrl(loadSmoke.data?.baseUrl, suiteBaseUrl, 'load smoke baseUrl');
 assertSameBaseUrl(browserPresence.data?.baseUrl, suiteBaseUrl, 'browser presence baseUrl');
 assertSameBaseUrl(visualSnapshot.data?.baseUrl, suiteBaseUrl, 'visual snapshot baseUrl');
+assertSameBaseUrl(visualReview.data?.baseUrl, suiteBaseUrl, 'visual review baseUrl');
 assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke baseUrl');
 assertCurrentGitState(localSuite.data?.git, 'local suite report');
 assertCurrentGitState(builtServer.data?.git, 'built server smoke report');
+assertCurrentGitState(visualReview.data?.git, 'visual review report');
 
 const commandNames = Array.isArray(localSuite.data?.commands)
   ? localSuite.data.commands.map((command) => command.name)
   : [];
-for (const command of ['build', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:enjin-operator-smoke']) {
+for (const command of ['build', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
   if (!commandNames.includes(command)) failures.push(`local suite missing command: ${command}`);
 }
 if (Array.isArray(localSuite.data?.commands)) {
@@ -62,6 +67,8 @@ assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove 
 assert(visualSnapshot.data?.localOnlyDefault === true && visualSnapshot.data?.hostedAllowed === false, 'visual snapshot must be local-only by default');
 assert(visualSnapshot.data?.screenshots?.page?.bytes > 1000, 'visual snapshot page PNG must be non-empty');
 assert(visualSnapshot.data?.screenshots?.canvas?.bytes > 1000, 'visual snapshot canvas PNG must be non-empty');
+assert(visualReview.data?.machineReview?.observerMovement === true, 'visual review must carry observer movement proof');
+assert(visualReview.data?.manualPromptGate?.requiredBeforeAlphaRcReady === true, 'visual review must keep rendered prompt interaction as a manual pre-RC gate');
 assert(operatorSmoke.data?.scope?.includes('does not submit live Enjin operations by default'), 'operator smoke must remain fail-closed by default');
 assert(builtServer.data?.checks?.some((check) => check.name === 'tokened operator submit' && check.status === 409), 'built server smoke must prove tokened Enjin route fails closed without Enjin secrets');
 assert(acceptance.data?.actions?.some((action) => action.type === 'chain.withdraw_request'), 'local acceptance must record a Canary withdraw request');
@@ -81,6 +88,10 @@ const summary = {
     visualSnapshot: summarizeReport(visualSnapshot, {
       pageBytes: visualSnapshot.data?.screenshots?.page?.bytes,
       canvasBytes: visualSnapshot.data?.screenshots?.canvas?.bytes
+    }),
+    visualReview: summarizeReport(visualReview, {
+      manualPromptGate: visualReview.data?.manualPromptGate?.status,
+      observerMovement: visualReview.data?.machineReview?.observerMovement
     }),
     operatorSmoke: summarizeReport(operatorSmoke)
   },
@@ -239,10 +250,11 @@ ${rows}
 ## Key Proofs
 
 - Built Express runtime starts locally and stops after smoke.
-- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, and private Enjin fail-closed behavior passed.
+- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
 - Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
 - The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.
+- Rendered NPC/chest/habitat prompt interaction remains an explicit manual gate before Alpha RC Ready.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 
 ## Failures

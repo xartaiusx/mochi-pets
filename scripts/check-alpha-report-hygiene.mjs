@@ -13,6 +13,8 @@ const files = [
   'reports/alpha-load-smoke.json',
   'reports/alpha-browser-presence.json',
   'reports/alpha-visual-snapshot.json',
+  'reports/alpha-visual-review.json',
+  'reports/alpha-visual-review.md',
   'reports/alpha-local-evidence.json',
   'reports/alpha-local-evidence.md',
   'reports/alpha-operator-checklist.json',

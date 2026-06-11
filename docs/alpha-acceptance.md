@@ -24,6 +24,7 @@ $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
 npm run alpha:browser-presence
 npm run alpha:visual-snapshot
+npm run alpha:visual-review
 npm run alpha:enjin-operator-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
@@ -61,7 +62,7 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 
 ## Local Alpha Suite
 
-`npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
+`npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, visual review, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
 
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
 
@@ -110,6 +111,8 @@ The browser smoke is local-only by default to avoid hosted preview usage. Set `M
 `npm run alpha:visual-snapshot` opens `/play`, waits for the HUD, presence label, and canvas, and writes ignored first-screen evidence to `reports/alpha-visual-snapshot.json`, `reports/alpha-visual-page.png`, and `reports/alpha-visual-canvas.png`. It is local-only by default; set `MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT=true` only after explicit hosted-preview approval.
 
 Use the PNGs for local human/Codex visual review of the town composition. The snapshot proves the first screen is renderable and reviewable; browser presence and map-object contract tests still provide the movement, HUD action, event ID, prompt, save-source, habitat, and collision evidence.
+
+`npm run alpha:visual-review` reads `reports/alpha-visual-snapshot.json`, `reports/alpha-browser-presence.json`, the PNGs, and the first-town map-object sources, then writes ignored no-secret `reports/alpha-visual-review.json` and `reports/alpha-visual-review.md`. It verifies screenshot dimensions and hashes, HUD/presence evidence, observer movement, HUD pet/market/trade/Canary actions, required map-object IDs, and Lantern Garden habitat coverage. It keeps rendered NPC/chest/habitat prompt interaction as `pending-human-review`; it is a durable local review bundle, not a fake replacement for the manual prompt check.
 
 The browser smoke proves HUD-level two-tab presence, canvas movement response, and a synchronized observer-side canvas change. The unit suite also includes `apps/game/tests/map-object-contract.test.ts`, which verifies stable RPGJS event IDs, event coordinates, prompt/save-source snippets, companion habitat labels, and collision-layer evidence for the first town. The remaining human visual check is for rendered prompt behavior and overall scene confidence before Alpha RC Ready:
 

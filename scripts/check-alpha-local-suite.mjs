@@ -18,7 +18,7 @@ const loadPlayers = String(process.env.MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS || 
 const report = {
   ok: false,
   checkedAt: new Date().toISOString(),
-  scope: 'No-cost localhost Alpha RC suite. Builds once, starts the built Express runtime with throwaway env, runs endpoint/acceptance/load/browser/visual/operator smokes, and shuts down the server.',
+  scope: 'No-cost localhost Alpha RC suite. Builds once, starts the built Express runtime with throwaway env, runs endpoint/acceptance/load/browser/visual/operator smokes, writes a visual review bundle, and shuts down the server.',
   runId,
   baseUrl,
   saveDir,
@@ -67,6 +67,7 @@ async function run() {
   });
   await runCommand('alpha:browser-presence', npmCommand(), ['run', 'alpha:browser-presence'], env);
   await runCommand('alpha:visual-snapshot', npmCommand(), ['run', 'alpha:visual-snapshot'], env);
+  await runCommand('alpha:visual-review', npmCommand(), ['run', 'alpha:visual-review'], env);
   await runCommand('alpha:enjin-operator-smoke', npmCommand(), ['run', 'alpha:enjin-operator-smoke'], {
     ...env,
     MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN: serverToken
