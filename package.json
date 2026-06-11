@@ -29,6 +29,7 @@
     "alpha:report-hygiene": "node scripts/check-alpha-report-hygiene.mjs",
     "alpha:external-gates": "node scripts/check-alpha-external-gates.mjs",
     "alpha:operator-checklist": "node scripts/write-alpha-operator-checklist.mjs",
+    "alpha:sync-approval": "node scripts/write-alpha-sync-approval.mjs",
     "alpha:rc-audit": "node scripts/check-alpha-rc-audit.mjs",
     "typecheck": "npm --workspace @mochi-social/game run typecheck",
     "lint": "npm --workspace @mochi-social/game run lint",

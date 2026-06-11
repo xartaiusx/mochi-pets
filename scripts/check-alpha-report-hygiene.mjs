@@ -14,8 +14,10 @@ const files = [
   'reports/alpha-visual-snapshot.json',
   'reports/alpha-local-evidence.json',
   'reports/alpha-local-evidence.md',
+  'reports/alpha-sync-approval.json',
   'reports/enjin-operator-smoke.json',
-  resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md')
+  resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'),
+  resolve(credsDir, 'mochi-social-alpha-sync-approval.md')
 ];
 
 const secretPatterns = [
@@ -78,7 +80,7 @@ async function writeReport(ok) {
   await writeFile(reportPath, `${JSON.stringify({
     ok,
     checkedAt: new Date().toISOString(),
-    scope: 'No-secret hygiene scan for ignored local Alpha RC reports and generated operator checklist.',
+    scope: 'No-secret hygiene scan for ignored local Alpha RC reports and generated operator/sync approval checklists.',
     scanned,
     failures
   }, null, 2)}\n`, 'utf8');

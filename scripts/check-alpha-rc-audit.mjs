@@ -131,9 +131,18 @@ function addStaticRequirements() {
     'No-secret hygiene scan',
     'alpha-report-hygiene.json',
     'mochi-social-alpha-operator-next-steps.md',
+    'mochi-social-alpha-sync-approval.md',
     'Unredacted local suite token',
     'Wallet daemon password assignment',
     'Supabase service role assignment'
+  ]);
+  requireFileIncludes('game.sync-approval-script', 'Sync approval packet summarizes local branch drift and external gates before cost-sensitive push/provider work.', 'scripts/write-alpha-sync-approval.mjs', [
+    'mochi-social-alpha-sync-approval.md',
+    'alpha-sync-approval.json',
+    'This file is intentionally no-secret',
+    'approvalsRequired',
+    'GitHub Actions/PR checks',
+    'I approve pushing'
   ]);
   requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
@@ -390,6 +399,12 @@ function addLocalHandoffRequirements() {
     'Fly Gate',
     'Enjin Canary Gate',
     'Preview Verification After Fly And Enjin Gates'
+  ]);
+  requireLocalFile('handoff.sync-approval', resolve(credsDir, 'mochi-social-alpha-sync-approval.md'), [
+    'This file is intentionally no-secret',
+    'Current Branch',
+    'Approval Required Before Continuing',
+    'I approve pushing'
   ]);
   requireLocalFile('handoff.site-checklist', resolve(credsDir, 'mochirii-mochi-social-alpha-operator-next-steps.md'), [
     'This file is intentionally no-secret',

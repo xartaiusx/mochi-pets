@@ -15,10 +15,11 @@ Mochi Social development is no-cost by default. Agents may inspect local files, 
 Allowed without extra approval:
 
 - Read local files and edit repo docs/code.
-- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, and `npm run alpha:report-hygiene`.
+- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:sync-approval`, and `npm run alpha:report-hygiene`.
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
+- Generate `npm run alpha:sync-approval` before requesting a push, CI rerun, hosted smoke, deploy, or provider mutation. The packet is not approval; it only records the exact state and approval text to review.
 
 ## Stop And Ask First
 
@@ -53,3 +54,4 @@ Before a cost-bearing action, state:
 - Enjin Wallet Daemon may remain a local operator process, but do not submit live Enjin operations or fund a Fuel Tank without approval.
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, CI, or load-smoke step.
 - Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.
+- Use `npm run alpha:sync-approval` to summarize the unpushed commits and current external blockers before requesting that approval.

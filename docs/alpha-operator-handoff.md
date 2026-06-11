@@ -43,9 +43,10 @@ Run this whenever the local private handoff folder needs a fresh no-secret check
 
 ```powershell
 npm run alpha:operator-checklist
+npm run alpha:sync-approval
 ```
 
-The generated file goes to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md` by default. It may list local credential filenames, required secret names, gate status, and placeholder commands. It must not contain raw secret values.
+The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md` and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md` by default. They may list local credential filenames, required secret names, gate status, commit subjects, branch drift, and placeholder commands. They must not contain raw secret values. The sync packet is not approval; it prepares the exact push/CI/provider approval text for the operator to review.
 
 ## Current Private Gates
 
@@ -69,6 +70,7 @@ npm run alpha:built-server-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:operator-checklist
+npm run alpha:sync-approval
 npm run alpha:report-hygiene
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
@@ -78,6 +80,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-snapsho
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
 npm run alpha:operator-checklist
+npm run alpha:sync-approval
 npm run alpha:report-hygiene
 npm run alpha:rc-audit
 ```
@@ -94,6 +97,7 @@ npm run alpha:visual-snapshot
 npm run alpha:enjin-operator-smoke
 $env:MOCHI_SOCIAL_GAME_URL="https://<fly-preview-host>"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"; npm run alpha:external-gates
 npm run alpha:operator-checklist
+npm run alpha:sync-approval
 npm run alpha:rc-audit
 ```
 
@@ -112,6 +116,7 @@ Manual gates:
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
 - `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, and operator reports tied to the same local suite base URL.
+- `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet before requesting any push/CI/provider approval.
 - `npm run alpha:report-hygiene` passes and writes `reports/alpha-report-hygiene.json` after scanning ignored local reports and generated no-secret checklist artifacts.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.

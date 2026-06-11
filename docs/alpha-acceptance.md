@@ -28,6 +28,7 @@ npm run alpha:enjin-operator-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:operator-checklist
+npm run alpha:sync-approval
 npm run alpha:report-hygiene
 npm run alpha:external-gates
 npm run alpha:rc-audit
@@ -66,7 +67,7 @@ The suite defaults to `10` simulated testers for the HTTP load-smoke portion to 
 
 Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. It requires the acceptance, load, browser, visual, and operator reports to share the same local suite base URL so stale localhost evidence cannot be mixed into a fresh summary. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
 
-Run `npm run alpha:operator-checklist`, then `npm run alpha:report-hygiene` after local evidence to scan the ignored local reports and generated no-secret operator checklist for accidental token, key, service-role, wallet, or passphrase patterns. It writes `reports/alpha-report-hygiene.json`.
+Run `npm run alpha:operator-checklist`, `npm run alpha:sync-approval`, then `npm run alpha:report-hygiene` after local evidence to scan the ignored local reports and generated no-secret operator/sync checklists for accidental token, key, service-role, wallet, or passphrase patterns. The sync approval command writes `reports/alpha-sync-approval.json` plus `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md` with local branch drift, audit blockers, and explicit approval text for CI/provider steps. It is not approval by itself. Report hygiene writes `reports/alpha-report-hygiene.json`.
 
 ## Private Enjin Operator Smoke
 
