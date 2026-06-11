@@ -444,6 +444,9 @@ function addSiteRequirements() {
   ]);
   requireSiteFileIncludes('site.checklist', 'Mochirii repo can generate its no-secret website-side operator checklist.', 'scripts/prepare-mochi-social-alpha-operator-checklist.mjs', [
     'mochirii-mochi-social-alpha-operator-next-steps.md',
+    'MOCHI_SOCIAL_PREVIEW_ENV_FILE',
+    'Local no-secret preview URL file',
+    'readPreviewEnvFile',
     'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
     'MOCHI_SOCIAL_ALPHA_EDGE_URL',
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN'
@@ -454,6 +457,10 @@ function addSiteRequirements() {
     'mochirii-mochi-social-preview-ready.md',
     'MOCHI_SOCIAL_SITE_PREVIEW_READY_ALLOW_HOSTED',
     'MOCHI_SOCIAL_SITE_PREVIEW_READY_SKIP_SELF_TEST_COMMANDS',
+    'MOCHI_SOCIAL_PREVIEW_ENV_FILE',
+    'Local Preview URL File',
+    'readPreviewEnvFile',
+    'urlFieldsRead',
     'site.bridge-state',
     'check-mochi-social-bridge-state.mjs',
     'site.auth-bridge',
@@ -1029,6 +1036,8 @@ function addLocalHandoffRequirements() {
   requireLocalFile('handoff.site-checklist', resolve(credsDir, 'mochirii-mochi-social-alpha-operator-next-steps.md'), [
     'This file is intentionally no-secret',
     'Vercel Preview Gate',
+    'Local no-secret preview URL file',
+    'mochi-social-alpha-vercel-preview.local.txt',
     'Supabase Preview Gate',
     'Manual Website Gates'
   ]);
