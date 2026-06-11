@@ -91,8 +91,8 @@ try {
 }
 
 async function run() {
-  checkGitHubPr('game PR', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social');
-  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', '258');
+  checkGitHubPr('game PR', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social', root);
+  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', '258', undefined, siteRepoPath);
   checkSupabasePreviewSecrets();
   checkFly();
   await checkLiveGameContract();
@@ -100,7 +100,7 @@ async function run() {
   checkEnjinOperatorInputs();
 }
 
-function checkGitHubPr(name, repo, pr, requiredCheckName) {
+function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   const result = command('gh', ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup']);
   if (!result.ok) {
     add('fail', name, 'GitHub PR state could not be read.', { stderr: result.stderr });
@@ -121,13 +121,25 @@ function checkGitHubPr(name, repo, pr, requiredCheckName) {
   const required = requiredCheckName ? checks.find((check) => check.name === requiredCheckName || check.context === requiredCheckName) : null;
   const missingRequired = requiredCheckName && !required;
   const status = data.mergeStateStatus === 'CLEAN' && failing.length === 0 && !missingRequired ? 'pass' : 'fail';
-  add(status, name, status === 'pass' ? 'PR is clean and all visible checks are green.' : 'PR is not clean, has failing checks, or is missing a required check.', {
+  const localHead = localRepoPath ? readLocalHead(localRepoPath) : null;
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const passMessage = localHead && !localHeadMatchesPrHead
+    ? 'Remote PR head is clean and all visible checks are green; local branch sync must still prove the current checkout.'
+    : 'Remote PR head is clean and all visible checks are green.';
+  add(status, name, status === 'pass' ? passMessage : 'PR is not clean, has failing checks, or is missing a required check.', {
     url: data.url,
     headRefOid: data.headRefOid,
+    localHead,
+    localHeadMatchesPrHead,
     mergeStateStatus: data.mergeStateStatus,
     checkNames: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)
   });
+}
+
+function readLocalHead(cwd) {
+  const head = command('git', ['rev-parse', 'HEAD'], { cwd });
+  return head.ok ? firstLine(head.stdout) : null;
 }
 
 function checkSupabasePreviewSecrets() {
