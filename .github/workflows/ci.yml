@@ -29,6 +29,15 @@ jobs:
       - name: Alpha readiness
         run: npm run alpha:readiness
 
+      - name: Alpha gate contracts
+        run: npm run alpha:gate-contracts
+
+      - name: Alpha browser bridge auth
+        run: npm run alpha:browser-bridge-auth
+
+      - name: Alpha sync approval self-test
+        run: npm run alpha:sync-approval-self-test
+
       - name: Typecheck
         run: npm run typecheck
 

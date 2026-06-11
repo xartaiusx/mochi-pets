@@ -11,7 +11,7 @@ const checks = [
   },
   {
     file: '.github/workflows/ci.yml',
-    includes: ['npm run secret-scan', 'npm run alpha:readiness', 'npm run build']
+    includes: ['npm run secret-scan', 'npm run alpha:readiness', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
   },
   {
     file: 'AGENTS.md',
