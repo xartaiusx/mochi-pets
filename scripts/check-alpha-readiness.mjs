@@ -185,7 +185,7 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-provider-preflight.mjs',
-    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
+    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'Known Provider Action IDs', 'Next Approval IDs', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
   },
   {
     file: 'scripts/write-alpha-sync-approval.mjs',

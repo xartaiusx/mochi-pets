@@ -202,6 +202,10 @@ function renderMarkdown(summary) {
   const failureLines = summary.externalFailures.length
     ? summary.externalFailures.map((failure) => `- ${failure}`).join('\n')
     : '- None recorded.';
+  const expectedActionLines = summary.expectedProviderActionIds.map((id) => `- ${id}`).join('\n');
+  const nextApprovalLines = summary.nextApprovalIds.length
+    ? summary.nextApprovalIds.map((id) => `- ${id}`).join('\n')
+    : '- None.';
 
   return `# Mochi Social Alpha Provider Preflight
 
@@ -233,6 +237,18 @@ ${summary.missingExpectedPrivateInputFiles.length ? summary.missingExpectedPriva
 ## Current External Failures
 
 ${failureLines}
+
+## Known Provider Action IDs
+
+These are all provider action IDs the Alpha RC tooling recognizes. Not every known action is required on every pass.
+
+${expectedActionLines}
+
+## Next Approval IDs
+
+These IDs are the currently actionable queue from the latest operator checklist.
+
+${nextApprovalLines}
 
 ## Approval Queue
 
