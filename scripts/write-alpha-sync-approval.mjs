@@ -72,7 +72,9 @@ function readAuditSummary() {
     return {
       present: false,
       ok: false,
-      failures: [`Alpha RC audit report missing or unreadable: ${audit.message}`]
+      failures: [`Alpha RC audit report missing or unreadable: ${audit.message}`],
+      expectedFailuresAfterPacket: [`Alpha RC audit report missing or unreadable: ${audit.message}`],
+      selfReferentialFailures: []
     };
   }
   const failing = Array.isArray(audit.data.requirements)
@@ -80,13 +82,19 @@ function readAuditSummary() {
       .filter((item) => item.status !== 'pass')
       .map((item) => `${item.id}: ${item.status} - ${item.message}`)
     : ['Alpha RC audit report did not include requirements.'];
+  const sanitizedFailures = failing.map((item) => sanitize(item));
+  const selfReferentialFailures = sanitizedFailures.filter(isSelfReferentialSyncApprovalFailure);
+  const expectedFailuresAfterPacket = sanitizedFailures.filter((item) => !isSelfReferentialSyncApprovalFailure(item));
+
   return {
     present: true,
     ok: audit.data.ok === true,
     checkedAt: audit.data.checkedAt,
     git: audit.data.git,
     summary: audit.data.summary,
-    failures: failing.map((item) => sanitize(item))
+    failures: sanitizedFailures,
+    expectedFailuresAfterPacket,
+    selfReferentialFailures
   };
 }
 
@@ -209,6 +217,16 @@ function sanitize(value) {
     .slice(0, 1200);
 }
 
+function isSelfReferentialSyncApprovalFailure(value) {
+  const text = String(value || '');
+  return text.startsWith('local.sync-approval-current:')
+    && (
+      text.includes('stale')
+      || text.includes('Run npm run alpha:sync-approval')
+      || text.includes('does not match current external gate report')
+    );
+}
+
 function renderMarkdown(report) {
   const commits = report.git.commitsAhead.length
     ? report.git.commitsAhead.map((commit) => `- ${commit}`).join('\n')
@@ -218,6 +236,12 @@ function renderMarkdown(report) {
     : '- Worktree clean.';
   const auditFailures = report.audit.failures.length
     ? report.audit.failures.map((failure) => `- ${failure}`).join('\n')
+    : '- None.';
+  const expectedAuditFailures = report.audit.expectedFailuresAfterPacket?.length
+    ? report.audit.expectedFailuresAfterPacket.map((failure) => `- ${failure}`).join('\n')
+    : '- None.';
+  const selfReferentialFailures = report.audit.selfReferentialFailures?.length
+    ? report.audit.selfReferentialFailures.map((failure) => `- ${failure}`).join('\n')
     : '- None.';
   const externalFailures = report.externalGates.failures.length
     ? report.externalGates.failures.map((failure) => `- ${failure}`).join('\n')
@@ -262,7 +286,15 @@ ${commits}
 - Alpha RC audit passed: ${report.audit.ok ? 'yes' : 'no'}
 - Alpha RC checked at: ${report.audit.checkedAt || 'not recorded'}
 
-Open Alpha RC audit items:
+Expected Alpha RC audit items after this packet:
+
+${expectedAuditFailures}
+
+Self-referential audit items resolved by generating this packet:
+
+${selfReferentialFailures}
+
+Raw prior Alpha RC audit items:
 
 ${auditFailures}
 
