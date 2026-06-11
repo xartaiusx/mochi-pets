@@ -124,6 +124,7 @@ async function verifyCanvasMovement(firstTab, secondTab) {
 async function exerciseAlphaHud(page) {
   const chatMessage = `Hello from browser smoke ${Date.now().toString(36)}`;
   await page.click('[data-alpha-action="pet.care"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-local-action="pet.inspect"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -141,10 +142,12 @@ async function exerciseAlphaHud(page) {
       return pet.includes('Momo')
         && market.includes('Canary: requested')
         && state.petId === 'momo'
+        && state.lastInspectedPetId === 'momo'
         && state.charmListed === true
         && state.tradeProof === true
         && state.canaryRequested === true
         && chat.includes('Care complete')
+        && chat.includes('Inspect Momo')
         && chat.includes('You wave')
         && chat.includes('Lantern Charm listed')
         && chat.includes('Direct trade proof')
@@ -168,11 +171,13 @@ async function exerciseAlphaHud(page) {
 
   assert(snapshot.state.petId === 'momo', 'HUD care action must select Momo as the active pet.');
   assert(snapshot.state.bond >= 1, 'HUD care action must increase pet bond.');
+  assert(snapshot.state.lastInspectedPetId === 'momo', 'HUD inspect action must record a Momo pet inspection proof.');
   assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
+  assert(chat.some((line) => String(line).includes('Inspect Momo')), 'HUD chat state must record the pet inspect action.');
   assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');
   assert(chat.some((line) => String(line).includes('Lantern Charm listed')), 'HUD chat state must record the fixed-list action.');
   assert(chat.some((line) => String(line).includes('Direct trade proof')), 'HUD chat state must record the trade action.');

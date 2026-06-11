@@ -12,6 +12,7 @@ const PRESENCE_TTL_MS = 4000;
 
 interface AlphaHudState {
   petId?: string;
+  lastInspectedPetId?: string;
   bond: number;
   growth: string;
   charmListed: boolean;
@@ -19,6 +20,8 @@ interface AlphaHudState {
   canaryRequested: boolean;
   chat: string[];
 }
+
+type AlphaLocalActionType = 'pet.inspect';
 
 interface PresenceMessage {
   type: 'MOCHI_SOCIAL_LOCAL_PRESENCE';
@@ -137,6 +140,7 @@ function createHud() {
     </div>
     <div class="mochi-hud__actions" aria-label="Alpha quick actions">
       <button type="button" data-alpha-action="pet.care">Care</button>
+      <button type="button" data-alpha-local-action="pet.inspect">Inspect</button>
       <button type="button" data-alpha-action="emote.send">Wave</button>
       <button type="button" data-alpha-action="market.fixed_list">List</button>
       <button type="button" data-alpha-action="trade.direct_offer">Trade</button>
@@ -213,6 +217,12 @@ function createHud() {
           }
         : {};
       void performAlphaAction(actionType, payload);
+    });
+  });
+
+  hud.querySelectorAll<HTMLButtonElement>('[data-alpha-local-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      performAlphaLocalAction(button.dataset.alphaLocalAction as AlphaLocalActionType);
     });
   });
 
@@ -349,6 +359,24 @@ async function loadAlphaStatus() {
   } catch {
     // The HUD remains playable in static/dev fallback mode.
   }
+}
+
+function performAlphaLocalAction(type: AlphaLocalActionType) {
+  const state = readAlphaState();
+
+  if (type === 'pet.inspect') {
+    const pet = MOCHI_SPIRITS.find((spirit) => spirit.id === state.petId);
+    if (!pet) {
+      state.chat.push('No Mochi Spirit is bonded yet. Befriend Momo, Yuzu, or Sora first.');
+    } else {
+      state.lastInspectedPetId = pet.id;
+      state.chat.push(
+        `Inspect ${pet.name}: ${pet.title}, ${state.growth} growth, bond ${state.bond}/5, ${pet.habitat}, ${pet.certificateEligible ? 'Canary certificate eligible, no real value' : 'curated preview pet, no real value'}.`
+      );
+    }
+  }
+
+  writeAlphaState(state);
 }
 
 async function performAlphaAction(type: AlphaActionType, payload: Record<string, unknown> = {}) {

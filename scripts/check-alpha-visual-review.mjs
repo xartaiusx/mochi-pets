@@ -32,6 +32,7 @@ assert(Array.isArray(browserPresence.data?.tabs) && browserPresence.data.tabs.le
 assert(browserPresence.data?.tabs?.every((tab) => String(tab.presence || '').includes('Nearby: 2 testers')), 'browser presence tabs must show Nearby: 2 testers');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
 assert(browserPresence.data?.hudAction?.state?.petId === 'momo', 'HUD action proof must include the Momo care loop');
+assert(browserPresence.data?.hudAction?.state?.lastInspectedPetId === 'momo', 'HUD action proof must include pet inspection');
 assert(browserPresence.data?.hudAction?.state?.charmListed === true, 'HUD action proof must include fixed market listing');
 assert(browserPresence.data?.hudAction?.state?.tradeProof === true, 'HUD action proof must include direct trade proof');
 assert(browserPresence.data?.hudAction?.state?.canaryRequested === true, 'HUD action proof must include Canary certificate request');
@@ -89,6 +90,7 @@ const report = {
     observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true,
     hudActionLoop: {
       petCare: browserPresence.data?.hudAction?.state?.petId === 'momo',
+      petInspect: browserPresence.data?.hudAction?.state?.lastInspectedPetId === 'momo',
       fixedMarket: browserPresence.data?.hudAction?.state?.charmListed === true,
       directTrade: browserPresence.data?.hudAction?.state?.tradeProof === true,
       canaryRequest: browserPresence.data?.hudAction?.state?.canaryRequested === true
@@ -261,7 +263,7 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - Canvas PNG: ${summary.evidence.screenshots.canvas.path || 'missing'} (${summary.evidence.screenshots.canvas.width}x${summary.evidence.screenshots.canvas.height})
 - Two-tab presence: ${summary.machineReview.twoTabPresence ? 'yes' : 'no'}
 - Observer movement: ${summary.machineReview.observerMovement ? 'yes' : 'no'}
-- HUD action loop: pet care ${summary.machineReview.hudActionLoop.petCare ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
+- HUD action loop: pet care ${summary.machineReview.hudActionLoop.petCare ? 'yes' : 'no'}, pet inspect ${summary.machineReview.hudActionLoop.petInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
 

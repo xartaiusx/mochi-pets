@@ -81,7 +81,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
-    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'configured-preview-stub']
+    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'data-alpha-local-action="pet.inspect"', 'lastInspectedPetId', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
@@ -133,7 +133,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
-    includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowRight', 'ArrowDown', 'canvas']
+    includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'data-alpha-local-action="pet.inspect"', 'lastInspectedPetId', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowRight', 'ArrowDown', 'canvas']
   },
   {
     file: 'scripts/check-alpha-visual-snapshot.mjs',
