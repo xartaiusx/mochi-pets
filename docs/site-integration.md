@@ -7,6 +7,13 @@ The future Vercel/Supabase website should stay in its own repo. It only needs th
 - Next.js: `NEXT_PUBLIC_MOCHI_SOCIAL_URL`
 - Vite/other: `VITE_MOCHI_SOCIAL_URL`
 
+The current Mochirii website pass may also place the page behind a parent-owned tester password. That gate belongs to the website repo, not the game runtime:
+
+- `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password`
+- `MOCHI_SOCIAL_TESTER_PASSWORD` or `MOCHI_SOCIAL_TESTER_PASSWORD_SHA256`
+
+Do not expose a tester password through a `NEXT_PUBLIC_*` or `VITE_*` variable.
+
 ## Embed
 
 ```html
@@ -78,11 +85,12 @@ The game backend may send `chain.withdraw_request`, `chain.deposit_request`, and
 
 The Mochirii Vercel Preview route may embed Mochi Social while Enjin is unfunded and the game reports `chainRuntime.mode="configured-preview-stub"`.
 
+- For the first live website pass, Mochirii may use a password-unlocked preview page before the stricter Supabase allowlist path is restored. The password gate is parent-site-only; the game should continue to support guest-first play when `SUPABASE_AUTH_REQUIRED=false`.
 - Parent site sends only `MOCHI_SOCIAL_AUTH` with a short-lived Supabase access token, plus `MOCHI_SOCIAL_SIGN_OUT` when needed.
 - Chain UI remains visible and clearly labeled no-real-value/test-only.
 - Chain requests may be recorded as audit-only preview rows, but they must not credit hot inventory, settle trades, settle listings, or imply production ownership.
 - Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags for Preview Ready.
-- `preview-live-gates` cover Fly embed, Vercel Preview route, Supabase allowlist, terms, feedback, and the no-real-value chain stub.
+- `preview-live-gates` cover Fly embed, Vercel Preview route, tester-password or Supabase tester entry, and the no-real-value chain stub.
 - `funded-chain-gates` cover real Canary collection, Fuel Tank, Wallet Daemon signing, and finality proof. They can remain red until funded-chain approval exists.
 - The Mochirii repo should prove its website tester-entry lane with `npm run check:mochi-social-preview-ready`; that audit is separate from funded-chain gates and remains no-secret.
 - The website should treat Alpha Preview Ready as a closed tester preview, not production launch.
@@ -93,8 +101,9 @@ The Mochirii website should expose the closed alpha at `/games/mochi-social` and
 
 Before rendering the iframe, the page should:
 
-1. Require a signed-in Supabase session.
-2. Call the Mochi Social alpha session Edge Function.
-3. Require an active alpha allowlist row.
-4. Require explicit acknowledgement that alpha assets are test-only, no-real-value, Enjin Canary assets.
-5. Forward only the short-lived Supabase access token to the iframe.
+1. Require either the parent-site tester password session or a signed-in Supabase session, depending on the chosen website access mode.
+2. In tester-password mode, verify the password server-side and set an HttpOnly cookie before loading the iframe.
+3. In Supabase mode, call the Mochi Social alpha session Edge Function.
+4. In Supabase mode, require an active alpha allowlist row.
+5. In Supabase mode, require explicit acknowledgement that alpha assets are test-only, no-real-value, Enjin Canary assets.
+6. Forward only the short-lived Supabase access token to the iframe when Supabase mode is active; send no refresh token, service-role key, Discord token, Enjin token, or password material.

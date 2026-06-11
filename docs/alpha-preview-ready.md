@@ -1,6 +1,6 @@
 # Alpha Preview Ready
 
-Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. It lets allowlisted testers use Mochi Social through the Mochirii Vercel Preview while Enjin remains unfunded and visibly in `configured-preview-stub` mode.
+Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. It lets approved testers use Mochi Social through the Mochirii Vercel Preview while Enjin remains unfunded and visibly in `configured-preview-stub` mode.
 
 ## Source Basis
 
@@ -17,6 +17,7 @@ Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. I
 - Game runtime: Fly app `mochi-social-game`.
 - Website doorway: Mochirii Vercel Preview route `/games/mochi-social`.
 - Website public env: `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
+- Website server env for the first live pass: `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password` plus either `MOCHI_SOCIAL_TESTER_PASSWORD` or `MOCHI_SOCIAL_TESTER_PASSWORD_SHA256`.
 - Supabase authority: Mochirii Edge Functions own allowlist, terms, action ledger, feedback, admin, and chain operation rows.
 - Enjin: Canary only, visible unfunded preview stub until collection, Fuel Tank, Wallet Daemon signing, and cENJ funding are approved.
 
@@ -24,7 +25,7 @@ Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. I
 
 Treat `provider.external-gates` as two lanes:
 
-- `preview-live-gates`: Fly game URL, Vercel Preview embed, Supabase allowlist/terms/feedback, no-real-value labels, and hosted contract checks after explicit hosted-check approval.
+- `preview-live-gates`: Fly game URL, Vercel Preview embed, tester-password access, no-real-value labels, and hosted contract checks after explicit hosted-check approval. Supabase allowlist, terms, and feedback remain the stricter Alpha RC path.
 - `funded-chain-gates`: Enjin collection ID, Fuel Tank ID, cENJ funding, Wallet Daemon signing, and finalized proof smoke. This lane is expected red until later approval.
 
 Alpha Preview Ready can pass while funded-chain gates are red. Alpha RC Ready cannot pass until both lanes are green.
