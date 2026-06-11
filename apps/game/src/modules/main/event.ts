@@ -1,3 +1,4 @@
+import { PrebuiltGui } from '@rpgjs/common';
 import type { EventDefinition, RpgPlayer } from '@rpgjs/server';
 
 const TOKEN_ITEM = {
@@ -19,6 +20,35 @@ const ALPHA_ITEMS = {
   }
 };
 
+const ALPHA_PROMPT_MS = 2600;
+
+function showAlphaPrompt(player: RpgPlayer, message: string) {
+  if (typeof player.gui !== 'function' || typeof player.removeGui !== 'function') {
+    void player.showText(message);
+    return;
+  }
+
+  const gui = player.gui(PrebuiltGui.Dialog);
+  void gui.open(
+    {
+      message,
+      choices: [],
+      autoClose: true,
+      fullWidth: false,
+      typewriterEffect: false
+    },
+    {
+      waitingAction: false,
+      blockPlayerInput: false
+    }
+  );
+
+  const openId = gui.openId;
+  setTimeout(() => {
+    player.removeGui(PrebuiltGui.Dialog, undefined, openId);
+  }, ALPHA_PROMPT_MS);
+}
+
 export const SPIRITS = [
   { id: 'momo', name: 'Momo', graphic: 'spirit-momo', eligible: true },
   { id: 'yuzu', name: 'Yuzu', graphic: 'spirit-yuzu', eligible: false },
@@ -32,8 +62,11 @@ export function WelcomeNpc(): EventDefinition {
     },
 
     async onAction(player: RpgPlayer) {
-      await player.showText('Welcome to Mochi Social. This closed alpha town is no-real-value and Canary-only, but it is ready for cozy pet testing with friends.');
       player.showNotification('Social spark found', { time: 1800, icon: 'friend' });
+      showAlphaPrompt(
+        player,
+        'Welcome to Mochi Social. This closed alpha town is no-real-value and Canary-only, but it is ready for cozy pet testing with friends.'
+      );
     }
   };
 }
@@ -58,7 +91,7 @@ export function SpiritEvent(spirit: (typeof SPIRITS)[number]): EventDefinition {
     async onAction(player: RpgPlayer) {
       const pets = adoptedPets(player);
       if (pets.includes(spirit.id)) {
-        await player.showText(`${spirit.name} bounces close by. Your bond is already started.`);
+        showAlphaPrompt(player, `${spirit.name} bounces close by. Your bond is already started.`);
         return;
       }
 
@@ -69,7 +102,7 @@ export function SpiritEvent(spirit: (typeof SPIRITS)[number]): EventDefinition {
       player.setVariable(`mochiSocial.alpha.pet.${spirit.id}.growth`, 'seed');
       player.showNotification(`${spirit.name} befriended`, { time: 1800, icon: spirit.graphic });
       await player.save('auto', { title: 'Mochi Spirit befriended' }, { reason: 'auto', source: 'pet-befriend' });
-      await player.showText(`${spirit.name} joined your alpha companion list. Care at the garden shrine to grow your bond.`);
+      showAlphaPrompt(player, `${spirit.name} joined your alpha companion list. Care at the garden shrine to grow your bond.`);
     }
   };
 }
@@ -83,7 +116,7 @@ export function CareShrine(): EventDefinition {
     async onAction(player: RpgPlayer) {
       const activePet = player.getVariable<string>('mochiSocial.alpha.activePet') || adoptedPets(player)[0];
       if (!activePet) {
-        await player.showText('The garden shrine warms gently. Befriend a Mochi Spirit first, then return to care for it.');
+        showAlphaPrompt(player, 'The garden shrine warms gently. Befriend a Mochi Spirit first, then return to care for it.');
         return;
       }
 
@@ -94,7 +127,7 @@ export function CareShrine(): EventDefinition {
       player.setVariable(`mochiSocial.alpha.pet.${activePet}.growth`, nextGrowth);
       player.showNotification(`Bond ${nextBond}/5`, { time: 1800, icon: 'friend' });
       await player.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'pet-care' });
-      await player.showText(`Care complete. Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
+      showAlphaPrompt(player, `Care complete. Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
     }
   };
 }
@@ -111,11 +144,11 @@ export function MarketBoard(): EventDefinition {
         player.setVariable('mochiSocial.alpha.charmListed', true);
         player.showNotification('Fixed listing proof', { time: 1800, icon: 'market-board' });
         await player.save('auto', { title: 'Alpha market proof' }, { reason: 'auto', source: 'market-board' });
-        await player.showText('You listed a Lantern Charm for test soft currency. This proves fixed-price market flow without real value.');
+        showAlphaPrompt(player, 'You listed a Lantern Charm for test soft currency. This proves fixed-price market flow without real value.');
         return;
       }
 
-      await player.showText('Your Lantern Charm listing proof is already recorded for this alpha save.');
+      showAlphaPrompt(player, 'Your Lantern Charm listing proof is already recorded for this alpha save.');
     }
   };
 }
@@ -130,7 +163,7 @@ export function TradePost(): EventDefinition {
       player.setVariable('mochiSocial.alpha.tradeProof', true);
       player.showNotification('Direct trade proof', { time: 1800, icon: 'trade-post' });
       await player.save('auto', { title: 'Alpha trade proof' }, { reason: 'auto', source: 'trade-post' });
-      await player.showText('Direct trade proof recorded. Alpha direct trades stay eligible-assets-only and no-real-value.');
+      showAlphaPrompt(player, 'Direct trade proof recorded. Alpha direct trades stay eligible-assets-only and no-real-value.');
     }
   };
 }
@@ -143,7 +176,7 @@ export function CanaryShrine(): EventDefinition {
 
     async onAction(player: RpgPlayer) {
       if (!adoptedPets(player).includes('momo')) {
-        await player.showText('The Canary shrine responds to Momo certificates first. Befriend Momo before staging this proof.');
+        showAlphaPrompt(player, 'The Canary shrine responds to Momo certificates first. Befriend Momo before staging this proof.');
         return;
       }
 
@@ -153,7 +186,10 @@ export function CanaryShrine(): EventDefinition {
       }
       player.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
       await player.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
-      await player.showText('A no-real-value Enjin Canary certificate request is staged. Final mint/burn settlement requires configured Enjin Platform and Wallet Daemon services.');
+      showAlphaPrompt(
+        player,
+        'A no-real-value Enjin Canary certificate request is staged. Final mint/burn settlement requires configured Enjin Platform and Wallet Daemon services.'
+      );
     }
   };
 }
@@ -166,7 +202,7 @@ export function TokenChest(): EventDefinition {
 
     async onAction(player: RpgPlayer) {
       if (player.getVariable<boolean>('mochiSocial.tokenClaimed')) {
-        await player.showText('The chest is empty. Your Mochi Token is already tucked away.');
+        showAlphaPrompt(player, 'The chest is empty. Your Mochi Token is already tucked away.');
         return;
       }
 
@@ -174,7 +210,7 @@ export function TokenChest(): EventDefinition {
       player.setVariable('mochiSocial.tokenClaimed', true);
       player.showNotification('Mochi Token added', { time: 1800, icon: 'chest' });
       await player.save('auto', { title: 'Mochi Social first token' }, { reason: 'auto', source: 'token-chest' });
-      await player.showText('You found a Mochi Token. The server saved this little milestone.');
+      showAlphaPrompt(player, 'You found a Mochi Token. The server saved this little milestone.');
     }
   };
 }
