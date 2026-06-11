@@ -140,13 +140,17 @@ function readGitState() {
   const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
   const localHead = git(['rev-parse', 'HEAD']);
   const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const counts = upstream.ok ? git(['rev-list', '--left-right', '--count', `${firstLine(upstream.stdout)}...HEAD`]) : { ok: false, stdout: '', stderr: upstream.stderr };
   const worktree = git(['status', '--porcelain']);
+  const [behindText = '0', aheadText = '0'] = firstLine(counts.stdout).split(/\s+/);
   return {
     branch: firstLine(branch.stdout),
     localHead: firstLine(localHead.stdout),
     upstream: firstLine(upstream.stdout),
+    ahead: Number.parseInt(aheadText, 10) || 0,
+    behind: Number.parseInt(behindText, 10) || 0,
     dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
-    errors: [branch, localHead, upstream, worktree]
+    errors: [branch, localHead, upstream, counts, worktree]
       .filter((result) => !result.ok)
       .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
   };

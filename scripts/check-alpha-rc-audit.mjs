@@ -463,13 +463,7 @@ function addOperatorChecklistRequirements() {
     failures.push('operator checklist report must include the latest external gate summary');
   }
   const queue = Array.isArray(report.providerActionQueue) ? report.providerActionQueue : [];
-  const requiredQueueIds = [
-    'github-branch-sync',
-    'fly-secret-update',
-    'fly-live-game-url',
-    'vercel-supabase-preview-contract',
-    'enjin-canary-readiness'
-  ];
+  const requiredQueueIds = expectedProviderQueueIds(report.git, report.externalGateSummary?.failures || []);
   for (const id of requiredQueueIds) {
     if (!queue.some((item) => item?.id === id)) {
       failures.push(`operator checklist provider action queue missing ${id}`);
@@ -520,7 +514,8 @@ function addProviderPreflightRequirements() {
     failures.push('provider preflight report must include the no-cost boundary');
   }
   const queue = Array.isArray(report.providerActionQueue) ? report.providerActionQueue : [];
-  for (const id of ['github-branch-sync', 'fly-secret-update', 'fly-live-game-url', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']) {
+  const requiredQueueIds = expectedProviderQueueIds(report.git, report.externalFailures || []);
+  for (const id of requiredQueueIds) {
     if (!queue.some((item) => item?.id === id)) {
       failures.push(`provider preflight queue missing ${id}`);
     }
@@ -567,6 +562,22 @@ function currentGitStateFailures(gitState, label) {
     failures.push(`${label} dirty state does not match current worktree`);
   }
   return failures;
+}
+
+function expectedProviderQueueIds(gitState, failures) {
+  const ids = [];
+  const messages = Array.isArray(failures) ? failures.map((failure) => String(failure || '')) : [];
+  const hasFailure = (needle) => messages.some((message) => message.includes(needle));
+
+  if ((Number(gitState?.ahead) || 0) > 0 || (Array.isArray(gitState?.dirty) && gitState.dirty.length > 0)) {
+    ids.push('github-branch-sync');
+  }
+  if (hasFailure('Fly secret names')) ids.push('fly-secret-update');
+  if (hasFailure('Live game URL')) ids.push('fly-live-game-url');
+  if (hasFailure('Site preview contract')) ids.push('vercel-supabase-preview-contract');
+  if (hasFailure('Enjin Canary operator readiness')) ids.push('enjin-canary-readiness');
+
+  return ids;
 }
 
 function hasHostedUrl(value) {
