@@ -37,7 +37,7 @@ npm run alpha:browser-presence
 npm run alpha:enjin-operator-smoke
 ```
 
-`npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. `npm run alpha:browser-presence` uses local Chrome or `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to verify two tabs show the playable canvas, HUD, and presence chip. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and avoids live Enjin submissions unless an operator explicitly opts in. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the remaining manual RPGJS sprite/movement check.
+`npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. `npm run alpha:browser-presence` uses local Chrome or `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to verify two tabs show the playable canvas, HUD, presence chip, and HUD care/chat/emote/market/trade/Canary action loop. It is local-only unless `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true` is set after explicit hosted-preview approval. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and avoids live Enjin submissions unless an operator explicitly opts in. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the remaining manual RPGJS sprite/movement check.
 
 ## Deployment Boundary
 

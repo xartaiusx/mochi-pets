@@ -31,6 +31,7 @@ Ask for fresh, explicit user approval before:
 - Creating, funding, or dispatching Enjin Fuel Tanks; minting, burning, listing, or transferring any Enjin asset; requesting faucets; or submitting live chain proofs.
 - Pushing branches, rerunning GitHub Actions, enabling branch protection checks, or creating workflows when that can consume Actions minutes/storage. Treat push branches that trigger CI as cost-bearing until approved.
 - Running `npm run alpha:load-smoke` or browser presence checks against hosted URLs. Keep those local unless the user approves a hosted smoke.
+- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` against hosted previews without explicit approval.
 - Sending Discord messages, installing bots, changing OAuth apps, or enabling paid/community features.
 
 ## Approval Format

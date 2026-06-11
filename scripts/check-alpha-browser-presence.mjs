@@ -1,11 +1,24 @@
 import { chromium } from 'playwright-core';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 
+const root = process.cwd();
 const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL || 'http://localhost:3100').replace(/\/+$/, '');
 const timeoutMs = Number(process.env.MOCHI_SOCIAL_BROWSER_TIMEOUT_MS || 20000);
 const headless = process.env.MOCHI_SOCIAL_BROWSER_HEADFUL !== 'true';
+const reportPath = resolve(root, process.env.MOCHI_SOCIAL_BROWSER_PRESENCE_REPORT || 'reports/alpha-browser-presence.json');
+const hostedAllowed = process.env.MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE === 'true';
+const localBaseUrl = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(baseUrl);
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function assertNoHostedSmokeWithoutApproval() {
+  if (localBaseUrl || hostedAllowed) return;
+  throw new Error(
+    'Browser presence smoke is local-only by default. Set MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true only after explicit hosted-preview approval.'
+  );
 }
 
 async function launchBrowser() {
@@ -46,11 +59,85 @@ async function waitForPresence(page, expectedCount) {
   );
 }
 
+async function exerciseAlphaHud(page) {
+  const chatMessage = `Hello from browser smoke ${Date.now().toString(36)}`;
+  await page.click('[data-alpha-action="pet.care"]', { timeout: timeoutMs });
+  await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
+  await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="market.fixed_list"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="trade.direct_offer"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
+
+  await page.waitForFunction(
+    () => {
+      const pet = document.querySelector('[data-pet-label]')?.textContent || '';
+      const market = document.querySelector('[data-market-label]')?.textContent || '';
+      const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
+      const state = JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}');
+      const chat = Array.isArray(state.chat) ? state.chat.join(' ') : '';
+      return pet.includes('Momo')
+        && market.includes('Canary: requested')
+        && state.petId === 'momo'
+        && state.charmListed === true
+        && state.tradeProof === true
+        && state.canaryRequested === true
+        && chat.includes('Care complete')
+        && chat.includes('You wave')
+        && chat.includes('Lantern Charm listed')
+        && chat.includes('Direct trade proof')
+        && chat.includes('Canary certificate request staged')
+        && feed.includes('Canary');
+    },
+    undefined,
+    { timeout: timeoutMs }
+  );
+
+  const snapshot = await page.evaluate(() => {
+    const rawState = localStorage.getItem('mochiSocial.alphaState') || '{}';
+    const state = JSON.parse(rawState);
+    return {
+      pet: document.querySelector('[data-pet-label]')?.textContent?.trim() || '',
+      market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
+      feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || ''),
+      state
+    };
+  });
+
+  assert(snapshot.state.petId === 'momo', 'HUD care action must select Momo as the active pet.');
+  assert(snapshot.state.bond >= 1, 'HUD care action must increase pet bond.');
+  assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
+  assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
+  assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
+  const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
+  assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
+  assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');
+  assert(chat.some((line) => String(line).includes('Lantern Charm listed')), 'HUD chat state must record the fixed-list action.');
+  assert(chat.some((line) => String(line).includes('Direct trade proof')), 'HUD chat state must record the trade action.');
+  assert(chat.some((line) => String(line).includes('Canary certificate request staged')), 'HUD chat state must record the Canary action.');
+
+  return {
+    chatMessage,
+    ...snapshot
+  };
+}
+
 async function main() {
+  assertNoHostedSmokeWithoutApproval();
   const browser = await launchBrowser();
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 }
   });
+  const report = {
+    ok: false,
+    checkedAt: new Date().toISOString(),
+    baseUrl,
+    localOnlyDefault: true,
+    hostedAllowed,
+    scope: 'Two-tab browser presence and alpha HUD action smoke for the playable first screen.',
+    tabs: [],
+    hudAction: null
+  };
 
   try {
     const [firstTab, secondTab] = await Promise.all([context.newPage(), context.newPage()]);
@@ -81,16 +168,24 @@ async function main() {
       assert(tab.presence === 'Nearby: 2 testers', `Tab ${index + 1} presence label was "${tab.presence}".`);
     }
 
-    console.log(JSON.stringify({
-      ok: true,
-      baseUrl,
-      scope: 'Two-tab browser presence smoke for the playable alpha HUD and canvas.',
-      tabs: evidence
-    }, null, 2));
+    const hudAction = await exerciseAlphaHud(firstTab);
+
+    report.ok = true;
+    report.tabs = evidence;
+    report.hudAction = hudAction;
+    await writeReport(report);
+
+    console.log(JSON.stringify(report, null, 2));
+    console.log(`Report: ${reportPath}`);
   } finally {
     await context.close();
     await browser.close();
   }
+}
+
+async function writeReport(report) {
+  await mkdir(dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 }
 
 main().catch((error) => {

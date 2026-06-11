@@ -19,7 +19,7 @@ const checks = [
   },
   {
     file: 'docs/no-cost-operations.md',
-    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'push branches that trigger CI', 'Fuel Tanks', 'hosted load tests', 'Current Cost Posture']
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'push branches that trigger CI', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'Current Cost Posture']
   },
   {
     file: 'docs/codex-external-ops.md',
@@ -44,7 +44,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -104,7 +104,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
-    includes: ['playwright-core', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'Nearby: 2 testers', 'data-presence-label', 'canvas']
+    includes: ['playwright-core', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvas']
   },
   {
     file: 'scripts/check-enjin-operator-smoke.mjs',

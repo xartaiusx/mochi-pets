@@ -88,6 +88,11 @@ function addStaticRequirements() {
   requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
     'Nearby: 2 testers',
     'data-presence-label',
+    'data-alpha-action="pet.care"',
+    'chain.withdraw_request',
+    'mochiSocial.alphaState',
+    'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
+    'reports/alpha-browser-presence.json',
     'canvas'
   ]);
   requireFileIncludes('game.acceptance-docs', 'Alpha acceptance docs name every local and preview gate.', 'docs/alpha-acceptance.md', [
