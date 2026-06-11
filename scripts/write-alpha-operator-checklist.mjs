@@ -574,6 +574,17 @@ function buildProviderActionQueue() {
     });
   }
 
+  if (hasExternalFailure('Live game contract')) {
+    queue.push({
+      id: 'fly-live-game-contract',
+      provider: 'Fly.io',
+      title: 'Run the hosted Fly game contract check after approval.',
+      blocker: 'The Fly game URL exists, but the latest external gate report has not fetched the live game contract with hosted checks approved.',
+      approvalText: `I approve the hosted Fly game contract check for ${externalGateSummary.gameUrl || `https://${flyApp}.fly.dev`} using MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true. I understand it may hit Fly resources and add usage.`,
+      noCostFallback: 'Keep localhost-only proof and leave the Live game contract gate red.'
+    });
+  }
+
   if (hasExternalFailure('Site preview contract')) {
     queue.push({
       id: 'vercel-supabase-preview-contract',

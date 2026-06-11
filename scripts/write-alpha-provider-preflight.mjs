@@ -17,6 +17,7 @@ const expectedProviderActionIds = [
   'fly-secret-update',
   'fly-funded-chain-secret-update',
   'fly-live-game-url',
+  'fly-live-game-contract',
   'vercel-supabase-preview-contract',
   'enjin-canary-readiness'
 ];

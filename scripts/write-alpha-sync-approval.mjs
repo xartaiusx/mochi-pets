@@ -204,16 +204,16 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       approvalText: `I approve setting real funded-chain Fly secret names on ${flyApp} after Enjin Canary collection and Fuel Tank resources exist. I understand this may restart hosted resources or add usage.`
     },
     {
-      id: 'fly-deploy-hosted-smoke',
+      id: 'fly-live-game-contract',
       provider: 'Fly.io',
       phase: 'Alpha Preview Ready',
       currentlyRequired: liveGameContractNeeded,
       requirementReason: liveGameContractNeeded ? 'The live game contract gate needs an approved hosted check against the Fly URL.' : 'The live game contract gate is not currently requesting Fly hosted verification.',
-      action: 'Deploy or run hosted smoke/load/browser checks against the Fly game runtime.',
-      exactAction: `fly deploy -a ${flyApp} or MOCHI_SOCIAL_BASE_URL=${gameUrl} npm run <hosted-smoke-command>`,
-      costRisk: 'Deployments, hosted traffic, WebSocket checks, and load smoke can increase Fly runtime, bandwidth, and volume usage.',
+      action: 'Run the approved hosted Fly game contract check for Alpha Preview Ready.',
+      exactAction: `$env:MOCHI_SOCIAL_GAME_URL="${gameUrl}"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="${sitePreviewUrl}"; $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; npm run alpha:external-gates`,
+      costRisk: 'Hosted contract checks fetch the Fly runtime and can create Fly request/bandwidth/log usage. They do not deploy, scale, or run load tests.',
       noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, and localhost smoke checks only.',
-      approvalText: `I approve the specific Fly hosted action for ${flyApp}: <exact deploy or hosted smoke command>. I understand it may add usage or charges.`
+      approvalText: `I approve the hosted Fly game contract check for ${flyApp} using MOCHI_SOCIAL_GAME_URL=${gameUrl} with MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true. I understand it may hit Fly resources and add usage.`
     },
     {
       id: 'enjin-canary-operations',

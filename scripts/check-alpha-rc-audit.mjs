@@ -198,6 +198,7 @@ function addStaticRequirements() {
     'github-site-branch-sync',
     'fly-secret-update',
     'fly-funded-chain-secret-update',
+    'fly-live-game-contract',
     'vercel-supabase-preview-contract',
     'enjin-canary-readiness'
   ]);
@@ -702,6 +703,7 @@ function expectedProviderQueueIds(gitState, failures) {
   if (hasFailure('Fly preview secret names')) ids.push('fly-secret-update');
   if (hasFailure('Fly funded-chain secret names')) ids.push('fly-funded-chain-secret-update');
   if (hasFailure('Live game URL')) ids.push('fly-live-game-url');
+  if (hasFailure('Live game contract')) ids.push('fly-live-game-contract');
   if (hasFailure('Site preview contract')) ids.push('vercel-supabase-preview-contract');
   if (hasFailure('Enjin Canary operator readiness')) ids.push('enjin-canary-readiness');
 
