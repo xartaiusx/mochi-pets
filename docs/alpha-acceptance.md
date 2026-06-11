@@ -26,6 +26,7 @@ npm run alpha:browser-presence
 npm run alpha:visual-snapshot
 npm run alpha:enjin-operator-smoke
 npm run alpha:local-suite
+npm run alpha:local-evidence
 npm run alpha:external-gates
 npm run alpha:operator-checklist
 npm run alpha:rc-audit
@@ -61,6 +62,8 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 `npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
 
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
+
+Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
 
 ## Private Enjin Operator Smoke
 

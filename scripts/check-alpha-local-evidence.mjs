@@ -1,0 +1,161 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+
+const root = process.cwd();
+const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_EVIDENCE_JSON || 'reports/alpha-local-evidence.json');
+const reportMdPath = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_EVIDENCE_MD || 'reports/alpha-local-evidence.md');
+const failures = [];
+
+const localSuite = readJson('reports/alpha-local-suite.json');
+const builtServer = readJson('reports/built-server-smoke.json');
+const acceptance = readJson('reports/alpha-local-acceptance.json');
+const loadSmoke = readJson('reports/alpha-load-smoke.json');
+const browserPresence = readJson('reports/alpha-browser-presence.json');
+const visualSnapshot = readJson('reports/alpha-visual-snapshot.json');
+const operatorSmoke = readJson('reports/enjin-operator-smoke.json');
+
+assertReport('local suite', localSuite);
+assertReport('built server smoke', builtServer);
+assertReport('local acceptance', acceptance);
+assertReport('load smoke', loadSmoke);
+assertReport('browser presence', browserPresence);
+assertReport('visual snapshot', visualSnapshot);
+assertReport('Enjin operator smoke', operatorSmoke);
+
+assertLocalUrl(localSuite.data?.baseUrl, 'local suite baseUrl');
+assertLocalUrl(builtServer.data?.baseUrl, 'built server baseUrl');
+assertLocalUrl(acceptance.data?.baseUrl, 'local acceptance baseUrl');
+assertLocalUrl(loadSmoke.data?.baseUrl, 'load smoke baseUrl');
+assertLocalUrl(browserPresence.data?.baseUrl, 'browser presence baseUrl');
+assertLocalUrl(visualSnapshot.data?.baseUrl, 'visual snapshot baseUrl');
+assertLocalUrl(operatorSmoke.data?.baseUrl, 'operator smoke baseUrl');
+
+const commandNames = Array.isArray(localSuite.data?.commands)
+  ? localSuite.data.commands.map((command) => command.name)
+  : [];
+for (const command of ['build', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:enjin-operator-smoke']) {
+  if (!commandNames.includes(command)) failures.push(`local suite missing command: ${command}`);
+}
+if (Array.isArray(localSuite.data?.commands)) {
+  for (const command of localSuite.data.commands) {
+    if (command.status !== 0) failures.push(`local suite command failed: ${command.name}`);
+  }
+}
+
+assert(localSuite.data?.server?.stopped === true, 'local suite server must stop after the run');
+assert(builtServer.data?.server?.stopped === true, 'built server smoke server must stop after the run');
+assert(loadSmoke.data?.playerCount >= 10 && loadSmoke.data?.playerCount <= 25, 'load smoke player count must stay 10-25');
+assert(browserPresence.data?.localOnlyDefault === true && browserPresence.data?.hostedAllowed === false, 'browser presence must be local-only by default');
+assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
+assert(visualSnapshot.data?.localOnlyDefault === true && visualSnapshot.data?.hostedAllowed === false, 'visual snapshot must be local-only by default');
+assert(visualSnapshot.data?.screenshots?.page?.bytes > 1000, 'visual snapshot page PNG must be non-empty');
+assert(visualSnapshot.data?.screenshots?.canvas?.bytes > 1000, 'visual snapshot canvas PNG must be non-empty');
+assert(operatorSmoke.data?.scope?.includes('does not submit live Enjin operations by default'), 'operator smoke must remain fail-closed by default');
+assert(builtServer.data?.checks?.some((check) => check.name === 'tokened operator submit' && check.status === 409), 'built server smoke must prove tokened Enjin route fails closed without Enjin secrets');
+assert(acceptance.data?.actions?.some((action) => action.type === 'chain.withdraw_request'), 'local acceptance must record a Canary withdraw request');
+assert(loadSmoke.data?.actions?.length >= 20, 'load smoke must record at least 10 testers worth of chat/emote actions');
+
+const summary = {
+  ok: failures.length === 0,
+  checkedAt: new Date().toISOString(),
+  scope: 'No-secret local Alpha RC evidence summary. Reads ignored localhost reports and writes ignored summary artifacts.',
+  reports: {
+    localSuite: summarizeReport(localSuite),
+    builtServer: summarizeReport(builtServer),
+    acceptance: summarizeReport(acceptance),
+    loadSmoke: summarizeReport(loadSmoke, { playerCount: loadSmoke.data?.playerCount, actions: loadSmoke.data?.actions?.length }),
+    browserPresence: summarizeReport(browserPresence, { observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove }),
+    visualSnapshot: summarizeReport(visualSnapshot, {
+      pageBytes: visualSnapshot.data?.screenshots?.page?.bytes,
+      canvasBytes: visualSnapshot.data?.screenshots?.canvas?.bytes
+    }),
+    operatorSmoke: summarizeReport(operatorSmoke)
+  },
+  failures
+};
+
+await mkdir(dirname(reportJsonPath), { recursive: true });
+await writeFile(reportJsonPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+await writeFile(reportMdPath, renderMarkdown(summary), 'utf8');
+
+if (!summary.ok) {
+  console.error('Mochi Social local evidence summary failed:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  console.error(`Report: ${reportJsonPath}`);
+  process.exit(1);
+}
+
+console.log(`Mochi Social local evidence summary passed. Report: ${reportJsonPath}`);
+console.log(`Markdown: ${reportMdPath}`);
+
+function readJson(path) {
+  const absolutePath = resolve(root, path);
+  if (!existsSync(absolutePath)) {
+    return { ok: false, path, message: 'missing report' };
+  }
+  try {
+    return { ok: true, path, data: JSON.parse(readFileSync(absolutePath, 'utf8')) };
+  } catch {
+    return { ok: false, path, message: 'parse failed' };
+  }
+}
+
+function assertReport(label, report) {
+  if (!report.ok) {
+    failures.push(`${label} report unavailable: ${report.message}`);
+    return;
+  }
+  if (report.data?.ok !== true) failures.push(`${label} report is not ok`);
+}
+
+function assertLocalUrl(value, label) {
+  if (!/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(String(value || ''))) {
+    failures.push(`${label} must be localhost`);
+  }
+}
+
+function assert(condition, message) {
+  if (!condition) failures.push(message);
+}
+
+function summarizeReport(report, extra = {}) {
+  return {
+    path: report.path,
+    ok: report.data?.ok === true,
+    checkedAt: report.data?.checkedAt,
+    baseUrl: report.data?.baseUrl,
+    ...extra
+  };
+}
+
+function renderMarkdown(summaryReport) {
+  const rows = Object.entries(summaryReport.reports)
+    .map(([name, report]) => `| ${name} | ${report.ok ? 'pass' : 'fail'} | ${report.baseUrl || ''} | ${report.checkedAt || ''} |`)
+    .join('\n');
+  const failuresText = summaryReport.failures.length
+    ? summaryReport.failures.map((failure) => `- ${failure}`).join('\n')
+    : '- None';
+
+  return `# Mochi Social Local Alpha Evidence
+
+Generated: ${summaryReport.checkedAt}
+
+This file is intentionally no-secret and local-only. It summarizes ignored localhost reports; it does not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
+
+| Report | Status | Base URL | Checked At |
+| --- | --- | --- | --- |
+${rows}
+
+## Key Proofs
+
+- Built Express runtime starts locally and stops after smoke.
+- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, and private Enjin fail-closed behavior passed.
+- Browser and visual evidence stayed localhost-only.
+- Enjin remains configured-preview-stub locally; no live chain operation was submitted.
+
+## Failures
+
+${failuresText}
+`;
+}

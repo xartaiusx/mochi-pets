@@ -5,6 +5,7 @@ dist/
 coverage/
 reports/*.json
 reports/*.png
+reports/*.md
 .local/
 .env
 .env.*

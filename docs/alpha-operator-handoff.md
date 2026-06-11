@@ -67,6 +67,7 @@ npm test
 npm run build
 npm run alpha:built-server-smoke
 npm run alpha:local-suite
+npm run alpha:local-evidence
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
@@ -107,6 +108,7 @@ Manual gates:
 - `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then a human confirms NPC, chest, and habitat/care prompts look correct in the town.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
+- `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.
 - Feedback submission appears in the admin audit view.

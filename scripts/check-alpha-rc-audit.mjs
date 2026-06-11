@@ -13,6 +13,7 @@ const requirements = [];
 addStaticRequirements();
 addSiteRequirements();
 addProviderGateRequirements();
+addLocalEvidenceRequirements();
 addLocalBranchRequirements();
 addSiteBranchRequirements();
 addPrRequirements();
@@ -114,6 +115,15 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN',
     'delete env.ENJIN_PLATFORM_TOKEN',
     'reports/alpha-local-suite.json'
+  ]);
+  requireFileIncludes('game.local-evidence-script', 'Local evidence summary validates ignored localhost reports and writes no-secret summary artifacts.', 'scripts/check-alpha-local-evidence.mjs', [
+    'No-secret local Alpha RC evidence summary',
+    'alpha-local-evidence.json',
+    'alpha-local-evidence.md',
+    'browser presence must prove observer-side movement',
+    'visual snapshot canvas PNG must be non-empty',
+    'built server smoke must prove tokened Enjin route fails closed',
+    'local-only'
   ]);
   requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
@@ -242,6 +252,30 @@ function addProviderGateRequirements() {
       ? 'Fly, live game/site contract, Supabase, GitHub, and Enjin readiness gates passed.'
       : `External gates still incomplete: ${failures.join(', ')}.`,
     { reportPath: externalReportPath, checkedAt: report.checkedAt, failingChecks: failures });
+}
+
+function addLocalEvidenceRequirements() {
+  const evidenceReportPath = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_EVIDENCE_JSON || 'reports/alpha-local-evidence.json');
+  const evidenceReport = readJson(evidenceReportPath);
+  if (!evidenceReport.ok) {
+    add('local.evidence-summary', 'fail', `Local evidence summary is missing or invalid: ${evidenceReport.message}. Run npm run alpha:local-suite, then npm run alpha:local-evidence.`, { path: evidenceReportPath });
+    return;
+  }
+
+  const report = evidenceReport.data;
+  const failures = Array.isArray(report.failures) ? report.failures : ['failures array missing'];
+  add(
+    'local.evidence-summary',
+    report.ok === true && failures.length === 0 ? 'pass' : 'fail',
+    report.ok === true && failures.length === 0
+      ? 'Local no-secret evidence summary passed for localhost suite, browser, visual, load, built-server, and operator reports.'
+      : `Local evidence summary still has failures: ${failures.join(', ')}.`,
+    {
+      reportPath: evidenceReportPath,
+      checkedAt: report.checkedAt,
+      failures
+    }
+  );
 }
 
 function addPrRequirements() {
