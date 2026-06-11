@@ -11,6 +11,7 @@ const supabasePreviewRef = process.env.MOCHI_SOCIAL_SUPABASE_PROJECT_REF || 'dnx
 const gameUrl = (process.env.MOCHI_SOCIAL_GAME_URL || process.env.MOCHI_SOCIAL_BASE_URL || '').replace(/\/+$/, '');
 const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || '').replace(/\/+$/, '');
 const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const hostedChecksAllowed = process.env.MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS === 'true';
 
 const requiredFlySecrets = [
   'SUPABASE_URL',
@@ -35,6 +36,7 @@ const report = {
   supabasePreviewRef,
   gameUrl: gameUrl || null,
   sitePreviewUrl: sitePreviewUrl || null,
+  hostedChecksAllowed,
   checks: []
 };
 
@@ -152,6 +154,13 @@ async function checkLiveGameContract() {
     add('fail', 'Live game URL', 'Set MOCHI_SOCIAL_GAME_URL to the Fly game URL after deployment.');
     return;
   }
+  if (requiresHostedApproval(gameUrl)) {
+    add('fail', 'Live game contract', 'Hosted game contract checks require explicit approval via MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true.', {
+      gameUrl,
+      hostedChecksAllowed
+    });
+    return;
+  }
 
   try {
     const health = await fetchJson(`${gameUrl}/healthz`);
@@ -180,6 +189,14 @@ async function checkLiveGameContract() {
 function checkSiteContract() {
   if (!gameUrl || !sitePreviewUrl) {
     add('fail', 'Site preview contract', 'Set MOCHI_SOCIAL_GAME_URL and MOCHI_SOCIAL_SITE_PREVIEW_URL after Fly/Vercel preview binding.');
+    return;
+  }
+  if (requiresHostedApproval(gameUrl) || requiresHostedApproval(sitePreviewUrl)) {
+    add('fail', 'Site preview contract', 'Hosted site/game contract checks require explicit approval via MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true.', {
+      sitePreviewUrl,
+      gameUrl,
+      hostedChecksAllowed
+    });
     return;
   }
 
@@ -259,6 +276,19 @@ function parseJson(text) {
 
 function add(status, name, message, evidence = {}) {
   report.checks.push({ status, name, message, evidence });
+}
+
+function requiresHostedApproval(url) {
+  return Boolean(url) && !hostedChecksAllowed && !isLocalUrl(url);
+}
+
+function isLocalUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return ['localhost', '127.0.0.1', '::1', '[::1]'].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
 }
 
 async function writeReport() {

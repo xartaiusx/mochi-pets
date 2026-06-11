@@ -61,6 +61,7 @@ Recommended slash goal:
    - Run the private Enjin operator route smoke with `npm run alpha:enjin-operator-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon, with no-cost gates for every provider action.
+   - Require `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for any approved `npm run alpha:external-gates` pass that fetches hosted Fly/Vercel contract URLs.
 
 ## Public Contract
 
@@ -137,3 +138,5 @@ npm run build
 ```
 
 External operator steps stay interactive and no-cost gated: Fly/Vercel/Supabase/Enjin login, secret entry, Wallet Daemon seed creation, Fuel Tank funding, hosted load smoke, CI reruns, branch pushes, and preview deploy promotion.
+
+Hosted external gate checks stay no-cost gated too. Set `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` only for an explicitly approved hosted verification run; without it, `npm run alpha:external-gates` must refuse hosted Fly/Vercel contract fetches.

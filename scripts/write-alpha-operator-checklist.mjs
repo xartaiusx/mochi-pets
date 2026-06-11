@@ -216,6 +216,7 @@ Do not put Wallet Daemon seed material, KEY_PASS, service-role keys, or payment 
 \`\`\`powershell
 $env:MOCHI_SOCIAL_GAME_URL="https://${flyApp}.fly.dev"
 $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"
+$env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true" # Requires explicit hosted verification approval.
 $env:MOCHI_SOCIAL_SUPABASE_PROJECT_REF="${supabaseProjectRef}"
 $env:MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED="true"
 $env:MOCHI_SOCIAL_ENJIN_COLLECTION_READY="true"

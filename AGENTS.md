@@ -39,6 +39,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Keep Supabase service-role keys out of client and game code. The optional bridge only accepts short-lived user access tokens from the parent website.
 - Keep the alpha no-real-value by default: Enjin work targets Canary only, mainnet is out of scope, and all player-facing economy labels must say test/alpha when relevant.
 - Keep external-account work no-cost by default. Do not create paid resources, scale services, buy credits, upgrade plans, enable paid add-ons, fund Fuel Tanks, submit live chain transactions, run hosted load tests, deploy/redeploy paid previews, or push branches that trigger CI unless the user explicitly approves that exact cost-bearing action after a cost note.
+- Do not set `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` unless the user explicitly approves the hosted Fly/Vercel external verification run that may add usage.
 - Keep the creator surface curated for alpha. Do not add open user uploads, paid assets, cashout, minors support, public launch behavior, or production deploy automation without a later approved plan.
 - Use PR-per-milestone delivery. Work from scoped branches, keep CI green, and record handoff notes when a milestone touches game/site/Supabase/Enjin boundaries.
 - Supabase schema, privileged database writes, tester allowlist, terms acknowledgement, feedback, and admin UI belong in the separate Mochirii website repo. This repo owns the game runtime, contracts, Enjin orchestration, and game-side docs.

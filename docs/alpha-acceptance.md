@@ -85,8 +85,11 @@ Before Alpha RC Ready, run it with the Fly game URL and Vercel preview origin:
 $env:MOCHI_SOCIAL_GAME_URL="https://<fly-preview-host>"
 $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"
 $env:MOCHI_SOCIAL_SUPABASE_PROJECT_REF="<supabase-preview-ref>"
+$env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true" # Requires explicit hosted verification approval.
 npm run alpha:external-gates
 ```
+
+Without `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true`, the external gate script refuses hosted Fly/Vercel contract fetches and reports the hosted checks as blocked. This keeps accidental hosted traffic out of local-only work.
 
 For live Enjin completion, the operator must also provide non-public server env/secrets and set local confirmation flags only after dashboard verification: `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, `ENJIN_FUEL_TANK_ID`, `MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED=true`, `MOCHI_SOCIAL_ENJIN_COLLECTION_READY=true`, and `MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY=true`.
 

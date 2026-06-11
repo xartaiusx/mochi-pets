@@ -11,7 +11,7 @@ The game runtime needs a long-lived server process and multiplayer transport. Ve
 
 ## Fly Setup
 
-Fly operations are no-cost gated. Read-only checks such as `fly status`, `fly secrets list`, and `npm run smoke` against an already-running URL are allowed. Creating apps, creating or resizing volumes, deploying, scaling, cloning Machines, changing regions, or running hosted load tests can add usage or charges and requires fresh user approval. See [`docs/no-cost-operations.md`](no-cost-operations.md).
+Fly operations are no-cost gated. Read-only checks such as `fly status` and `fly secrets list` are allowed. Smoke or contract checks against an already-running hosted URL can still create traffic, so `npm run alpha:external-gates` requires `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` before it fetches hosted Fly/Vercel contract URLs. Creating apps, creating or resizing volumes, deploying, scaling, cloning Machines, changing regions, or running hosted load tests can add usage or charges and requires fresh user approval. See [`docs/no-cost-operations.md`](no-cost-operations.md).
 
 Cost-bearing example. Do not run this block without explicit user approval:
 

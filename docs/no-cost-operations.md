@@ -32,7 +32,7 @@ Ask for fresh, explicit user approval before:
 - Creating, funding, or dispatching Enjin Fuel Tanks; minting, burning, listing, or transferring any Enjin asset; requesting faucets; or submitting live chain proofs.
 - Pushing branches, rerunning GitHub Actions, enabling branch protection checks, or creating workflows when that can consume Actions minutes/storage. Treat push branches that trigger CI as cost-bearing until approved.
 - Running `npm run alpha:load-smoke` or browser presence checks against hosted URLs. Keep those local unless the user approves a hosted smoke.
-- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` against hosted previews without explicit approval.
+- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
 - Sending Discord messages, installing bots, changing OAuth apps, or enabling paid/community features.
 
 ## Approval Format
@@ -53,5 +53,6 @@ Before a cost-bearing action, state:
 - Treat the existing Fly machine and volume as already-provisioned resources that may accrue usage. Do not scale, redeploy, resize, or create more resources without approval.
 - Enjin Wallet Daemon may remain a local operator process, but do not submit live Enjin operations or fund a Fuel Tank without approval.
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, CI, or load-smoke step.
+- `npm run alpha:external-gates` refuses hosted Fly/Vercel contract fetches unless `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` is set for an explicitly approved hosted verification run.
 - Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.
 - Use `npm run alpha:sync-approval` to summarize the unpushed commits and current external blockers before requesting that approval.
