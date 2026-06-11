@@ -52,7 +52,7 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 
 ## Built Server Smoke
 
-`npm run alpha:built-server-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with throwaway server-token env, no Enjin live secrets, and no Supabase Edge forwarding. It verifies `/healthz`, `/play`, `/integration/game-manifest.json`, `/integration/alpha/status`, and the private Enjin operator route fail-closed path. This catches server bundle/runtime drift before any Fly deploy.
+`npm run alpha:built-server-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with throwaway server-token env, no Enjin live secrets, and no Supabase Edge forwarding. It verifies `/healthz`, `/play`, `/integration/game-manifest.json`, `/integration/alpha/status`, and the private Enjin operator route fail-closed path. This catches server bundle/runtime drift before any Fly deploy. The ignored `reports/built-server-smoke.json` report includes sanitized server stdout/stderr, exit code, and exit signal even if the built server exits before readiness.
 
 ## Private Enjin Operator Smoke
 

@@ -22,15 +22,19 @@ const report = {
 
 let child;
 let exitCode = 0;
+let stdout = '';
+let stderr = '';
 
 try {
   await run();
   report.ok = true;
+  recordServerOutput();
   await writeReport();
   console.log(`Mochi Social built server smoke passed for ${baseUrl}`);
   console.log(`Report: ${reportPath}`);
 } catch (error) {
   report.error = error instanceof Error ? error.message : String(error);
+  recordServerOutput();
   await writeReport();
   console.error('Mochi Social built server smoke failed:');
   console.error(report.error);
@@ -48,8 +52,6 @@ async function run() {
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
-  let stdout = '';
-  let stderr = '';
   child.stdout?.on('data', (chunk) => {
     stdout += String(chunk);
   });
@@ -83,11 +85,6 @@ async function run() {
   assert(tokened.status === 409, 'Built server tokened Enjin operator route must fail closed without Enjin secrets.');
   assert(tokened.body?.error === 'enjin_canary_not_configured', 'Tokened operator route must explain missing Enjin Canary config.');
   assert(tokened.body?.chainRuntime?.mode === 'configured-preview-stub', 'Tokened operator response must expose configured-preview-stub.');
-
-  report.server = {
-    stdout: sanitize(stdout),
-    stderr: sanitize(stderr)
-  };
 }
 
 function buildServerEnv() {
@@ -184,6 +181,15 @@ async function findFreePort() {
 async function writeReport() {
   await mkdir(dirname(reportPath), { recursive: true });
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+}
+
+function recordServerOutput() {
+  report.server = {
+    stdout: sanitize(stdout),
+    stderr: sanitize(stderr),
+    exitCode: child?.exitCode ?? null,
+    exitSignal: child?.signalCode ?? null
+  };
 }
 
 function delay(ms) {
