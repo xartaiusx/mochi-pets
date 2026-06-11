@@ -53,7 +53,7 @@ Recommended slash goal:
    - Run game install/typecheck/lint/test/build/smoke.
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
    - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke` locally by default. Hosted load smoke requires explicit user approval.
-   - Run the two-tab browser presence smoke with `npm run alpha:browser-presence`, then complete the manual RPGJS sprite/movement check.
+   - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions; then complete the manual NPC/chest/habitat map-object prompt check.
    - Run the private Enjin operator route smoke with `npm run alpha:enjin-operator-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon, with no-cost gates for every provider action.

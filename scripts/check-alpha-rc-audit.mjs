@@ -85,7 +85,7 @@ function addStaticRequirements() {
     '/integration/alpha/enjin/submit',
     'invalid_game_server_token'
   ]);
-  requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
+  requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, movement signatures, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
     'Nearby: 2 testers',
     'data-presence-label',
     'data-alpha-action="pet.care"',
@@ -93,6 +93,11 @@ function addStaticRequirements() {
     'mochiSocial.alphaState',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'reports/alpha-browser-presence.json',
+    'canvasMovement',
+    'changedAfterFirstTabMove',
+    'ArrowRight',
+    'ArrowDown',
+    'createHash',
     'canvas'
   ]);
   requireFileIncludes('game.acceptance-docs', 'Alpha acceptance docs name every local and preview gate.', 'docs/alpha-acceptance.md', [

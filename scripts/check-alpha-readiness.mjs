@@ -44,7 +44,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'canvas movement response', 'observer-side canvas change', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -104,7 +104,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
-    includes: ['playwright-core', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvas']
+    includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowRight', 'ArrowDown', 'canvas']
   },
   {
     file: 'scripts/check-enjin-operator-smoke.mjs',

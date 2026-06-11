@@ -1,6 +1,6 @@
 # Alpha Acceptance
 
-This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, and the manual multiplayer visual check that still needs human eyes.
+This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, and the manual map-object visual check that still needs human eyes.
 
 ## Local Script
 
@@ -83,20 +83,19 @@ For live Enjin completion, the operator must also provide non-public server env/
 
 ## Two-tab Presence Gate
 
-`npm run alpha:browser-presence` opens two pages in one browser context and verifies both tabs render the game canvas, the alpha HUD, and a `Nearby: 2 testers` presence chip. It also clicks the HUD care, chat, emote, fixed-list, direct-trade, and Canary certificate actions, then verifies the visible HUD and `mochiSocial.alphaState` update. It writes `reports/alpha-browser-presence.json`.
+`npm run alpha:browser-presence` opens two pages in one browser context and verifies both tabs render the game canvas, the alpha HUD, and a `Nearby: 2 testers` presence chip. It captures canvas screenshot signatures, sends movement keys in both tabs, verifies each canvas changes, and verifies the observer tab changes after first-tab movement. It also clicks the HUD care, chat, emote, fixed-list, direct-trade, and Canary certificate actions, then verifies the visible HUD and `mochiSocial.alphaState` update. It writes `reports/alpha-browser-presence.json`.
 
 The browser smoke is local-only by default to avoid hosted preview usage. Set `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true` only after explicit hosted-preview approval. It prefers installed Chrome. If Chrome is installed outside the default Playwright channel, set `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to the browser executable path. Set `MOCHI_SOCIAL_BROWSER_HEADFUL=true` when you want to watch the check run.
 
-The browser smoke proves the HUD-level two-tab presence contract, but canvas-level RPGJS sprite movement still needs human eyes before Alpha RC Ready:
+The browser smoke proves HUD-level two-tab presence, canvas movement response, and a synchronized observer-side canvas change. The remaining human visual check is for map object prompts and overall scene confidence before Alpha RC Ready:
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
-2. Confirm both tabs show the game canvas, HUD, and a `Nearby: 2 testers` presence chip.
-3. Move both players after the scene loads.
-4. Verify each tab shows the other player sprite in the same town.
-5. Interact with the NPC, chest, and habitat/care loop in at least one tab.
-6. Record the date, browser, game URL, and result in the PR or release checklist.
+2. Confirm the game canvas, HUD, and town scene are visually coherent.
+3. Interact with the NPC, chest, and habitat/care loop in at least one tab.
+4. Confirm the prompts and notifications match the alpha no-real-value scope.
+5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
 
-Keep the manual movement check until a later canvas-aware automation can assert both player sprites moving in the same RPGJS scene.
+Keep the manual map-object check until a later RPGJS event-level automation can assert NPC, chest, habitat, and dialog state directly.
 
 ## Alpha RC Stop Point
 

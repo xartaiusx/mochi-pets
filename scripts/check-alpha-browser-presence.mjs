@@ -1,6 +1,7 @@
 import { chromium } from 'playwright-core';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const root = process.cwd();
 const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL || 'http://localhost:3100').replace(/\/+$/, '');
@@ -57,6 +58,67 @@ async function waitForPresence(page, expectedCount) {
     expectedCount,
     { timeout: timeoutMs }
   );
+}
+
+async function captureCanvasSignature(page, label) {
+  const canvas = page.locator('canvas').first();
+  await canvas.waitFor({ timeout: timeoutMs });
+  const screenshot = await canvas.screenshot({ timeout: timeoutMs });
+  return {
+    label,
+    bytes: screenshot.length,
+    sha256: createHash('sha256').update(screenshot).digest('hex')
+  };
+}
+
+async function focusCanvas(page, label) {
+  const canvas = page.locator('canvas').first();
+  const box = await canvas.boundingBox({ timeout: timeoutMs });
+  assert(box && box.width > 100 && box.height > 100, `${label} canvas was not large enough to focus for movement.`);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+}
+
+async function moveCanvasAndCapture(page, label, key) {
+  const before = await captureCanvasSignature(page, `${label}-before-${key}`);
+  await focusCanvas(page, label);
+  await page.keyboard.down(key);
+  await page.waitForTimeout(450);
+  await page.keyboard.up(key);
+  await page.waitForTimeout(450);
+  const after = await captureCanvasSignature(page, `${label}-after-${key}`);
+
+  assert(before.bytes > 1000, `${label} before-move canvas screenshot was unexpectedly small.`);
+  assert(after.bytes > 1000, `${label} after-move canvas screenshot was unexpectedly small.`);
+  assert(before.sha256 !== after.sha256, `${label} canvas did not change after ${key}.`);
+
+  return {
+    key,
+    before,
+    after
+  };
+}
+
+async function verifyCanvasMovement(firstTab, secondTab) {
+  const observerBefore = await captureCanvasSignature(secondTab, 'second-tab-before-first-tab-move');
+  const firstTabMovement = await moveCanvasAndCapture(firstTab, 'first-tab', 'ArrowRight');
+  await secondTab.waitForTimeout(700);
+  const observerAfter = await captureCanvasSignature(secondTab, 'second-tab-after-first-tab-move');
+  const secondTabMovement = await moveCanvasAndCapture(secondTab, 'second-tab', 'ArrowDown');
+
+  assert(
+    observerBefore.sha256 !== observerAfter.sha256,
+    'Second tab canvas did not change after first-tab movement, so synchronized sprite presence was not observed.'
+  );
+
+  return {
+    firstTab: firstTabMovement,
+    secondTab: secondTabMovement,
+    observer: {
+      before: observerBefore,
+      after: observerAfter,
+      changedAfterFirstTabMove: true
+    }
+  };
 }
 
 async function exerciseAlphaHud(page) {
@@ -136,6 +198,7 @@ async function main() {
     hostedAllowed,
     scope: 'Two-tab browser presence and alpha HUD action smoke for the playable first screen.',
     tabs: [],
+    canvasMovement: null,
     hudAction: null
   };
 
@@ -168,10 +231,12 @@ async function main() {
       assert(tab.presence === 'Nearby: 2 testers', `Tab ${index + 1} presence label was "${tab.presence}".`);
     }
 
+    const canvasMovement = await verifyCanvasMovement(firstTab, secondTab);
     const hudAction = await exerciseAlphaHud(firstTab);
 
     report.ok = true;
     report.tabs = evidence;
+    report.canvasMovement = canvasMovement;
     report.hudAction = hudAction;
     await writeReport(report);
 

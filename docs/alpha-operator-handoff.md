@@ -101,7 +101,7 @@ npm run build
 
 Manual gates:
 
-- `npm run alpha:browser-presence` passes, then two browser tabs show player sprites after movement.
+- `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then a human confirms NPC, chest, and habitat/care prompts look correct in the town.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.
 - Feedback submission appears in the admin audit view.
