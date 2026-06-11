@@ -11,6 +11,7 @@ const auditPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT |
 const externalGatePath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
 const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 const prStateFixturePath = process.env.MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE || '';
+const previewEnvPath = resolve(credsDir, process.env.MOCHI_SOCIAL_PREVIEW_ENV_FILE || 'mochi-social-alpha-vercel-preview.local.txt');
 const generatedAt = new Date().toISOString();
 
 const gitState = readGitState();
@@ -21,7 +22,8 @@ const prState = {
 };
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
-const approvalActions = buildApprovalActions(gitState, siteGitState, externalGateSummary);
+const previewEnv = readPreviewEnvFile(previewEnvPath);
+const approvalActions = buildApprovalActions(gitState, siteGitState, externalGateSummary, previewEnv);
 const requiredApprovalActions = approvalActions.filter((action) => action.currentlyRequired);
 
 const summary = {
@@ -33,6 +35,7 @@ const summary = {
   prState,
   audit: auditSummary,
   externalGates: externalGateSummary,
+  previewEnv,
   approvalsRequired: requiredApprovalActions.map((action) => action.action),
   approvalActions
 };
@@ -241,14 +244,14 @@ function readPrFixture(repo, number, localHead) {
   };
 }
 
-function buildApprovalActions(currentGitState, currentSiteGitState, currentExternalGateSummary) {
+function buildApprovalActions(currentGitState, currentSiteGitState, currentExternalGateSummary, currentPreviewEnv) {
   const branch = currentGitState.branch || '<branch>';
   const upstream = currentGitState.upstream || `origin/${branch}`;
   const siteBranch = currentSiteGitState.branch || 'codex/mochi-social-alpha-rc';
   const siteUpstream = currentSiteGitState.upstream || `origin/${siteBranch}`;
   const flyApp = currentExternalGateSummary.flyApp || 'mochi-social-game';
-  const gameUrl = currentExternalGateSummary.gameUrl || `https://${flyApp}.fly.dev`;
-  const sitePreviewUrl = currentExternalGateSummary.sitePreviewUrl || 'https://<vercel-preview-host>';
+  const gameUrl = currentExternalGateSummary.gameUrl || currentPreviewEnv?.gameUrl || `https://${flyApp}.fly.dev`;
+  const sitePreviewUrl = currentExternalGateSummary.sitePreviewUrl || currentPreviewEnv?.sitePreviewUrl || 'https://<vercel-preview-host>';
   const gameSyncNeeded = branchSyncNeeded(currentGitState);
   const siteSyncNeeded = branchSyncNeeded(currentSiteGitState);
   const flyPreviewSecretsNeeded = hasExternalFailure(currentExternalGateSummary, 'Fly preview secret names');
@@ -356,6 +359,48 @@ function hasExternalFailure(summary, name) {
     && summary.failures.some((failure) => String(failure || '').startsWith(`${name}:`));
 }
 
+function readPreviewEnvFile(file) {
+  const base = {
+    path: pathForReport(file),
+    present: false,
+    gameUrl: '',
+    sitePreviewUrl: '',
+    urlFieldsRead: []
+  };
+  if (!existsSync(file)) return base;
+
+  const text = readFileSync(file, 'utf8');
+  const gameUrl = readNamedUrl(text, ['MOCHI_SOCIAL_GAME_URL', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL']);
+  const sitePreviewUrl = readNamedUrl(text, ['MOCHI_SOCIAL_SITE_PREVIEW_URL', 'NEXT_PUBLIC_SITE_URL']);
+  return {
+    ...base,
+    present: true,
+    gameUrl,
+    sitePreviewUrl,
+    urlFieldsRead: [
+      gameUrl ? 'MOCHI_SOCIAL_GAME_URL/NEXT_PUBLIC_MOCHI_SOCIAL_URL' : '',
+      sitePreviewUrl ? 'MOCHI_SOCIAL_SITE_PREVIEW_URL/NEXT_PUBLIC_SITE_URL' : ''
+    ].filter(Boolean)
+  };
+}
+
+function readNamedUrl(text, names) {
+  for (const name of names) {
+    const pattern = new RegExp(`^\\s*${name}\\s*=\\s*(.+?)\\s*$`, 'm');
+    const match = text.match(pattern);
+    if (!match) continue;
+    const value = sanitizeUrl(match[1]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function sanitizeUrl(value) {
+  const trimmed = String(value || '').trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+  if (!/^https:\/\/[A-Za-z0-9.-]+(?::\d+)?(?:\/[^\s]*)?$/.test(trimmed)) return '';
+  return sanitize(trimmed);
+}
+
 function readJson(file) {
   if (!existsSync(file)) return { ok: false, message: 'not found' };
   try {
@@ -380,6 +425,15 @@ function git(args, cwd = root) {
 
 function firstLine(value) {
   return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
+}
+
+function pathForReport(absolutePath) {
+  const normalized = String(absolutePath || '').replace(/\\/g, '/');
+  const normalizedRoot = root.replace(/\\/g, '/');
+  const normalizedCreds = credsDir.replace(/\\/g, '/');
+  if (normalized.startsWith(`${normalizedRoot}/`)) return normalized.slice(normalizedRoot.length + 1);
+  if (normalized.startsWith(`${normalizedCreds}/`)) return normalized.slice(normalizedCreds.length + 1);
+  return sanitize(absolutePath);
 }
 
 function sanitize(value) {
@@ -457,6 +511,8 @@ I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.bra
   const approvals = report.approvalsRequired.length
     ? report.approvalsRequired.map((item) => `- ${item}`).join('\n')
     : '- None. No immediate cost-sensitive approval is required by this packet.';
+  const previewEnvGame = report.previewEnv.gameUrl || 'not recorded';
+  const previewEnvSite = report.previewEnv.sitePreviewUrl || 'not recorded';
   const actionMatrix = report.approvalActions.map((action) => `### ${action.id}
 
 - Provider: ${action.provider}
@@ -555,6 +611,21 @@ ${auditFailures}
 Open external gates:
 
 ${externalFailures}
+
+## Local Preview URL File
+
+- File: ${report.previewEnv.path}
+- Present: ${report.previewEnv.present ? 'yes' : 'no'}
+- Game URL: ${previewEnvGame}
+- Site preview URL: ${previewEnvSite}
+- URL fields read: ${report.previewEnv.urlFieldsRead.length ? report.previewEnv.urlFieldsRead.join(', ') : 'none'}
+
+This file is no-secret and should contain URLs only, for example:
+
+\`\`\`text
+MOCHI_SOCIAL_GAME_URL=https://mochi-social-game.fly.dev
+MOCHI_SOCIAL_SITE_PREVIEW_URL=https://<vercel-preview-host>
+\`\`\`
 
 ## Approval Required Before Continuing
 
