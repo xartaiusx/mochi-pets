@@ -117,6 +117,8 @@ Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates` i
 
 The Mochirii repo mirrors this with `npm run check:mochi-social-preview-ready`, which writes ignored no-secret site-side reports and requires game Preview Ready evidence, site branch sync, hosted game contract proof, Supabase Edge smoke, and explicit manual browser gate confirmation before testers enter.
 
+Full `npm run alpha:rc-audit` reads the Mochirii site-side report from `../Mochirii/reports/mochi-social-preview-ready.json` and fails until it is green and current, because allowlist, terms, feedback, and browser-gate proof belong to the website repo.
+
 ## Private Enjin Operator Smoke
 
 `npm run alpha:enjin-operator-smoke` verifies `POST /integration/alpha/enjin/submit` fails closed without the private game server token. When testing a local server that was started with a non-production `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, set `MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN` to the same value to also verify the tokened no-Enjin-secrets path returns `enjin_canary_not_configured`.

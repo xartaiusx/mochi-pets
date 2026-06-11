@@ -12,6 +12,7 @@ const requirements = [];
 
 addStaticRequirements();
 addSiteRequirements();
+addSitePreviewReadyReportRequirements();
 addProviderGateRequirements();
 addLocalEvidenceRequirements();
 addReportHygieneRequirements();
@@ -424,6 +425,53 @@ function addSiteRequirements() {
   ]);
 }
 
+function addSitePreviewReadyReportRequirements() {
+  const sitePreviewReportPath = resolve(siteRepoPath, process.env.MOCHI_SOCIAL_SITE_PREVIEW_READY_JSON || 'reports/mochi-social-preview-ready.json');
+  const sitePreviewReport = readJson(sitePreviewReportPath);
+  if (!sitePreviewReport.ok) {
+    add('site.preview-ready-report', 'fail', `Mochirii Preview Ready report is missing or invalid: ${sitePreviewReport.message}. Run npm run check:mochi-social-preview-ready in the Mochirii repo after approved hosted/browser checks.`, {
+      path: sitePreviewReportPath
+    });
+    return;
+  }
+
+  const report = sitePreviewReport.data;
+  const failures = [];
+  if (report.ok !== true) {
+    const failing = Array.isArray(report.requirements)
+      ? report.requirements.filter((item) => item.status !== 'pass').map((item) => item.id).join(', ')
+      : 'requirements missing';
+    failures.push(`site Preview Ready report is not ok${failing ? `: ${failing}` : ''}`);
+  }
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.git, 'site Preview Ready report'));
+  failures.push(...currentGitStateFailuresForRepo(root, report.gameGit, 'site Preview Ready game snapshot'));
+  if (report.hostedChecksAllowed !== true && report.ok === true) {
+    failures.push('site Preview Ready cannot pass hosted gates without explicit hosted-check approval');
+  }
+  if (hasHostedUrl(report.gameUrl) && report.hostedChecksAllowed !== true && report.ok === true) {
+    failures.push('site Preview Ready hosted game contract cannot pass without hosted-check approval');
+  }
+  if (hasHostedUrl(report.siteOrigin) && report.hostedChecksAllowed !== true && report.ok === true) {
+    failures.push('site Preview Ready hosted site browser gates cannot pass without hosted-check approval');
+  }
+
+  add(
+    'site.preview-ready-report',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Mochirii Preview Ready report is incomplete: ${failures.join(', ')}.`
+      : 'Mochirii Preview Ready report is green, current, and backed by approved hosted/browser evidence.',
+    {
+      reportPath: sitePreviewReportPath,
+      checkedAt: report.checkedAt,
+      hostedChecksAllowed: report.hostedChecksAllowed,
+      reportHead: report.git?.localHead,
+      gameReportHead: report.gameGit?.localHead,
+      failures
+    }
+  );
+}
+
 function addProviderGateRequirements() {
   const externalReportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
   const externalReport = readJson(externalReportPath);
@@ -612,10 +660,14 @@ function addProviderPreflightRequirements() {
 }
 
 function currentGitStateFailures(gitState, label) {
+  return currentGitStateFailuresForRepo(root, gitState, label);
+}
+
+function currentGitStateFailuresForRepo(repoPath, gitState, label) {
   const failures = [];
-  const head = commandAt(root, 'git', ['rev-parse', 'HEAD']);
-  const upstream = commandAt(root, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
-  const worktree = commandAt(root, 'git', ['status', '--porcelain']);
+  const head = commandAt(repoPath, 'git', ['rev-parse', 'HEAD']);
+  const upstream = commandAt(repoPath, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = commandAt(repoPath, 'git', ['status', '--porcelain']);
   if (!gitState) failures.push(`${label} must include git state`);
   if (!head.ok) failures.push('current local HEAD could not be read');
   if (!upstream.ok) failures.push('current upstream could not be read');
