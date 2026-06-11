@@ -14,6 +14,7 @@ const generatedAt = new Date().toISOString();
 const gitState = readGitState();
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
+const approvalActions = buildApprovalActions(gitState, externalGateSummary);
 
 const summary = {
   ok: true,
@@ -22,13 +23,8 @@ const summary = {
   git: gitState,
   audit: auditSummary,
   externalGates: externalGateSummary,
-  approvalsRequired: [
-    'Push local game branch to origin and allow GitHub Actions/PR checks to run.',
-    'Set or change Fly secrets, deploy, scale, or run hosted Fly smoke/load checks.',
-    'Create, fund, or dispatch Enjin Canary Fuel Tank or chain operations.',
-    'Change Vercel/Supabase preview configuration or deploy preview resources.',
-    'Run hosted browser, acceptance, or load smokes against Fly/Vercel/Supabase.'
-  ]
+  approvalsRequired: approvalActions.map((action) => action.action),
+  approvalActions
 };
 
 await mkdir(dirname(reportPath), { recursive: true });
@@ -119,6 +115,62 @@ function readExternalGateSummary() {
   };
 }
 
+function buildApprovalActions(currentGitState, currentExternalGateSummary) {
+  const branch = currentGitState.branch || '<branch>';
+  const upstream = currentGitState.upstream || `origin/${branch}`;
+  const flyApp = currentExternalGateSummary.flyApp || 'mochi-social-game';
+  const gameUrl = currentExternalGateSummary.gameUrl || `https://${flyApp}.fly.dev`;
+  const sitePreviewUrl = currentExternalGateSummary.sitePreviewUrl || 'https://<vercel-preview-host>';
+
+  return [
+    {
+      id: 'github-branch-sync',
+      provider: 'GitHub',
+      action: 'Push local game branch to origin and allow GitHub Actions/PR checks to run.',
+      exactAction: `git push origin ${branch}`,
+      costRisk: 'Pushes can trigger GitHub Actions minutes, storage, and PR check usage depending on account and repository settings.',
+      noCostAlternative: 'Keep the branch local, continue local verification, and leave github.local-branch-sync red in npm run alpha:rc-audit.',
+      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream} and allow GitHub Actions/PR checks to run for Mochi Social.`
+    },
+    {
+      id: 'fly-secret-update',
+      provider: 'Fly.io',
+      action: 'Set or change Fly secrets required for the Enjin Canary alpha runtime.',
+      exactAction: `fly secrets set -a ${flyApp} ENJIN_COLLECTION_ID=<private-enjin-collection-id> ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>`,
+      costRisk: 'Fly secret changes can create a new release or restart running Machines, and the existing Fly app and volume can accrue usage while running.',
+      noCostAlternative: 'Leave the live runtime in configured-preview-stub mode and keep local Enjin operator smoke fail-closed.',
+      approvalText: `I approve setting the missing Fly secret names on ${flyApp} for Mochi Social Alpha RC and understand this may restart hosted resources or add usage.`
+    },
+    {
+      id: 'fly-deploy-hosted-smoke',
+      provider: 'Fly.io',
+      action: 'Deploy or run hosted smoke/load/browser checks against the Fly game runtime.',
+      exactAction: `fly deploy -a ${flyApp} or MOCHI_SOCIAL_BASE_URL=${gameUrl} npm run <hosted-smoke-command>`,
+      costRisk: 'Deployments, hosted traffic, WebSocket checks, and load smoke can increase Fly runtime, bandwidth, and volume usage.',
+      noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, and localhost smoke checks only.',
+      approvalText: `I approve the specific Fly hosted action for ${flyApp}: <exact deploy or hosted smoke command>. I understand it may add usage or charges.`
+    },
+    {
+      id: 'enjin-canary-operations',
+      provider: 'Enjin Canary',
+      action: 'Create/fund Fuel Tank resources or submit Canary mint, burn, listing, transfer, or proof operations.',
+      exactAction: 'Use Enjin Platform dashboard/API/Wallet Daemon only for the specific approved Canary collection, Fuel Tank, and transaction proof.',
+      costRisk: 'Fuel Tank funding, sponsored transactions, cloud Wallet Daemon hosting, faucets, and live chain operations can consume account resources or sponsored balances.',
+      noCostAlternative: 'Keep Enjin readiness flags unset and use configured-preview-stub plus local fail-closed operator smoke.',
+      approvalText: 'I approve the specific Enjin Canary action: <exact collection, Fuel Tank, Wallet Daemon, or transaction proof action>. I understand it may add usage, sponsored transaction cost, or cloud/resource charges.'
+    },
+    {
+      id: 'vercel-supabase-preview',
+      provider: 'Vercel/Supabase',
+      action: 'Change preview env, deploy preview branches, deploy Edge Functions, or run hosted site checks.',
+      exactAction: `Set NEXT_PUBLIC_MOCHI_SOCIAL_URL=${gameUrl} for the Mochirii preview and verify ${sitePreviewUrl} only after approval.`,
+      costRisk: 'Preview builds, Edge Functions, database/branch activity, logs, and hosted checks can consume Vercel or Supabase usage.',
+      noCostAlternative: 'Keep local game/site contract checks and no-secret operator checklist evidence only.',
+      approvalText: 'I approve the specific Vercel/Supabase preview action: <exact env/deploy/check command or dashboard action>. I understand it may add usage or charges.'
+    }
+  ];
+}
+
 function readJson(file) {
   if (!existsSync(file)) return { ok: false, message: 'not found' };
   try {
@@ -168,6 +220,15 @@ function renderMarkdown(report) {
     ? report.externalGates.failures.map((failure) => `- ${failure}`).join('\n')
     : '- None.';
   const approvals = report.approvalsRequired.map((item) => `- ${item}`).join('\n');
+  const actionMatrix = report.approvalActions.map((action) => `### ${action.id}
+
+- Provider: ${action.provider}
+- Action: ${action.action}
+- Exact action: ${action.exactAction}
+- Cost/usage risk: ${action.costRisk}
+- No-cost alternative: ${action.noCostAlternative}
+- Approval text: ${action.approvalText}
+`).join('\n');
 
   return `# Mochi Social Alpha Sync Approval Packet
 
@@ -219,6 +280,10 @@ ${externalFailures}
 ## Approval Required Before Continuing
 
 ${approvals}
+
+## Cost-Sensitive Action Matrix
+
+${actionMatrix}
 
 Suggested explicit approval text for the GitHub sync gate:
 

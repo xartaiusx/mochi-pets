@@ -141,6 +141,10 @@ function addStaticRequirements() {
     'alpha-sync-approval.json',
     'This file is intentionally no-secret',
     'approvalsRequired',
+    'approvalActions',
+    'costRisk',
+    'noCostAlternative',
+    'Cost-Sensitive Action Matrix',
     'GitHub Actions/PR checks',
     'I approve pushing'
   ]);
@@ -404,6 +408,8 @@ function addLocalHandoffRequirements() {
     'This file is intentionally no-secret',
     'Current Branch',
     'Approval Required Before Continuing',
+    'Cost-Sensitive Action Matrix',
+    'No-cost alternative',
     'I approve pushing'
   ]);
   requireLocalFile('handoff.site-checklist', resolve(credsDir, 'mochirii-mochi-social-alpha-operator-next-steps.md'), [

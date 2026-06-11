@@ -19,7 +19,7 @@ Allowed without extra approval:
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
-- Generate `npm run alpha:sync-approval` before requesting a push, CI rerun, hosted smoke, deploy, or provider mutation. The packet is not approval; it only records the exact state and approval text to review.
+- Generate `npm run alpha:sync-approval` before requesting a push, CI rerun, hosted smoke, deploy, or provider mutation. The packet is not approval; it records the exact state, cost/usage risk, no-cost alternative, and approval text to review.
 
 ## Stop And Ask First
 

@@ -46,7 +46,7 @@ npm run alpha:operator-checklist
 npm run alpha:sync-approval
 ```
 
-The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md` and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md` by default. They may list local credential filenames, required secret names, gate status, commit subjects, branch drift, and placeholder commands. They must not contain raw secret values. The sync packet is not approval; it prepares the exact push/CI/provider approval text for the operator to review.
+The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md` and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md` by default. They may list local credential filenames, required secret names, gate status, commit subjects, branch drift, cost/usage risk, no-cost alternatives, and placeholder commands. They must not contain raw secret values. The sync packet is not approval; it prepares the exact push/CI/provider approval text for the operator to review.
 
 ## Current Private Gates
 
@@ -116,7 +116,7 @@ Manual gates:
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
 - `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, and operator reports tied to the same local suite base URL.
-- `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet before requesting any push/CI/provider approval.
+- `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet with a cost-sensitive action matrix before requesting any push/CI/provider approval.
 - `npm run alpha:report-hygiene` passes and writes `reports/alpha-report-hygiene.json` after scanning ignored local reports and generated no-secret checklist artifacts.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.

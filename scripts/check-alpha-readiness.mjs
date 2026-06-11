@@ -152,7 +152,7 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-sync-approval.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'approvalsRequired', 'GitHub Actions/PR checks', 'I approve pushing']
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'GitHub Actions/PR checks', 'I approve pushing']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',
