@@ -14,6 +14,10 @@ const generatedAt = new Date().toISOString();
 
 const gitState = readGitState();
 const siteGitState = readGitStateAt(siteRepoPath);
+const prState = {
+  game: readPr('xartaiusx/mochi-social', '1', gitState.localHead),
+  site: readPr('Mochirii-Wushu/Mochirii', '258', siteGitState.localHead)
+};
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
 const approvalActions = buildApprovalActions(gitState, siteGitState, externalGateSummary);
@@ -25,6 +29,7 @@ const summary = {
   scope: 'No-secret approval packet for cost-aware GitHub sync and external Alpha RC gates.',
   git: gitState,
   siteGit: siteGitState,
+  prState,
   audit: auditSummary,
   externalGates: externalGateSummary,
   approvalsRequired: requiredApprovalActions.map((action) => action.action),
@@ -138,6 +143,53 @@ function readExternalGateSummary() {
     git: report.data.git,
     failures: failing.map((item) => sanitize(item))
   };
+}
+
+function readPr(repo, number, localHead) {
+  const result = spawnSync('gh', ['pr', 'view', number, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title'], {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false
+  });
+  if (result.status !== 0) {
+    return {
+      repo,
+      number,
+      ok: false,
+      message: sanitize(result.stderr || result.error?.message || 'GitHub PR state could not be read.')
+    };
+  }
+
+  try {
+    const data = JSON.parse(result.stdout);
+    const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
+    const failingChecks = checks
+      .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
+      .map((check) => sanitize(check.name || check.context))
+      .filter(Boolean);
+    const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+    return {
+      repo,
+      number,
+      ok: data.mergeStateStatus === 'CLEAN' && failingChecks.length === 0,
+      url: sanitize(data.url),
+      title: sanitize(data.title),
+      isDraft: data.isDraft === true,
+      headRefOid: sanitize(data.headRefOid),
+      localHead: sanitize(localHead),
+      localHeadMatchesPrHead: Boolean(localHead && data.headRefOid && localHead === data.headRefOid),
+      mergeStateStatus: sanitize(data.mergeStateStatus),
+      checkNames,
+      failingChecks
+    };
+  } catch {
+    return {
+      repo,
+      number,
+      ok: false,
+      message: 'GitHub PR JSON could not be parsed.'
+    };
+  }
 }
 
 function buildApprovalActions(currentGitState, currentSiteGitState, currentExternalGateSummary) {
@@ -341,6 +393,7 @@ function renderMarkdown(report) {
   const previewLane = formatLaneStatus(report.externalGates.lanes?.previewLive);
   const fundedLane = formatLaneStatus(report.externalGates.lanes?.fundedChain);
   const rcLane = formatLaneStatus(report.externalGates.lanes?.alphaRcReady);
+  const prState = formatPrState(report.prState);
   const gameSyncAction = report.approvalActions.find((action) => action.id === 'github-branch-sync');
   const siteSyncAction = report.approvalActions.find((action) => action.id === 'github-site-branch-sync');
   const combinedGitHubSyncApproval = gameSyncAction?.currentlyRequired && siteSyncAction?.currentlyRequired
@@ -408,6 +461,10 @@ ${siteDirty}
 Site commits ahead of upstream:
 
 ${siteCommits}
+
+## PR State
+
+${prState}
 
 ## Current Audit Stoplight
 
@@ -486,4 +543,23 @@ function formatLaneStatus(lane) {
   const failing = Array.isArray(lane.failingChecks) && lane.failingChecks.length ? ` failing=${lane.failingChecks.join(', ')}` : '';
   const missing = Array.isArray(lane.missingChecks) && lane.missingChecks.length ? ` missing=${lane.missingChecks.join(', ')}` : '';
   return `${lane.ok ? 'pass' : 'fail'}${failing}${missing}`;
+}
+
+function formatPrState(prState) {
+  if (!prState) return '- PR state was not recorded.';
+  return [
+    formatPr('Game PR', prState.game),
+    formatPr('Site PR', prState.site)
+  ].join('\n');
+}
+
+function formatPr(label, pr) {
+  if (!pr) return `- ${label}: not recorded.`;
+  if (!pr.ok) {
+    return `- ${label}: ${pr.repo}#${pr.number} not verified (${pr.message || 'unknown'}).`;
+  }
+  const localMatch = pr.localHeadMatchesPrHead ? 'local HEAD matches PR head' : 'local HEAD does not match PR head';
+  const checks = Array.isArray(pr.checkNames) && pr.checkNames.length ? pr.checkNames.join(', ') : 'none';
+  const draft = pr.isDraft ? 'draft' : 'ready';
+  return `- ${label}: ${pr.url} ${draft} ${pr.mergeStateStatus} remote=${pr.headRefOid || 'unknown'} ${localMatch}; checks=${checks}`;
 }
