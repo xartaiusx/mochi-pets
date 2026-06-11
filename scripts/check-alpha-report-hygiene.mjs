@@ -26,6 +26,7 @@ const files = [
   'reports/alpha-external-gates.json',
   'reports/enjin-operator-smoke.json',
   resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'),
+  resolve(credsDir, 'mochi-social-alpha-external-gates-status.md'),
   resolve(credsDir, 'mochi-social-alpha-sync-approval.md')
 ];
 
@@ -90,7 +91,7 @@ async function writeReport(ok) {
   await writeFile(reportPath, `${JSON.stringify({
     ok,
     checkedAt: new Date().toISOString(),
-    scope: 'No-secret hygiene scan for ignored local Alpha RC reports and generated operator/sync approval checklists.',
+    scope: 'No-secret hygiene scan for ignored local Alpha RC reports and generated operator, external-gate, and sync approval checklists.',
     git: gitState,
     scanned,
     failures

@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST || 'mochi-social-alpha-operator-next-steps.md');
+const externalStatusPath = resolve(credsDir, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_STATUS_MD || 'mochi-social-alpha-external-gates-status.md');
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
@@ -22,9 +23,11 @@ const gitState = readGitState();
 
 await mkdir(credsDir, { recursive: true });
 await writeFile(outputPath, renderChecklist(), 'utf8');
+await writeFile(externalStatusPath, renderExternalGateStatus(), 'utf8');
 await mkdir(dirname(reportJsonPath), { recursive: true });
 await writeFile(reportJsonPath, `${JSON.stringify(renderReport(), null, 2)}\n`, 'utf8');
 console.log(`Wrote no-secret Mochi Social alpha operator checklist: ${outputPath}`);
+console.log(`Wrote no-secret Mochi Social external gate status: ${externalStatusPath}`);
 console.log(`Wrote no-secret Mochi Social alpha operator checklist report: ${reportJsonPath}`);
 
 function defaultCredsDir() {
@@ -58,10 +61,23 @@ function readExternalGateSummary() {
         .filter((check) => check.status === 'fail')
         .map((check) => `${check.name}: ${check.message}`)
       : ['External gate report did not contain a checks array.'];
+    const checks = Array.isArray(report.checks)
+      ? report.checks.map((check) => ({
+        name: sanitize(check.name),
+        status: sanitize(check.status),
+        message: sanitize(check.message)
+      }))
+      : [];
     return {
       present: true,
       ok: report.ok === true,
       checkedAt: report.checkedAt,
+      hostedChecksAllowed: report.hostedChecksAllowed,
+      flyApp: sanitize(report.flyApp),
+      flyVolume: sanitize(report.flyVolume),
+      gameUrl: sanitize(report.gameUrl),
+      sitePreviewUrl: sanitize(report.sitePreviewUrl),
+      checks,
       failures
     };
   } catch {
@@ -153,6 +169,7 @@ function renderReport() {
     generatedAt,
     scope: 'No-secret operator checklist evidence for local Alpha RC handoff. This report lists paths, statuses, and secret names only.',
     markdownPath: pathForReport(outputPath),
+    externalStatusPath: pathForReport(externalStatusPath),
     git: gitState,
     credentialFiles,
     targets: {
@@ -166,6 +183,54 @@ function renderReport() {
     manualPromptSummary,
     noCostRule: 'No push, CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact action.'
   };
+}
+
+function renderExternalGateStatus() {
+  const passList = externalGateSummary.checks?.filter((check) => check.status === 'pass') ?? [];
+  const failList = externalGateSummary.checks?.filter((check) => check.status === 'fail') ?? [];
+  const passes = passList.length
+    ? passList.map((check) => `- ${check.name}: ${check.message}`).join('\n')
+    : '- No passing external checks were recorded.';
+  const failures = failList.length
+    ? failList.map((check) => `- ${check.name}: ${check.message}`).join('\n')
+    : '- No failing external checks were recorded.';
+
+  return `# Mochi Social Alpha External Gates Status
+
+Generated: ${generatedAt}
+
+This file is intentionally no-secret and generated from the latest \`reports/alpha-external-gates.json\`. It may list provider names, resource names, URLs, and required secret names, but it must not contain raw API tokens, seed phrases, passphrases, payment details, one-time codes, or secret values.
+
+## Current Git State
+
+- Branch: ${gitState.branch || 'unknown'}
+- Local HEAD: ${gitState.localHead || 'unknown'}
+- Upstream: ${gitState.upstream || 'unknown'}
+- Dirty tracked files: ${gitState.dirty.length}
+
+## Gate Snapshot
+
+- Report present: ${externalGateSummary.present ? 'yes' : 'no'}
+- Report checked at: ${externalGateSummary.checkedAt || 'not recorded'}
+- Overall pass: ${externalGateSummary.ok ? 'yes' : 'no'}
+- Hosted checks allowed: ${externalGateSummary.hostedChecksAllowed === true ? 'yes' : 'no'}
+- Fly app: ${externalGateSummary.flyApp || flyApp}
+- Fly volume: ${externalGateSummary.flyVolume || flyVolume}
+- Game URL: ${externalGateSummary.gameUrl || 'not recorded'}
+- Site preview URL: ${externalGateSummary.sitePreviewUrl || 'not recorded'}
+
+## Passing External Checks
+
+${passes}
+
+## Failing Or Blocked External Checks
+
+${failures}
+
+## No-Cost Boundary
+
+Read-only provider status checks are allowed. Creating resources, setting secrets, deploying, running hosted smoke/load/browser checks, submitting Enjin Canary operations, funding Fuel Tanks, or pushing a branch that triggers CI still requires explicit approval for that exact action.
+`;
 }
 
 function renderChecklist() {
