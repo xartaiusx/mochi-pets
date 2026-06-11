@@ -15,6 +15,7 @@ addSiteRequirements();
 addProviderGateRequirements();
 addLocalEvidenceRequirements();
 addReportHygieneRequirements();
+addSyncApprovalRequirements();
 addLocalBranchRequirements();
 addSiteBranchRequirements();
 addPrRequirements();
@@ -321,6 +322,60 @@ function addReportHygieneRequirements() {
       reportPath: hygieneReportPath,
       checkedAt: report.checkedAt,
       scanned: report.scanned,
+      failures
+    }
+  );
+}
+
+function addSyncApprovalRequirements() {
+  const syncReportPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JSON || 'reports/alpha-sync-approval.json');
+  const syncReport = readJson(syncReportPath);
+  if (!syncReport.ok) {
+    add('local.sync-approval-current', 'fail', `Sync approval report is missing or invalid: ${syncReport.message}. Run npm run alpha:sync-approval.`, { path: syncReportPath });
+    return;
+  }
+
+  const report = syncReport.data;
+  const head = commandAt(root, 'git', ['rev-parse', 'HEAD']);
+  const upstream = commandAt(root, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = commandAt(root, 'git', ['status', '--porcelain']);
+  const failures = [];
+
+  if (report.ok !== true) failures.push('sync approval report is not ok');
+  if (!head.ok) failures.push('current local HEAD could not be read');
+  if (!upstream.ok) failures.push('current upstream could not be read');
+  if (!worktree.ok) failures.push('current worktree status could not be read');
+
+  const currentHead = firstLine(head.stdout);
+  const currentUpstream = firstLine(upstream.stdout);
+  const currentDirty = worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line));
+
+  if (head.ok && report.git?.localHead !== currentHead) failures.push('sync approval report localHead does not match current HEAD');
+  if (upstream.ok && report.git?.upstream !== currentUpstream) failures.push('sync approval report upstream does not match current upstream');
+  if (Array.isArray(report.git?.dirty) && report.git.dirty.length !== currentDirty.length) failures.push('sync approval report dirty state does not match current worktree');
+  if (!Array.isArray(report.approvalActions) || report.approvalActions.length < 5) failures.push('sync approval report must include provider approval actions');
+  for (const field of ['costRisk', 'noCostAlternative', 'approvalText']) {
+    if (!Array.isArray(report.approvalActions) || report.approvalActions.some((action) => !action?.[field])) {
+      failures.push(`sync approval report approvalActions missing ${field}`);
+    }
+  }
+
+  add(
+    'local.sync-approval-current',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Sync approval packet is stale or incomplete: ${failures.join(', ')}.`
+      : 'Sync approval packet matches current local branch state and includes cost-aware provider approval actions.',
+    {
+      reportPath: syncReportPath,
+      generatedAt: report.generatedAt,
+      currentHead,
+      reportHead: report.git?.localHead,
+      currentUpstream,
+      reportUpstream: report.git?.upstream,
+      currentDirtyFiles: currentDirty.length,
+      reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
+      approvalActionCount: Array.isArray(report.approvalActions) ? report.approvalActions.length : 0,
       failures
     }
   );
