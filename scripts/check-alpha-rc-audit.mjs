@@ -16,6 +16,7 @@ addProviderGateRequirements();
 addLocalEvidenceRequirements();
 addReportHygieneRequirements();
 addOperatorChecklistRequirements();
+addProviderPreflightRequirements();
 addSyncApprovalRequirements();
 addManualPromptReviewRequirements();
 addLocalBranchRequirements();
@@ -146,8 +147,10 @@ function addStaticRequirements() {
     'No-secret hygiene scan',
     'alpha-report-hygiene.json',
     'alpha-operator-checklist.json',
+    'alpha-provider-preflight.json',
     'wallet-daemon-local.json',
     'mochi-social-alpha-operator-next-steps.md',
+    'mochi-social-alpha-provider-preflight.md',
     'mochi-social-alpha-sync-approval.md',
     'Unredacted local suite token',
     'Wallet daemon password assignment',
@@ -177,6 +180,18 @@ function addStaticRequirements() {
     'localHead',
     'No-cost rule',
     'noCostRule'
+  ]);
+  requireFileIncludes('game.provider-preflight-script', 'Provider preflight writes no-secret expected private-input filenames and approval queue evidence without reading private file contents.', 'scripts/write-alpha-provider-preflight.mjs', [
+    'mochi-social-alpha-provider-preflight.md',
+    'alpha-provider-preflight.json',
+    'contentsRead: false',
+    'providerActionQueue',
+    'missingExpectedPrivateInputFiles',
+    'does not read private credential file contents',
+    'github-branch-sync',
+    'fly-secret-update',
+    'vercel-supabase-preview-contract',
+    'enjin-canary-readiness'
   ]);
   requireFileIncludes('game.external-gates-script', 'External gate report records Git state and refuses hosted Fly/Vercel contract fetches without explicit hosted-check approval.', 'scripts/check-alpha-external-gates.mjs', [
     'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS',
@@ -486,6 +501,52 @@ function addOperatorChecklistRequirements() {
   );
 }
 
+function addProviderPreflightRequirements() {
+  const preflightReportPath = resolve(root, process.env.MOCHI_SOCIAL_PROVIDER_PREFLIGHT_JSON || 'reports/alpha-provider-preflight.json');
+  const preflightReport = readJson(preflightReportPath);
+  if (!preflightReport.ok) {
+    add('local.provider-preflight-current', 'fail', `Provider preflight report is missing or invalid: ${preflightReport.message}. Run npm run alpha:provider-preflight.`, { path: preflightReportPath });
+    return;
+  }
+
+  const report = preflightReport.data;
+  const failures = [];
+  if (report.ok !== true) failures.push('provider preflight report is not ok');
+  failures.push(...currentGitStateFailures(report.git, 'provider preflight report'));
+  if (!String(report.markdownPath || '').includes('mochi-social-alpha-provider-preflight.md')) {
+    failures.push('provider preflight report must point to the generated Markdown preflight');
+  }
+  if (!String(report.noCostBoundary || '').includes('Preflight checks filenames')) {
+    failures.push('provider preflight report must include the no-cost boundary');
+  }
+  const queue = Array.isArray(report.providerActionQueue) ? report.providerActionQueue : [];
+  for (const id of ['github-branch-sync', 'fly-secret-update', 'fly-live-game-url', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']) {
+    if (!queue.some((item) => item?.id === id)) {
+      failures.push(`provider preflight queue missing ${id}`);
+    }
+  }
+  if (!Array.isArray(report.privateInputs) || report.privateInputs.some((input) => input?.contentsRead !== false)) {
+    failures.push('provider preflight private inputs must record contentsRead=false');
+  }
+
+  add(
+    'local.provider-preflight-current',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Provider preflight report is stale or incomplete: ${failures.join(', ')}.`
+      : 'Provider preflight report matches current local branch state and records no-secret private-input filenames plus approval queue evidence.',
+    {
+      reportPath: preflightReportPath,
+      generatedAt: report.generatedAt,
+      markdownPath: report.markdownPath,
+      reportHead: report.git?.localHead,
+      providerActionQueueIds: queue.map((item) => item?.id).filter(Boolean),
+      missingExpectedPrivateInputFiles: report.missingExpectedPrivateInputFiles,
+      failures
+    }
+  );
+}
+
 function currentGitStateFailures(gitState, label) {
   const failures = [];
   const head = commandAt(root, 'git', ['rev-parse', 'HEAD']);
@@ -721,6 +782,12 @@ function addLocalHandoffRequirements() {
     'Fly Gate',
     'Enjin Canary Gate',
     'Preview Verification After Fly And Enjin Gates'
+  ]);
+  requireLocalFile('handoff.provider-preflight', resolve(credsDir, 'mochi-social-alpha-provider-preflight.md'), [
+    'This file is intentionally no-secret',
+    'Expected Private Input Filenames',
+    'Approval Queue',
+    'does not read private credential file contents'
   ]);
   requireLocalFile('handoff.sync-approval', resolve(credsDir, 'mochi-social-alpha-sync-approval.md'), [
     'This file is intentionally no-secret',

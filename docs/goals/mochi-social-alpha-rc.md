@@ -123,6 +123,7 @@ npm run alpha:built-server-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:operator-checklist
+npm run alpha:provider-preflight
 npm run alpha:sync-approval
 npm run alpha:report-hygiene
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
