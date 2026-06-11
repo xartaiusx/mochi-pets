@@ -39,6 +39,14 @@ npm run alpha:enjin-operator-smoke
 
 `npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. `npm run alpha:browser-presence` uses local Chrome or `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to verify two tabs show the playable canvas, HUD, presence chip, canvas movement signatures, observer-side canvas change, and HUD care/chat/emote/market/trade/Canary action loop. It is local-only unless `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true` is set after explicit hosted-preview approval. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and avoids live Enjin submissions unless an operator explicitly opts in. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the remaining manual NPC/chest/habitat map-object check.
 
+For the local no-cost release-candidate pass, run:
+
+```powershell
+npm run alpha:local-suite
+```
+
+The suite builds once, starts the built Express runtime on a disposable localhost port with throwaway env, runs endpoint smoke, local alpha acceptance, 10-25 tester HTTP load smoke, two-tab browser presence, and the private Enjin operator fail-closed check, then writes `reports/alpha-local-suite.json` and shuts the server down.
+
 ## Deployment Boundary
 
 Vercel should host the future website. Fly.io should host the Mochi Social game runtime because the game uses a long-lived multiplayer server/WebSocket runtime. The future website should reference the game through one public URL:

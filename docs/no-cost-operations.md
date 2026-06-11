@@ -15,7 +15,7 @@ Mochi Social development is no-cost by default. Agents may inspect local files, 
 Allowed without extra approval:
 
 - Read local files and edit repo docs/code.
-- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`.
+- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and `npm run alpha:local-suite`.
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.

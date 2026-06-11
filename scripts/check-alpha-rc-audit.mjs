@@ -102,6 +102,18 @@ function addStaticRequirements() {
     '/integration/alpha/enjin/submit',
     'invalid_game_server_token'
   ]);
+  requireFileIncludes('game.local-suite', 'Local Alpha suite builds, starts the built runtime, runs localhost smokes, strips live provider env, and writes one no-secret report.', 'scripts/check-alpha-local-suite.mjs', [
+    'No-cost localhost Alpha RC suite',
+    'npmCommand',
+    'alpha:local-acceptance',
+    'alpha:load-smoke',
+    'alpha:browser-presence',
+    'alpha:enjin-operator-smoke',
+    'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
+    'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN',
+    'delete env.ENJIN_PLATFORM_TOKEN',
+    'reports/alpha-local-suite.json'
+  ]);
   requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
     "source: 'local-alpha-ledger'",

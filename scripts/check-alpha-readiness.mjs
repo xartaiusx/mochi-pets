@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:rc-audit"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:rc-audit"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -44,7 +44,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'canvas movement response', 'observer-side canvas change', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:operator-checklist', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'canvas movement response', 'observer-side canvas change', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -127,12 +127,16 @@ const checks = [
     includes: ['dist/server/express.js', 'configured-preview-stub', 'invalid_game_server_token', 'enjin_canary_not_configured', 'Local-only built Express server smoke']
   },
   {
+    file: 'scripts/check-alpha-local-suite.mjs',
+    includes: ['No-cost localhost Alpha RC suite', 'npmCommand', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:enjin-operator-smoke', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'delete env.ENJIN_PLATFORM_TOKEN', 'reports/alpha-local-suite.json']
+  },
+  {
     file: 'scripts/check-alpha-external-gates.mjs',
     includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
   },
   {
     file: 'scripts/write-alpha-operator-checklist.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'npm run alpha:external-gates']
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'npm run alpha:local-suite', 'npm run alpha:external-gates']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',

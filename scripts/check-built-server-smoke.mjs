@@ -28,20 +28,21 @@ let stderr = '';
 try {
   await run();
   report.ok = true;
-  recordServerOutput();
-  await writeReport();
-  console.log(`Mochi Social built server smoke passed for ${baseUrl}`);
-  console.log(`Report: ${reportPath}`);
 } catch (error) {
   report.error = error instanceof Error ? error.message : String(error);
-  recordServerOutput();
-  await writeReport();
-  console.error('Mochi Social built server smoke failed:');
-  console.error(report.error);
-  console.error(`Report: ${reportPath}`);
   exitCode = 1;
 } finally {
   await stopServer();
+  recordServerOutput();
+  await writeReport();
+  if (report.ok) {
+    console.log(`Mochi Social built server smoke passed for ${baseUrl}`);
+    console.log(`Report: ${reportPath}`);
+  } else {
+    console.error('Mochi Social built server smoke failed:');
+    console.error(report.error);
+    console.error(`Report: ${reportPath}`);
+  }
   process.exitCode = exitCode;
 }
 
@@ -188,7 +189,8 @@ function recordServerOutput() {
     stdout: sanitize(stdout),
     stderr: sanitize(stderr),
     exitCode: child?.exitCode ?? null,
-    exitSignal: child?.signalCode ?? null
+    exitSignal: child?.signalCode ?? null,
+    stopped: child ? child.exitCode !== null || child.signalCode !== null : true
   };
 }
 

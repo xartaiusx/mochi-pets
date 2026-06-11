@@ -95,6 +95,16 @@ Failing or missing gates:
 
 ${gateList}
 
+## Local No-Cost Gate
+
+Run this before any hosted or provider work:
+
+\`\`\`powershell
+npm run alpha:local-suite
+\`\`\`
+
+The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`.
+
 ## Fly Gate
 
 Current target:

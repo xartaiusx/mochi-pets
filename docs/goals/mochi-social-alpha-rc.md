@@ -51,6 +51,7 @@ Recommended slash goal:
 
 5. Verification and handoff.
    - Run game install/typecheck/lint/test/build/smoke.
+   - Run `npm run alpha:local-suite` for the local no-cost bundled RC pass.
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
    - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke` locally by default. Hosted load smoke requires explicit user approval.
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions; then complete the manual NPC/chest/habitat map-object prompt check.
@@ -110,6 +111,7 @@ npm run lint
 npm test
 npm run build
 npm run alpha:built-server-smoke
+npm run alpha:local-suite
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
