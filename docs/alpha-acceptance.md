@@ -119,6 +119,8 @@ The Mochirii repo mirrors this with `npm run check:mochi-social-preview-ready`, 
 
 Full `npm run alpha:rc-audit` reads the Mochirii site-side report from `../Mochirii/reports/mochi-social-preview-ready.json` and fails until it is green and current, because allowlist, terms, feedback, and browser-gate proof belong to the website repo.
 
+The game-side RC audit also checks the Mochirii bridge contract directly: `check:mochi-social-bridge-state` must exist and prove the website parent handles `MOCHI_SOCIAL_READY`, `MOCHI_SOCIAL_AUTH_STATE`, and `MOCHI_SOCIAL_ERROR` with a shared resolver before manual browser evidence can be trusted.
+
 ## Private Enjin Operator Smoke
 
 `npm run alpha:enjin-operator-smoke` verifies `POST /integration/alpha/enjin/submit` fails closed without the private game server token. When testing a local server that was started with a non-production `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, set `MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN` to the same value to also verify the tokened no-Enjin-secrets path returns `enjin_canary_not_configured`.

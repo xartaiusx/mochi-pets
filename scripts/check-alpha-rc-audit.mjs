@@ -363,9 +363,34 @@ function addSiteRequirements() {
   requireSiteFileIncludes('site.route', 'Mochirii preview route embeds Mochi Social behind auth, allowlist, terms, and feedback UI.', 'apps/web/components/mochi-social/MochiSocialAlphaClient.tsx', [
     'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
     'MOCHI_SOCIAL_AUTH',
+    'resolveMochiSocialBridgeMessage',
     'Alpha allowlist required',
     'Alpha acknowledgement',
     'submitMochiSocialFeedback'
+  ]);
+  requireSiteFileIncludes('site.bridge-helper', 'Mochirii bridge helper resolves game postMessage replies without exposing secrets or arbitrary status text.', 'apps/web/lib/mochi-social/bridge.ts', [
+    'resolveMochiSocialBridgeMessage',
+    'MOCHI_SOCIAL_READY',
+    'MOCHI_SOCIAL_AUTH_STATE',
+    'MOCHI_SOCIAL_ERROR',
+    'MOCHI_SOCIAL_AUTH_BRIDGE_ERROR_MESSAGE',
+    'return { action: "ignore" }'
+  ]);
+  requireSiteFileIncludes('site.bridge-state-self-test', 'Mochirii repo locally self-tests bridge READY, AUTH_STATE, ERROR, malformed-message, and no-secret handling before manual browser gates.', 'scripts/check-mochi-social-bridge-state.mjs', [
+    'Mochi Social bridge state self-test OK',
+    'MOCHI_SOCIAL_READY',
+    'MOCHI_SOCIAL_AUTH_STATE',
+    'MOCHI_SOCIAL_ERROR',
+    'access-token-only',
+    'assertNoForbiddenMaterial'
+  ]);
+  requireSiteFileIncludes('site.auth-bridge-check', 'Mochirii auth bridge guard keeps iframe auth access-token-only and verifies the shared bridge resolver is wired into the preview client.', 'scripts/check-mochi-social-auth-bridge.mjs', [
+    'payload: { accessToken: token }',
+    'resolveMochiSocialBridgeMessage(event.data)',
+    'MOCHI_SOCIAL_AUTH_BRIDGE_ERROR_MESSAGE',
+    'refreshToken',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'ENJIN_PLATFORM_TOKEN'
   ]);
   requireSiteFileIncludes('site.admin', 'Leader dashboard exposes alpha grant, revoke, and audit controls.', 'apps/web/components/member-workflow/LeaderDashboard.tsx', [
     'Mochi Social Alpha',
