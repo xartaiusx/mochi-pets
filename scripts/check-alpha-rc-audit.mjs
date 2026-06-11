@@ -70,6 +70,19 @@ function addStaticRequirements() {
     'accessToken',
     'configured-preview-stub'
   ]);
+  requireFileIncludes('game.supabase-edge-bridge', 'Supabase Edge bridge uses the scoped game server token header and keeps service-role secrets out of game requests.', 'apps/game/src/integration/supabase-edge-client.ts', [
+    'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
+    'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
+    'x-mochi-social-server-token',
+    'ALPHA_EDGE_FUNCTIONS.action',
+    'JSON.stringify(action)'
+  ]);
+  requireFileIncludes('game.supabase-edge-tests', 'Supabase Edge bridge tests prove no service-role fallback and no server token in the action body.', 'apps/game/tests/supabase-edge-client.test.ts', [
+    'scoped server token in a header only',
+    'not.toContain',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'mochi-social-alpha-action'
+  ]);
   requireFileIncludes('game.enjin-finality', 'Enjin helper enforces Canary, Fuel Tank, idempotency, and finality before hot credit.', 'apps/game/src/integration/enjin-canary.ts', [
     "network: 'CANARY'",
     'fuelTank: config.fuelTankId',

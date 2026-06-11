@@ -75,8 +75,12 @@ const checks = [
     includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'configured-preview-stub']
   },
   {
+    file: 'apps/game/src/integration/supabase-edge-client.ts',
+    includes: ['MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'x-mochi-social-server-token', 'ALPHA_EDGE_FUNCTIONS.action', 'JSON.stringify(action)']
+  },
+  {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -89,6 +93,10 @@ const checks = [
   {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['allowlistRequired', 'noRealValue', 'finalityRequired']
+  },
+  {
+    file: 'apps/game/tests/supabase-edge-client.test.ts',
+    includes: ['scoped server token in a header only', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action']
   },
   {
     file: 'apps/game/scripts/smoke.mjs',
