@@ -2,6 +2,16 @@
 
 Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. It lets allowlisted testers use Mochi Social through the Mochirii Vercel Preview while Enjin remains unfunded and visibly in `configured-preview-stub` mode.
 
+## Source Basis
+
+- OpenAI Codex manual: https://developers.openai.com/codex/codex-manual.md
+- GitHub Actions billing and branch protection: https://docs.github.com/en/billing/concepts/product-billing/github-actions and https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule
+- Vercel environments, environment variables, and WebSocket guidance: https://vercel.com/docs/deployments/environments, https://vercel.com/docs/environment-variables, and https://vercel.com/kb/guide/do-vercel-serverless-functions-support-websocket-connections
+- Fly.io secrets and volumes: https://fly.io/docs/apps/secrets/ and https://fly.io/docs/volumes/overview/
+- Supabase Edge secrets and Auth user validation: https://supabase.com/docs/guides/functions/secrets and https://supabase.com/docs/reference/javascript/auth-getuser
+- Enjin Canary, cENJ, Fuel Tanks, and Wallet Daemon: https://docs.enjin.io/getting-started/quick-start-guide, https://docs.enjin.io/guides/platform/managing-users/using-fuel-tanks, and https://docs.enjin.io/getting-started/using-wallet-daemon
+- RPGJS v5 and browser WebSockets: https://github.com/RSamaium/RPG-JS and https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+
 ## Preview Target
 
 - Game runtime: Fly app `mochi-social-game`.
@@ -26,6 +36,18 @@ Alpha Preview Ready can pass while funded-chain gates are red. Alpha RC Ready ca
 - Keep the Canary/certificate UI visible with clear `configured-preview-stub` messaging.
 - Record chain requests as audit-only preview rows.
 - Never credit inventory, cold inventory, market settlement, trade settlement, cashout, or player value from a chain request unless a real Enjin state reaches `FINALIZED`.
+
+## Action Approval Rules
+
+Local code, docs, tests, no-secret reports, and localhost-only checks may proceed without a new approval. The following actions need fresh action-specific approval before Codex runs them:
+
+- Push a branch, rerun GitHub Actions, create or update required checks, or enable branch protection.
+- Deploy, restart, scale, mutate, or run hosted smoke/load checks against Fly, Vercel, Supabase, or any public preview URL.
+- Set, change, remove, or rotate provider secrets or environment variables in Fly, Vercel, Supabase, GitHub, Discord, or Enjin.
+- Fund cENJ, create or fund a Fuel Tank, submit Enjin transactions, start signer-connected Wallet Daemon work, or mark funded-chain gates green.
+- Set hosted approval flags such as `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true`, `MOCHI_SOCIAL_SITE_PREVIEW_READY_ALLOW_HOSTED=true`, `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, or hosted load/Edge flags.
+
+Each approval request must name the exact account/provider, command or dashboard action, possible cost or usage impact, and no-cost alternative.
 
 ## Codex Prompt Templates
 
