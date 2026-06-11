@@ -9,18 +9,21 @@ const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_SYNC_APPROVAL || '
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JSON || 'reports/alpha-sync-approval.json');
 const auditPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const externalGatePath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
+const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 const generatedAt = new Date().toISOString();
 
 const gitState = readGitState();
+const siteGitState = readGitStateAt(siteRepoPath);
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
-const approvalActions = buildApprovalActions(gitState, externalGateSummary);
+const approvalActions = buildApprovalActions(gitState, siteGitState, externalGateSummary);
 
 const summary = {
   ok: true,
   generatedAt,
   scope: 'No-secret approval packet for cost-aware GitHub sync and external Alpha RC gates.',
   git: gitState,
+  siteGit: siteGitState,
   audit: auditSummary,
   externalGates: externalGateSummary,
   approvalsRequired: approvalActions.map((action) => action.action),
@@ -42,13 +45,17 @@ function defaultCredsDir() {
 }
 
 function readGitState() {
-  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
-  const localHead = git(['rev-parse', 'HEAD']);
-  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
-  const upstreamHead = upstream.ok ? git(['rev-parse', upstream.stdout.trim()]) : { ok: false, stdout: '', stderr: upstream.stderr };
-  const worktree = git(['status', '--porcelain']);
-  const counts = upstream.ok ? git(['rev-list', '--left-right', '--count', `${upstream.stdout.trim()}...HEAD`]) : { ok: false, stdout: '', stderr: upstream.stderr };
-  const log = upstream.ok ? git(['log', '--oneline', '--no-decorate', '--max-count=80', `${upstream.stdout.trim()}..HEAD`]) : { ok: false, stdout: '', stderr: upstream.stderr };
+  return readGitStateAt(root);
+}
+
+function readGitStateAt(cwd) {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd);
+  const localHead = git(['rev-parse', 'HEAD'], cwd);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], cwd);
+  const upstreamHead = upstream.ok ? git(['rev-parse', upstream.stdout.trim()], cwd) : { ok: false, stdout: '', stderr: upstream.stderr };
+  const worktree = git(['status', '--porcelain'], cwd);
+  const counts = upstream.ok ? git(['rev-list', '--left-right', '--count', `${upstream.stdout.trim()}...HEAD`], cwd) : { ok: false, stdout: '', stderr: upstream.stderr };
+  const log = upstream.ok ? git(['log', '--oneline', '--no-decorate', '--max-count=80', `${upstream.stdout.trim()}..HEAD`], cwd) : { ok: false, stdout: '', stderr: upstream.stderr };
   const [behindText = '0', aheadText = '0'] = firstLine(counts.stdout).split(/\s+/);
 
   return {
@@ -132,9 +139,11 @@ function readExternalGateSummary() {
   };
 }
 
-function buildApprovalActions(currentGitState, currentExternalGateSummary) {
+function buildApprovalActions(currentGitState, currentSiteGitState, currentExternalGateSummary) {
   const branch = currentGitState.branch || '<branch>';
   const upstream = currentGitState.upstream || `origin/${branch}`;
+  const siteBranch = currentSiteGitState.branch || 'codex/mochi-social-alpha-rc';
+  const siteUpstream = currentSiteGitState.upstream || `origin/${siteBranch}`;
   const flyApp = currentExternalGateSummary.flyApp || 'mochi-social-game';
   const gameUrl = currentExternalGateSummary.gameUrl || `https://${flyApp}.fly.dev`;
   const sitePreviewUrl = currentExternalGateSummary.sitePreviewUrl || 'https://<vercel-preview-host>';
@@ -148,6 +157,15 @@ function buildApprovalActions(currentGitState, currentExternalGateSummary) {
       costRisk: 'Pushes can trigger GitHub Actions minutes, storage, and PR check usage depending on account and repository settings.',
       noCostAlternative: 'Keep the branch local, continue local verification, and leave github.local-branch-sync red in npm run alpha:rc-audit.',
       approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream} and allow GitHub Actions/PR checks to run for Mochi Social.`
+    },
+    {
+      id: 'github-site-branch-sync',
+      provider: 'GitHub',
+      action: 'Push local Mochirii site branch to origin and allow GitHub Actions/PR checks to run.',
+      exactAction: `git -C C:\\Users\\xtyty\\Documents\\Mochirii push origin ${siteBranch}`,
+      costRisk: 'Pushes can trigger GitHub Actions minutes, Vercel preview builds, Supabase preview checks, storage, and PR check usage depending on account and repository settings.',
+      noCostAlternative: 'Keep the site branch local, continue local verification, and leave github.site-local-branch-sync red in npm run alpha:rc-audit.',
+      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream} and allow GitHub Actions/PR checks to run for Mochirii.`
     },
     {
       id: 'fly-secret-update',
@@ -206,9 +224,9 @@ function readJson(file) {
   }
 }
 
-function git(args) {
+function git(args, cwd = root) {
   const result = spawnSync('git', args, {
-    cwd: root,
+    cwd,
     encoding: 'utf8',
     shell: false
   });
@@ -259,6 +277,12 @@ function renderMarkdown(report) {
   const dirty = report.git.dirty.length
     ? report.git.dirty.map((line) => `- ${line}`).join('\n')
     : '- Worktree clean.';
+  const siteDirty = report.siteGit.dirty.length
+    ? report.siteGit.dirty.map((line) => `- ${line}`).join('\n')
+    : '- Worktree clean.';
+  const siteCommits = report.siteGit.commitsAhead.length
+    ? report.siteGit.commitsAhead.map((commit) => `- ${commit}`).join('\n')
+    : '- No commits ahead of upstream were detected.';
   const auditFailures = report.audit.failures.length
     ? report.audit.failures.map((failure) => `- ${failure}`).join('\n')
     : '- None.';
@@ -310,6 +334,24 @@ ${dirty}
 Commits ahead of upstream:
 
 ${commits}
+
+## Current Site Branch
+
+- Path: ${siteRepoPath}
+- Branch: ${report.siteGit.branch || 'unknown'}
+- Upstream: ${report.siteGit.upstream || 'unknown'}
+- Local HEAD: ${report.siteGit.localHead || 'unknown'}
+- Upstream HEAD: ${report.siteGit.upstreamHead || 'unknown'}
+- Ahead: ${report.siteGit.ahead}
+- Behind: ${report.siteGit.behind}
+
+Site dirty worktree:
+
+${siteDirty}
+
+Site commits ahead of upstream:
+
+${siteCommits}
 
 ## Current Audit Stoplight
 
@@ -364,6 +406,12 @@ Suggested explicit approval text for the GitHub sync gate:
 
 \`\`\`text
 I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochi Social.
+\`\`\`
+
+Suggested explicit approval text for the Mochirii site sync gate:
+
+\`\`\`text
+I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochirii.
 \`\`\`
 
 Suggested explicit approval text for hosted/provider gates:

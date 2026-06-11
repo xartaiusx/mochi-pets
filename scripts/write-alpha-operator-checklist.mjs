@@ -9,6 +9,7 @@ const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST
 const externalStatusPath = resolve(credsDir, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_STATUS_MD || 'mochi-social-alpha-external-gates-status.md');
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
+const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
 const flyRegion = process.env.MOCHI_SOCIAL_FLY_REGION || 'sjc';
 const flyVolume = process.env.MOCHI_SOCIAL_FLY_VOLUME || 'mochi_social_data';
@@ -20,6 +21,7 @@ const walletDaemonSummary = readWalletDaemonSummary();
 const manualPromptSummary = readManualPromptSummary();
 const credentialFiles = listCredentialFiles();
 const gitState = readGitState();
+const siteGitState = readGitStateAt(siteRepoPath);
 const providerActionQueue = buildProviderActionQueue();
 
 await mkdir(credsDir, { recursive: true });
@@ -173,6 +175,7 @@ function renderReport() {
     markdownPath: pathForReport(outputPath),
     externalStatusPath: pathForReport(externalStatusPath),
     git: gitState,
+    siteGit: siteGitState,
     credentialFiles,
     targets: {
       flyApp,
@@ -284,6 +287,16 @@ No-cost rule: do not create, deploy, scale, fund, submit chain transactions, run
 Dirty tracked file summary:
 
 ${dirtyList}
+
+## Site Git State
+
+- Path: ${siteRepoPath}
+- Branch: ${siteGitState.branch || 'unknown'}
+- Local HEAD: ${siteGitState.localHead || 'unknown'}
+- Upstream: ${siteGitState.upstream || 'unknown'}
+- Ahead: ${siteGitState.ahead}
+- Behind: ${siteGitState.behind}
+- Dirty tracked files: ${siteGitState.dirty.length}
 
 ## Local Credential Files
 
@@ -474,11 +487,15 @@ Alpha RC Ready still requires the Mochirii preview to block non-testers, gate te
 }
 
 function readGitState() {
-  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
-  const localHead = git(['rev-parse', 'HEAD']);
-  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
-  const counts = upstream.ok ? git(['rev-list', '--left-right', '--count', `${firstLine(upstream.stdout)}...HEAD`]) : { ok: false, stdout: '', stderr: upstream.stderr };
-  const worktree = git(['status', '--porcelain']);
+  return readGitStateAt(root);
+}
+
+function readGitStateAt(cwd) {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd);
+  const localHead = git(['rev-parse', 'HEAD'], cwd);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], cwd);
+  const counts = upstream.ok ? git(['rev-list', '--left-right', '--count', `${firstLine(upstream.stdout)}...HEAD`], cwd) : { ok: false, stdout: '', stderr: upstream.stderr };
+  const worktree = git(['status', '--porcelain'], cwd);
   const [behindText = '0', aheadText = '0'] = firstLine(counts.stdout).split(/\s+/);
   return {
     branch: firstLine(branch.stdout),
@@ -508,6 +525,19 @@ function buildProviderActionQueue() {
       blocker: `${gitState.ahead || 0} local commit(s) ahead of ${upstream}; remote PR checks cannot prove this HEAD.`,
       approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream} and allow GitHub Actions/PR checks to run for Mochi Social.`,
       noCostFallback: 'Keep the branch local and leave github.local-branch-sync red.'
+    });
+  }
+
+  if ((siteGitState.ahead || 0) > 0 || siteGitState.dirty.length > 0) {
+    const siteBranch = siteGitState.branch || 'codex/mochi-social-alpha-rc';
+    const siteUpstream = siteGitState.upstream || `origin/${siteBranch}`;
+    queue.push({
+      id: 'github-site-branch-sync',
+      provider: 'GitHub',
+      title: 'Sync the local Mochirii site branch only after CI-trigger approval.',
+      blocker: `${siteGitState.ahead || 0} local site commit(s) ahead of ${siteUpstream}; remote PR checks cannot prove this HEAD.`,
+      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream} and allow GitHub Actions/PR checks to run for Mochirii.`,
+      noCostFallback: 'Keep the site branch local and leave github.site-local-branch-sync red.'
     });
   }
 
@@ -576,9 +606,9 @@ function formatLaneStatus(lane) {
   return `${lane.ok ? 'pass' : 'fail'}${failing}${missing}`;
 }
 
-function git(args) {
+function git(args, cwd = root) {
   const result = spawnSync('git', args, {
-    cwd: root,
+    cwd,
     encoding: 'utf8',
     shell: false
   });

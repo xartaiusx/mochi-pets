@@ -177,6 +177,7 @@ function addStaticRequirements() {
     'Alpha Preview Ready',
     'preview-live-gates',
     'funded-chain-gates',
+    'github-site-branch-sync',
     'fly-funded-chain-secret-update',
     'approvalText',
     'noCostFallback',
@@ -193,6 +194,7 @@ function addStaticRequirements() {
     'missingExpectedPrivateInputFiles',
     'does not read private credential file contents',
     'github-branch-sync',
+    'github-site-branch-sync',
     'fly-secret-update',
     'fly-funded-chain-secret-update',
     'vercel-supabase-preview-contract',
@@ -627,6 +629,10 @@ function expectedProviderQueueIds(gitState, failures) {
   if ((Number(gitState?.ahead) || 0) > 0 || (Array.isArray(gitState?.dirty) && gitState.dirty.length > 0)) {
     ids.push('github-branch-sync');
   }
+  const siteState = readSiteGitStateForQueue();
+  if ((Number(siteState?.ahead) || 0) > 0 || (Array.isArray(siteState?.dirty) && siteState.dirty.length > 0)) {
+    ids.push('github-site-branch-sync');
+  }
   if (hasFailurePrefix('Fly secret names:')) ids.push('fly-secret-update');
   if (hasFailure('Fly preview secret names')) ids.push('fly-secret-update');
   if (hasFailure('Fly funded-chain secret names')) ids.push('fly-funded-chain-secret-update');
@@ -635,6 +641,23 @@ function expectedProviderQueueIds(gitState, failures) {
   if (hasFailure('Enjin Canary operator readiness')) ids.push('enjin-canary-readiness');
 
   return ids;
+}
+
+function readSiteGitStateForQueue() {
+  if (!existsSync(siteRepoPath)) return null;
+  const branch = commandAt(siteRepoPath, 'git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const upstream = commandAt(siteRepoPath, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = commandAt(siteRepoPath, 'git', ['status', '--porcelain']);
+  if (!branch.ok || !upstream.ok || !worktree.ok) return null;
+  const counts = commandAt(siteRepoPath, 'git', ['rev-list', '--left-right', '--count', `${firstLine(upstream.stdout)}...HEAD`]);
+  const [behindText = '0', aheadText = '0'] = firstLine(counts.stdout).split(/\s+/);
+  return {
+    branch: firstLine(branch.stdout),
+    upstream: firstLine(upstream.stdout),
+    ahead: counts.ok ? Number.parseInt(aheadText, 10) || 0 : 0,
+    behind: counts.ok ? Number.parseInt(behindText, 10) || 0 : 0,
+    dirty: worktree.stdout.split(/\r?\n/).filter(Boolean)
+  };
 }
 
 function hasHostedUrl(value) {

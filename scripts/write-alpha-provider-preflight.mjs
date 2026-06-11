@@ -13,6 +13,7 @@ const syncApprovalPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JS
 const generatedAt = new Date().toISOString();
 const expectedProviderActionIds = [
   'github-branch-sync',
+  'github-site-branch-sync',
   'fly-secret-update',
   'fly-funded-chain-secret-update',
   'fly-live-game-url',
