@@ -21,6 +21,7 @@
     "alpha:local-acceptance": "node scripts/check-local-alpha-acceptance.mjs",
     "alpha:load-smoke": "node scripts/check-alpha-load-smoke.mjs",
     "alpha:browser-presence": "node scripts/check-alpha-browser-presence.mjs",
+    "alpha:browser-bridge-auth": "node scripts/check-alpha-browser-bridge-auth.mjs",
     "alpha:visual-snapshot": "node scripts/check-alpha-visual-snapshot.mjs",
     "alpha:visual-review": "node scripts/check-alpha-visual-review.mjs",
     "alpha:manual-prompt-review": "node scripts/write-alpha-manual-prompt-review.mjs",
