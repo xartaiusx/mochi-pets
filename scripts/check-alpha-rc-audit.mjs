@@ -14,6 +14,7 @@ addStaticRequirements();
 addSiteRequirements();
 addProviderGateRequirements();
 addLocalBranchRequirements();
+addSiteBranchRequirements();
 addPrRequirements();
 addLocalHandoffRequirements();
 
@@ -188,18 +189,31 @@ function addPrRequirements() {
 }
 
 function addLocalBranchRequirements() {
-  const branch = command('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
-  const head = command('git', ['rev-parse', 'HEAD']);
-  const upstream = command('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
-  const worktree = command('git', ['status', '--porcelain']);
+  addGitBranchSyncRequirement('github.local-branch-sync', root, 'Local game branch');
+}
+
+function addSiteBranchRequirements() {
+  if (!existsSync(siteRepoPath)) {
+    add('github.site-local-branch-sync', 'fail', `Mochirii site repo was not found at ${siteRepoPath}.`, { path: siteRepoPath });
+    return;
+  }
+  addGitBranchSyncRequirement('github.site-local-branch-sync', siteRepoPath, 'Local Mochirii site branch');
+}
+
+function addGitBranchSyncRequirement(id, cwd, label) {
+  const branch = commandAt(cwd, 'git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const head = commandAt(cwd, 'git', ['rev-parse', 'HEAD']);
+  const upstream = commandAt(cwd, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = commandAt(cwd, 'git', ['status', '--porcelain']);
   const baseEvidence = {
+    path: cwd,
     branch: firstLine(branch.stdout),
     localHead: firstLine(head.stdout),
     upstream: firstLine(upstream.stdout)
   };
 
   if (!branch.ok || !head.ok || !upstream.ok || !worktree.ok) {
-    add('github.local-branch-sync', 'unverified', 'Local Git branch/upstream state could not be verified.', {
+    add(id, 'unverified', `${label} Git branch/upstream state could not be verified.`, {
       ...baseEvidence,
       branchError: sanitize(branch.stderr),
       headError: sanitize(head.stderr),
@@ -209,9 +223,9 @@ function addLocalBranchRequirements() {
     return;
   }
 
-  const counts = command('git', ['rev-list', '--left-right', '--count', `${baseEvidence.upstream}...HEAD`]);
+  const counts = commandAt(cwd, 'git', ['rev-list', '--left-right', '--count', `${baseEvidence.upstream}...HEAD`]);
   if (!counts.ok) {
-    add('github.local-branch-sync', 'unverified', 'Local Git ahead/behind count could not be verified.', {
+    add(id, 'unverified', `${label} ahead/behind count could not be verified.`, {
       ...baseEvidence,
       stderr: sanitize(counts.stderr)
     });
@@ -225,11 +239,11 @@ function addLocalBranchRequirements() {
   const ok = Number.isFinite(ahead) && Number.isFinite(behind) && ahead === 0 && behind === 0 && dirtyStatus.length === 0;
 
   add(
-    'github.local-branch-sync',
+    id,
     ok ? 'pass' : 'fail',
     ok
-      ? 'Local branch matches upstream and the worktree is clean, so remote PR checks apply to this source.'
-      : 'Local branch/worktree differs from upstream; remote PR checks do not prove this local source.',
+      ? `${label} matches upstream and the worktree is clean, so remote PR checks apply to this source.`
+      : `${label} differs from upstream or has local changes; remote PR checks do not prove this source.`,
     {
       ...baseEvidence,
       ahead,
@@ -326,8 +340,12 @@ function readJson(file) {
 }
 
 function command(commandName, args) {
+  return commandAt(root, commandName, args);
+}
+
+function commandAt(cwd, commandName, args) {
   const result = spawnSync(commandName, args, {
-    cwd: root,
+    cwd,
     env: process.env,
     encoding: 'utf8',
     shell: false
