@@ -74,7 +74,8 @@ function readAuditSummary() {
       ok: false,
       failures: [`Alpha RC audit report missing or unreadable: ${audit.message}`],
       expectedFailuresAfterPacket: [`Alpha RC audit report missing or unreadable: ${audit.message}`],
-      selfReferentialFailures: []
+      selfReferentialFailures: [],
+      postPacketRefreshFailures: []
     };
   }
   const failing = Array.isArray(audit.data.requirements)
@@ -84,7 +85,10 @@ function readAuditSummary() {
     : ['Alpha RC audit report did not include requirements.'];
   const sanitizedFailures = failing.map((item) => sanitize(item));
   const selfReferentialFailures = sanitizedFailures.filter(isSelfReferentialSyncApprovalFailure);
-  const expectedFailuresAfterPacket = sanitizedFailures.filter((item) => !isSelfReferentialSyncApprovalFailure(item));
+  const postPacketRefreshFailures = sanitizedFailures.filter(isPostPacketRefreshFailure);
+  const expectedFailuresAfterPacket = sanitizedFailures.filter((item) => {
+    return !isSelfReferentialSyncApprovalFailure(item) && !isPostPacketRefreshFailure(item);
+  });
 
   return {
     present: true,
@@ -94,7 +98,8 @@ function readAuditSummary() {
     summary: audit.data.summary,
     failures: sanitizedFailures,
     expectedFailuresAfterPacket,
-    selfReferentialFailures
+    selfReferentialFailures,
+    postPacketRefreshFailures
   };
 }
 
@@ -227,6 +232,16 @@ function isSelfReferentialSyncApprovalFailure(value) {
     );
 }
 
+function isPostPacketRefreshFailure(value) {
+  const text = String(value || '');
+  return text.startsWith('local.report-hygiene:')
+    && (
+      text.includes('localHead does not match current HEAD')
+      || text.includes('dirty state does not match current worktree')
+      || text.includes('Run npm run alpha:report-hygiene')
+    );
+}
+
 function renderMarkdown(report) {
   const commits = report.git.commitsAhead.length
     ? report.git.commitsAhead.map((commit) => `- ${commit}`).join('\n')
@@ -242,6 +257,9 @@ function renderMarkdown(report) {
     : '- None.';
   const selfReferentialFailures = report.audit.selfReferentialFailures?.length
     ? report.audit.selfReferentialFailures.map((failure) => `- ${failure}`).join('\n')
+    : '- None.';
+  const postPacketRefreshFailures = report.audit.postPacketRefreshFailures?.length
+    ? report.audit.postPacketRefreshFailures.map((failure) => `- ${failure}`).join('\n')
     : '- None.';
   const externalFailures = report.externalGates.failures.length
     ? report.externalGates.failures.map((failure) => `- ${failure}`).join('\n')
@@ -293,6 +311,10 @@ ${expectedAuditFailures}
 Self-referential audit items resolved by generating this packet:
 
 ${selfReferentialFailures}
+
+Post-packet freshness items resolved by running report hygiene after this packet:
+
+${postPacketRefreshFailures}
 
 Raw prior Alpha RC audit items:
 
