@@ -17,6 +17,7 @@ const siteGitState = readGitStateAt(siteRepoPath);
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
 const approvalActions = buildApprovalActions(gitState, siteGitState, externalGateSummary);
+const requiredApprovalActions = approvalActions.filter((action) => action.currentlyRequired);
 
 const summary = {
   ok: true,
@@ -26,7 +27,7 @@ const summary = {
   siteGit: siteGitState,
   audit: auditSummary,
   externalGates: externalGateSummary,
-  approvalsRequired: approvalActions.map((action) => action.action),
+  approvalsRequired: requiredApprovalActions.map((action) => action.action),
   approvalActions
 };
 
@@ -147,11 +148,19 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
   const flyApp = currentExternalGateSummary.flyApp || 'mochi-social-game';
   const gameUrl = currentExternalGateSummary.gameUrl || `https://${flyApp}.fly.dev`;
   const sitePreviewUrl = currentExternalGateSummary.sitePreviewUrl || 'https://<vercel-preview-host>';
+  const gameSyncNeeded = branchSyncNeeded(currentGitState);
+  const siteSyncNeeded = branchSyncNeeded(currentSiteGitState);
+  const flyPreviewSecretsNeeded = hasExternalFailure(currentExternalGateSummary, 'Fly preview secret names');
+  const liveGameContractNeeded = hasExternalFailure(currentExternalGateSummary, 'Live game contract') || hasExternalFailure(currentExternalGateSummary, 'Live game URL');
+  const sitePreviewContractNeeded = hasExternalFailure(currentExternalGateSummary, 'Site preview contract');
 
   return [
     {
       id: 'github-branch-sync',
       provider: 'GitHub',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: gameSyncNeeded,
+      requirementReason: gameSyncNeeded ? `Game branch is ahead ${currentGitState.ahead} / behind ${currentGitState.behind} or has local state that remote PR checks cannot prove.` : 'Game branch is already synced and clean.',
       action: 'Push local game branch to origin and allow GitHub Actions/PR checks to run.',
       exactAction: `git push origin ${branch}`,
       costRisk: 'Pushes can trigger GitHub Actions minutes, storage, and PR check usage depending on account and repository settings.',
@@ -161,6 +170,9 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
     {
       id: 'github-site-branch-sync',
       provider: 'GitHub',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: siteSyncNeeded,
+      requirementReason: siteSyncNeeded ? `Mochirii branch is ahead ${currentSiteGitState.ahead} / behind ${currentSiteGitState.behind} or has local state that remote PR checks cannot prove.` : 'Mochirii site branch is already synced and clean.',
       action: 'Push local Mochirii site branch to origin and allow GitHub Actions/PR checks to run.',
       exactAction: `git -C C:\\Users\\xtyty\\Documents\\Mochirii push origin ${siteBranch}`,
       costRisk: 'Pushes can trigger GitHub Actions minutes, Vercel preview builds, Supabase preview checks, storage, and PR check usage depending on account and repository settings.',
@@ -170,6 +182,9 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
     {
       id: 'fly-secret-update',
       provider: 'Fly.io',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: flyPreviewSecretsNeeded,
+      requirementReason: flyPreviewSecretsNeeded ? 'Fly preview runtime secret names are missing for the live game contract.' : 'Fly preview runtime secret names are already present.',
       action: 'Set or change Fly secrets required for Alpha Preview Ready runtime wiring.',
       exactAction: `fly secrets set -a ${flyApp} SUPABASE_URL=<private-supabase-url> SUPABASE_PUBLISHABLE_KEY=<private-supabase-publishable-key> MOCHI_SOCIAL_GAME_SERVER_TOKEN=<private-game-server-token> RPG_ALLOWED_ORIGINS=<approved-origins>`,
       costRisk: 'Fly secret changes can create a new release or restart running Machines, and the existing Fly app and volume can accrue usage while running.',
@@ -179,6 +194,9 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
     {
       id: 'fly-funded-chain-secret-update',
       provider: 'Fly.io/Enjin Canary',
+      phase: 'Alpha RC later',
+      currentlyRequired: false,
+      requirementReason: 'Not required for Alpha Preview Ready. Leave funded-chain Fly secrets unset until real Canary collection and Fuel Tank values exist.',
       action: 'Set funded-chain Fly secrets only after real Enjin Canary resources exist.',
       exactAction: `fly secrets set -a ${flyApp} ENJIN_PLATFORM_TOKEN=<private-enjin-platform-token> ENJIN_COLLECTION_ID=<private-enjin-collection-id> ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>`,
       costRisk: 'Fly secret changes can restart Machines, and real Enjin values should only be set after collection/Fuel Tank resources exist and funded-chain work is approved.',
@@ -188,6 +206,9 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
     {
       id: 'fly-deploy-hosted-smoke',
       provider: 'Fly.io',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: liveGameContractNeeded,
+      requirementReason: liveGameContractNeeded ? 'The live game contract gate needs an approved hosted check against the Fly URL.' : 'The live game contract gate is not currently requesting Fly hosted verification.',
       action: 'Deploy or run hosted smoke/load/browser checks against the Fly game runtime.',
       exactAction: `fly deploy -a ${flyApp} or MOCHI_SOCIAL_BASE_URL=${gameUrl} npm run <hosted-smoke-command>`,
       costRisk: 'Deployments, hosted traffic, WebSocket checks, and load smoke can increase Fly runtime, bandwidth, and volume usage.',
@@ -197,6 +218,9 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
     {
       id: 'enjin-canary-operations',
       provider: 'Enjin Canary',
+      phase: 'Alpha RC later',
+      currentlyRequired: false,
+      requirementReason: 'Not required for Alpha Preview Ready. Keep Enjin in configured-preview-stub until funding and transaction proof work is explicitly approved.',
       action: 'Create/fund Fuel Tank resources or submit Canary mint, burn, listing, transfer, or proof operations.',
       exactAction: 'Use Enjin Platform dashboard/API/Wallet Daemon only for the specific approved Canary collection, Fuel Tank, and transaction proof.',
       costRisk: 'Fuel Tank funding, sponsored transactions, cloud Wallet Daemon hosting, faucets, and live chain operations can consume account resources or sponsored balances.',
@@ -206,6 +230,9 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
     {
       id: 'vercel-supabase-preview',
       provider: 'Vercel/Supabase',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: sitePreviewContractNeeded,
+      requirementReason: sitePreviewContractNeeded ? 'The site preview contract gate needs an approved hosted check against the Vercel/Supabase preview lane.' : 'The site preview contract gate is not currently requesting Vercel/Supabase hosted verification.',
       action: 'Change preview env, deploy preview branches, deploy Edge Functions, or run hosted site checks.',
       exactAction: `Set NEXT_PUBLIC_MOCHI_SOCIAL_URL=${gameUrl} for the Mochirii preview and verify ${sitePreviewUrl} only after approval.`,
       costRisk: 'Preview builds, Edge Functions, database/branch activity, logs, and hosted checks can consume Vercel or Supabase usage.',
@@ -213,6 +240,19 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       approvalText: 'I approve the specific Vercel/Supabase preview action: <exact env/deploy/check command or dashboard action>. I understand it may add usage or charges.'
     }
   ];
+}
+
+function branchSyncNeeded(state) {
+  if (!state) return true;
+  return (state.ahead || 0) !== 0
+    || (state.behind || 0) !== 0
+    || (Array.isArray(state.dirty) && state.dirty.length > 0)
+    || (Array.isArray(state.errors) && state.errors.length > 0);
+}
+
+function hasExternalFailure(summary, name) {
+  return Array.isArray(summary?.failures)
+    && summary.failures.some((failure) => String(failure || '').startsWith(`${name}:`));
 }
 
 function readJson(file) {
@@ -301,10 +341,15 @@ function renderMarkdown(report) {
   const previewLane = formatLaneStatus(report.externalGates.lanes?.previewLive);
   const fundedLane = formatLaneStatus(report.externalGates.lanes?.fundedChain);
   const rcLane = formatLaneStatus(report.externalGates.lanes?.alphaRcReady);
-  const approvals = report.approvalsRequired.map((item) => `- ${item}`).join('\n');
+  const approvals = report.approvalsRequired.length
+    ? report.approvalsRequired.map((item) => `- ${item}`).join('\n')
+    : '- None. No immediate cost-sensitive approval is required by this packet.';
   const actionMatrix = report.approvalActions.map((action) => `### ${action.id}
 
 - Provider: ${action.provider}
+- Phase: ${action.phase}
+- Required now: ${action.currentlyRequired ? 'yes' : 'no'}
+- Reason: ${action.requirementReason}
 - Action: ${action.action}
 - Exact action: ${action.exactAction}
 - Cost/usage risk: ${action.costRisk}
@@ -410,6 +455,7 @@ I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.bra
 
 Suggested explicit approval text for the Mochirii site sync gate:
 
+${report.approvalActions.find((action) => action.id === 'github-site-branch-sync')?.currentlyRequired ? '' : 'No Mochirii site push is required right now because the site branch is already synced.\n\n'}
 \`\`\`text
 I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochirii.
 \`\`\`
