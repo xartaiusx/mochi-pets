@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CanaryShrine,
   CareShrine,
@@ -63,6 +63,10 @@ async function runAction(eventDefinition: ReturnType<typeof WelcomeNpc>, player 
 }
 
 describe('Mochi town event behavior', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('keeps the Welcome NPC dialog rendered as a friend and scoped to alpha', async () => {
     const { context, player } = await runAction(WelcomeNpc());
 
@@ -71,6 +75,54 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value');
     expect(player.texts.at(-1)).toContain('Canary-only');
     expect(player.notifications.at(-1)?.message).toBe('Social spark found');
+  });
+
+  it('opens alpha prompts without blocking movement and auto-closes by dialog id', async () => {
+    vi.useFakeTimers();
+    const player = createFakePlayer();
+    const opened: Array<{ guiId: string; data: unknown; options: unknown }> = [];
+    const removed: Array<{ guiId: string; data: unknown; openId: unknown }> = [];
+
+    Object.assign(player, {
+      gui(guiId: string) {
+        return {
+          openId: 'alpha-dialog-open-1',
+          open(data: unknown, options: unknown) {
+            opened.push({ guiId, data, options });
+            return Promise.resolve(null);
+          }
+        };
+      },
+      removeGui(guiId: string, data: unknown, openId: unknown) {
+        removed.push({ guiId, data, openId });
+      }
+    });
+
+    await runAction(WelcomeNpc(), player);
+
+    expect(opened).toHaveLength(1);
+    expect(opened[0].guiId).toBe('rpg-dialog');
+    expect(opened[0].data).toMatchObject({
+      message: expect.stringContaining('Welcome to Mochi Social'),
+      choices: [],
+      autoClose: true,
+      fullWidth: false,
+      typewriterEffect: false
+    });
+    expect(opened[0].options).toEqual({
+      waitingAction: false,
+      blockPlayerInput: false
+    });
+    expect(player.texts).toEqual([]);
+
+    vi.advanceTimersByTime(2600);
+    expect(removed).toEqual([
+      {
+        guiId: 'rpg-dialog',
+        data: undefined,
+        openId: 'alpha-dialog-open-1'
+      }
+    ]);
   });
 
   it('lets the token chest grant exactly one Mochi Token and records save source', async () => {
