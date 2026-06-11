@@ -452,6 +452,16 @@ function addSiteRequirements() {
     'assertNoLeak',
     'fakeToken'
   ]);
+  requireSiteFileIncludes('site.browser-gate-writer', 'Mochirii repo can persist no-secret manual Chrome browser-gate evidence for later Preview Ready audits.', 'scripts/write-mochi-social-browser-gates.mjs', [
+    'Mochi Social browser gate evidence passed',
+    'reports/mochi-social-browser-gates.json',
+    'reports/mochi-social-browser-gates.md',
+    'mochirii-mochi-social-browser-gates.md',
+    'MOCHI_SOCIAL_SITE_BROWSER_GATES_ALLOW_HOSTED',
+    'MOCHI_SOCIAL_SITE_BROWSER_GATES_NOTES',
+    'assertNoForbiddenMaterial',
+    'wallet.seed'
+  ]);
   requireSiteFileIncludes('site.checklist', 'Mochirii repo can generate its no-secret website-side operator checklist.', 'scripts/prepare-mochi-social-alpha-operator-checklist.mjs', [
     'mochirii-mochi-social-alpha-operator-next-steps.md',
     'MOCHI_SOCIAL_PREVIEW_ENV_FILE',
@@ -470,6 +480,9 @@ function addSiteRequirements() {
     'MOCHI_SOCIAL_PREVIEW_ENV_FILE',
     'Local Preview URL File',
     'readPreviewEnvFile',
+    'MOCHI_SOCIAL_SITE_BROWSER_GATES_JSON',
+    'addStoredManualBrowserGateRequirement',
+    'stored browser gate report',
     'urlFieldsRead',
     'site.bridge-state',
     'check-mochi-social-bridge-state.mjs',
@@ -495,12 +508,22 @@ function addSiteRequirements() {
     'discord.com',
     'MOCHI_SOCIAL_ALPHA_AUTH_URL'
   ]);
+  requireSiteFileIncludes('site.browser-gate-self-test', 'Mochirii repo locally self-tests env and stored-report manual browser-gate evidence before a hosted Chrome pass.', 'scripts/check-mochi-social-browser-gate-self-test.mjs', [
+    'Mochi Social browser gate self-test OK',
+    'write-mochi-social-browser-gates.mjs',
+    'stored browser gate report',
+    'site.manual-browser-gates',
+    'hosted browser gate confirmation requires',
+    'fakeToken'
+  ]);
   requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
     'Alpha Preview Ready',
     'configured-preview-stub',
     'preview-live-gates',
     'funded-chain-gates',
     'Do not set dummy',
+    'prepare:mochi-social-browser-gates',
+    'mochi-social-browser-gates.md',
     'check:mochi-social-preview-ready'
   ]);
   requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii Codex ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-codex-ops.md', [
@@ -509,6 +532,8 @@ function addSiteRequirements() {
     'preview-live-gates',
     'funded-chain-gates',
     'Do not set dummy',
+    'prepare:mochi-social-browser-gates',
+    'mochi-social-browser-gates.md',
     'check:mochi-social-preview-ready'
   ]);
 }
