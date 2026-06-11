@@ -391,6 +391,16 @@ function addSiteRequirements() {
     'nextStatus === "finalized"',
     'location: "hot"'
   ]);
+  requireSiteFileIncludes('site.edge-authority-check', 'Mochirii repo has a local authority guard for the alpha action Edge Function.', 'scripts/check-mochi-social-edge-authority.mjs', [
+    'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
+    'x-mochi-social-server-token',
+    'mochi_social_ledger_events',
+    'noRealValue: true',
+    'chainNetwork: "CANARY"',
+    'finalityRequired: true',
+    'applyFinalizedChainInventory',
+    'Mochi Social Edge authority check passed'
+  ]);
   requireSiteFileIncludes('site.checklist', 'Mochirii repo can generate its no-secret website-side operator checklist.', 'scripts/prepare-mochi-social-alpha-operator-checklist.mjs', [
     'mochirii-mochi-social-alpha-operator-next-steps.md',
     'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
