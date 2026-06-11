@@ -89,7 +89,7 @@ $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true" # Requires explicit hosted
 npm run alpha:external-gates
 ```
 
-Without `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true`, the external gate script refuses hosted Fly/Vercel contract fetches and reports the hosted checks as blocked. This keeps accidental hosted traffic out of local-only work.
+Without `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true`, the external gate script refuses hosted Fly/Vercel contract fetches and reports the hosted checks as blocked. This keeps accidental hosted traffic out of local-only work. The script writes `reports/alpha-external-gates.json` with current Git state and the hosted approval flag, and `npm run alpha:rc-audit` rejects stale or pre-guard external gate reports.
 
 For live Enjin completion, the operator must also provide non-public server env/secrets and set local confirmation flags only after dashboard verification: `ENJIN_PLATFORM_TOKEN`, `ENJIN_COLLECTION_ID`, `ENJIN_FUEL_TANK_ID`, `MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED=true`, `MOCHI_SOCIAL_ENJIN_COLLECTION_READY=true`, and `MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY=true`.
 
@@ -97,7 +97,7 @@ For live Enjin completion, the operator must also provide non-public server env/
 
 ## Alpha RC Audit
 
-`npm run alpha:rc-audit` reads the game repo, sibling Mochirii repo, latest external gate report, current local evidence summary, current operator checklist report, current sync approval packet, local Git branch sync for both repos, GitHub PR state, and no-secret operator checklists. It writes `reports/alpha-rc-audit.json` and exits non-zero until every explicit Alpha RC requirement has direct evidence. The local evidence summary, operator checklist, and sync approval packet must match the current local HEAD, upstream, and dirty state so stale localhost proof, handoff, or push/provider approval text cannot pass the audit. This audit is the final pre-tester stoplight; it should remain red while Fly billing, live preview URLs, Enjin Canary readiness, or game/site local-vs-remote branch drift are incomplete.
+`npm run alpha:rc-audit` reads the game repo, sibling Mochirii repo, latest external gate report, current local evidence summary, current operator checklist report, current sync approval packet, local Git branch sync for both repos, GitHub PR state, and no-secret operator checklists. It writes `reports/alpha-rc-audit.json` and exits non-zero until every explicit Alpha RC requirement has direct evidence. The external gate report, local evidence summary, operator checklist, and sync approval packet must match the current local HEAD, upstream, and dirty state so stale provider proof, localhost proof, handoff, or push/provider approval text cannot pass the audit. This audit is the final pre-tester stoplight; it should remain red while Fly billing, live preview URLs, Enjin Canary readiness, or game/site local-vs-remote branch drift are incomplete.
 
 ## Two-tab Presence Gate
 

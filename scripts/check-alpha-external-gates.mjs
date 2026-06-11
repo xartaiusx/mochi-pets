@@ -37,6 +37,7 @@ const report = {
   gameUrl: gameUrl || null,
   sitePreviewUrl: sitePreviewUrl || null,
   hostedChecksAllowed,
+  git: readGitState(),
   checks: []
 };
 
@@ -289,6 +290,30 @@ function isLocalUrl(url) {
   } catch {
     return false;
   }
+}
+
+function readGitState() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = git(['rev-parse', 'HEAD']);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = git(['status', '--porcelain']);
+  return {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(localHead.stdout),
+    upstream: firstLine(upstream.stdout),
+    dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitizeMultiline(line)) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, worktree]
+      .filter((result) => !result.ok)
+      .map((result) => sanitizeMultiline(result.stderr || result.error || 'git command failed'))
+  };
+}
+
+function git(args) {
+  return command('git', args);
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
 }
 
 async function writeReport() {

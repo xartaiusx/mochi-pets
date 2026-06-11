@@ -62,6 +62,7 @@ Recommended slash goal:
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon, with no-cost gates for every provider action.
    - Require `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for any approved `npm run alpha:external-gates` pass that fetches hosted Fly/Vercel contract URLs.
+   - Require `reports/alpha-external-gates.json` to carry current Git state and the hosted-check approval flag before `npm run alpha:rc-audit` can treat it as provider evidence.
 
 ## Public Contract
 

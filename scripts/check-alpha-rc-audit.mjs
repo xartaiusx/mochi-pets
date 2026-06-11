@@ -166,6 +166,14 @@ function addStaticRequirements() {
     'No-cost rule',
     'noCostRule'
   ]);
+  requireFileIncludes('game.external-gates-script', 'External gate report records Git state and refuses hosted Fly/Vercel contract fetches without explicit hosted-check approval.', 'scripts/check-alpha-external-gates.mjs', [
+    'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS',
+    'hostedChecksAllowed',
+    'readGitState',
+    'localHead',
+    'requiresHostedApproval',
+    'Hosted game contract checks require explicit approval'
+  ]);
   requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
     "source: 'local-alpha-ledger'",
@@ -287,12 +295,28 @@ function addProviderGateRequirements() {
   const failures = Array.isArray(report.checks)
     ? report.checks.filter((check) => check.status === 'fail').map((check) => check.name)
     : ['checks array missing'];
+  failures.push(...currentGitStateFailures(report.git, 'external gate report'));
+  if (typeof report.hostedChecksAllowed !== 'boolean') {
+    failures.push('external gate report must include hostedChecksAllowed');
+  }
+  if (hasHostedUrl(report.gameUrl) && report.hostedChecksAllowed !== true && report.ok === true) {
+    failures.push('hosted game contract cannot pass without explicit hosted-check approval');
+  }
+  if (hasHostedUrl(report.sitePreviewUrl) && report.hostedChecksAllowed !== true && report.ok === true) {
+    failures.push('hosted site contract cannot pass without explicit hosted-check approval');
+  }
   add(report.ok === true ? 'provider.external-gates' : 'provider.external-gates',
-    report.ok === true ? 'pass' : 'fail',
-    report.ok === true
+    report.ok === true && failures.length === 0 ? 'pass' : 'fail',
+    report.ok === true && failures.length === 0
       ? 'Fly, live game/site contract, Supabase, GitHub, and Enjin readiness gates passed.'
       : `External gates still incomplete: ${failures.join(', ')}.`,
-    { reportPath: externalReportPath, checkedAt: report.checkedAt, failingChecks: failures });
+    {
+      reportPath: externalReportPath,
+      checkedAt: report.checkedAt,
+      hostedChecksAllowed: report.hostedChecksAllowed,
+      reportHead: report.git?.localHead,
+      failingChecks: failures
+    });
 }
 
 function addLocalEvidenceRequirements() {
@@ -407,6 +431,16 @@ function currentGitStateFailures(gitState, label) {
     failures.push(`${label} dirty state does not match current worktree`);
   }
   return failures;
+}
+
+function hasHostedUrl(value) {
+  if (!value) return false;
+  try {
+    const parsed = new URL(String(value));
+    return !['localhost', '127.0.0.1', '::1', '[::1]'].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function addSyncApprovalRequirements() {

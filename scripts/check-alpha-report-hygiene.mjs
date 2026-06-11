@@ -17,6 +17,7 @@ const files = [
   'reports/alpha-local-evidence.md',
   'reports/alpha-operator-checklist.json',
   'reports/alpha-sync-approval.json',
+  'reports/alpha-external-gates.json',
   'reports/enjin-operator-smoke.json',
   resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'),
   resolve(credsDir, 'mochi-social-alpha-sync-approval.md')
