@@ -416,9 +416,17 @@ function addSiteRequirements() {
     'check-mochi-social-edge-authority.mjs',
     'site.game-contract',
     'site.edge-smoke',
+    'site.discord-oauth',
     'site.manual-browser-gates',
     'site.branch-sync',
     'site.game-preview-ready'
+  ]);
+  requireSiteFileIncludes('site.discord-oauth-self-test', 'Mochirii repo locally self-tests Discord OAuth provider readiness detection before hosted checks.', 'scripts/check-mochi-social-discord-oauth-self-test.mjs', [
+    'Mochi Social Discord OAuth provider self-test OK',
+    'Unsupported provider: provider is not enabled',
+    'site.discord-oauth',
+    'discord.com',
+    'MOCHI_SOCIAL_ALPHA_AUTH_URL'
   ]);
   requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
     'Alpha Preview Ready',
