@@ -261,6 +261,17 @@ function addStaticRequirements() {
     'Lantern Garden',
     '25 * 18'
   ]);
+  requireFileIncludes('game.map-event-behavior', 'Map event behavior test executes NPC, chest, care, market, trade, and Canary event handlers with save/item/dialog assertions.', 'apps/game/tests/map-event-behavior.test.ts', [
+    'Mochi town event behavior',
+    'Welcome NPC dialog',
+    'Mochi Token',
+    'pet-care',
+    'bond 5/5',
+    'market-board',
+    'trade-post',
+    'no-real-value Enjin Canary certificate request',
+    'Wallet Daemon services'
+  ]);
   requireFileIncludes('game.acceptance-docs', 'Alpha acceptance docs name every local and preview gate.', 'docs/alpha-acceptance.md', [
     'alpha:local-acceptance',
     'alpha:load-smoke',

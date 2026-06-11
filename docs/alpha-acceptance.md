@@ -140,7 +140,9 @@ Use the PNGs for local human/Codex visual review of the town composition. The sn
 
 `npm run alpha:visual-review` reads `reports/alpha-visual-snapshot.json`, `reports/alpha-browser-presence.json`, the PNGs, and the first-town map-object sources, then writes ignored no-secret `reports/alpha-visual-review.json` and `reports/alpha-visual-review.md`. It verifies screenshot dimensions and hashes, HUD/presence evidence, observer movement, HUD pet/market/trade/Canary actions, required map-object IDs, and Lantern Garden habitat coverage. It keeps rendered NPC/chest/habitat prompt interaction as `pending-human-review`; it is a durable local review bundle, not a fake replacement for the manual prompt check.
 
-The browser smoke proves HUD-level two-tab presence, canvas movement response, and a synchronized observer-side canvas change. The unit suite also includes `apps/game/tests/map-object-contract.test.ts`, which verifies stable RPGJS event IDs, event coordinates, prompt/save-source snippets, companion habitat labels, and collision-layer evidence for the first town. The remaining human visual check is for rendered prompt behavior and overall scene confidence before Alpha RC Ready:
+The browser smoke proves HUD-level two-tab presence, canvas movement response, and a synchronized observer-side canvas change. The unit suite also includes `apps/game/tests/map-object-contract.test.ts`, which verifies stable RPGJS event IDs, event coordinates, prompt/save-source snippets, companion habitat labels, and collision-layer evidence for the first town. `apps/game/tests/map-event-behavior.test.ts` executes the welcome NPC, token chest, Momo befriend/care, market board, trade post, and Canary shrine handlers with item, save-source, variable, dialog-text, no-real-value, and Wallet Daemon-stub assertions.
+
+Those tests prove the event contract and behavior. The remaining human visual check is for rendered in-browser prompt behavior and overall scene confidence before Alpha RC Ready:
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm the game canvas, HUD, and town scene are visually coherent.

@@ -99,6 +99,10 @@ const checks = [
     includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'token-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Lantern Garden', '25 * 18']
   },
   {
+    file: 'apps/game/tests/map-event-behavior.test.ts',
+    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochi Token', 'pet-care', 'bond 5/5', 'market-board', 'trade-post', 'no-real-value Enjin Canary certificate request', 'Wallet Daemon services']
+  },
+  {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
     includes: ['scoped server token in a header only', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action']
   },
@@ -168,7 +172,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',
-    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'readGitState', 'provider.external-gates', 'hostedChecksAllowed', 'external gate report', 'game.visual-review', 'game.manual-prompt-review-script', 'game.wallet-daemon-local-check', 'local.manual-prompt-review', 'syncExternalGateSnapshotFailures', 'local.evidence-summary', 'local.operator-checklist-current', 'local.sync-approval-current', 'currentGitStateFailures', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md']
+    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'readGitState', 'provider.external-gates', 'hostedChecksAllowed', 'external gate report', 'game.visual-review', 'game.manual-prompt-review-script', 'game.wallet-daemon-local-check', 'game.map-event-behavior', 'local.manual-prompt-review', 'syncExternalGateSnapshotFailures', 'local.evidence-summary', 'local.operator-checklist-current', 'local.sync-approval-current', 'currentGitStateFailures', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md']
   }
 ];
 
