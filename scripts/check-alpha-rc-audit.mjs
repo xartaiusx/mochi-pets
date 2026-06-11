@@ -96,8 +96,19 @@ function addStaticRequirements() {
     'market.fixed_list',
     'trade.direct_offer',
     'chain.withdraw_request',
+    'ledgerVersion=1',
+    'alphaStopPoint',
+    'chainNetwork',
     '/integration/alpha/enjin/submit',
     'invalid_game_server_token'
+  ]);
+  requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
+    'ledgerVersion: 1',
+    "source: 'local-alpha-ledger'",
+    "alphaStopPoint: 'alpha-rc-ready'",
+    "chainNetwork: 'CANARY'",
+    'noRealValue: true',
+    'receivedAt: new Date().toISOString()'
   ]);
   requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, movement signatures, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
     'Nearby: 2 testers',

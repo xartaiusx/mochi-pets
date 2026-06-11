@@ -8,7 +8,6 @@ import { createClient } from '@supabase/supabase-js';
 import { WebSocketServer } from 'ws';
 import startServer from '../server';
 import type { EnjinOperatorEnvelope, EnjinOperatorOperation, ValidEnjinOperatorEnvelope } from '../integration/enjin-operator-contract';
-import { buildAlphaActionRequest, getSupabaseEdgeConfig } from '../integration/supabase-edge-client';
 
 const ALPHA_FEATURES = {
   alpha: {
@@ -442,7 +441,15 @@ async function appendLocalAlphaLedger(action: AlphaActionEnvelope) {
   await mkdir(ledgerDir, { recursive: true });
   await appendFile(
     resolve(ledgerDir, 'alpha-ledger.jsonl'),
-    `${JSON.stringify({ ...action, receivedAt: new Date().toISOString(), noRealValue: true })}\n`,
+    `${JSON.stringify({
+      ledgerVersion: 1,
+      source: 'local-alpha-ledger',
+      alphaStopPoint: 'alpha-rc-ready',
+      chainNetwork: 'CANARY',
+      noRealValue: true,
+      receivedAt: new Date().toISOString(),
+      ...action
+    })}\n`,
     'utf8'
   );
 }
@@ -530,6 +537,30 @@ function hasTokenAmountFields(candidate: EnjinOperatorEnvelope) {
     Number.isFinite(candidate.amount) &&
     candidate.amount > 0
   );
+}
+
+function getSupabaseEdgeConfig() {
+  return {
+    functionsUrl: process.env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL,
+    serverToken: process.env.MOCHI_SOCIAL_GAME_SERVER_TOKEN
+  };
+}
+
+function buildAlphaActionRequest(action: AlphaActionEnvelope) {
+  const config = getSupabaseEdgeConfig();
+  if (!config.functionsUrl || !config.serverToken) return null;
+
+  return {
+    url: `${config.functionsUrl.replace(/\/+$/, '')}/${ALPHA_EDGE_FUNCTIONS.action}`,
+    init: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mochi-social-server-token': config.serverToken
+      },
+      body: JSON.stringify(action)
+    }
+  };
 }
 
 function getEnjinCanaryConfig(): EnjinCanaryConfig {

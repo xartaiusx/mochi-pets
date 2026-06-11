@@ -42,7 +42,7 @@ The acceptance script verifies:
 
 By default the script expects local fallback mode and checks `.local/saves/alpha-ledger.jsonl`. If testing a preview runtime with Supabase Edge Functions configured, set `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` to limit the script to endpoint and contract checks, then use the Mochirii admin audit views for authoritative ledger proof.
 
-The script writes `reports/alpha-local-acceptance.json` as a local, ignored evidence artifact.
+The script writes `reports/alpha-local-acceptance.json` as a local, ignored evidence artifact. Local fallback ledger rows must include `ledgerVersion=1`, `source="local-alpha-ledger"`, `alphaStopPoint="alpha-rc-ready"`, `chainNetwork="CANARY"`, `noRealValue=true`, `receivedAt`, and the original action payload.
 
 ## Load Smoke
 

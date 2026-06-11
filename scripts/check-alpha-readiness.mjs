@@ -80,7 +80,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -104,11 +104,11 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
-    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'momo-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'Open two browser tabs', 'configured-preview-stub']
+    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'canvasMovement.changedAfterFirstTabMove=true', 'momo-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-alpha-load-smoke.mjs',
-    includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'simulated testers', 'HTTP alpha contract load smoke']
+    includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'simulated testers', 'HTTP alpha contract load smoke']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',

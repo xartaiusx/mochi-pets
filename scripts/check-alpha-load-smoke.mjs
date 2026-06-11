@@ -92,9 +92,15 @@ async function run() {
   }
 
   const entries = await readLedgerEntries();
-  const found = new Set(entries.map((entry) => entry.requestId));
+  const entriesById = new Map(entries.map((entry) => [entry.requestId, entry]));
   for (const action of actions) {
-    assert(found.has(action.requestId), `Missing local ledger entry for ${action.requestId}.`);
+    const entry = entriesById.get(action.requestId);
+    assert(entry, `Missing local ledger entry for ${action.requestId}.`);
+    assert(entry.ledgerVersion === 1, `Ledger entry ${action.requestId} must use ledgerVersion=1.`);
+    assert(entry.source === 'local-alpha-ledger', `Ledger entry ${action.requestId} must identify the local fallback ledger source.`);
+    assert(entry.alphaStopPoint === 'alpha-rc-ready', `Ledger entry ${action.requestId} must keep the alpha RC stop point.`);
+    assert(entry.chainNetwork === 'CANARY', `Ledger entry ${action.requestId} must stay Canary-scoped.`);
+    assert(entry.noRealValue === true, `Ledger entry ${action.requestId} must be no-real-value.`);
   }
 }
 

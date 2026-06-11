@@ -21,7 +21,7 @@ const report = {
   ledgerPath,
   reportPath,
   manualGates: [
-    'Open two browser tabs to /play and verify both player sprites are visible after movement.',
+    'Run npm run alpha:browser-presence and verify reports/alpha-browser-presence.json contains canvasMovement.changedAfterFirstTabMove=true.',
     'Use the in-game NPC/chest/habitat interactions once before marking Alpha RC Ready.'
   ]
 };
@@ -162,7 +162,12 @@ async function run() {
     const entry = entriesById.get(action.requestId);
     assert(entry, `Missing local ledger entry for ${action.type}. Expected requestId ${action.requestId}.`);
     assert(entry.type === action.type, `Ledger entry ${action.requestId} recorded type ${entry.type}, expected ${action.type}.`);
+    assert(entry.ledgerVersion === 1, `Ledger entry ${action.requestId} must use ledgerVersion=1.`);
+    assert(entry.source === 'local-alpha-ledger', `Ledger entry ${action.requestId} must identify the local fallback ledger source.`);
+    assert(entry.alphaStopPoint === 'alpha-rc-ready', `Ledger entry ${action.requestId} must keep the alpha RC stop point.`);
+    assert(entry.chainNetwork === 'CANARY', `Ledger entry ${action.requestId} must stay Canary-scoped.`);
     assert(entry.noRealValue === true, `Ledger entry ${action.requestId} must be no-real-value.`);
+    assert(entry.payload && typeof entry.payload === 'object', `Ledger entry ${action.requestId} must preserve the action payload.`);
     assert(typeof entry.receivedAt === 'string', `Ledger entry ${action.requestId} must include receivedAt.`);
   }
 }
