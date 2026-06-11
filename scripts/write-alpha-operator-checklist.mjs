@@ -103,7 +103,7 @@ Run this before any hosted or provider work:
 npm run alpha:local-suite
 \`\`\`
 
-The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`.
+The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`.
 
 ## Fly Gate
 
@@ -183,6 +183,7 @@ npm run smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke # Hosted load smoke requires explicit approval.
 npm run alpha:browser-presence
+npm run alpha:visual-snapshot
 npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
 \`\`\`

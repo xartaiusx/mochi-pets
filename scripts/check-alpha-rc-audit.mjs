@@ -108,6 +108,7 @@ function addStaticRequirements() {
     'alpha:local-acceptance',
     'alpha:load-smoke',
     'alpha:browser-presence',
+    'alpha:visual-snapshot',
     'alpha:enjin-operator-smoke',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN',
@@ -134,6 +135,17 @@ function addStaticRequirements() {
     'changedAfterFirstTabMove',
     'ArrowRight',
     'ArrowDown',
+    'createHash',
+    'canvas'
+  ]);
+  requireFileIncludes('game.visual-snapshot', 'Visual snapshot captures ignored local page/canvas PNGs for first-screen review and blocks hosted snapshots by default.', 'scripts/check-alpha-visual-snapshot.mjs', [
+    'playwright-core',
+    'alpha-visual-snapshot.json',
+    'alpha-visual-page.png',
+    'alpha-visual-canvas.png',
+    'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT',
+    'local-only by default',
+    'manualReview',
     'createHash',
     'canvas'
   ]);
