@@ -112,6 +112,7 @@ function addStaticRequirements() {
     'readGitState',
     'localHead',
     'npmCommand',
+    'alpha:wallet-daemon-check',
     'alpha:local-acceptance',
     'alpha:load-smoke',
     'alpha:browser-presence',
@@ -136,6 +137,7 @@ function addStaticRequirements() {
     'browser presence must prove observer-side movement',
     'visual snapshot canvas PNG must be non-empty',
     'visual review must keep rendered prompt interaction as a manual pre-RC gate',
+    'Wallet Daemon local check must stay no-cost and metadata-only',
     'built server smoke must prove tokened Enjin route fails closed',
     'local-only'
   ]);
@@ -143,6 +145,7 @@ function addStaticRequirements() {
     'No-secret hygiene scan',
     'alpha-report-hygiene.json',
     'alpha-operator-checklist.json',
+    'wallet-daemon-local.json',
     'mochi-social-alpha-operator-next-steps.md',
     'mochi-social-alpha-sync-approval.md',
     'Unredacted local suite token',
@@ -220,6 +223,18 @@ function addStaticRequirements() {
     'observerMovement',
     'token-chest',
     'Lantern Garden'
+  ]);
+  requireFileIncludes('game.wallet-daemon-local-check', 'Wallet Daemon local check verifies only binary metadata and help output without importing wallets, printing seeds, starting signers, or contacting Enjin.', 'scripts/check-wallet-daemon-local.mjs', [
+    'wallet-daemon-local.json',
+    'wallet-daemon-local.md',
+    'No-cost local Wallet Daemon binary check',
+    'never runs wallet-daemon import',
+    'never runs wallet-daemon print-seed',
+    'never starts a long-running signer process',
+    'never contacts Enjin Platform',
+    'MOCHI_SOCIAL_WALLET_DAEMON_PATH',
+    'MOCHI_SOCIAL_WALLET_DAEMON_REQUIRED',
+    'sha256'
   ]);
   requireFileIncludes('game.map-object-contract', 'Map-object contract test verifies stable town event IDs, prompts, save sources, habitat, and collision evidence.', 'apps/game/tests/map-object-contract.test.ts', [
     'Mochi town map object contract',

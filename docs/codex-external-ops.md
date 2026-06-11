@@ -39,6 +39,8 @@ Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any external
 
 When a needed Alpha RC step may add charges, record the blocked gate and the no-cost alternative instead of proceeding. Local tests and local smoke checks are preferred until hosted work is approved.
 
+`npm run alpha:wallet-daemon-check` is local-only and may inspect the downloaded Wallet Daemon binary path, SHA256, and `--help` output. It must not be treated as Enjin connected-state proof, and it must not be extended to import wallets, print seeds, start a signer, call Enjin, fund Fuel Tanks, or submit transactions.
+
 `npm run alpha:external-gates` may read provider state, but hosted Fly/Vercel contract fetches require `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for an explicitly approved hosted verification run. Leave that flag unset for local-only continuation work.
 
 ## Secret Entry Protocol
@@ -133,7 +135,7 @@ Rules:
 - Record finality evidence before inventory movement.
 - Never credit hot inventory before `FINALIZED`.
 - Failed, abandoned, timed-out, pending, and broadcast operations remain audit-only.
-- Wallet Daemon must be cloud hosted, outbound-only, and separate from Fly game runtime.
+- Wallet Daemon must be cloud hosted or otherwise operator-hosted, outbound-only, and separate from Fly game runtime. A local binary hash/help check does not satisfy connected signer readiness.
 
 ## Fuel Tank Dispatch Contract
 

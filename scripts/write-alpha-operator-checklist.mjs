@@ -15,6 +15,7 @@ const supabaseProjectRef = process.env.MOCHI_SOCIAL_SUPABASE_PROJECT_REF || 'dnx
 const generatedAt = new Date().toISOString();
 
 const externalGateSummary = readExternalGateSummary();
+const walletDaemonSummary = readWalletDaemonSummary();
 const credentialFiles = listCredentialFiles();
 const gitState = readGitState();
 
@@ -71,6 +72,41 @@ function readExternalGateSummary() {
   }
 }
 
+function readWalletDaemonSummary() {
+  const walletReportPath = resolve(root, process.env.MOCHI_SOCIAL_WALLET_DAEMON_REPORT || 'reports/wallet-daemon-local.json');
+  if (!existsSync(walletReportPath)) {
+    return {
+      present: false,
+      ok: false,
+      status: 'missing-report',
+      message: 'Run npm run alpha:wallet-daemon-check to generate the local Wallet Daemon binary report.'
+    };
+  }
+
+  try {
+    const report = JSON.parse(readFileSync(walletReportPath, 'utf8'));
+    return {
+      present: true,
+      ok: report.ok === true,
+      checkedAt: report.checkedAt,
+      status: report.status,
+      path: report.binary?.path || report.configuredPath || null,
+      sha256: report.binary?.sha256 || null,
+      helpCommands: report.binary?.helpCommands || [],
+      message: report.ok === true
+        ? 'Local Wallet Daemon binary metadata check is current enough for handoff context only.'
+        : `Local Wallet Daemon binary check is not passing: ${(report.failures || []).join(', ')}`
+    };
+  } catch {
+    return {
+      present: true,
+      ok: false,
+      status: 'parse-failed',
+      message: 'Wallet Daemon local report exists but could not be parsed.'
+    };
+  }
+}
+
 function renderReport() {
   return {
     ok: true,
@@ -86,6 +122,7 @@ function renderReport() {
       supabaseProjectRef
     },
     externalGateSummary,
+    walletDaemonSummary,
     noCostRule: 'No push, CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact action.'
   };
 }
@@ -97,6 +134,9 @@ function renderChecklist() {
   const gateList = externalGateSummary.failures.length
     ? externalGateSummary.failures.map((failure) => `- ${failure}`).join('\n')
     : '- No failing external gates were recorded in the last report.';
+  const walletCommands = walletDaemonSummary.helpCommands?.length
+    ? walletDaemonSummary.helpCommands.map((command) => `- ${command}`).join('\n')
+    : '- None recorded';
   const dirtyList = gitState.dirty.length
     ? gitState.dirty.slice(0, 20).map((line) => `- ${line}`).join('\n')
     : '- No tracked dirty files were recorded when this checklist was generated.';
@@ -134,11 +174,28 @@ Failing or missing gates:
 
 ${gateList}
 
+## Local Wallet Daemon Binary Check
+
+- Report present: ${walletDaemonSummary.present ? 'yes' : 'no'}
+- Last checked: ${walletDaemonSummary.checkedAt || 'not recorded'}
+- Overall pass: ${walletDaemonSummary.ok ? 'yes' : 'no'}
+- Status: ${walletDaemonSummary.status}
+- Binary path: ${walletDaemonSummary.path || 'not recorded'}
+- SHA256: ${walletDaemonSummary.sha256 || 'not recorded'}
+- Note: ${walletDaemonSummary.message}
+
+Observed \`--help\` commands:
+
+${walletCommands}
+
+This only proves the downloaded local binary responds to metadata/help inspection. It is not proof that a Wallet Daemon signer is running, that Enjin Platform shows Connected, or that any collection/Fuel Tank/transaction gate is complete.
+
 ## Local No-Cost Gate
 
 Run this before any hosted or provider work:
 
 \`\`\`powershell
+npm run alpha:wallet-daemon-check
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:report-hygiene

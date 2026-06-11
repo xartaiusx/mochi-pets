@@ -15,7 +15,7 @@ Mochi Social development is no-cost by default. Agents may inspect local files, 
 Allowed without extra approval:
 
 - Read local files and edit repo docs/code.
-- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:visual-review`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:sync-approval`, and `npm run alpha:report-hygiene`.
+- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:visual-review`, `npm run alpha:wallet-daemon-check`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:sync-approval`, and `npm run alpha:report-hygiene`.
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
@@ -51,7 +51,8 @@ Before a cost-bearing action, state:
 - Existing Fly region: `sjc`.
 - Existing Fly volume: `mochi_social_data`.
 - Treat the existing Fly machine and volume as already-provisioned resources that may accrue usage. Do not scale, redeploy, resize, or create more resources without approval.
-- Enjin Wallet Daemon may remain a local operator process, but do not submit live Enjin operations or fund a Fuel Tank without approval.
+- Enjin Wallet Daemon local binary checks may inspect file metadata, SHA256, and `--help` output only. A downloaded binary is not proof that a signer is running or that Enjin Platform is connected.
+- Enjin Wallet Daemon may later run as a local or cloud operator process, but do not import wallets, print seeds, start a signer, submit live Enjin operations, or fund a Fuel Tank without approval and private operator handling.
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, CI, or load-smoke step.
 - `npm run alpha:external-gates` refuses hosted Fly/Vercel contract fetches unless `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` is set for an explicitly approved hosted verification run. Its ignored report records current Git state and `hostedChecksAllowed`, and `npm run alpha:rc-audit` rejects stale or pre-guard external gate evidence.
 - Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.

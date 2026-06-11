@@ -51,7 +51,7 @@ The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-opera
 ## Current Private Gates
 
 - Fly billing is complete. Fly app `mochi-social-game` is deployed in `sjc` with volume `mochi_social_data` mounted at `/data`, and the public smoke check passes at `https://mochi-social-game.fly.dev`.
-- Enjin Wallet Daemon is running as a separate local operator service. Enjin Platform settings show daemon status online before continuing to collection and Fuel Tank work.
+- Enjin Wallet Daemon binary is downloaded locally and must be verified with `npm run alpha:wallet-daemon-check`; this only proves file hash/help metadata. Enjin Platform must still show daemon status online before continuing to collection and Fuel Tank work.
 - Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations. These stay blocked until the user explicitly approves cost-bearing chain/provider actions.
 - The Enjin console account state and Platform settings are live dashboard truth; do not infer readiness from docs alone.
 
@@ -78,6 +78,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/sa
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-snapshot
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-review
+npm run alpha:wallet-daemon-check
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
 npm run alpha:operator-checklist
@@ -96,6 +97,7 @@ $env:MOCHI_SOCIAL_LOAD_ALLOW_EDGE="true"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; n
 npm run alpha:browser-presence
 npm run alpha:visual-snapshot
 npm run alpha:visual-review
+npm run alpha:wallet-daemon-check
 npm run alpha:enjin-operator-smoke
 $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; $env:MOCHI_SOCIAL_GAME_URL="https://<fly-preview-host>"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"; npm run alpha:external-gates
 npm run alpha:operator-checklist
@@ -117,6 +119,7 @@ Manual gates:
 - `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then a human confirms NPC, chest, and habitat/care prompts look correct in the town.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:visual-review` passes and writes `reports/alpha-visual-review.json` / `.md`, tying screenshot hashes, HUD/presence evidence, HUD action proof, map-object IDs, and habitat coverage to the current local HEAD while keeping rendered NPC/chest/habitat prompts as a pending human review gate.
+- `npm run alpha:wallet-daemon-check` passes and writes `reports/wallet-daemon-local.json` / `.md` with local binary path, SHA256, and `--help` command evidence only. It is not proof that a signer is running or that Enjin Platform is connected.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
 - `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, operator, and built-server reports tied to the same local suite evidence set and current local HEAD. `npm run alpha:rc-audit` fails if that local evidence summary is stale against the current local HEAD, upstream, or dirty state.
 - `npm run alpha:operator-checklist` writes the no-secret ignored `reports/alpha-operator-checklist.json` and local `mochi-social-alpha-operator-next-steps.md` handoff with the current local HEAD, upstream, dirty state, external gate summary, and no-cost approval rule. `npm run alpha:rc-audit` fails if that checklist report is stale against the current local HEAD, upstream, or dirty state.

@@ -25,6 +25,7 @@ npm run alpha:load-smoke
 npm run alpha:browser-presence
 npm run alpha:visual-snapshot
 npm run alpha:visual-review
+npm run alpha:wallet-daemon-check
 npm run alpha:enjin-operator-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
@@ -62,11 +63,17 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 
 ## Local Alpha Suite
 
-`npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, visual review, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
+`npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, runs the local Wallet Daemon binary metadata check, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, visual review, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
 
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
 
 Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. It requires the acceptance, load, browser, visual, and operator reports to share the same local suite base URL, and it requires both the suite report and built-server smoke report to match the current local HEAD, upstream, and dirty worktree state, so stale localhost evidence cannot be mixed into a fresh summary or reused across code changes. The JSON summary also records current Git state, and `npm run alpha:rc-audit` rejects it when it becomes stale. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
+
+## Wallet Daemon Local Check
+
+`npm run alpha:wallet-daemon-check` verifies only local Wallet Daemon binary metadata. By default on this Windows workstation it looks for `C:\Users\xtyty\Downloads\wallet-daemon_v3.0.7_x86_64-pc-windows-msvc\wallet-daemon.exe`; set `MOCHI_SOCIAL_WALLET_DAEMON_PATH` to override that path. The script hashes the file, runs `wallet-daemon --help`, records observed help commands, and writes ignored no-secret `reports/wallet-daemon-local.json` and `reports/wallet-daemon-local.md`.
+
+This check is intentionally weaker than Enjin readiness. It does not import wallets, print seeds, start a signer, contact Enjin Platform, create a collection, fund a Fuel Tank, or submit a chain transaction. Alpha RC still requires an operator to confirm Enjin Platform shows Wallet Daemon connected before the collection, Fuel Tank, and proof-operation gates can pass.
 
 Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates` in no-hosted or explicitly approved hosted mode, run `npm run alpha:rc-audit` once to stamp the current audit report, then run `npm run alpha:sync-approval` and `npm run alpha:report-hygiene` after local evidence to scan the ignored local reports and generated no-secret operator/sync checklists for accidental token, key, service-role, wallet, or passphrase patterns. The operator checklist command writes `reports/alpha-operator-checklist.json` plus `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md` with the current local HEAD, upstream, dirty state, no-cost rule, private gate summary, and placeholder-only operator steps. The sync approval command writes `reports/alpha-sync-approval.json` plus `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md` with local branch drift, audit blockers, external-gate snapshot, cost/usage risk, no-cost alternatives, and explicit approval text for CI/provider steps. It is not approval by itself. Report hygiene writes `reports/alpha-report-hygiene.json` with current Git state, and `npm run alpha:rc-audit` rejects stale operator checklist, sync approval, external-gate, or hygiene reports.
 

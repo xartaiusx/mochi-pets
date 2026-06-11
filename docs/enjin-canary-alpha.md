@@ -16,11 +16,12 @@ Enjin work is no-cost gated. Do not create/fund Fuel Tanks, request faucets, min
 ## Operator Setup
 
 1. In Enjin Platform, switch to Canary.
-2. Create the `Mochi Social Alpha` collection.
-3. Create an Enjin Platform API token and store it only as a Fly secret.
-4. Start one Wallet Daemon for the Platform account. Keep `wallet.seed` and `KEY_PASS` backed up separately and do not expose inbound ports.
-5. Fund/configure a Canary Fuel Tank for the alpha collection.
-6. Set Fly secrets:
+2. Create an Enjin Platform API token and store it only as a Fly secret.
+3. Verify the local Wallet Daemon binary with `npm run alpha:wallet-daemon-check`.
+4. Start one Wallet Daemon for the Platform account only after private operator handling of seed/passphrase material. Keep `wallet.seed` and `KEY_PASS` backed up separately and do not expose inbound ports.
+5. After Enjin Platform shows Wallet Daemon connected, create the `Mochi Social Alpha` collection.
+6. After explicit approval for the exact action, fund/configure a Canary Fuel Tank for the alpha collection.
+7. Set Fly secrets:
 
 ```powershell
 fly secrets set ENJIN_NETWORK="CANARY"
@@ -60,6 +61,18 @@ unset PLATFORM_TOKEN
 After stack creation, inspect CloudWatch startup logs privately. The first run generates the seed material and prints the wallet addresses. Record only non-secret identifiers needed by the game handoff, such as the signing address, collection ID, Fuel Tank ID/address, and finalized Enjin transaction UUIDs. Never paste the mnemonic, `wallet.seed`, `KEY_PASS`, or raw Platform token into Codex chat, Git, PR comments, screenshots, or local reports.
 
 Do not create the `Mochi Social Alpha` collection until the daemon can sign. The Enjin Platform settings page should move from `Not Connected` to `Connected`, then collection creation should submit a transaction and eventually reach `FINALIZED`.
+
+## Local Wallet Daemon Binary Check
+
+Before any signer, collection, Fuel Tank, or transaction step, verify the downloaded local binary without touching wallet material:
+
+```powershell
+npm run alpha:wallet-daemon-check
+```
+
+By default on this workstation the script checks `C:\Users\xtyty\Downloads\wallet-daemon_v3.0.7_x86_64-pc-windows-msvc\wallet-daemon.exe`. Set `MOCHI_SOCIAL_WALLET_DAEMON_PATH` to check a different binary. The script records only path, file size, SHA256, and `wallet-daemon --help` command names in `reports/wallet-daemon-local.json` and `reports/wallet-daemon-local.md`.
+
+This is a no-cost metadata gate. It never runs `wallet-daemon import`, never runs `wallet-daemon print-seed`, never starts a signer process, never contacts Enjin Platform, and never submits or funds anything. Enjin readiness still requires an operator-confirmed connected Wallet Daemon in Enjin Platform plus explicit approval before any collection, Fuel Tank, or Canary transaction action.
 
 ## Alpha Operation Flow
 

@@ -15,6 +15,7 @@ const loadSmoke = readJson('reports/alpha-load-smoke.json');
 const browserPresence = readJson('reports/alpha-browser-presence.json');
 const visualSnapshot = readJson('reports/alpha-visual-snapshot.json');
 const visualReview = readJson('reports/alpha-visual-review.json');
+const walletDaemon = readJson('reports/wallet-daemon-local.json');
 const operatorSmoke = readJson('reports/enjin-operator-smoke.json');
 const gitState = readGitState();
 
@@ -25,6 +26,7 @@ assertReport('load smoke', loadSmoke);
 assertReport('browser presence', browserPresence);
 assertReport('visual snapshot', visualSnapshot);
 assertReport('visual review', visualReview);
+assertReport('Wallet Daemon local check', walletDaemon);
 assertReport('Enjin operator smoke', operatorSmoke);
 
 assertLocalUrl(localSuite.data?.baseUrl, 'local suite baseUrl');
@@ -46,11 +48,12 @@ assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke bas
 assertCurrentGitState(localSuite.data?.git, 'local suite report');
 assertCurrentGitState(builtServer.data?.git, 'built server smoke report');
 assertCurrentGitState(visualReview.data?.git, 'visual review report');
+assertCurrentGitState(walletDaemon.data?.git, 'Wallet Daemon local report');
 
 const commandNames = Array.isArray(localSuite.data?.commands)
   ? localSuite.data.commands.map((command) => command.name)
   : [];
-for (const command of ['build', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
+for (const command of ['build', 'alpha:wallet-daemon-check', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
   if (!commandNames.includes(command)) failures.push(`local suite missing command: ${command}`);
 }
 if (Array.isArray(localSuite.data?.commands)) {
@@ -69,6 +72,16 @@ assert(visualSnapshot.data?.screenshots?.page?.bytes > 1000, 'visual snapshot pa
 assert(visualSnapshot.data?.screenshots?.canvas?.bytes > 1000, 'visual snapshot canvas PNG must be non-empty');
 assert(visualReview.data?.machineReview?.observerMovement === true, 'visual review must carry observer movement proof');
 assert(visualReview.data?.manualPromptGate?.requiredBeforeAlphaRcReady === true, 'visual review must keep rendered prompt interaction as a manual pre-RC gate');
+assert(walletDaemon.data?.scope?.includes('No-cost local Wallet Daemon binary check'), 'Wallet Daemon local check must stay no-cost and metadata-only');
+if (walletDaemon.data?.status === 'verified-binary') {
+  assert(walletDaemon.data?.binary?.bytes > 1024 * 1024, 'Wallet Daemon binary report must include plausible binary size');
+  assert(/^[a-f0-9]{64}$/i.test(String(walletDaemon.data?.binary?.sha256 || '')), 'Wallet Daemon binary report must include SHA256');
+  for (const command of ['import', 'print-seed', 'help']) {
+    assert(walletDaemon.data?.binary?.helpCommands?.includes(command), `Wallet Daemon help output must list ${command}`);
+  }
+} else {
+  assert(['not-configured', 'missing'].includes(walletDaemon.data?.status), 'Wallet Daemon local check must be verified-binary, not-configured, or missing');
+}
 assert(operatorSmoke.data?.scope?.includes('does not submit live Enjin operations by default'), 'operator smoke must remain fail-closed by default');
 assert(builtServer.data?.checks?.some((check) => check.name === 'tokened operator submit' && check.status === 409), 'built server smoke must prove tokened Enjin route fails closed without Enjin secrets');
 assert(acceptance.data?.actions?.some((action) => action.type === 'chain.withdraw_request'), 'local acceptance must record a Canary withdraw request');
@@ -92,6 +105,11 @@ const summary = {
     visualReview: summarizeReport(visualReview, {
       manualPromptGate: visualReview.data?.manualPromptGate?.status,
       observerMovement: visualReview.data?.machineReview?.observerMovement
+    }),
+    walletDaemon: summarizeReport(walletDaemon, {
+      status: walletDaemon.data?.status,
+      sha256: walletDaemon.data?.binary?.sha256,
+      helpCommands: walletDaemon.data?.binary?.helpCommands
     }),
     operatorSmoke: summarizeReport(operatorSmoke)
   },
@@ -251,6 +269,7 @@ ${rows}
 
 - Built Express runtime starts locally and stops after smoke.
 - Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
+- Wallet Daemon local evidence is metadata-only: file hash and \`--help\` output when the binary is present; no wallet import, seed print, signer process, Enjin API call, Fuel Tank action, or chain transaction occurs.
 - Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
 - The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.

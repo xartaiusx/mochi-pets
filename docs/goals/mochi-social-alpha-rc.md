@@ -59,6 +59,7 @@ Recommended slash goal:
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions; then complete the manual NPC/chest/habitat map-object prompt check.
    - Run `npm run alpha:visual-snapshot` to capture ignored local first-screen page/canvas PNGs for visual review.
    - Run `npm run alpha:visual-review` to tie screenshot hashes, two-tab presence, HUD action proof, map-object IDs, and habitat coverage into ignored local review artifacts while preserving rendered NPC/chest/habitat prompt interaction as a manual gate.
+   - Run `npm run alpha:wallet-daemon-check` to verify only local Wallet Daemon binary metadata, hash, and help output without importing wallets, printing seeds, starting signers, contacting Enjin, funding Fuel Tanks, or submitting chain transactions.
    - Run the private Enjin operator route smoke with `npm run alpha:enjin-operator-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon, with no-cost gates for every provider action.
@@ -129,6 +130,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/sa
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-snapshot
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-review
+npm run alpha:wallet-daemon-check
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:enjin-operator-smoke
 ```
 

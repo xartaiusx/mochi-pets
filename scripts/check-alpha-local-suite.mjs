@@ -55,6 +55,7 @@ try {
 
 async function run() {
   await runCommand('build', npmCommand(), ['run', 'build'], process.env);
+  await runCommand('alpha:wallet-daemon-check', npmCommand(), ['run', 'alpha:wallet-daemon-check'], localCheckEnv());
   await startServer();
   await waitForHealth();
 
