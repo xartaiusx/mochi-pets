@@ -1,15 +1,18 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
+const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const previewEnvPath = resolve(credsDir, process.env.MOCHI_SOCIAL_PREVIEW_ENV_FILE || 'mochi-social-alpha-vercel-preview.local.txt');
+const previewEnv = readPreviewEnvFile(previewEnvPath);
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
 const flyVolume = process.env.MOCHI_SOCIAL_FLY_VOLUME || 'mochi_social_data';
 const supabasePreviewRef = process.env.MOCHI_SOCIAL_SUPABASE_PROJECT_REF || 'dnxumaiooljdnbjvzbdc';
-const gameUrl = (process.env.MOCHI_SOCIAL_GAME_URL || process.env.MOCHI_SOCIAL_BASE_URL || '').replace(/\/+$/, '');
-const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || '').replace(/\/+$/, '');
+const gameUrl = (process.env.MOCHI_SOCIAL_GAME_URL || process.env.MOCHI_SOCIAL_BASE_URL || previewEnv.gameUrl || '').replace(/\/+$/, '');
+const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || previewEnv.sitePreviewUrl || '').replace(/\/+$/, '');
 const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 const hostedChecksAllowed = process.env.MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS === 'true';
 
@@ -55,6 +58,7 @@ const report = {
   supabasePreviewRef,
   gameUrl: gameUrl || null,
   sitePreviewUrl: sitePreviewUrl || null,
+  previewEnv,
   hostedChecksAllowed,
   lanes: null,
   git: readGitState(),
@@ -350,6 +354,63 @@ function parseJson(text) {
   } catch {
     return null;
   }
+}
+
+function defaultCredsDir() {
+  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
+  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
+  return resolve(root, '.local', 'creds');
+}
+
+function readPreviewEnvFile(file) {
+  const base = {
+    path: pathForReport(file),
+    present: false,
+    gameUrl: '',
+    sitePreviewUrl: '',
+    urlFieldsRead: []
+  };
+  if (!existsSync(file)) return base;
+
+  const text = readFileSync(file, 'utf8');
+  const gameUrl = readNamedUrl(text, ['MOCHI_SOCIAL_GAME_URL', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL']);
+  const sitePreviewUrl = readNamedUrl(text, ['MOCHI_SOCIAL_SITE_PREVIEW_URL', 'NEXT_PUBLIC_SITE_URL']);
+  return {
+    ...base,
+    present: true,
+    gameUrl,
+    sitePreviewUrl,
+    urlFieldsRead: [
+      gameUrl ? 'MOCHI_SOCIAL_GAME_URL/NEXT_PUBLIC_MOCHI_SOCIAL_URL' : '',
+      sitePreviewUrl ? 'MOCHI_SOCIAL_SITE_PREVIEW_URL/NEXT_PUBLIC_SITE_URL' : ''
+    ].filter(Boolean)
+  };
+}
+
+function readNamedUrl(text, names) {
+  for (const name of names) {
+    const pattern = new RegExp(`^\\s*${name}\\s*=\\s*(.+?)\\s*$`, 'm');
+    const match = text.match(pattern);
+    if (!match) continue;
+    const value = sanitizeUrl(match[1]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function sanitizeUrl(value) {
+  const trimmed = String(value || '').trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+  if (!/^https:\/\/[A-Za-z0-9.-]+(?::\d+)?(?:\/[^\s]*)?$/.test(trimmed)) return '';
+  return sanitizeMultiline(trimmed);
+}
+
+function pathForReport(absolutePath) {
+  const normalized = String(absolutePath || '').replace(/\\/g, '/');
+  const normalizedRoot = root.replace(/\\/g, '/');
+  const normalizedCreds = credsDir.replace(/\\/g, '/');
+  if (normalized.startsWith(`${normalizedRoot}/`)) return normalized.slice(normalizedRoot.length + 1);
+  if (normalized.startsWith(`${normalizedCreds}/`)) return normalized.slice(normalizedCreds.length + 1);
+  return sanitizeMultiline(absolutePath);
 }
 
 function add(status, name, message, evidence = {}) {
