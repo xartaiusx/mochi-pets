@@ -14,6 +14,7 @@ addStaticRequirements();
 addSiteRequirements();
 addProviderGateRequirements();
 addLocalEvidenceRequirements();
+addReportHygieneRequirements();
 addLocalBranchRequirements();
 addSiteBranchRequirements();
 addPrRequirements();
@@ -124,6 +125,14 @@ function addStaticRequirements() {
     'visual snapshot canvas PNG must be non-empty',
     'built server smoke must prove tokened Enjin route fails closed',
     'local-only'
+  ]);
+  requireFileIncludes('game.report-hygiene-script', 'Report hygiene scans ignored local reports and generated no-secret handoff artifacts for accidental secret leakage.', 'scripts/check-alpha-report-hygiene.mjs', [
+    'No-secret hygiene scan',
+    'alpha-report-hygiene.json',
+    'mochi-social-alpha-operator-next-steps.md',
+    'Unredacted local suite token',
+    'Wallet daemon password assignment',
+    'Supabase service role assignment'
   ]);
   requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
@@ -273,6 +282,31 @@ function addLocalEvidenceRequirements() {
     {
       reportPath: evidenceReportPath,
       checkedAt: report.checkedAt,
+      failures
+    }
+  );
+}
+
+function addReportHygieneRequirements() {
+  const hygieneReportPath = resolve(root, process.env.MOCHI_SOCIAL_REPORT_HYGIENE_JSON || 'reports/alpha-report-hygiene.json');
+  const hygieneReport = readJson(hygieneReportPath);
+  if (!hygieneReport.ok) {
+    add('local.report-hygiene', 'fail', `Local report hygiene summary is missing or invalid: ${hygieneReport.message}. Run npm run alpha:local-evidence, npm run alpha:operator-checklist, then npm run alpha:report-hygiene.`, { path: hygieneReportPath });
+    return;
+  }
+
+  const report = hygieneReport.data;
+  const failures = Array.isArray(report.failures) ? report.failures : ['failures array missing'];
+  add(
+    'local.report-hygiene',
+    report.ok === true && failures.length === 0 ? 'pass' : 'fail',
+    report.ok === true && failures.length === 0
+      ? 'Local report hygiene passed for ignored reports and generated no-secret handoff artifacts.'
+      : `Local report hygiene still has failures: ${failures.join(', ')}.`,
+    {
+      reportPath: hygieneReportPath,
+      checkedAt: report.checkedAt,
+      scanned: report.scanned,
       failures
     }
   );

@@ -27,8 +27,9 @@ npm run alpha:visual-snapshot
 npm run alpha:enjin-operator-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
-npm run alpha:external-gates
 npm run alpha:operator-checklist
+npm run alpha:report-hygiene
+npm run alpha:external-gates
 npm run alpha:rc-audit
 ```
 
@@ -64,6 +65,8 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
 
 Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
+
+Run `npm run alpha:operator-checklist`, then `npm run alpha:report-hygiene` after local evidence to scan the ignored local reports and generated no-secret operator checklist for accidental token, key, service-role, wallet, or passphrase patterns. It writes `reports/alpha-report-hygiene.json`.
 
 ## Private Enjin Operator Smoke
 

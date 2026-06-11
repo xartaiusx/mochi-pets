@@ -45,9 +45,11 @@ For the local no-cost release-candidate pass, run:
 ```powershell
 npm run alpha:local-suite
 npm run alpha:local-evidence
+npm run alpha:operator-checklist
+npm run alpha:report-hygiene
 ```
 
-The suite builds once, starts the built Express runtime on a disposable localhost port with throwaway env, runs endpoint smoke, local alpha acceptance, 10-25 tester HTTP load smoke, two-tab browser presence, first-screen visual snapshot, and the private Enjin operator fail-closed check, then writes `reports/alpha-local-suite.json` and shuts the server down. The evidence command reads the ignored localhost reports and writes no-secret `reports/alpha-local-evidence.json` and `reports/alpha-local-evidence.md` summaries.
+The suite builds once, starts the built Express runtime on a disposable localhost port with throwaway env, runs endpoint smoke, local alpha acceptance, 10-25 tester HTTP load smoke, two-tab browser presence, first-screen visual snapshot, and the private Enjin operator fail-closed check, then writes `reports/alpha-local-suite.json` and shuts the server down. The evidence command reads the ignored localhost reports and writes no-secret `reports/alpha-local-evidence.json` and `reports/alpha-local-evidence.md` summaries. The checklist command refreshes the no-secret operator handoff, and the hygiene command scans ignored local reports plus that generated checklist for accidental secret patterns.
 
 ## Deployment Boundary
 

@@ -102,9 +102,10 @@ Run this before any hosted or provider work:
 \`\`\`powershell
 npm run alpha:local-suite
 npm run alpha:local-evidence
+npm run alpha:report-hygiene
 \`\`\`
 
-The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`. The evidence command reads ignored localhost reports and writes no-secret \`reports/alpha-local-evidence.json\` and \`reports/alpha-local-evidence.md\`.
+The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`. The evidence command reads ignored localhost reports and writes no-secret \`reports/alpha-local-evidence.json\` and \`reports/alpha-local-evidence.md\`. The hygiene command scans ignored local reports and the generated no-secret checklist for accidental secret patterns.
 
 ## Fly Gate
 

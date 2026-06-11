@@ -26,6 +26,7 @@
     "alpha:built-server-smoke": "node scripts/check-built-server-smoke.mjs",
     "alpha:local-suite": "node scripts/check-alpha-local-suite.mjs",
     "alpha:local-evidence": "node scripts/check-alpha-local-evidence.mjs",
+    "alpha:report-hygiene": "node scripts/check-alpha-report-hygiene.mjs",
     "alpha:external-gates": "node scripts/check-alpha-external-gates.mjs",
     "alpha:operator-checklist": "node scripts/write-alpha-operator-checklist.mjs",
     "alpha:rc-audit": "node scripts/check-alpha-rc-audit.mjs",
