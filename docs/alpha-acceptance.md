@@ -72,7 +72,7 @@ Run `npm run alpha:local-evidence` after the local suite to validate the ignored
 
 ## Manual Prompt Review Gate
 
-`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, confirms the rendered welcome NPC dialog, token chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars.
+`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, focuses the game canvas, stands adjacent to the map object, holds Space/Action for about 200ms, confirms the rendered welcome NPC dialog, token chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars.
 
 Local completion example:
 
@@ -146,7 +146,7 @@ Those tests prove the event contract and behavior. The remaining human visual ch
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm the game canvas, HUD, and town scene are visually coherent.
-3. Interact with the NPC, chest, and habitat/care loop in at least one tab.
+3. Interact with the NPC, chest, and habitat/care loop in at least one tab. Focus the canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 4. Confirm the prompts and notifications match the alpha no-real-value scope.
 5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
 

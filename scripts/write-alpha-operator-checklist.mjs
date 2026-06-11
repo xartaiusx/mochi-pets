@@ -249,7 +249,7 @@ Pending prompt checks:
 
 ${manualPromptPending}
 
-Complete this gate only after a local browser review confirms the welcome NPC dialog, token chest prompt/save feedback, and habitat care-loop prompt are rendered coherently.
+Complete this gate only after a local browser review confirms the welcome NPC dialog, token chest prompt/save feedback, and habitat care-loop prompt are rendered coherently. Focus the game canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 
 ## Local No-Cost Gate
 

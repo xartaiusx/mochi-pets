@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const serverSource = readFileSync('src/server.ts', 'utf8');
+const runtimeServerSource = readFileSync('src/server.ts', 'utf8');
+const moduleServerSource = readFileSync('src/modules/main/server.ts', 'utf8');
+const mapEventSource = readFileSync('src/modules/main/event.ts', 'utf8');
 const mapSource = readFileSync('src/tiled/mochi-town.tmx', 'utf8');
 const alphaContentSource = readFileSync('src/alpha/content.ts', 'utf8');
 
@@ -17,9 +19,9 @@ const expectedPlacements = {
   'canary-shrine': { x: 704, y: 160 }
 } as const;
 
-function runtimeEventPlacements() {
+function eventPlacements(source: string) {
   return Object.fromEntries(
-    Array.from(serverSource.matchAll(/id:\s*'([^']+)',\s*x:\s*(\d+),\s*y:\s*(\d+),/g), (match) => [
+    Array.from(source.matchAll(/id:\s*'([^']+)',\s*x:\s*(\d+),\s*y:\s*(\d+),/g), (match) => [
       match[1],
       {
         x: Number(match[2]),
@@ -27,6 +29,10 @@ function runtimeEventPlacements() {
       }
     ])
   );
+}
+
+function runtimeEventPlacements() {
+  return eventPlacements(runtimeServerSource);
 }
 
 function collisionCells() {
@@ -41,6 +47,7 @@ function collisionCells() {
 describe('Mochi town map object contract', () => {
   it('keeps the first playable town events stable and reachable', () => {
     expect(runtimeEventPlacements()).toEqual(expectedPlacements);
+    expect(eventPlacements(moduleServerSource)).toEqual(expectedPlacements);
   });
 
   it('keeps required map-object graphics, prompts, and save sources wired', () => {
@@ -66,7 +73,8 @@ describe('Mochi town map object contract', () => {
     ];
 
     for (const snippet of requiredSnippets) {
-      expect(serverSource).toContain(snippet);
+      expect(mapEventSource).toContain(snippet);
+      expect(runtimeServerSource).toContain(snippet);
     }
   });
 

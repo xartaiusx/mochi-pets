@@ -22,21 +22,21 @@ const checks = [
     label: 'Welcome NPC dialog',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK),
-    expectedEvidence: 'Rendered dialog says the closed alpha town is no-real-value and Canary-only.'
+    expectedEvidence: 'Rendered dialog says the closed alpha town is no-real-value and Canary-only after holding the Action key briefly.'
   },
   {
     id: 'token-chest',
     label: 'Token chest prompt and save feedback',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK),
-    expectedEvidence: 'Rendered prompt/notification confirms Mochi Token pickup and server save feedback.'
+    expectedEvidence: 'Rendered prompt/notification confirms Mochi Token pickup and server save feedback after holding the Action key briefly.'
   },
   {
     id: 'care-shrine',
     label: 'Habitat care loop prompt',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK),
-    expectedEvidence: 'Rendered prompt/status confirms companion care, bond, and growth feedback.'
+    expectedEvidence: 'Rendered prompt/status confirms companion care, bond, and growth feedback after holding the Action key briefly.'
   }
 ];
 
@@ -93,6 +93,7 @@ const report = {
   checks,
   instructions: {
     localUrl: '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
+    actionInput: 'Focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.',
     requiredEnv: checks.map((check) => `${check.env}=true`),
     completionCommand: 'Set the required env vars plus MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER and MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER, then run npm run alpha:manual-prompt-review.'
   },
@@ -220,6 +221,8 @@ function renderMarkdown(summary) {
 Generated: ${summary.checkedAt}
 
 This file is intentionally no-secret. It records the Alpha RC operator/human review for rendered in-canvas NPC, chest, and habitat/care prompts.
+
+Input note: focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 
 ## Status
 

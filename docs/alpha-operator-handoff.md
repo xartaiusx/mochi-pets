@@ -118,7 +118,7 @@ npm run build
 
 Manual gates:
 
-- `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then a human confirms NPC, chest, and habitat/care prompts look correct in the town.
+- `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then an operator confirms NPC, chest, and habitat/care prompts look correct in the town. Focus the canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:visual-review` passes and writes `reports/alpha-visual-review.json` / `.md`, tying screenshot hashes, HUD/presence evidence, HUD action proof, map-object IDs, and habitat coverage to the current local HEAD while keeping rendered NPC/chest/habitat prompts as a pending human review gate.
 - `npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` / `.md` and stays pending until an operator records explicit local confirmation for the welcome NPC, token chest, and habitat/care prompts.

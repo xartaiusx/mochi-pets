@@ -97,9 +97,10 @@ const report = {
   manualPromptGate: {
     requiredBeforeAlphaRcReady: true,
     status: 'pending-human-review',
-    reason: 'Automated screenshots and DOM/HUD evidence do not yet interact with RPGJS rendered NPC/chest/habitat prompts inside the canvas.',
+    reason: 'Automated screenshots and DOM/HUD evidence do not replace the final rendered NPC/chest/habitat prompt review inside the canvas.',
     requiredChecks: [
       'Open the local playable game in a browser.',
+      'Focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms.',
       'Interact with the welcome NPC and confirm the rendered prompt/dialog is coherent.',
       'Interact with the token chest and confirm the rendered prompt/save feedback is coherent.',
       'Interact with the habitat/care loop and confirm the rendered prompt/status feedback is coherent.',
