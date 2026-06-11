@@ -168,6 +168,11 @@ function addStaticRequirements() {
   requireFileIncludes('game.operator-checklist-script', 'Operator checklist writes no-secret Markdown and current Git-state JSON evidence for handoff freshness.', 'scripts/write-alpha-operator-checklist.mjs', [
     'mochi-social-alpha-operator-next-steps.md',
     'alpha-operator-checklist.json',
+    'providerActionQueue',
+    'buildProviderActionQueue',
+    'Provider Action Queue',
+    'approvalText',
+    'noCostFallback',
     'readGitState',
     'localHead',
     'No-cost rule',
@@ -442,6 +447,24 @@ function addOperatorChecklistRequirements() {
   if (!report.externalGateSummary || typeof report.externalGateSummary !== 'object') {
     failures.push('operator checklist report must include the latest external gate summary');
   }
+  const queue = Array.isArray(report.providerActionQueue) ? report.providerActionQueue : [];
+  const requiredQueueIds = [
+    'github-branch-sync',
+    'fly-secret-update',
+    'fly-live-game-url',
+    'vercel-supabase-preview-contract',
+    'enjin-canary-readiness'
+  ];
+  for (const id of requiredQueueIds) {
+    if (!queue.some((item) => item?.id === id)) {
+      failures.push(`operator checklist provider action queue missing ${id}`);
+    }
+  }
+  for (const field of ['provider', 'title', 'blocker', 'approvalText', 'noCostFallback']) {
+    if (queue.some((item) => !item?.[field])) {
+      failures.push(`operator checklist provider action queue missing ${field}`);
+    }
+  }
 
   add(
     'local.operator-checklist-current',
@@ -457,6 +480,7 @@ function addOperatorChecklistRequirements() {
       reportUpstream: report.git?.upstream,
       reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
       externalGatePresent: report.externalGateSummary?.present,
+      providerActionQueueIds: queue.map((item) => item?.id).filter(Boolean),
       failures
     }
   );
@@ -691,6 +715,9 @@ function addGitBranchSyncRequirement(id, cwd, label) {
 function addLocalHandoffRequirements() {
   requireLocalFile('handoff.game-checklist', resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'), [
     'This file is intentionally no-secret',
+    'Provider Action Queue',
+    'Exact approval needed',
+    'No-cost fallback',
     'Fly Gate',
     'Enjin Canary Gate',
     'Preview Verification After Fly And Enjin Gates'
