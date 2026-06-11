@@ -434,6 +434,14 @@ function addSiteRequirements() {
     'applyFinalizedChainInventory',
     'Mochi Social Edge authority check passed'
   ]);
+  requireSiteFileIncludes('site.preview-key-loader-self-test', 'Mochirii repo locally self-tests preview publishable-key loading without leaking key values before hosted Edge smoke.', 'scripts/check-mochi-social-preview-key-loader.mjs', [
+    'MOCHI_SOCIAL_ALPHA_EDGE_PUBLISHABLE_KEY_FILE',
+    'not-loaded-awaiting-hosted-approval',
+    'publishableKeyPresent === true',
+    'publishableKeySource',
+    'assertNoLeak',
+    'Mochi Social preview publishable-key loader self-test OK'
+  ]);
   requireSiteFileIncludes('site.checklist', 'Mochirii repo can generate its no-secret website-side operator checklist.', 'scripts/prepare-mochi-social-alpha-operator-checklist.mjs', [
     'mochirii-mochi-social-alpha-operator-next-steps.md',
     'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
@@ -445,8 +453,15 @@ function addSiteRequirements() {
     'reports/mochi-social-preview-ready.json',
     'mochirii-mochi-social-preview-ready.md',
     'MOCHI_SOCIAL_SITE_PREVIEW_READY_ALLOW_HOSTED',
+    'MOCHI_SOCIAL_SITE_PREVIEW_READY_SKIP_SELF_TEST_COMMANDS',
     'site.bridge-state',
     'check-mochi-social-bridge-state.mjs',
+    'site.auth-bridge',
+    'check-mochi-social-auth-bridge.mjs',
+    'site.preview-key-loader',
+    'check-mochi-social-preview-key-loader.mjs',
+    'site.discord-oauth-detector',
+    'check-mochi-social-discord-oauth-self-test.mjs',
     'site.edge-authority',
     'check-mochi-social-edge-authority.mjs',
     'site.game-contract',

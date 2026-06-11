@@ -115,11 +115,11 @@ Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates` i
 
 `npm run alpha:preview-ready` writes `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It proves the tester-entry lane separately from funded-chain Alpha RC gates by requiring current local evidence, current no-secret hygiene, completed manual prompt review, current handoff packets, synced game/site branches, and green `preview-live-gates` from an explicitly approved hosted external-gates run.
 
-The Mochirii repo mirrors this with `npm run check:mochi-social-preview-ready`, which writes ignored no-secret site-side reports and requires the local bridge-state self-test, game Preview Ready evidence, site branch sync, hosted game contract proof, Supabase Edge smoke, and explicit manual browser gate confirmation before testers enter.
+The Mochirii repo mirrors this with `npm run check:mochi-social-preview-ready`, which writes ignored no-secret site-side reports and requires local bridge-state, auth-bridge, publishable-key loader, Discord provider detector, and Edge authority self-tests before game Preview Ready evidence, site branch sync, hosted game contract proof, Supabase Edge smoke, hosted Discord OAuth proof, and explicit manual browser gate confirmation can let testers enter.
 
-Full `npm run alpha:rc-audit` reads the Mochirii site-side report from `../Mochirii/reports/mochi-social-preview-ready.json` and fails until it is green and current, because allowlist, terms, feedback, and browser-gate proof belong to the website repo.
+Full `npm run alpha:rc-audit` reads the Mochirii site-side report from `../Mochirii/reports/mochi-social-preview-ready.json` and fails until it is green and current, because allowlist, terms, feedback, Discord OAuth proof, and browser-gate proof belong to the website repo.
 
-The game-side RC audit also checks the Mochirii bridge contract directly: `check:mochi-social-bridge-state` must exist and prove the website parent handles `MOCHI_SOCIAL_READY`, `MOCHI_SOCIAL_AUTH_STATE`, and `MOCHI_SOCIAL_ERROR` with a shared resolver before manual browser evidence can be trusted.
+The game-side RC audit also checks the Mochirii bridge and preview-detector contracts directly: `check:mochi-social-bridge-state` must prove the website parent handles `MOCHI_SOCIAL_READY`, `MOCHI_SOCIAL_AUTH_STATE`, and `MOCHI_SOCIAL_ERROR` with a shared resolver, `check:mochi-social-auth-bridge` must keep iframe auth access-token-only, and the preview key-loader and Discord OAuth self-tests must pass before manual browser evidence can be trusted.
 
 ## Private Enjin Operator Smoke
 
