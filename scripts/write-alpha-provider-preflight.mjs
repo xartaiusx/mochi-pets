@@ -14,6 +14,7 @@ const generatedAt = new Date().toISOString();
 const expectedProviderActionIds = [
   'github-branch-sync',
   'fly-secret-update',
+  'fly-funded-chain-secret-update',
   'fly-live-game-url',
   'vercel-supabase-preview-contract',
   'enjin-canary-readiness'
@@ -98,7 +99,7 @@ function buildPrivateInputInventory(projectRef) {
       fileName: 'enjin-mochi-social-alpha.local.txt',
       expectedBeforeProviderWork: false,
       purpose: 'Optional operator-owned place to track Enjin collection ID, Fuel Tank ID/address, Platform token status, and Wallet Daemon connected status without committing values.',
-      usedBy: ['fly-secret-update', 'enjin-canary-readiness']
+      usedBy: ['fly-funded-chain-secret-update', 'enjin-canary-readiness']
     },
     {
       id: 'vercel-preview-origin',

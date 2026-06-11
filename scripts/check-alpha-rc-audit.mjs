@@ -174,6 +174,10 @@ function addStaticRequirements() {
     'providerActionQueue',
     'buildProviderActionQueue',
     'Provider Action Queue',
+    'Alpha Preview Ready',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'fly-funded-chain-secret-update',
     'approvalText',
     'noCostFallback',
     'readGitState',
@@ -190,11 +194,17 @@ function addStaticRequirements() {
     'does not read private credential file contents',
     'github-branch-sync',
     'fly-secret-update',
+    'fly-funded-chain-secret-update',
     'vercel-supabase-preview-contract',
     'enjin-canary-readiness'
   ]);
   requireFileIncludes('game.external-gates-script', 'External gate report records Git state and refuses hosted Fly/Vercel contract fetches without explicit hosted-check approval.', 'scripts/check-alpha-external-gates.mjs', [
     'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS',
+    'previewFlySecrets',
+    'fundedChainFlySecrets',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'summarizeGateLanes',
     'hostedChecksAllowed',
     'readGitState',
     'localHead',
@@ -298,7 +308,37 @@ function addStaticRequirements() {
     'alpha:browser-presence',
     'alpha:enjin-operator-smoke',
     'alpha:external-gates',
-    'alpha:operator-checklist'
+    'alpha:operator-checklist',
+    'Alpha Preview Ready',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'configured-preview-stub'
+  ]);
+  requireFileIncludes('game.alpha-preview-ready-docs', 'Alpha Preview Ready docs split preview-live gates from funded-chain gates without faking Enjin readiness.', 'docs/alpha-preview-ready.md', [
+    'Alpha Preview Ready',
+    'Mochirii Vercel Preview',
+    'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'configured-preview-stub',
+    'Do not set dummy',
+    'Never credit inventory',
+    'MOCHI_SOCIAL_AUTH'
+  ]);
+  requireFileIncludes('game.preview-live-ops-docs', 'Operator docs prioritize Preview Ready and leave funded-chain gates red until real Canary funding/proof approval.', 'docs/alpha-operator-handoff.md', [
+    'Alpha Preview Ready',
+    'Alpha RC Ready',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'configured-preview-stub',
+    'Do not set dummy'
+  ]);
+  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs allow preview embedding with a no-real-value chain stub and no dummy Enjin IDs.', 'docs/site-integration.md', [
+    'Alpha Preview Ready Contract',
+    'configured-preview-stub',
+    'Do not set dummy',
+    'preview-live-gates',
+    'funded-chain-gates'
   ]);
 }
 
@@ -352,6 +392,20 @@ function addSiteRequirements() {
     'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
     'MOCHI_SOCIAL_ALPHA_EDGE_URL',
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN'
+  ]);
+  requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
+    'Alpha Preview Ready',
+    'configured-preview-stub',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'Do not set dummy'
+  ]);
+  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii Codex ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-codex-ops.md', [
+    'Alpha Preview Ready Lane',
+    'configured-preview-stub',
+    'preview-live-gates',
+    'funded-chain-gates',
+    'Do not set dummy'
   ]);
 }
 
@@ -568,11 +622,14 @@ function expectedProviderQueueIds(gitState, failures) {
   const ids = [];
   const messages = Array.isArray(failures) ? failures.map((failure) => String(failure || '')) : [];
   const hasFailure = (needle) => messages.some((message) => message.includes(needle));
+  const hasFailurePrefix = (prefix) => messages.some((message) => message.startsWith(prefix));
 
   if ((Number(gitState?.ahead) || 0) > 0 || (Array.isArray(gitState?.dirty) && gitState.dirty.length > 0)) {
     ids.push('github-branch-sync');
   }
-  if (hasFailure('Fly secret names')) ids.push('fly-secret-update');
+  if (hasFailurePrefix('Fly secret names:')) ids.push('fly-secret-update');
+  if (hasFailure('Fly preview secret names')) ids.push('fly-secret-update');
+  if (hasFailure('Fly funded-chain secret names')) ids.push('fly-funded-chain-secret-update');
   if (hasFailure('Live game URL')) ids.push('fly-live-game-url');
   if (hasFailure('Site preview contract')) ids.push('vercel-supabase-preview-contract');
   if (hasFailure('Enjin Canary operator readiness')) ids.push('enjin-canary-readiness');
@@ -792,7 +849,8 @@ function addLocalHandoffRequirements() {
     'No-cost fallback',
     'Fly Gate',
     'Enjin Canary Gate',
-    'Preview Verification After Fly And Enjin Gates'
+    'Alpha Preview Verification After Preview Gates',
+    'Funded Alpha RC Verification After Enjin Gates'
   ]);
   requireLocalFile('handoff.provider-preflight', resolve(credsDir, 'mochi-social-alpha-provider-preflight.md'), [
     'This file is intentionally no-secret',

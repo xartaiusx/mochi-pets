@@ -48,6 +48,8 @@ Alpha RC server-only secrets and config:
 - `ENJIN_COLLECTION_ID`: Mochi Social Alpha collection id.
 - `ENJIN_FUEL_TANK_ID`: Canary Fuel Tank id used to sponsor test transactions.
 
+For Alpha Preview Ready, leave `ENJIN_COLLECTION_ID` and `ENJIN_FUEL_TANK_ID` unset until real Canary collection/Fuel Tank resources exist. Do not set dummy values. The runtime should stay in `configured-preview-stub` mode and visibly explain that chain requests are no-real-value preview records until funding and finality proof are approved.
+
 Add the future Vercel domain to `RPG_ALLOWED_ORIGINS` before embedding in production.
 
 Do not put Supabase service-role keys, Enjin Wallet Daemon seeds, or Wallet Daemon passphrases in the game runtime. `npm run alpha:wallet-daemon-check` may verify only the downloaded local binary metadata before deployment work; it is not a live signer readiness check. The Wallet Daemon must run as a separate service with no inbound ports.

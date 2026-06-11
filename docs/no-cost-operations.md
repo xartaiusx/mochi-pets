@@ -20,6 +20,7 @@ Allowed without extra approval:
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
 - Generate `npm run alpha:sync-approval` before requesting a push, CI rerun, hosted smoke, deploy, or provider mutation. The packet is not approval; it records the exact state, cost/usage risk, no-cost alternative, and approval text to review.
+- Implement local code/docs/tests for Alpha Preview Ready, including the visible Enjin `configured-preview-stub` path, as long as no provider state is mutated.
 
 ## Stop And Ask First
 
@@ -33,6 +34,7 @@ Ask for fresh, explicit user approval before:
 - Pushing branches, rerunning GitHub Actions, enabling branch protection checks, or creating workflows when that can consume Actions minutes/storage. Treat push branches that trigger CI as cost-bearing until approved.
 - Running `npm run alpha:load-smoke` or browser presence checks against hosted URLs. Keep those local unless the user approves a hosted smoke.
 - Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
+- Setting dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags just to clear funded-chain gates.
 - Sending Discord messages, installing bots, changing OAuth apps, or enabling paid/community features.
 
 ## Approval Format
@@ -54,6 +56,7 @@ Before a cost-bearing action, state:
 - Enjin Wallet Daemon local binary checks may inspect file metadata, SHA256, and `--help` output only. A downloaded binary is not proof that a signer is running or that Enjin Platform is connected.
 - Enjin Wallet Daemon may later run as a local or cloud operator process, but do not import wallets, print seeds, start a signer, submit live Enjin operations, or fund a Fuel Tank without approval and private operator handling.
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, CI, or load-smoke step.
+- Prefer Alpha Preview Ready work until the user explicitly authorizes funded-chain work. The funded-chain lane is expected red while Enjin remains `configured-preview-stub`.
 - `npm run alpha:external-gates` refuses hosted Fly/Vercel contract fetches unless `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` is set for an explicitly approved hosted verification run. Its ignored report records current Git state and `hostedChecksAllowed`, and `npm run alpha:rc-audit` rejects stale or pre-guard external gate evidence.
 - Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.
 - Use `npm run alpha:sync-approval` after refreshing `npm run alpha:external-gates` and stamping a current `npm run alpha:rc-audit` report. It summarizes the unpushed commits, current external blockers, and cost-sensitive approval text before requesting approval.

@@ -126,6 +126,7 @@ function readExternalGateSummary() {
     gameUrl: sanitize(report.data.gameUrl),
     sitePreviewUrl: sanitize(report.data.sitePreviewUrl),
     hostedChecksAllowed: report.data.hostedChecksAllowed,
+    lanes: report.data.lanes ?? null,
     git: report.data.git,
     failures: failing.map((item) => sanitize(item))
   };
@@ -151,11 +152,20 @@ function buildApprovalActions(currentGitState, currentExternalGateSummary) {
     {
       id: 'fly-secret-update',
       provider: 'Fly.io',
-      action: 'Set or change Fly secrets required for the Enjin Canary alpha runtime.',
-      exactAction: `fly secrets set -a ${flyApp} ENJIN_COLLECTION_ID=<private-enjin-collection-id> ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>`,
+      action: 'Set or change Fly secrets required for Alpha Preview Ready runtime wiring.',
+      exactAction: `fly secrets set -a ${flyApp} SUPABASE_URL=<private-supabase-url> SUPABASE_PUBLISHABLE_KEY=<private-supabase-publishable-key> MOCHI_SOCIAL_GAME_SERVER_TOKEN=<private-game-server-token> RPG_ALLOWED_ORIGINS=<approved-origins>`,
       costRisk: 'Fly secret changes can create a new release or restart running Machines, and the existing Fly app and volume can accrue usage while running.',
-      noCostAlternative: 'Leave the live runtime in configured-preview-stub mode and keep local Enjin operator smoke fail-closed.',
-      approvalText: `I approve setting the missing Fly secret names on ${flyApp} for Mochi Social Alpha RC and understand this may restart hosted resources or add usage.`
+      noCostAlternative: 'Keep localhost-only checks and leave preview-live-gates red.',
+      approvalText: `I approve setting the missing Fly preview secret names on ${flyApp} for Mochi Social Alpha Preview Ready and understand this may restart hosted resources or add usage.`
+    },
+    {
+      id: 'fly-funded-chain-secret-update',
+      provider: 'Fly.io/Enjin Canary',
+      action: 'Set funded-chain Fly secrets only after real Enjin Canary resources exist.',
+      exactAction: `fly secrets set -a ${flyApp} ENJIN_PLATFORM_TOKEN=<private-enjin-platform-token> ENJIN_COLLECTION_ID=<private-enjin-collection-id> ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>`,
+      costRisk: 'Fly secret changes can restart Machines, and real Enjin values should only be set after collection/Fuel Tank resources exist and funded-chain work is approved.',
+      noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so the runtime stays configured-preview-stub for Alpha Preview Ready.',
+      approvalText: `I approve setting real funded-chain Fly secret names on ${flyApp} after Enjin Canary collection and Fuel Tank resources exist. I understand this may restart hosted resources or add usage.`
     },
     {
       id: 'fly-deploy-hosted-smoke',
@@ -264,6 +274,9 @@ function renderMarkdown(report) {
   const externalFailures = report.externalGates.failures.length
     ? report.externalGates.failures.map((failure) => `- ${failure}`).join('\n')
     : '- None.';
+  const previewLane = formatLaneStatus(report.externalGates.lanes?.previewLive);
+  const fundedLane = formatLaneStatus(report.externalGates.lanes?.fundedChain);
+  const rcLane = formatLaneStatus(report.externalGates.lanes?.alphaRcReady);
   const approvals = report.approvalsRequired.map((item) => `- ${item}`).join('\n');
   const actionMatrix = report.approvalActions.map((action) => `### ${action.id}
 
@@ -331,6 +344,9 @@ ${auditFailures}
 - Fly volume: ${report.externalGates.flyVolume || 'not recorded'}
 - Game URL: ${report.externalGates.gameUrl || 'not recorded'}
 - Site preview URL: ${report.externalGates.sitePreviewUrl || 'not recorded'}
+- Alpha Preview Ready / preview-live-gates: ${previewLane}
+- Funded-chain gates / funded-chain-gates: ${fundedLane}
+- Full Alpha RC Ready: ${rcLane}
 
 Open external gates:
 
@@ -358,4 +374,11 @@ I approve the specific provider action: <exact Fly/Vercel/Supabase/Enjin action>
 
 Do not use this packet as approval by itself. It is a checklist for the operator and Codex before requesting or granting approval.
 `;
+}
+
+function formatLaneStatus(lane) {
+  if (!lane) return 'not recorded';
+  const failing = Array.isArray(lane.failingChecks) && lane.failingChecks.length ? ` failing=${lane.failingChecks.join(', ')}` : '';
+  const missing = Array.isArray(lane.missingChecks) && lane.missingChecks.length ? ` missing=${lane.missingChecks.join(', ')}` : '';
+  return `${lane.ok ? 'pass' : 'fail'}${failing}${missing}`;
 }

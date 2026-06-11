@@ -15,17 +15,26 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md']
+    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'Do not set dummy', 'Never credit inventory', 'Mochirii Vercel Preview', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL', 'MOCHI_SOCIAL_AUTH', 'Alpha Preview Ready can pass while funded-chain gates are red']
   },
   {
     file: 'docs/no-cost-operations.md',
-    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'push branches that trigger CI', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval']
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'push branches that trigger CI', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red']
   },
   {
     file: 'docs/codex-external-ops.md',
     includes: [
       'Source Hierarchy',
       'Source Basis',
+      'Alpha Preview Ready Lane',
+      'preview-live-gates',
+      'funded-chain-gates',
+      'Do not set dummy Enjin IDs',
+      'Build the next alpha feature against no-real-value Alpha Preview Ready',
       'Secret Entry Protocol',
       'Preview Environment Matrix',
       'CI Gate Checklist',
@@ -40,27 +49,27 @@ const checks = [
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
-    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke']
+    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:rc-audit', 'Wallet Daemon', 'Stop at Alpha RC Ready', 'docs/codex-external-ops.md', 'Current Private Gates']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
   },
   {
     file: 'docs/site-integration.md',
-    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit']
+    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
   },
   {
     file: 'docs/deployment.md',
-    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist']
+    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready']
   },
   {
     file: 'docs/enjin-canary-alpha.md',
-    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction', '/integration/alpha/enjin/submit', 'x-mochi-social-server-token', 'confirmNoRealValue=true', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'Cloud Wallet Daemon Gate', 'Local Wallet Daemon Binary Check', 'AWS CloudFormation', 'KEY_PASS', 'PLATFORM_KEY']
+    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction', '/integration/alpha/enjin/submit', 'x-mochi-social-server-token', 'confirmNoRealValue=true', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'Cloud Wallet Daemon Gate', 'Local Wallet Daemon Binary Check', 'AWS CloudFormation', 'KEY_PASS', 'PLATFORM_KEY', 'For Alpha Preview Ready']
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -160,19 +169,19 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',
-    includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'hostedChecksAllowed', 'readGitState', 'localHead', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
+    includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'hostedChecksAllowed', 'readGitState', 'localHead', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'previewFlySecrets', 'fundedChainFlySecrets', 'preview-live-gates', 'funded-chain-gates', 'summarizeGateLanes', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
   },
   {
     file: 'scripts/write-alpha-operator-checklist.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'alpha-operator-checklist.json', 'readGitState', 'localHead', 'walletDaemonSummary', 'manualPromptSummary', 'providerActionQueue', 'buildProviderActionQueue', 'Provider Action Queue', 'approvalText', 'noCostFallback', 'github-branch-sync', 'fly-secret-update', 'vercel-supabase-preview-contract', 'enjin-canary-readiness', 'noCostRule', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:external-gates']
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'alpha-operator-checklist.json', 'readGitState', 'localHead', 'walletDaemonSummary', 'manualPromptSummary', 'providerActionQueue', 'buildProviderActionQueue', 'Provider Action Queue', 'approvalText', 'noCostFallback', 'github-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'vercel-supabase-preview-contract', 'enjin-canary-readiness', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'noCostRule', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:external-gates']
   },
   {
     file: 'scripts/write-alpha-provider-preflight.mjs',
-    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'github-branch-sync', 'fly-secret-update', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
+    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'github-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
   },
   {
     file: 'scripts/write-alpha-sync-approval.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'GitHub Actions/PR checks', 'I approve pushing']
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'GitHub Actions/PR checks', 'I approve pushing', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',

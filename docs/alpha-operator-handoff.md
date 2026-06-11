@@ -1,10 +1,17 @@
 # Alpha Operator Handoff
 
-This handoff keeps Mochi Social Alpha RC closed, no-real-value, and preview-only. It is for the human operator who has access to Fly, Vercel, Supabase, Enjin Platform, and the Wallet Daemon host.
+This handoff keeps Mochi Social closed, no-real-value, and preview-only. It covers two stop points: Alpha Preview Ready first, then Alpha RC Ready after funded Enjin proof is explicitly approved. It is for the human operator who has access to Fly, Vercel, Supabase, Enjin Platform, and the Wallet Daemon host.
 
 For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gates, Supabase authority, Enjin state handling, Fuel Tank dispatch, WebSocket presence, and Discord boundaries, follow [`docs/codex-external-ops.md`](codex-external-ops.md).
 
 For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-operations.md). Do not deploy, scale, push CI-triggering branches, run hosted load smoke, create provider resources, fund Fuel Tanks, or submit live Enjin transactions without explicit user approval for that exact action.
+
+## Stop Points
+
+- Alpha Preview Ready means the Fly game is embedded by the Mochirii Vercel Preview route, Supabase allowlist/terms/feedback gates work, and Enjin remains visible as `configured-preview-stub`.
+- Alpha RC Ready means Alpha Preview Ready plus funded Enjin Canary collection, Fuel Tank, Wallet Daemon signing, and finalized proof smoke.
+- `preview-live-gates` are the tester-entry lane. `funded-chain-gates` are expected red until cENJ, Fuel Tank, and chain transaction approval exists.
+- Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake readiness flags to clear funded-chain gates.
 
 ## Starting Point
 
@@ -19,9 +26,8 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 
 1. Confirm both PRs are reviewed and the local verification commands in the game and website repos pass.
 2. Resolve GitHub Actions billing/budget blocks and require a green `Verify Mochi Social` check before merge, but do not rerun or trigger Actions without explicit approval.
-3. Create or confirm the Enjin Canary project, `Mochi Social Alpha` collection, managed-wallet policy, and Canary Fuel Tank only after the user approves any cost-bearing chain or provider action.
-4. Start the cloud Wallet Daemon as an outbound-only signer with no inbound ports. Back up the seed/passphrase outside Git and outside chat.
-5. Set Fly secrets for the game runtime:
+3. Complete Alpha Preview Ready first: verify the Fly game URL, bind the Mochirii Vercel Preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, confirm Supabase allowlist/terms/feedback, and confirm the visible Enjin state is `configured-preview-stub`.
+4. Set Fly secrets for the preview game runtime:
    - `SUPABASE_URL`
    - `SUPABASE_PUBLISHABLE_KEY`
    - `MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL`
@@ -29,15 +35,17 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
    - `ENJIN_PLATFORM_URL`
    - `ENJIN_PLATFORM_TOKEN`
    - `ENJIN_NETWORK=CANARY`
-   - `ENJIN_COLLECTION_ID`
-   - `ENJIN_FUEL_TANK_ID`
    - `RPG_ALLOWED_ORIGINS`
-6. Deploy the game preview to Fly with `RPG_SAVE_DIR=/data/saves` and a mounted `/data` volume only after explicit deploy approval.
-7. Set the Mochirii Vercel preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL` to the Fly game URL only after confirming the preview environment will not add charges.
-8. Deploy the Mochirii preview branch and Supabase preview Edge Functions only after explicit deploy approval.
-9. Grant only signed-in 18+ testers through the Mochirii admin allowlist.
-10. Require tester terms before iframe render.
-11. Run the acceptance checks below before inviting testers.
+5. Deploy the game preview to Fly with `RPG_SAVE_DIR=/data/saves` and a mounted `/data` volume only after explicit deploy approval.
+6. Set the Mochirii Vercel preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL` to the Fly game URL only after confirming the preview environment will not add charges.
+7. Deploy the Mochirii preview branch and Supabase preview Edge Functions only after explicit deploy approval.
+8. Grant only signed-in 18+ testers through the Mochirii admin allowlist.
+9. Require tester terms before iframe render.
+10. Run the `preview-live-gates` acceptance checks before inviting testers.
+11. Create or confirm the Enjin Canary project, `Mochi Social Alpha` collection, managed-wallet policy, and Canary Fuel Tank only after the user approves any cost-bearing chain or provider action.
+12. Start the cloud Wallet Daemon as an outbound-only signer with no inbound ports. Back up the seed/passphrase outside Git and outside chat.
+13. Add real `ENJIN_COLLECTION_ID` and `ENJIN_FUEL_TANK_ID` Fly secrets only after the matching Canary resources exist. Never use dummy values.
+14. Run the `funded-chain-gates` acceptance checks only after funded-chain approval exists.
 
 Run this whenever the local private handoff folder needs a fresh no-secret checklist:
 
@@ -53,7 +61,8 @@ The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-opera
 
 - Fly billing is complete. Current no-secret external gate evidence says Fly app `mochi-social-game` and volume `mochi_social_data` exist, but the live game URL and hosted contract checks are not recorded yet. Treat hosted deploy/smoke as approval-gated until `npm run alpha:external-gates` records an approved `MOCHI_SOCIAL_GAME_URL`.
 - Enjin Wallet Daemon binary is downloaded locally and must be verified with `npm run alpha:wallet-daemon-check`; this only proves file hash/help metadata. Enjin Platform must still show daemon status online before continuing to collection and Fuel Tank work.
-- Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations. These stay blocked until the user explicitly approves cost-bearing chain/provider actions.
+- Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations. These are `funded-chain-gates` and stay blocked until the user explicitly approves cost-bearing chain/provider actions.
+- For Alpha Preview Ready, Enjin may remain in `configured-preview-stub` and chain requests are audit-only/no-real-value preview records. This is not a blocker for `preview-live-gates`.
 - The Enjin console account state and Platform settings are live dashboard truth; do not infer readiness from docs alone.
 
 ## Acceptance Commands
@@ -119,6 +128,7 @@ npm run build
 
 Manual gates:
 
+- Read `provider.external-gates` in two lanes: `preview-live-gates` must pass before testers, while `funded-chain-gates` can remain red for Alpha Preview Ready.
 - `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then an operator confirms NPC, chest, and habitat/care prompts look correct in the town. Focus the canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:visual-review` passes and writes `reports/alpha-visual-review.json` / `.md`, tying screenshot hashes, HUD/presence evidence, HUD action proof, map-object IDs, and habitat coverage to the current local HEAD while keeping rendered NPC/chest/habitat prompts as a pending human review gate.
@@ -135,10 +145,12 @@ Manual gates:
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.
 - Feedback submission appears in the admin audit view.
-- Enjin Canary managed wallet, Fuel Tank sponsorship, Wallet Daemon signing, one hot-to-cold proof, one finalized cold-to-hot proof, and one fixed-listing proof are submitted through `POST /integration/alpha/enjin/submit` and recorded in the chain ledger.
+- For Alpha Preview Ready, Enjin chain UI is visible with `configured-preview-stub`, no dummy Enjin IDs are set, and chain request rows are audit-only/no-real-value preview records.
+- For Alpha RC Ready, Enjin Canary managed wallet, Fuel Tank sponsorship, Wallet Daemon signing, one hot-to-cold proof, one finalized cold-to-hot proof, and one fixed-listing proof are submitted through `POST /integration/alpha/enjin/submit` and recorded in the chain ledger.
 - `npm run alpha:enjin-operator-smoke` proves the private Enjin route fails closed; live Canary smoke is operator-approved only and requires explicit smoke request/transaction IDs.
-- `npm run alpha:external-gates` passes with the Fly URL, Vercel preview URL, Supabase preview ref, `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for an approved hosted verification run, and operator-confirmed Enjin readiness flags set.
-- `npm run alpha:rc-audit` passes after game branch sync, Mochirii site branch sync, site, PR, provider, and handoff evidence all agree that Alpha RC Ready is true.
+- `npm run alpha:external-gates` can prove `preview-live-gates` with the Fly URL, Vercel preview URL, Supabase preview ref, and `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for an approved hosted verification run while funded-chain readiness remains red.
+- `npm run alpha:external-gates` only proves full Alpha RC Ready when operator-confirmed Enjin readiness flags are set from real Canary resources and finalized proof evidence.
+- `npm run alpha:rc-audit` passes only after game branch sync, Mochirii site branch sync, site, PR, provider, and handoff evidence all agree that Alpha RC Ready is true.
 - A 10-25 tester load-smoke report is attached to the PR or release checklist.
 
 ## Tester Guide
@@ -168,6 +180,6 @@ If an alpha issue appears:
 
 Do not respond to alpha issues by switching to production, mainnet, cashout, paid assets, public UGC, or service-role keys in the game runtime.
 
-## Stop Point
+## Final Stop Point
 
-Stop at Alpha RC Ready. The next phase is a separate human tester run, not production launch.
+Stop at Alpha Preview Ready before inviting closed testers. Stop again at Alpha RC Ready after funded-chain evidence exists. The next phase is a separate human tester run, not production launch.

@@ -92,6 +92,8 @@ Failed, abandoned, or timed-out operations stay in the audit log and do not cred
 
 When Enjin/Fly secrets are absent, `/integration/alpha/status` and local `chain.*` action responses must expose `mode="configured-preview-stub"`. That stub is still no-real-value and Canary-only; it proves the game and ledger path while telling testers that Enjin Platform, Fuel Tank, and Wallet Daemon signing are not configured yet.
 
+For Alpha Preview Ready, this configured-preview-stub mode is intentional. Do not set dummy collection IDs, dummy Fuel Tank IDs, or fake readiness flags. Keep the chain UI visible, record chain requests as audit-only preview rows, and leave funded-chain gates red until cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality proof are approved.
+
 ## Private Operator Endpoint
 
 The Fly game runtime exposes a private operator route for Canary proof submission:

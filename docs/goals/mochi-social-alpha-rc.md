@@ -4,7 +4,12 @@
 
 Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate. The alpha is a 2D RPGJS cozy social pet vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification.
 
-Stop at Alpha RC Ready. Do not deploy production, do not use Enjin mainnet, do not enable real-money value, do not open UGC uploads, and do not perform any action that can add charges to connected accounts without explicit user approval for that exact action.
+There are two stop points:
+
+- Alpha Preview Ready: the Fly game is live through the Mochirii Vercel Preview, Supabase allowlist/terms/feedback work, and Enjin is visible as `configured-preview-stub`.
+- Alpha RC Ready: the preview gates plus funded Enjin Canary collection, Fuel Tank, Wallet Daemon signing, and finalized proof smoke are complete.
+
+Stop at Alpha RC Ready for the full goal. Do not deploy production, do not use Enjin mainnet, do not enable real-money value, do not open UGC uploads, and do not perform any action that can add charges to connected accounts without explicit user approval for that exact action.
 
 Recommended slash goal:
 
@@ -68,6 +73,16 @@ Recommended slash goal:
    - Require `reports/alpha-external-gates.json` to carry current Git state and the hosted-check approval flag before `npm run alpha:rc-audit` can treat it as provider evidence.
    - Require `reports/alpha-sync-approval.json` to reference the current external-gates report checkedAt/HEAD/hosted approval state before `npm run alpha:rc-audit` can treat it as the approval packet.
 
+## Alpha Preview Ready Lane
+
+For the next development pass, optimize for [`docs/alpha-preview-ready.md`](alpha-preview-ready.md):
+
+- `preview-live-gates` must pass before testers: Fly game URL, Mochirii Vercel Preview route, `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, Supabase allowlist/terms/feedback, iframe auth, no-real-value labels, and approved hosted contract checks.
+- `funded-chain-gates` may remain red: cENJ, collection ID, Fuel Tank ID, Wallet Daemon signing, and finalized Enjin proof.
+- Do not set dummy `ENJIN_COLLECTION_ID` or `ENJIN_FUEL_TANK_ID`.
+- Keep the Canary request UI visible and explain `configured-preview-stub`.
+- Record chain requests as no-real-value audit-only preview records until real finality exists.
+
 ## Public Contract
 
 - Manifest flags:
@@ -102,6 +117,7 @@ Recommended slash goal:
 - A tester can use local chat/emote UI and see actions recorded locally or through Supabase Edge.
 - A tester can create a no-real-value fixed market listing proof and a direct trade proof for eligible alpha assets.
 - A tester can request an Enjin Canary certificate path for one eligible rare asset; when Enjin env is missing, the runtime must explain it is a configured preview stub.
+- Alpha Preview Ready can be reached with Enjin still in `configured-preview-stub`; Alpha RC Ready cannot pass until funded-chain gates are green.
 - The manifest and smoke checks expose alpha flags and no-real-value chain state.
 - The Mochirii preview route requires signed-in allowlisted access and tester acknowledgement before embedding.
 - Admin tools can grant/revoke alpha access and view audit status.

@@ -2,6 +2,22 @@
 
 This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, a static map-object contract test, and the final manual map-object visual check that still needs human eyes.
 
+## Alpha Preview Ready
+
+Alpha Preview Ready is the live-on-site gate before full Alpha RC Ready. It is allowed to keep Enjin in `configured-preview-stub` mode.
+
+Before inviting testers to the Mochirii Vercel Preview:
+
+- The Fly game URL is known and approved for hosted contract checks.
+- The Mochirii Vercel Preview route `/games/mochi-social` uses `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
+- Supabase allowlist, terms acknowledgement, feedback, admin audit, and `MOCHI_SOCIAL_AUTH` bridge checks pass.
+- The chain UI remains visible and no-real-value, and the Canary request explains `configured-preview-stub`.
+- `preview-live-gates` are green.
+- `funded-chain-gates` are documented as expected red until cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality smoke are approved.
+- No dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags are set.
+
+Use [`docs/alpha-preview-ready.md`](alpha-preview-ready.md) as the operator checklist for this stop point.
+
 ## Local Script
 
 Build and start the game server from the repo root:
@@ -107,6 +123,13 @@ The smoke refuses to submit or poll live Enjin by default when the runtime repor
 
 `npm run alpha:external-gates` checks live Alpha RC gates without printing secret values. It verifies GitHub PR status, Supabase preview secret names, Fly authentication/app/volume/secret names, live game contract, Mochirii site contract, and operator-confirmed Enjin readiness flags.
 
+Read this report in two lanes while preparing the Vercel Preview:
+
+- `preview-live-gates`: game URL, site preview URL, Supabase preview secrets, hosted game/site contract, allowlist/terms/feedback browser checks.
+- `funded-chain-gates`: Enjin collection, Fuel Tank, cENJ, Wallet Daemon signing, finalized proof smoke.
+
+The funded-chain lane is expected red for Alpha Preview Ready. Do not fake it with dummy IDs.
+
 Before Alpha RC Ready, run it with the Fly game URL and Vercel preview origin:
 
 ```powershell
@@ -155,7 +178,9 @@ Keep the manual map-object check until a later RPGJS runtime-level automation ca
 
 ## Alpha RC Stop Point
 
-Alpha RC Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved load smoke, Mochirii preview checks, admin/terms/feedback checks, approved Enjin Canary smoke, rollback notes, tester guide, and source/asset ledgers are complete.
+Alpha Preview Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved hosted preview contract checks, Mochirii preview allowlist/terms/feedback checks, rollback notes, tester guide, source/asset ledgers, and Enjin `configured-preview-stub` messaging are complete.
+
+Alpha RC Ready means Alpha Preview Ready plus approved Enjin Canary collection, Fuel Tank, Wallet Daemon signing, finalized proof smoke, and funded-chain gate evidence are complete.
 
 Do not use this checklist to promote production, Enjin mainnet, paid assets, cashout, open UGC, or public launch.
 Do not use this checklist to add billing usage. Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any hosted, CI, provider, Fuel Tank, or live chain action.

@@ -78,6 +78,7 @@ function readExternalGateSummary() {
       flyVolume: sanitize(report.flyVolume),
       gameUrl: sanitize(report.gameUrl),
       sitePreviewUrl: sanitize(report.sitePreviewUrl),
+      lanes: report.lanes ?? null,
       checks,
       failures
     };
@@ -221,6 +222,12 @@ This file is intentionally no-secret and generated from the latest \`reports/alp
 - Game URL: ${externalGateSummary.gameUrl || 'not recorded'}
 - Site preview URL: ${externalGateSummary.sitePreviewUrl || 'not recorded'}
 
+## Gate Lanes
+
+- Alpha Preview Ready / preview-live-gates: ${formatLaneStatus(externalGateSummary.lanes?.previewLive)}
+- Funded-chain gates: ${formatLaneStatus(externalGateSummary.lanes?.fundedChain)}
+- Full Alpha RC Ready: ${formatLaneStatus(externalGateSummary.lanes?.alphaRcReady)}
+
 ## Passing External Checks
 
 ${passes}
@@ -287,10 +294,18 @@ ${fileList}
 - Report present: ${externalGateSummary.present ? 'yes' : 'no'}
 - Last checked: ${externalGateSummary.checkedAt || 'not recorded'}
 - Overall pass: ${externalGateSummary.ok ? 'yes' : 'no'}
+- Alpha Preview Ready / preview-live-gates: ${formatLaneStatus(externalGateSummary.lanes?.previewLive)}
+- Funded-chain gates: ${formatLaneStatus(externalGateSummary.lanes?.fundedChain)}
 
 Failing or missing gates:
 
 ${gateList}
+
+## Stop Points
+
+- Alpha Preview Ready means the Fly game URL, Mochirii Vercel Preview embed, Supabase allowlist/terms/feedback, short-lived iframe auth, no-real-value labels, and approved hosted contract checks pass while Enjin remains visible as \`configured-preview-stub\`.
+- Alpha RC Ready means Alpha Preview Ready plus funded-chain-gates: funded Enjin Canary collection, Fuel Tank, Wallet Daemon signing, and finalized proof smoke.
+- Do not set dummy \`ENJIN_COLLECTION_ID\`, dummy \`ENJIN_FUEL_TANK_ID\`, or fake Enjin readiness flags. Funded-chain gates may stay red until real Canary resources and approvals exist.
 
 ## Provider Action Queue
 
@@ -369,26 +384,23 @@ if (!(Test-Path $fly)) { $fly = "flyctl" }
 & $fly volumes create ${flyVolume} --size 1 --region ${flyRegion} -a ${flyApp}
 \`\`\`
 
-Only after explicit user approval for deploy/secret changes, set Fly secrets privately. The values come from the Supabase preview key file, the generated game bridge token file, the Enjin dashboard, and the Vercel preview origin:
+Only after explicit user approval for deploy/secret changes, set Alpha Preview Ready Fly secrets privately. The values come from the Supabase preview key file, the generated game bridge token file, and the Vercel preview origin:
 
 \`\`\`powershell
-$flySecrets = @(
+$previewFlySecrets = @(
   "SUPABASE_URL=<private-supabase-url>",
   "SUPABASE_PUBLISHABLE_KEY=<private-supabase-publishable-key>",
   "SUPABASE_AUTH_REQUIRED=true",
   "MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL=https://${supabaseProjectRef}.supabase.co/functions/v1",
   "MOCHI_SOCIAL_GAME_SERVER_TOKEN=<private-game-server-token>",
-  "ENJIN_PLATFORM_URL=https://platform.canary.enjin.io/graphql",
-  "ENJIN_PLATFORM_TOKEN=<private-enjin-platform-token>",
-  "ENJIN_NETWORK=CANARY",
-  "ENJIN_COLLECTION_ID=<private-enjin-collection-id>",
-  "ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>",
   "RPG_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://<vercel-preview-host>",
   "RPG_SAVE_DIR=/data/saves"
 )
-& $fly secrets set -a ${flyApp} $flySecrets
+& $fly secrets set -a ${flyApp} $previewFlySecrets
 & $fly deploy -a ${flyApp}
 \`\`\`
+
+Leave \`ENJIN_COLLECTION_ID\` and \`ENJIN_FUEL_TANK_ID\` unset for Alpha Preview Ready unless real Canary resources exist. The game should report \`configured-preview-stub\` and keep chain requests audit-only/no-real-value.
 
 ## Enjin Canary Gate
 
@@ -410,21 +422,49 @@ Cloud Wallet Daemon path:
 
 Do not put Wallet Daemon seed material, KEY_PASS, service-role keys, or payment details in this repo, Fly game secrets, Supabase browser env, PR comments, screenshots, or chat.
 
-## Preview Verification After Fly And Enjin Gates
+Only after explicit user approval for funded-chain work and after real Canary resources exist, set the funded-chain Fly secrets:
+
+\`\`\`powershell
+$fundedChainFlySecrets = @(
+  "ENJIN_PLATFORM_URL=https://platform.canary.enjin.io/graphql",
+  "ENJIN_PLATFORM_TOKEN=<private-enjin-platform-token>",
+  "ENJIN_NETWORK=CANARY",
+  "ENJIN_COLLECTION_ID=<private-enjin-collection-id>",
+  "ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>"
+)
+& $fly secrets set -a ${flyApp} $fundedChainFlySecrets
+\`\`\`
+
+## Alpha Preview Verification After Preview Gates
 
 \`\`\`powershell
 $env:MOCHI_SOCIAL_GAME_URL="https://${flyApp}.fly.dev"
 $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"
 $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true" # Requires explicit hosted verification approval.
 $env:MOCHI_SOCIAL_SUPABASE_PROJECT_REF="${supabaseProjectRef}"
-$env:MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED="true"
-$env:MOCHI_SOCIAL_ENJIN_COLLECTION_READY="true"
-$env:MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY="true"
 npm run smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke # Hosted load smoke requires explicit approval.
 npm run alpha:browser-presence
 npm run alpha:visual-snapshot
+npm run alpha:external-gates
+\`\`\`
+
+For Alpha Preview Ready, \`npm run alpha:external-gates\` may still show funded-chain gates red. That is expected while Enjin is \`configured-preview-stub\`.
+
+## Funded Alpha RC Verification After Enjin Gates
+
+\`\`\`powershell
+$env:MOCHI_SOCIAL_GAME_URL="https://${flyApp}.fly.dev"
+$env:MOCHI_SOCIAL_SITE_PREVIEW_URL="https://<vercel-preview-host>"
+$env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true" # Requires explicit hosted verification approval.
+$env:MOCHI_SOCIAL_SUPABASE_PROJECT_REF="${supabaseProjectRef}"
+$env:ENJIN_PLATFORM_TOKEN="<private-enjin-platform-token>"
+$env:ENJIN_COLLECTION_ID="<private-enjin-collection-id>"
+$env:ENJIN_FUEL_TANK_ID="<private-enjin-fuel-tank-id>"
+$env:MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED="true"
+$env:MOCHI_SOCIAL_ENJIN_COLLECTION_READY="true"
+$env:MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY="true"
 npm run alpha:enjin-operator-smoke
 npm run alpha:external-gates
 \`\`\`
@@ -471,14 +511,25 @@ function buildProviderActionQueue() {
     });
   }
 
-  if (hasExternalFailure('Fly secret names')) {
+  if (hasExternalFailure('Fly preview secret names')) {
     queue.push({
       id: 'fly-secret-update',
       provider: 'Fly.io',
-      title: 'Set the missing Fly secret names for Enjin Canary runtime wiring.',
-      blocker: 'Fly is missing ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID in the latest external gate report.',
+      title: 'Set the missing Fly preview secret names for Alpha Preview Ready.',
+      blocker: 'Fly is missing one or more preview runtime secret/config names in the latest external gate report.',
       approvalText: 'I approve setting the missing Fly secret names on mochi-social-game and understand this may restart hosted resources or add usage.',
-      noCostFallback: 'Leave the Fly runtime in configured-preview-stub mode and keep local Enjin smoke fail-closed.'
+      noCostFallback: 'Keep localhost-only preview checks and leave preview-live-gates red.'
+    });
+  }
+
+  if (hasExternalFailure('Fly funded-chain secret names')) {
+    queue.push({
+      id: 'fly-funded-chain-secret-update',
+      provider: 'Fly.io/Enjin Canary',
+      title: 'Set funded-chain Fly secret names only after real Enjin Canary resources exist.',
+      blocker: 'Fly funded-chain secrets are missing. This is expected red for Alpha Preview Ready while Enjin is configured-preview-stub.',
+      approvalText: 'I approve setting real funded-chain Fly secret names on mochi-social-game after Enjin Canary collection and Fuel Tank resources exist. I understand this may restart hosted resources or add usage.',
+      noCostFallback: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset and keep configured-preview-stub.'
     });
   }
 
@@ -516,6 +567,13 @@ function buildProviderActionQueue() {
   }
 
   return queue;
+}
+
+function formatLaneStatus(lane) {
+  if (!lane) return 'not recorded';
+  const failing = Array.isArray(lane.failingChecks) && lane.failingChecks.length ? ` failing=${lane.failingChecks.join(', ')}` : '';
+  const missing = Array.isArray(lane.missingChecks) && lane.missingChecks.length ? ` missing=${lane.missingChecks.join(', ')}` : '';
+  return `${lane.ok ? 'pass' : 'fail'}${failing}${missing}`;
 }
 
 function git(args) {

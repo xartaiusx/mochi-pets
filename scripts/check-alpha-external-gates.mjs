@@ -13,40 +13,65 @@ const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || '').replace
 const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 const hostedChecksAllowed = process.env.MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS === 'true';
 
-const requiredFlySecrets = [
+const previewFlySecrets = [
   'SUPABASE_URL',
   'SUPABASE_PUBLISHABLE_KEY',
   'SUPABASE_AUTH_REQUIRED',
   'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
   'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
-  'ENJIN_PLATFORM_URL',
-  'ENJIN_PLATFORM_TOKEN',
-  'ENJIN_NETWORK',
-  'ENJIN_COLLECTION_ID',
-  'ENJIN_FUEL_TANK_ID',
   'RPG_ALLOWED_ORIGINS'
+];
+
+const fundedChainFlySecrets = [
+  'ENJIN_PLATFORM_TOKEN',
+  'ENJIN_COLLECTION_ID',
+  'ENJIN_FUEL_TANK_ID'
+];
+
+const previewLiveGateNames = [
+  'game PR',
+  'site PR',
+  'Supabase preview secrets',
+  'Fly authentication',
+  'Fly app',
+  'Fly volume',
+  'Fly preview secret names',
+  'Live game URL',
+  'Live game contract',
+  'Site preview contract'
+];
+
+const fundedChainGateNames = [
+  'Fly funded-chain secret names',
+  'Enjin Canary operator readiness'
 ];
 
 const report = {
   ok: false,
   checkedAt: new Date().toISOString(),
-  scope: 'Mochi Social Alpha RC external gates. Values are name/status/digest-level only; no secrets are printed.',
+  scope: 'Mochi Social Alpha RC external gates. Values are name/status/digest-level only; no secrets are printed. Alpha Preview Ready uses preview-live-gates; full Alpha RC also requires funded-chain-gates.',
   flyApp,
   flyVolume,
   supabasePreviewRef,
   gameUrl: gameUrl || null,
   sitePreviewUrl: sitePreviewUrl || null,
   hostedChecksAllowed,
+  lanes: null,
   git: readGitState(),
   checks: []
 };
 
 try {
   await run();
+  report.lanes = summarizeGateLanes();
   report.ok = !report.checks.some((check) => check.status === 'fail');
   await writeReport();
   if (!report.ok) {
     console.error('Mochi Social external Alpha RC gates are not complete:');
+    if (report.lanes) {
+      console.error(`- preview-live-gates: ${report.lanes.previewLive.ok ? 'pass' : 'fail'} (${report.lanes.previewLive.failingChecks.join(', ') || 'none'})`);
+      console.error(`- funded-chain-gates: ${report.lanes.fundedChain.ok ? 'pass' : 'fail'} (${report.lanes.fundedChain.failingChecks.join(', ') || 'none'})`);
+    }
     for (const check of report.checks.filter((entry) => entry.status === 'fail')) {
       console.error(`- ${check.name}: ${check.message}`);
     }
@@ -57,6 +82,7 @@ try {
 } catch (error) {
   report.ok = false;
   report.error = error instanceof Error ? error.message : String(error);
+  report.lanes = summarizeGateLanes();
   await writeReport();
   console.error('Mochi Social external Alpha RC gate check failed:');
   console.error(report.error);
@@ -143,10 +169,19 @@ function checkFly() {
   });
 
   const secrets = command(resolveFlyctl(), ['secrets', 'list', '-a', flyApp]);
-  const missingSecrets = requiredFlySecrets.filter((name) => !secrets.stdout.includes(name));
-  add(secrets.ok && missingSecrets.length === 0 ? 'pass' : 'fail', 'Fly secret names', missingSecrets.length ? `Missing Fly secret/config names: ${missingSecrets.join(', ')}.` : 'Required Fly secret/config names are present.', {
-    requiredFlySecrets,
-    missingSecrets
+  const missingPreviewSecrets = previewFlySecrets.filter((name) => !secrets.stdout.includes(name));
+  add(secrets.ok && missingPreviewSecrets.length === 0 ? 'pass' : 'fail', 'Fly preview secret names', missingPreviewSecrets.length ? `Missing Fly preview secret/config names: ${missingPreviewSecrets.join(', ')}.` : 'Required Fly preview secret/config names are present.', {
+    lane: 'preview-live-gates',
+    requiredFlySecrets: previewFlySecrets,
+    missingSecrets: missingPreviewSecrets
+  });
+
+  const missingFundedChainSecrets = fundedChainFlySecrets.filter((name) => !secrets.stdout.includes(name));
+  add(secrets.ok && missingFundedChainSecrets.length === 0 ? 'pass' : 'fail', 'Fly funded-chain secret names', missingFundedChainSecrets.length ? `Missing funded-chain Fly secret names: ${missingFundedChainSecrets.join(', ')}. Leave these unset for Alpha Preview Ready when Enjin is configured-preview-stub; set only real Canary values for Alpha RC Ready.` : 'Required funded-chain Fly secret names are present.', {
+    lane: 'funded-chain-gates',
+    requiredFlySecrets: fundedChainFlySecrets,
+    missingSecrets: missingFundedChainSecrets,
+    previewStubAllowed: true
   });
 }
 
@@ -155,6 +190,7 @@ async function checkLiveGameContract() {
     add('fail', 'Live game URL', 'Set MOCHI_SOCIAL_GAME_URL to the Fly game URL after deployment.');
     return;
   }
+  add('pass', 'Live game URL', 'MOCHI_SOCIAL_GAME_URL is recorded for preview verification.', { gameUrl });
   if (requiresHostedApproval(gameUrl)) {
     add('fail', 'Live game contract', 'Hosted game contract checks require explicit approval via MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true.', {
       gameUrl,
@@ -234,10 +270,39 @@ function checkEnjinOperatorInputs() {
     MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY: process.env.MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY === 'true'
   };
   const missing = Object.entries(fields).filter(([, value]) => !value).map(([key]) => key);
-  add(missing.length ? 'fail' : 'pass', 'Enjin Canary operator readiness', missing.length ? `Missing operator-confirmed Enjin readiness flags/secrets: ${missing.join(', ')}.` : 'Enjin Canary operator inputs are present for live proof smoke.', {
+  add(missing.length ? 'fail' : 'pass', 'Enjin Canary operator readiness', missing.length ? `Missing operator-confirmed Enjin readiness flags/secrets: ${missing.join(', ')}. This is expected red for Alpha Preview Ready while Enjin remains configured-preview-stub.` : 'Enjin Canary operator inputs are present for live proof smoke.', {
+    lane: 'funded-chain-gates',
     requiredFlags: Object.keys(fields),
     missing
   });
+}
+
+function summarizeGateLanes() {
+  return {
+    previewLive: summarizeGateLane('preview-live-gates', previewLiveGateNames),
+    fundedChain: summarizeGateLane('funded-chain-gates', fundedChainGateNames),
+    alphaPreviewReady: {
+      ok: summarizeGateLane('preview-live-gates', previewLiveGateNames).ok,
+      note: 'Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while Enjin is configured-preview-stub.'
+    },
+    alphaRcReady: {
+      ok: !report.checks.some((check) => check.status === 'fail'),
+      note: 'Alpha RC Ready requires both preview-live-gates and funded-chain-gates.'
+    }
+  };
+}
+
+function summarizeGateLane(name, gateNames) {
+  const checks = report.checks.filter((check) => gateNames.includes(check.name));
+  const missingChecks = gateNames.filter((gateName) => !checks.some((check) => check.name === gateName));
+  const failingChecks = checks.filter((check) => check.status === 'fail').map((check) => check.name);
+  return {
+    name,
+    ok: checks.length > 0 && missingChecks.length === 0 && failingChecks.length === 0,
+    checks: checks.map((check) => ({ name: check.name, status: check.status })),
+    missingChecks,
+    failingChecks
+  };
 }
 
 async function fetchJson(url) {

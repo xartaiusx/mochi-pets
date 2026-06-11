@@ -43,6 +43,31 @@ When a needed Alpha RC step may add charges, record the blocked gate and the no-
 
 `npm run alpha:external-gates` may read provider state, but hosted Fly/Vercel contract fetches require `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for an explicitly approved hosted verification run. Leave that flag unset for local-only continuation work.
 
+## Alpha Preview Ready Lane
+
+Use [`docs/alpha-preview-ready.md`](alpha-preview-ready.md) for the next live-site target. Alpha Preview Ready is not the same as Alpha RC Ready:
+
+- `preview-live-gates`: Fly game URL, Mochirii Vercel Preview `/games/mochi-social`, `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, Supabase allowlist, terms, feedback, short-lived iframe auth, no-real-value labels, and hosted contract checks after explicit approval.
+- `funded-chain-gates`: Enjin collection ID, Fuel Tank ID, cENJ funding, Wallet Daemon signing, live operator smoke, and finalized chain proof.
+
+Codex should optimize for `preview-live-gates` first. `funded-chain-gates` are expected red until the user explicitly approves cENJ/Fuel Tank/signing work. Do not set dummy Enjin IDs, dummy Fuel Tank IDs, or fake readiness flags to make Alpha RC pass.
+
+For Preview Ready, keep the Canary/certificate UI visible and make the runtime report `chainRuntime.mode="configured-preview-stub"`. Chain requests are audit-only preview records until real Enjin finality exists. Never credit inventory, settle trades, settle market value, or imply player value from a chain request unless the Enjin state is `FINALIZED`.
+
+Use these prompt templates for future Codex passes:
+
+```text
+Build the next alpha feature against no-real-value Alpha Preview Ready. Keep Enjin visible as configured-preview-stub and do not clear funded-chain gates.
+```
+
+```text
+Do not clear funded-chain gates unless cENJ, collection, Fuel Tank, and Wallet Daemon proof approval exists.
+```
+
+```text
+Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, allowlist, terms, feedback, and admin changes.
+```
+
 ## Secret Entry Protocol
 
 - The user types payment details, API tokens, seed phrases, passphrases, and one-time codes privately.
@@ -64,6 +89,8 @@ When a needed Alpha RC step may add charges, record the blocked gate and the no-
 | Supabase authority | Mochirii Supabase preview branch | migrations, Edge Functions, RLS, allowlist, terms, feedback, ledger |
 | Chain | Enjin Canary | `Mochi Social Alpha` collection and Canary Fuel Tank |
 | Signer | Cloud Wallet Daemon | outbound-only, no inbound ports |
+
+For Alpha Preview Ready, Enjin stays Canary-only and unfunded. Leave `ENJIN_COLLECTION_ID` and `ENJIN_FUEL_TANK_ID` unset until funded-chain approval exists.
 
 Use `npm run alpha:operator-checklist` to refresh the local no-secret checklist for this matrix and the current external gate report.
 

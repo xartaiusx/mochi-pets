@@ -74,6 +74,18 @@ The game backend may send `chain.withdraw_request`, `chain.deposit_request`, and
 - Game-side Enjin helpers create or find the tester managed wallet, submit Fuel Tank sponsored Canary transactions with an `idempotencyKey`, create fixed-price listing proofs through `CreateTransaction(transaction: { createListing: ... })`, then forward `chain.operation_update` through the same server-token Edge bridge.
 - Private Enjin submissions use `POST /integration/alpha/enjin/submit` with `x-mochi-social-server-token`; this endpoint is an operator/backend route, not a website iframe route.
 
+## Alpha Preview Ready Contract
+
+The Mochirii Vercel Preview route may embed Mochi Social while Enjin is unfunded and the game reports `chainRuntime.mode="configured-preview-stub"`.
+
+- Parent site sends only `MOCHI_SOCIAL_AUTH` with a short-lived Supabase access token, plus `MOCHI_SOCIAL_SIGN_OUT` when needed.
+- Chain UI remains visible and clearly labeled no-real-value/test-only.
+- Chain requests may be recorded as audit-only preview rows, but they must not credit hot inventory, settle trades, settle listings, or imply production ownership.
+- Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags for Preview Ready.
+- `preview-live-gates` cover Fly embed, Vercel Preview route, Supabase allowlist, terms, feedback, and the no-real-value chain stub.
+- `funded-chain-gates` cover real Canary collection, Fuel Tank, Wallet Daemon signing, and finality proof. They can remain red until funded-chain approval exists.
+- The website should treat Alpha Preview Ready as a closed tester preview, not production launch.
+
 ## Closed Alpha Route
 
 The Mochirii website should expose the closed alpha at `/games/mochi-social` and read `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
