@@ -115,7 +115,7 @@ Manual gates:
 - `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then a human confirms NPC, chest, and habitat/care prompts look correct in the town.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
-- `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, and operator reports tied to the same local suite base URL and current local HEAD.
+- `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, operator, and built-server reports tied to the same local suite evidence set and current local HEAD.
 - `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet with a cost-sensitive action matrix before requesting any push/CI/provider approval. `npm run alpha:rc-audit` fails if that packet is stale against the current local HEAD, upstream, or dirty state.
 - `npm run alpha:report-hygiene` passes and writes `reports/alpha-report-hygiene.json` after scanning ignored local reports and generated no-secret checklist artifacts.
 - Mochirii preview blocks non-testers.

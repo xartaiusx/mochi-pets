@@ -38,7 +38,8 @@ assertSameBaseUrl(loadSmoke.data?.baseUrl, suiteBaseUrl, 'load smoke baseUrl');
 assertSameBaseUrl(browserPresence.data?.baseUrl, suiteBaseUrl, 'browser presence baseUrl');
 assertSameBaseUrl(visualSnapshot.data?.baseUrl, suiteBaseUrl, 'visual snapshot baseUrl');
 assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke baseUrl');
-assertCurrentGitState(localSuite.data?.git);
+assertCurrentGitState(localSuite.data?.git, 'local suite report');
+assertCurrentGitState(builtServer.data?.git, 'built server smoke report');
 
 const commandNames = Array.isArray(localSuite.data?.commands)
   ? localSuite.data.commands.map((command) => command.name)
@@ -139,11 +140,11 @@ function summarizeReport(report, extra = {}) {
   };
 }
 
-function assertCurrentGitState(gitState) {
+function assertCurrentGitState(gitState, label) {
   const head = git(['rev-parse', 'HEAD']);
   const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
   const worktree = git(['status', '--porcelain']);
-  if (!gitState) failures.push('local suite report must include git state for current-HEAD evidence');
+  if (!gitState) failures.push(`${label} must include git state for current-HEAD evidence`);
   if (!head.ok) failures.push('current local HEAD could not be read');
   if (!upstream.ok) failures.push('current upstream could not be read');
   if (!worktree.ok) failures.push('current worktree status could not be read');
@@ -152,10 +153,10 @@ function assertCurrentGitState(gitState) {
   const currentHead = firstLine(head.stdout);
   const currentUpstream = firstLine(upstream.stdout);
   const currentDirty = worktree.stdout.split(/\r?\n/).filter(Boolean);
-  if (gitState.localHead !== currentHead) failures.push('local suite report localHead must match current HEAD');
-  if (gitState.upstream !== currentUpstream) failures.push('local suite report upstream must match current upstream');
+  if (gitState.localHead !== currentHead) failures.push(`${label} localHead must match current HEAD`);
+  if (gitState.upstream !== currentUpstream) failures.push(`${label} upstream must match current upstream`);
   if (!Array.isArray(gitState.dirty) || gitState.dirty.length !== currentDirty.length) {
-    failures.push('local suite report dirty state must match current worktree');
+    failures.push(`${label} dirty state must match current worktree`);
   }
 }
 
@@ -214,7 +215,7 @@ ${rows}
 - Built Express runtime starts locally and stops after smoke.
 - Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, and private Enjin fail-closed behavior passed.
 - Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
-- The local suite report matches the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
+- The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 

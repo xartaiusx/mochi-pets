@@ -125,6 +125,7 @@ function addStaticRequirements() {
     'alpha-local-evidence.json',
     'alpha-local-evidence.md',
     'same-suite evidence',
+    'built server smoke report',
     'assertCurrentGitState',
     'current HEAD',
     'browser presence must prove observer-side movement',

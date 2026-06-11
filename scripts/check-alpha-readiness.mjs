@@ -128,7 +128,7 @@ const checks = [
   },
   {
     file: 'scripts/check-built-server-smoke.mjs',
-    includes: ['dist/server/express.js', 'configured-preview-stub', 'invalid_game_server_token', 'enjin_canary_not_configured', 'Local-only built Express server smoke']
+    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'configured-preview-stub', 'invalid_game_server_token', 'enjin_canary_not_configured', 'Local-only built Express server smoke']
   },
   {
     file: 'scripts/check-alpha-local-suite.mjs',
@@ -136,7 +136,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-local-evidence.mjs',
-    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'same-suite evidence', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'visual snapshot canvas PNG must be non-empty', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'same-suite evidence', 'built server smoke report', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'visual snapshot canvas PNG must be non-empty', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',
