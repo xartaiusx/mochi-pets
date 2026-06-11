@@ -27,6 +27,7 @@ const report = {
   ok: summary.failed === 0 && summary.unverified === 0,
   checkedAt,
   scope: 'Mochi Social Alpha RC requirement audit. This report is no-secret and points to evidence, not raw provider credentials.',
+  git: readGitState(),
   summary,
   requirements
 };
@@ -469,6 +470,8 @@ function addSyncApprovalRequirements() {
   if (head.ok && report.git?.localHead !== currentHead) failures.push('sync approval report localHead does not match current HEAD');
   if (upstream.ok && report.git?.upstream !== currentUpstream) failures.push('sync approval report upstream does not match current upstream');
   if (Array.isArray(report.git?.dirty) && report.git.dirty.length !== currentDirty.length) failures.push('sync approval report dirty state does not match current worktree');
+  failures.push(...currentGitStateFailures(report.audit?.git, 'sync approval audit snapshot'));
+  failures.push(...syncExternalGateSnapshotFailures(report));
   if (!Array.isArray(report.approvalActions) || report.approvalActions.length < 5) failures.push('sync approval report must include provider approval actions');
   for (const field of ['costRisk', 'noCostAlternative', 'approvalText']) {
     if (!Array.isArray(report.approvalActions) || report.approvalActions.some((action) => !action?.[field])) {
@@ -492,9 +495,32 @@ function addSyncApprovalRequirements() {
       currentDirtyFiles: currentDirty.length,
       reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
       approvalActionCount: Array.isArray(report.approvalActions) ? report.approvalActions.length : 0,
+      auditCheckedAt: report.audit?.checkedAt,
+      externalGateCheckedAt: report.externalGates?.checkedAt,
       failures
     }
   );
+}
+
+function syncExternalGateSnapshotFailures(syncReport) {
+  const failures = [];
+  const externalReportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
+  const externalReport = readJson(externalReportPath);
+  if (!externalReport.ok) {
+    failures.push(`external gate report is missing or invalid while checking sync approval: ${externalReport.message}`);
+    return failures;
+  }
+  const currentExternal = externalReport.data;
+  if (syncReport.externalGates?.checkedAt !== currentExternal.checkedAt) {
+    failures.push('sync approval external gate snapshot does not match current external gate report checkedAt');
+  }
+  if (syncReport.externalGates?.hostedChecksAllowed !== currentExternal.hostedChecksAllowed) {
+    failures.push('sync approval external gate hostedChecksAllowed does not match current external gate report');
+  }
+  if (syncReport.externalGates?.git?.localHead !== currentExternal.git?.localHead) {
+    failures.push('sync approval external gate git head does not match current external gate report');
+  }
+  return failures;
 }
 
 function addPrRequirements() {
@@ -641,6 +667,22 @@ function checkPr(id, repo, pr, requiredCheckName) {
 
 function add(id, status, message, evidence = {}) {
   requirements.push({ id, status, message, evidence });
+}
+
+function readGitState() {
+  const branch = commandAt(root, 'git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = commandAt(root, 'git', ['rev-parse', 'HEAD']);
+  const upstream = commandAt(root, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = commandAt(root, 'git', ['status', '--porcelain']);
+  return {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(localHead.stdout),
+    upstream: firstLine(upstream.stdout),
+    dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, worktree]
+      .filter((result) => !result.ok)
+      .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
 }
 
 function summarize(items) {

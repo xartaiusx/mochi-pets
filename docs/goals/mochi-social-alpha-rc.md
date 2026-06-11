@@ -53,7 +53,7 @@ Recommended slash goal:
    - Run game install/typecheck/lint/test/build/smoke.
    - Run `npm run alpha:local-suite` for the local no-cost bundled RC pass.
    - Run `npm run alpha:local-evidence` to validate and summarize the ignored localhost evidence reports.
-   - Run `npm run alpha:operator-checklist`, `npm run alpha:sync-approval`, and `npm run alpha:report-hygiene` to summarize blocked approval steps and scan local evidence plus no-secret handoff artifacts for accidental secret leakage.
+   - Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates`, stamp a current `npm run alpha:rc-audit` report, then run `npm run alpha:sync-approval` and `npm run alpha:report-hygiene` to summarize blocked approval steps and scan local evidence plus no-secret handoff artifacts for accidental secret leakage.
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
    - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke` locally by default. Hosted load smoke requires explicit user approval.
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions; then complete the manual NPC/chest/habitat map-object prompt check.
@@ -63,6 +63,7 @@ Recommended slash goal:
    - Document preview deploy commands and external setup steps for Fly, Vercel, Supabase, Enjin Platform, Fuel Tank, and Wallet Daemon, with no-cost gates for every provider action.
    - Require `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for any approved `npm run alpha:external-gates` pass that fetches hosted Fly/Vercel contract URLs.
    - Require `reports/alpha-external-gates.json` to carry current Git state and the hosted-check approval flag before `npm run alpha:rc-audit` can treat it as provider evidence.
+   - Require `reports/alpha-sync-approval.json` to reference the current external-gates report checkedAt/HEAD/hosted approval state before `npm run alpha:rc-audit` can treat it as the approval packet.
 
 ## Public Contract
 

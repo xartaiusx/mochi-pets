@@ -84,6 +84,7 @@ function readAuditSummary() {
     present: true,
     ok: audit.data.ok === true,
     checkedAt: audit.data.checkedAt,
+    git: audit.data.git,
     summary: audit.data.summary,
     failures: failing.map((item) => sanitize(item))
   };
@@ -111,6 +112,8 @@ function readExternalGateSummary() {
     flyVolume: sanitize(report.data.flyVolume),
     gameUrl: sanitize(report.data.gameUrl),
     sitePreviewUrl: sanitize(report.data.sitePreviewUrl),
+    hostedChecksAllowed: report.data.hostedChecksAllowed,
+    git: report.data.git,
     failures: failing.map((item) => sanitize(item))
   };
 }
@@ -268,6 +271,8 @@ ${auditFailures}
 - External gate report present: ${report.externalGates.present ? 'yes' : 'no'}
 - External gates passed: ${report.externalGates.ok ? 'yes' : 'no'}
 - External gates checked at: ${report.externalGates.checkedAt || 'not recorded'}
+- Hosted checks allowed: ${report.externalGates.hostedChecksAllowed === true ? 'yes' : 'no'}
+- External report HEAD: ${report.externalGates.git?.localHead || 'not recorded'}
 - Fly app: ${report.externalGates.flyApp || 'not recorded'}
 - Fly volume: ${report.externalGates.flyVolume || 'not recorded'}
 - Game URL: ${report.externalGates.gameUrl || 'not recorded'}
