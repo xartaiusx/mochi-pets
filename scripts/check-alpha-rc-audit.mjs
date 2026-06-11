@@ -231,6 +231,8 @@ function addStaticRequirements() {
     'profileViewed',
     'data-alpha-local-action="friend.add"',
     'friendProof',
+    'data-alpha-local-action="status.set"',
+    'statusMood',
     'data-alpha-local-action="pet.inspect"',
     'lastInspectedPetId',
     'chain.withdraw_request',

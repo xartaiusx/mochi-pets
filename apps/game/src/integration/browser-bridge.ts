@@ -15,6 +15,7 @@ interface AlphaHudState {
   lastInspectedPetId?: string;
   profileViewed: boolean;
   friendProof: boolean;
+  statusMood: string;
   bond: number;
   growth: string;
   charmListed: boolean;
@@ -23,7 +24,7 @@ interface AlphaHudState {
   chat: string[];
 }
 
-type AlphaLocalActionType = 'pet.inspect' | 'profile.view' | 'friend.add';
+type AlphaLocalActionType = 'pet.inspect' | 'profile.view' | 'friend.add' | 'status.set';
 
 interface PresenceMessage {
   type: 'MOCHI_SOCIAL_LOCAL_PRESENCE';
@@ -43,6 +44,7 @@ function defaultAlphaState(): AlphaHudState {
   return {
     profileViewed: false,
     friendProof: false,
+    statusMood: 'exploring',
     bond: 0,
     growth: 'seed',
     charmListed: false,
@@ -141,12 +143,14 @@ function createHud() {
       <span data-alpha-label>Closed Canary alpha - no real value</span>
       <span data-profile-label>Profile: guest tester</span>
       <span data-friend-label>Friends: none</span>
+      <span data-status-label>Status: exploring</span>
       <span data-pet-label>Pet: none</span>
       <span data-market-label>Market: ready</span>
     </div>
     <div class="mochi-hud__actions" aria-label="Alpha quick actions">
       <button type="button" data-alpha-local-action="profile.view">Profile</button>
       <button type="button" data-alpha-local-action="friend.add">Friend</button>
+      <button type="button" data-alpha-local-action="status.set">Mood</button>
       <button type="button" data-alpha-action="pet.care">Care</button>
       <button type="button" data-alpha-local-action="pet.inspect">Inspect</button>
       <button type="button" data-alpha-action="emote.send">Wave</button>
@@ -169,6 +173,7 @@ function createHud() {
   const authLabel = hud.querySelector('[data-auth-label]');
   const profileLabel = hud.querySelector('[data-profile-label]');
   const friendLabel = hud.querySelector('[data-friend-label]');
+  const statusLabel = hud.querySelector('[data-status-label]');
   const petLabel = hud.querySelector('[data-pet-label]');
   const marketLabel = hud.querySelector('[data-market-label]');
   const feed = hud.querySelector<HTMLOListElement>('[data-alpha-feed]');
@@ -183,6 +188,9 @@ function createHud() {
     }
     if (friendLabel) {
       friendLabel.textContent = state.friendProof ? 'Friends: 1 local buddy' : 'Friends: none';
+    }
+    if (statusLabel) {
+      statusLabel.textContent = `Status: ${state.statusMood || 'exploring'}`;
     }
     if (petLabel) {
       petLabel.textContent = pet ? `${pet.name}: ${state.growth} bond ${state.bond}` : 'Pet: none';
@@ -384,13 +392,18 @@ function performAlphaLocalAction(type: AlphaLocalActionType) {
     const pet = MOCHI_SPIRITS.find((spirit) => spirit.id === state.petId);
     state.profileViewed = true;
     state.chat.push(
-      `Profile: Guest Tester, local alpha presence, ${pet ? `${pet.name} active` : 'no active Mochi Spirit'}, ${state.friendProof ? 'one local buddy' : 'no friends yet'}, no real value.`
+      `Profile: Guest Tester, local alpha presence, ${pet ? `${pet.name} active` : 'no active Mochi Spirit'}, ${state.friendProof ? 'one local buddy' : 'no friends yet'}, status ${state.statusMood}, no real value.`
     );
   }
 
   if (type === 'friend.add') {
     state.friendProof = true;
     state.chat.push('Friend proof: Local Buddy added for closed-alpha social testing. No DMs, no real value.');
+  }
+
+  if (type === 'status.set') {
+    state.statusMood = 'cozy';
+    state.chat.push('Status set: cozy alpha hangout, visible locally for social presence testing.');
   }
 
   if (type === 'pet.inspect') {

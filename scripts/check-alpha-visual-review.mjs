@@ -34,6 +34,7 @@ assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove 
 assert(browserPresence.data?.hudAction?.state?.petId === 'momo', 'HUD action proof must include the Momo care loop');
 assert(browserPresence.data?.hudAction?.state?.profileViewed === true, 'HUD action proof must include profile view');
 assert(browserPresence.data?.hudAction?.state?.friendProof === true, 'HUD action proof must include local friend proof');
+assert(browserPresence.data?.hudAction?.state?.statusMood === 'cozy', 'HUD action proof must include local status/mood proof');
 assert(browserPresence.data?.hudAction?.state?.lastInspectedPetId === 'momo', 'HUD action proof must include pet inspection');
 assert(browserPresence.data?.hudAction?.state?.charmListed === true, 'HUD action proof must include fixed market listing');
 assert(browserPresence.data?.hudAction?.state?.tradeProof === true, 'HUD action proof must include direct trade proof');
@@ -94,6 +95,7 @@ const report = {
       petCare: browserPresence.data?.hudAction?.state?.petId === 'momo',
       profileView: browserPresence.data?.hudAction?.state?.profileViewed === true,
       friendProof: browserPresence.data?.hudAction?.state?.friendProof === true,
+      statusMood: browserPresence.data?.hudAction?.state?.statusMood === 'cozy',
       petInspect: browserPresence.data?.hudAction?.state?.lastInspectedPetId === 'momo',
       fixedMarket: browserPresence.data?.hudAction?.state?.charmListed === true,
       directTrade: browserPresence.data?.hudAction?.state?.tradeProof === true,
@@ -267,7 +269,7 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - Canvas PNG: ${summary.evidence.screenshots.canvas.path || 'missing'} (${summary.evidence.screenshots.canvas.width}x${summary.evidence.screenshots.canvas.height})
 - Two-tab presence: ${summary.machineReview.twoTabPresence ? 'yes' : 'no'}
 - Observer movement: ${summary.machineReview.observerMovement ? 'yes' : 'no'}
-- HUD action loop: pet care ${summary.machineReview.hudActionLoop.petCare ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, friend proof ${summary.machineReview.hudActionLoop.friendProof ? 'yes' : 'no'}, pet inspect ${summary.machineReview.hudActionLoop.petInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
+- HUD action loop: pet care ${summary.machineReview.hudActionLoop.petCare ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, friend proof ${summary.machineReview.hudActionLoop.friendProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, pet inspect ${summary.machineReview.hudActionLoop.petInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
 

@@ -126,6 +126,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="pet.care"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="profile.view"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="friend.add"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-local-action="status.set"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="pet.inspect"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
@@ -139,6 +140,7 @@ async function exerciseAlphaHud(page) {
       const pet = document.querySelector('[data-pet-label]')?.textContent || '';
       const profile = document.querySelector('[data-profile-label]')?.textContent || '';
       const friend = document.querySelector('[data-friend-label]')?.textContent || '';
+      const status = document.querySelector('[data-status-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
       const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
       const state = JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}');
@@ -146,10 +148,12 @@ async function exerciseAlphaHud(page) {
       return pet.includes('Momo')
         && profile.includes('Profile: reviewed')
         && friend.includes('Friends: 1 local buddy')
+        && status.includes('Status: cozy')
         && market.includes('Canary: requested')
         && state.petId === 'momo'
         && state.profileViewed === true
         && state.friendProof === true
+        && state.statusMood === 'cozy'
         && state.lastInspectedPetId === 'momo'
         && state.charmListed === true
         && state.tradeProof === true
@@ -157,6 +161,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Care complete')
         && chat.includes('Profile: Guest Tester')
         && chat.includes('Friend proof')
+        && chat.includes('Status set: cozy')
         && chat.includes('Inspect Momo')
         && chat.includes('You wave')
         && chat.includes('Lantern Charm listed')
@@ -174,6 +179,7 @@ async function exerciseAlphaHud(page) {
     return {
       profile: document.querySelector('[data-profile-label]')?.textContent?.trim() || '',
       friend: document.querySelector('[data-friend-label]')?.textContent?.trim() || '',
+      status: document.querySelector('[data-status-label]')?.textContent?.trim() || '',
       pet: document.querySelector('[data-pet-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
       feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || ''),
@@ -187,6 +193,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.profileViewed === true, 'HUD profile action must record local profile proof.');
   assert(snapshot.friend.includes('Friends: 1 local buddy'), 'HUD friend label must show a local friend proof.');
   assert(snapshot.state.friendProof === true, 'HUD friend action must record local social proof.');
+  assert(snapshot.status.includes('Status: cozy'), 'HUD status label must show the local mood/status proof.');
+  assert(snapshot.state.statusMood === 'cozy', 'HUD status action must record local social status proof.');
   assert(snapshot.state.lastInspectedPetId === 'momo', 'HUD inspect action must record a Momo pet inspection proof.');
   assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
@@ -195,6 +203,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
   assert(chat.some((line) => String(line).includes('Profile: Guest Tester')), 'HUD chat state must record the profile action.');
   assert(chat.some((line) => String(line).includes('Friend proof')), 'HUD chat state must record the friend action.');
+  assert(chat.some((line) => String(line).includes('Status set: cozy')), 'HUD chat state must record the status action.');
   assert(chat.some((line) => String(line).includes('Inspect Momo')), 'HUD chat state must record the pet inspect action.');
   assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');
   assert(chat.some((line) => String(line).includes('Lantern Charm listed')), 'HUD chat state must record the fixed-list action.');
