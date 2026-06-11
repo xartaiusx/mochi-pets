@@ -516,6 +516,16 @@ function addSiteRequirements() {
     'hosted browser gate confirmation requires',
     'fakeToken'
   ]);
+  requireSiteFileIncludes('site.report-hygiene-check', 'Mochirii repo scans ignored Mochi Social site reports and no-secret handoff files for accidental secret material.', 'scripts/check-mochi-social-report-hygiene.mjs', [
+    'Mochi Social report hygiene OK',
+    'reports/mochi-social-report-hygiene.json',
+    'reports/mochi-social-report-hygiene.md',
+    'mochirii-mochi-social-alpha-operator-next-steps.md',
+    'mochirii-mochi-social-preview-ready.md',
+    'mochirii-mochi-social-browser-gates.md',
+    'No secret values were printed',
+    'Wallet seed file reference'
+  ]);
   requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
     'Alpha Preview Ready',
     'configured-preview-stub',
@@ -523,6 +533,7 @@ function addSiteRequirements() {
     'funded-chain-gates',
     'Do not set dummy',
     'prepare:mochi-social-browser-gates',
+    'check:mochi-social-report-hygiene',
     'mochi-social-browser-gates.md',
     'check:mochi-social-preview-ready'
   ]);
@@ -533,6 +544,7 @@ function addSiteRequirements() {
     'funded-chain-gates',
     'Do not set dummy',
     'prepare:mochi-social-browser-gates',
+    'check:mochi-social-report-hygiene',
     'mochi-social-browser-gates.md',
     'check:mochi-social-preview-ready'
   ]);
