@@ -84,6 +84,7 @@ The Mochirii Vercel Preview route may embed Mochi Social while Enjin is unfunded
 - Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags for Preview Ready.
 - `preview-live-gates` cover Fly embed, Vercel Preview route, Supabase allowlist, terms, feedback, and the no-real-value chain stub.
 - `funded-chain-gates` cover real Canary collection, Fuel Tank, Wallet Daemon signing, and finality proof. They can remain red until funded-chain approval exists.
+- The Mochirii repo should prove its website tester-entry lane with `npm run check:mochi-social-preview-ready`; that audit is separate from funded-chain gates and remains no-secret.
 - The website should treat Alpha Preview Ready as a closed tester preview, not production launch.
 
 ## Closed Alpha Route

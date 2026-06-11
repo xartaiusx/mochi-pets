@@ -35,7 +35,8 @@ const files = [
 const optionalFiles = [
   'reports/alpha-preview-ready.json',
   'reports/alpha-preview-ready.md',
-  resolve(credsDir, 'mochi-social-alpha-preview-ready.md')
+  resolve(credsDir, 'mochi-social-alpha-preview-ready.md'),
+  resolve(credsDir, 'mochirii-mochi-social-preview-ready.md')
 ];
 
 const secretPatterns = [

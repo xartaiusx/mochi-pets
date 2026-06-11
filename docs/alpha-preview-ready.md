@@ -106,6 +106,15 @@ npm run alpha:preview-ready
 
 `npm run alpha:preview-ready` writes ignored no-secret reports to `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It can pass with funded-chain gates red, but it cannot pass until `preview-live-gates` are green, hosted checks were explicitly approved, and both local branches are synced to their PR branches.
 
+The Mochirii repo also has a site-side tester-entry audit:
+
+```powershell
+cd C:\Users\xtyty\Documents\Mochirii
+npm run check:mochi-social-preview-ready
+```
+
+That command writes ignored no-secret reports to `reports/mochi-social-preview-ready.json`, `reports/mochi-social-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochirii-mochi-social-preview-ready.md`. It stays red until the game Preview Ready report, Vercel Preview/browser gates, Supabase Edge smoke, and site branch sync are proven.
+
 ## Funding Later
 
 After Alpha Preview Ready, a separate approval can move to funded Alpha RC:

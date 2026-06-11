@@ -395,19 +395,32 @@ function addSiteRequirements() {
     'MOCHI_SOCIAL_ALPHA_EDGE_URL',
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN'
   ]);
+  requireSiteFileIncludes('site.preview-ready-audit', 'Mochirii repo can audit the website tester-entry Preview Ready lane without requiring funded-chain gates.', 'scripts/check-mochi-social-preview-ready.mjs', [
+    'Mochirii Mochi Social Alpha Preview Ready audit',
+    'reports/mochi-social-preview-ready.json',
+    'mochirii-mochi-social-preview-ready.md',
+    'MOCHI_SOCIAL_SITE_PREVIEW_READY_ALLOW_HOSTED',
+    'site.game-contract',
+    'site.edge-smoke',
+    'site.manual-browser-gates',
+    'site.branch-sync',
+    'site.game-preview-ready'
+  ]);
   requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
     'Alpha Preview Ready',
     'configured-preview-stub',
     'preview-live-gates',
     'funded-chain-gates',
-    'Do not set dummy'
+    'Do not set dummy',
+    'check:mochi-social-preview-ready'
   ]);
   requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii Codex ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-codex-ops.md', [
     'Alpha Preview Ready Lane',
     'configured-preview-stub',
     'preview-live-gates',
     'funded-chain-gates',
-    'Do not set dummy'
+    'Do not set dummy',
+    'check:mochi-social-preview-ready'
   ]);
 }
 
