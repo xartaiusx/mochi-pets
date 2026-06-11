@@ -158,7 +158,7 @@ For live Enjin completion, the operator must also provide non-public server env/
 
 ## Two-tab Presence Gate
 
-`npm run alpha:browser-presence` opens two pages in one browser context and verifies both tabs render the game canvas, the alpha HUD, and a `Nearby: 2 testers` presence chip. It captures canvas screenshot signatures, sends movement keys in both tabs, verifies each canvas changes, and verifies the observer tab changes after first-tab movement. It also clicks the HUD care, pet inspect, chat, emote, fixed-list, direct-trade, and Canary certificate actions, then verifies the visible HUD and `mochiSocial.alphaState` update. It writes `reports/alpha-browser-presence.json`.
+`npm run alpha:browser-presence` opens two pages in one browser context and verifies both tabs render the game canvas, the alpha HUD, and a `Nearby: 2 testers` presence chip. It captures canvas screenshot signatures, sends movement keys in both tabs, verifies each canvas changes, and verifies the observer tab changes after first-tab movement. It also clicks the HUD care, profile view, pet inspect, chat, emote, fixed-list, direct-trade, and Canary certificate actions, then verifies the visible HUD and `mochiSocial.alphaState` update. It writes `reports/alpha-browser-presence.json`.
 
 The browser smoke is local-only by default to avoid hosted preview usage. Set `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true` only after explicit hosted-preview approval. It prefers installed Chrome. If Chrome is installed outside the default Playwright channel, set `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to the browser executable path. Set `MOCHI_SOCIAL_BROWSER_HEADFUL=true` when you want to watch the check run.
 

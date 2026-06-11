@@ -13,6 +13,7 @@ const PRESENCE_TTL_MS = 4000;
 interface AlphaHudState {
   petId?: string;
   lastInspectedPetId?: string;
+  profileViewed: boolean;
   bond: number;
   growth: string;
   charmListed: boolean;
@@ -21,7 +22,7 @@ interface AlphaHudState {
   chat: string[];
 }
 
-type AlphaLocalActionType = 'pet.inspect';
+type AlphaLocalActionType = 'pet.inspect' | 'profile.view';
 
 interface PresenceMessage {
   type: 'MOCHI_SOCIAL_LOCAL_PRESENCE';
@@ -39,6 +40,7 @@ interface AlphaActionResponse {
 
 function defaultAlphaState(): AlphaHudState {
   return {
+    profileViewed: false,
     bond: 0,
     growth: 'seed',
     charmListed: false,
@@ -135,10 +137,12 @@ function createHud() {
     </div>
     <div class="mochi-hud__alpha">
       <span data-alpha-label>Closed Canary alpha - no real value</span>
+      <span data-profile-label>Profile: guest tester</span>
       <span data-pet-label>Pet: none</span>
       <span data-market-label>Market: ready</span>
     </div>
     <div class="mochi-hud__actions" aria-label="Alpha quick actions">
+      <button type="button" data-alpha-local-action="profile.view">Profile</button>
       <button type="button" data-alpha-action="pet.care">Care</button>
       <button type="button" data-alpha-local-action="pet.inspect">Inspect</button>
       <button type="button" data-alpha-action="emote.send">Wave</button>
@@ -159,6 +163,7 @@ function createHud() {
 
   const tokenLabel = hud.querySelector('[data-token-label]');
   const authLabel = hud.querySelector('[data-auth-label]');
+  const profileLabel = hud.querySelector('[data-profile-label]');
   const petLabel = hud.querySelector('[data-pet-label]');
   const marketLabel = hud.querySelector('[data-market-label]');
   const feed = hud.querySelector<HTMLOListElement>('[data-alpha-feed]');
@@ -168,6 +173,9 @@ function createHud() {
   function renderState() {
     const state = readAlphaState();
     const pet = MOCHI_SPIRITS.find((spirit) => spirit.id === state.petId);
+    if (profileLabel) {
+      profileLabel.textContent = state.profileViewed ? 'Profile: reviewed' : 'Profile: guest tester';
+    }
     if (petLabel) {
       petLabel.textContent = pet ? `${pet.name}: ${state.growth} bond ${state.bond}` : 'Pet: none';
     }
@@ -338,7 +346,7 @@ function readAlphaState(): AlphaHudState {
     return {
       ...defaultAlphaState(),
       ...(parsed || {}),
-      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-8).map(String) : []
+      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-12).map(String) : []
     };
   } catch {
     return defaultAlphaState();
@@ -346,7 +354,7 @@ function readAlphaState(): AlphaHudState {
 }
 
 function writeAlphaState(state: AlphaHudState) {
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-8) }));
+  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-12) }));
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
 
@@ -363,6 +371,14 @@ async function loadAlphaStatus() {
 
 function performAlphaLocalAction(type: AlphaLocalActionType) {
   const state = readAlphaState();
+
+  if (type === 'profile.view') {
+    const pet = MOCHI_SPIRITS.find((spirit) => spirit.id === state.petId);
+    state.profileViewed = true;
+    state.chat.push(
+      `Profile: Guest Tester, local alpha presence, ${pet ? `${pet.name} active` : 'no active Mochi Spirit'}, no real value.`
+    );
+  }
 
   if (type === 'pet.inspect') {
     const pet = MOCHI_SPIRITS.find((spirit) => spirit.id === state.petId);

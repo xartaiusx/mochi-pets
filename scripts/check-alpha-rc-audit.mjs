@@ -227,6 +227,8 @@ function addStaticRequirements() {
     'Nearby: 2 testers',
     'data-presence-label',
     'data-alpha-action="pet.care"',
+    'data-alpha-local-action="profile.view"',
+    'profileViewed',
     'data-alpha-local-action="pet.inspect"',
     'lastInspectedPetId',
     'chain.withdraw_request',
