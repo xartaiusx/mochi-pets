@@ -412,6 +412,8 @@ function addSiteRequirements() {
     'reports/mochi-social-preview-ready.json',
     'mochirii-mochi-social-preview-ready.md',
     'MOCHI_SOCIAL_SITE_PREVIEW_READY_ALLOW_HOSTED',
+    'site.edge-authority',
+    'check-mochi-social-edge-authority.mjs',
     'site.game-contract',
     'site.edge-smoke',
     'site.manual-browser-gates',
