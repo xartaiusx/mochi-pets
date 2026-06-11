@@ -15,6 +15,7 @@ addSiteRequirements();
 addProviderGateRequirements();
 addLocalEvidenceRequirements();
 addReportHygieneRequirements();
+addOperatorChecklistRequirements();
 addSyncApprovalRequirements();
 addLocalBranchRequirements();
 addSiteBranchRequirements();
@@ -124,6 +125,8 @@ function addStaticRequirements() {
     'No-secret local Alpha RC evidence summary',
     'alpha-local-evidence.json',
     'alpha-local-evidence.md',
+    'readGitState',
+    'localHead',
     'same-suite evidence',
     'built server smoke report',
     'assertCurrentGitState',
@@ -136,6 +139,7 @@ function addStaticRequirements() {
   requireFileIncludes('game.report-hygiene-script', 'Report hygiene scans ignored local reports and generated no-secret handoff artifacts for accidental secret leakage.', 'scripts/check-alpha-report-hygiene.mjs', [
     'No-secret hygiene scan',
     'alpha-report-hygiene.json',
+    'alpha-operator-checklist.json',
     'mochi-social-alpha-operator-next-steps.md',
     'mochi-social-alpha-sync-approval.md',
     'Unredacted local suite token',
@@ -153,6 +157,14 @@ function addStaticRequirements() {
     'Cost-Sensitive Action Matrix',
     'GitHub Actions/PR checks',
     'I approve pushing'
+  ]);
+  requireFileIncludes('game.operator-checklist-script', 'Operator checklist writes no-secret Markdown and current Git-state JSON evidence for handoff freshness.', 'scripts/write-alpha-operator-checklist.mjs', [
+    'mochi-social-alpha-operator-next-steps.md',
+    'alpha-operator-checklist.json',
+    'readGitState',
+    'localHead',
+    'No-cost rule',
+    'noCostRule'
   ]);
   requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
@@ -293,6 +305,7 @@ function addLocalEvidenceRequirements() {
 
   const report = evidenceReport.data;
   const failures = Array.isArray(report.failures) ? report.failures : ['failures array missing'];
+  failures.push(...currentGitStateFailures(report.git, 'local evidence summary'));
   add(
     'local.evidence-summary',
     report.ok === true && failures.length === 0 ? 'pass' : 'fail',
@@ -328,6 +341,47 @@ function addReportHygieneRequirements() {
       reportPath: hygieneReportPath,
       checkedAt: report.checkedAt,
       scanned: report.scanned,
+      failures
+    }
+  );
+}
+
+function addOperatorChecklistRequirements() {
+  const operatorReportPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
+  const operatorReport = readJson(operatorReportPath);
+  if (!operatorReport.ok) {
+    add('local.operator-checklist-current', 'fail', `Operator checklist report is missing or invalid: ${operatorReport.message}. Run npm run alpha:operator-checklist.`, { path: operatorReportPath });
+    return;
+  }
+
+  const report = operatorReport.data;
+  const failures = [];
+  if (report.ok !== true) failures.push('operator checklist report is not ok');
+  failures.push(...currentGitStateFailures(report.git, 'operator checklist report'));
+  if (!String(report.markdownPath || '').includes('mochi-social-alpha-operator-next-steps.md')) {
+    failures.push('operator checklist report must point to the generated Markdown checklist');
+  }
+  if (!String(report.noCostRule || '').includes('No push')) {
+    failures.push('operator checklist report must include the no-cost approval rule');
+  }
+  if (!report.externalGateSummary || typeof report.externalGateSummary !== 'object') {
+    failures.push('operator checklist report must include the latest external gate summary');
+  }
+
+  add(
+    'local.operator-checklist-current',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Operator checklist report is stale or incomplete: ${failures.join(', ')}.`
+      : 'Operator checklist report matches current local branch state and keeps no-secret handoff evidence current.',
+    {
+      reportPath: operatorReportPath,
+      generatedAt: report.generatedAt,
+      markdownPath: report.markdownPath,
+      reportHead: report.git?.localHead,
+      reportUpstream: report.git?.upstream,
+      reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
+      externalGatePresent: report.externalGateSummary?.present,
       failures
     }
   );

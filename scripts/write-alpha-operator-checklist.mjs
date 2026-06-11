@@ -1,10 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { dirname, join, resolve } from 'node:path';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST || 'mochi-social-alpha-operator-next-steps.md');
+const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
 const flyRegion = process.env.MOCHI_SOCIAL_FLY_REGION || 'sjc';
@@ -14,10 +16,14 @@ const generatedAt = new Date().toISOString();
 
 const externalGateSummary = readExternalGateSummary();
 const credentialFiles = listCredentialFiles();
+const gitState = readGitState();
 
 await mkdir(credsDir, { recursive: true });
 await writeFile(outputPath, renderChecklist(), 'utf8');
+await mkdir(dirname(reportJsonPath), { recursive: true });
+await writeFile(reportJsonPath, `${JSON.stringify(renderReport(), null, 2)}\n`, 'utf8');
 console.log(`Wrote no-secret Mochi Social alpha operator checklist: ${outputPath}`);
+console.log(`Wrote no-secret Mochi Social alpha operator checklist report: ${reportJsonPath}`);
 
 function defaultCredsDir() {
   if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
@@ -65,6 +71,25 @@ function readExternalGateSummary() {
   }
 }
 
+function renderReport() {
+  return {
+    ok: true,
+    generatedAt,
+    scope: 'No-secret operator checklist evidence for local Alpha RC handoff. This report lists paths, statuses, and secret names only.',
+    markdownPath: pathForReport(outputPath),
+    git: gitState,
+    credentialFiles,
+    targets: {
+      flyApp,
+      flyRegion,
+      flyVolume,
+      supabaseProjectRef
+    },
+    externalGateSummary,
+    noCostRule: 'No push, CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact action.'
+  };
+}
+
 function renderChecklist() {
   const fileList = credentialFiles.length
     ? credentialFiles.map((file) => `- ${file}`).join('\n')
@@ -72,6 +97,9 @@ function renderChecklist() {
   const gateList = externalGateSummary.failures.length
     ? externalGateSummary.failures.map((failure) => `- ${failure}`).join('\n')
     : '- No failing external gates were recorded in the last report.';
+  const dirtyList = gitState.dirty.length
+    ? gitState.dirty.slice(0, 20).map((line) => `- ${line}`).join('\n')
+    : '- No tracked dirty files were recorded when this checklist was generated.';
 
   return `# Mochi Social Alpha Operator Next Steps
 
@@ -80,6 +108,17 @@ Generated: ${generatedAt}
 This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into Codex chat, Git, PR comments, screenshots, or reports.
 
 No-cost rule: do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun Actions, or push CI-triggering branches without explicit user approval for that exact action. Prefer local checks and read-only provider status commands.
+
+## Git State
+
+- Branch: ${gitState.branch || 'unknown'}
+- Local HEAD: ${gitState.localHead || 'unknown'}
+- Upstream: ${gitState.upstream || 'unknown'}
+- Dirty tracked files: ${gitState.dirty.length}
+
+Dirty tracked file summary:
+
+${dirtyList}
 
 ## Local Credential Files
 
@@ -192,4 +231,51 @@ npm run alpha:external-gates
 
 Alpha RC Ready still requires the Mochirii preview to block non-testers, gate terms, forward auth, record feedback/ledger rows, and embed the Fly game URL.
 `;
+}
+
+function readGitState() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = git(['rev-parse', 'HEAD']);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = git(['status', '--porcelain']);
+  return {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(localHead.stdout),
+    upstream: firstLine(upstream.stdout),
+    dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, worktree]
+      .filter((result) => !result.ok)
+      .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
+}
+
+function git(args) {
+  const result = spawnSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false
+  });
+  return {
+    ok: result.status === 0,
+    stdout: result.stdout || '',
+    stderr: result.stderr || result.error?.message || ''
+  };
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
+}
+
+function pathForReport(absolutePath) {
+  return absolutePath.startsWith(root)
+    ? absolutePath.slice(root.length + 1).replace(/\\/g, '/')
+    : absolutePath;
+}
+
+function sanitize(value) {
+  return String(value || '')
+    .replace(/\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{20,}\b/g, '<redacted-github-token>')
+    .replace(/\bsb_secret_[A-Za-z0-9_-]{8,}\b/g, '<redacted-supabase-secret>')
+    .replace(/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, '<redacted-jwt>')
+    .slice(0, 1000);
 }

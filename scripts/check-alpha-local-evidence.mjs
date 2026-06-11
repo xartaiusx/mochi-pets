@@ -15,6 +15,7 @@ const loadSmoke = readJson('reports/alpha-load-smoke.json');
 const browserPresence = readJson('reports/alpha-browser-presence.json');
 const visualSnapshot = readJson('reports/alpha-visual-snapshot.json');
 const operatorSmoke = readJson('reports/enjin-operator-smoke.json');
+const gitState = readGitState();
 
 assertReport('local suite', localSuite);
 assertReport('built server smoke', builtServer);
@@ -70,6 +71,7 @@ const summary = {
   ok: failures.length === 0,
   checkedAt: new Date().toISOString(),
   scope: 'No-secret local Alpha RC evidence summary. Reads ignored localhost reports and writes ignored summary artifacts.',
+  git: gitState,
   reports: {
     localSuite: summarizeReport(localSuite),
     builtServer: summarizeReport(builtServer),
@@ -160,6 +162,22 @@ function assertCurrentGitState(gitState, label) {
   }
 }
 
+function readGitState() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = git(['rev-parse', 'HEAD']);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = git(['status', '--porcelain']);
+  return {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(localHead.stdout),
+    upstream: firstLine(upstream.stdout),
+    dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, worktree]
+      .filter((result) => !result.ok)
+      .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
+}
+
 function git(args) {
   const result = spawnSync('git', args, {
     cwd: root,
@@ -175,6 +193,14 @@ function git(args) {
 
 function firstLine(value) {
   return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
+}
+
+function sanitize(value) {
+  return String(value || '')
+    .replace(/\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{20,}\b/g, '<redacted-github-token>')
+    .replace(/\bsb_secret_[A-Za-z0-9_-]{8,}\b/g, '<redacted-supabase-secret>')
+    .replace(/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, '<redacted-jwt>')
+    .slice(0, 1000);
 }
 
 function normalizeUrl(value) {
