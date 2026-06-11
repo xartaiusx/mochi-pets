@@ -107,7 +107,7 @@ Hosted prompt review requires explicit hosted-preview approval first, then `MOCH
 
 ## Wallet Daemon Local Check
 
-`npm run alpha:wallet-daemon-check` verifies only local Wallet Daemon binary metadata. By default on this Windows workstation it looks for `C:\Users\xtyty\Downloads\wallet-daemon_v3.0.7_x86_64-pc-windows-msvc\wallet-daemon.exe`; set `MOCHI_SOCIAL_WALLET_DAEMON_PATH` to override that path. The script hashes the file, runs `wallet-daemon --help`, records observed help commands, and writes ignored no-secret `reports/wallet-daemon-local.json` and `reports/wallet-daemon-local.md`.
+`npm run alpha:wallet-daemon-check` verifies only local Wallet Daemon binary metadata. By default on this Windows workstation it first checks `C:\Users\xtyty\Desktop\Creds\enjin-wallet-daemon\wallet-daemon.exe`, then falls back to `C:\Users\xtyty\Downloads\wallet-daemon_v3.0.7_x86_64-pc-windows-msvc\wallet-daemon.exe`; set `MOCHI_SOCIAL_WALLET_DAEMON_PATH` to override those paths. The script hashes the file, runs `wallet-daemon --help`, records observed help commands, and writes ignored no-secret `reports/wallet-daemon-local.json` and `reports/wallet-daemon-local.md`.
 
 This check is intentionally weaker than Enjin readiness. It does not import wallets, print seeds, start a signer, contact Enjin Platform, create a collection, fund a Fuel Tank, or submit a chain transaction. Alpha RC still requires an operator to confirm Enjin Platform shows Wallet Daemon connected before the collection, Fuel Tank, and proof-operation gates can pass.
 

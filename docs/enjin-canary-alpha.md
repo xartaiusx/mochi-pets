@@ -70,7 +70,7 @@ Before any signer, collection, Fuel Tank, or transaction step, verify the downlo
 npm run alpha:wallet-daemon-check
 ```
 
-By default on this workstation the script checks `C:\Users\xtyty\Downloads\wallet-daemon_v3.0.7_x86_64-pc-windows-msvc\wallet-daemon.exe`. Set `MOCHI_SOCIAL_WALLET_DAEMON_PATH` to check a different binary. The script records only path, file size, SHA256, and `wallet-daemon --help` command names in `reports/wallet-daemon-local.json` and `reports/wallet-daemon-local.md`.
+By default on this workstation the script first checks `C:\Users\xtyty\Desktop\Creds\enjin-wallet-daemon\wallet-daemon.exe`, then falls back to `C:\Users\xtyty\Downloads\wallet-daemon_v3.0.7_x86_64-pc-windows-msvc\wallet-daemon.exe`. Set `MOCHI_SOCIAL_WALLET_DAEMON_PATH` to check a different binary. The script records only path, file size, SHA256, and `wallet-daemon --help` command names in `reports/wallet-daemon-local.json` and `reports/wallet-daemon-local.md`.
 
 This is a no-cost metadata gate. It never runs `wallet-daemon import`, never runs `wallet-daemon print-seed`, never starts a signer process, never contacts Enjin Platform, and never submits or funds anything. Enjin readiness still requires an operator-confirmed connected Wallet Daemon in Enjin Platform plus explicit approval before any collection, Fuel Tank, or Canary transaction action.
 

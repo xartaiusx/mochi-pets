@@ -114,7 +114,11 @@ async function run() {
 
 function defaultWalletDaemonPath() {
   if (process.env.USERPROFILE) {
-    return resolve(process.env.USERPROFILE, 'Downloads', 'wallet-daemon_v3.0.7_x86_64-pc-windows-msvc', 'wallet-daemon.exe');
+    const candidates = [
+      resolve(process.env.USERPROFILE, 'Desktop', 'Creds', 'enjin-wallet-daemon', 'wallet-daemon.exe'),
+      resolve(process.env.USERPROFILE, 'Downloads', 'wallet-daemon_v3.0.7_x86_64-pc-windows-msvc', 'wallet-daemon.exe')
+    ];
+    return candidates.find((candidate) => existsSync(candidate)) || candidates[0];
   }
   return '';
 }
