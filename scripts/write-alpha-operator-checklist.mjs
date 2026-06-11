@@ -16,6 +16,7 @@ const generatedAt = new Date().toISOString();
 
 const externalGateSummary = readExternalGateSummary();
 const walletDaemonSummary = readWalletDaemonSummary();
+const manualPromptSummary = readManualPromptSummary();
 const credentialFiles = listCredentialFiles();
 const gitState = readGitState();
 
@@ -107,6 +108,45 @@ function readWalletDaemonSummary() {
   }
 }
 
+function readManualPromptSummary() {
+  const promptReportPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_JSON || 'reports/alpha-manual-prompt-review.json');
+  if (!existsSync(promptReportPath)) {
+    return {
+      present: false,
+      ok: false,
+      status: 'missing-report',
+      pendingChecks: ['welcome-npc', 'token-chest', 'care-shrine'],
+      message: 'Run npm run alpha:manual-prompt-review to generate the prompt review gate report.'
+    };
+  }
+
+  try {
+    const report = JSON.parse(readFileSync(promptReportPath, 'utf8'));
+    return {
+      present: true,
+      ok: report.ok === true,
+      checkedAt: report.checkedAt,
+      status: report.review?.status || 'unknown',
+      url: report.review?.url || null,
+      reviewer: report.review?.reviewer || null,
+      browser: report.review?.browser || null,
+      completedChecks: report.completedChecks || [],
+      pendingChecks: report.pendingChecks || [],
+      message: report.ok === true
+        ? 'Manual rendered prompt review is complete.'
+        : 'Manual rendered prompt review is pending or incomplete.'
+    };
+  } catch {
+    return {
+      present: true,
+      ok: false,
+      status: 'parse-failed',
+      pendingChecks: ['welcome-npc', 'token-chest', 'care-shrine'],
+      message: 'Manual prompt review report exists but could not be parsed.'
+    };
+  }
+}
+
 function renderReport() {
   return {
     ok: true,
@@ -123,6 +163,7 @@ function renderReport() {
     },
     externalGateSummary,
     walletDaemonSummary,
+    manualPromptSummary,
     noCostRule: 'No push, CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact action.'
   };
 }
@@ -137,6 +178,9 @@ function renderChecklist() {
   const walletCommands = walletDaemonSummary.helpCommands?.length
     ? walletDaemonSummary.helpCommands.map((command) => `- ${command}`).join('\n')
     : '- None recorded';
+  const manualPromptPending = manualPromptSummary.pendingChecks?.length
+    ? manualPromptSummary.pendingChecks.map((check) => `- ${check}`).join('\n')
+    : '- None';
   const dirtyList = gitState.dirty.length
     ? gitState.dirty.slice(0, 20).map((line) => `- ${line}`).join('\n')
     : '- No tracked dirty files were recorded when this checklist was generated.';
@@ -190,12 +234,30 @@ ${walletCommands}
 
 This only proves the downloaded local binary responds to metadata/help inspection. It is not proof that a Wallet Daemon signer is running, that Enjin Platform shows Connected, or that any collection/Fuel Tank/transaction gate is complete.
 
+## Manual Prompt Review Gate
+
+- Report present: ${manualPromptSummary.present ? 'yes' : 'no'}
+- Last checked: ${manualPromptSummary.checkedAt || 'not recorded'}
+- Overall pass: ${manualPromptSummary.ok ? 'yes' : 'no'}
+- Status: ${manualPromptSummary.status}
+- URL: ${manualPromptSummary.url || 'not recorded'}
+- Reviewer: ${manualPromptSummary.reviewer || 'not recorded'}
+- Browser: ${manualPromptSummary.browser || 'not recorded'}
+- Note: ${manualPromptSummary.message}
+
+Pending prompt checks:
+
+${manualPromptPending}
+
+Complete this gate only after a local browser review confirms the welcome NPC dialog, token chest prompt/save feedback, and habitat care-loop prompt are rendered coherently.
+
 ## Local No-Cost Gate
 
 Run this before any hosted or provider work:
 
 \`\`\`powershell
 npm run alpha:wallet-daemon-check
+npm run alpha:manual-prompt-review # Writes pending report until operator confirmation env vars are set.
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:report-hygiene

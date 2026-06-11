@@ -25,6 +25,7 @@ npm run alpha:load-smoke
 npm run alpha:browser-presence
 npm run alpha:visual-snapshot
 npm run alpha:visual-review
+npm run alpha:manual-prompt-review
 npm run alpha:wallet-daemon-check
 npm run alpha:enjin-operator-smoke
 npm run alpha:local-suite
@@ -68,6 +69,24 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
 
 Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. It requires the acceptance, load, browser, visual, and operator reports to share the same local suite base URL, and it requires both the suite report and built-server smoke report to match the current local HEAD, upstream, and dirty worktree state, so stale localhost evidence cannot be mixed into a fresh summary or reused across code changes. The JSON summary also records current Git state, and `npm run alpha:rc-audit` rejects it when it becomes stale. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
+
+## Manual Prompt Review Gate
+
+`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, confirms the rendered welcome NPC dialog, token chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars.
+
+Local completion example:
+
+```powershell
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER="<operator name>"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER="<browser and version>"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_URL="http://localhost:3100/play"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK="true"
+npm run alpha:manual-prompt-review
+```
+
+Hosted prompt review requires explicit hosted-preview approval first, then `MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true`. `npm run alpha:rc-audit` rejects a missing, stale, pending, or hosted-without-approval manual prompt review report.
 
 ## Wallet Daemon Local Check
 

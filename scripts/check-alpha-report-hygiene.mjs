@@ -15,6 +15,8 @@ const files = [
   'reports/alpha-visual-snapshot.json',
   'reports/alpha-visual-review.json',
   'reports/alpha-visual-review.md',
+  'reports/alpha-manual-prompt-review.json',
+  'reports/alpha-manual-prompt-review.md',
   'reports/wallet-daemon-local.json',
   'reports/wallet-daemon-local.md',
   'reports/alpha-local-evidence.json',

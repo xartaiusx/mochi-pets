@@ -103,6 +103,7 @@ const report = {
       'Interact with the welcome NPC and confirm the rendered prompt/dialog is coherent.',
       'Interact with the token chest and confirm the rendered prompt/save feedback is coherent.',
       'Interact with the habitat/care loop and confirm the rendered prompt/status feedback is coherent.',
+      'Run npm run alpha:manual-prompt-review with the explicit prompt confirmation env vars set.',
       'Record browser, date, URL, report hashes, and any issues in the PR or release checklist.'
     ]
   },

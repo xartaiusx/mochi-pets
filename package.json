@@ -23,6 +23,7 @@
     "alpha:browser-presence": "node scripts/check-alpha-browser-presence.mjs",
     "alpha:visual-snapshot": "node scripts/check-alpha-visual-snapshot.mjs",
     "alpha:visual-review": "node scripts/check-alpha-visual-review.mjs",
+    "alpha:manual-prompt-review": "node scripts/write-alpha-manual-prompt-review.mjs",
     "alpha:wallet-daemon-check": "node scripts/check-wallet-daemon-local.mjs",
     "alpha:enjin-operator-smoke": "node scripts/check-enjin-operator-smoke.mjs",
     "alpha:built-server-smoke": "node scripts/check-built-server-smoke.mjs",

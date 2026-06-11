@@ -17,6 +17,7 @@ addLocalEvidenceRequirements();
 addReportHygieneRequirements();
 addOperatorChecklistRequirements();
 addSyncApprovalRequirements();
+addManualPromptReviewRequirements();
 addLocalBranchRequirements();
 addSiteBranchRequirements();
 addPrRequirements();
@@ -223,6 +224,17 @@ function addStaticRequirements() {
     'observerMovement',
     'token-chest',
     'Lantern Garden'
+  ]);
+  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
+    'alpha-manual-prompt-review.json',
+    'alpha-manual-prompt-review.md',
+    'pending-human-review',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED'
   ]);
   requireFileIncludes('game.wallet-daemon-local-check', 'Wallet Daemon local check verifies only binary metadata and help output without importing wallets, printing seeds, starting signers, or contacting Enjin.', 'scripts/check-wallet-daemon-local.mjs', [
     'wallet-daemon-local.json',
@@ -524,6 +536,50 @@ function addSyncApprovalRequirements() {
       approvalActionCount: Array.isArray(report.approvalActions) ? report.approvalActions.length : 0,
       auditCheckedAt: report.audit?.checkedAt,
       externalGateCheckedAt: report.externalGates?.checkedAt,
+      failures
+    }
+  );
+}
+
+function addManualPromptReviewRequirements() {
+  const promptReportPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_JSON || 'reports/alpha-manual-prompt-review.json');
+  const promptReport = readJson(promptReportPath);
+  if (!promptReport.ok) {
+    add('local.manual-prompt-review', 'fail', `Manual prompt review report is missing or invalid: ${promptReport.message}. Run npm run alpha:manual-prompt-review after local NPC/chest/habitat prompt review.`, { path: promptReportPath });
+    return;
+  }
+
+  const report = promptReport.data;
+  const failures = Array.isArray(report.failures) ? [...report.failures] : ['failures array missing'];
+  failures.push(...currentGitStateFailures(report.git, 'manual prompt review report'));
+  if (report.ok !== true) failures.push('manual prompt review report is not ok');
+  if (report.review?.status !== 'completed') failures.push(`manual prompt review status is ${report.review?.status || 'missing'}`);
+  if (hasHostedUrl(report.review?.url) && report.review?.hostedAllowed !== true) {
+    failures.push('hosted manual prompt review requires explicit hosted approval flag');
+  }
+  const checks = Array.isArray(report.checks) ? report.checks : [];
+  for (const id of ['welcome-npc', 'token-chest', 'care-shrine']) {
+    const check = checks.find((entry) => entry.id === id);
+    if (!check?.ok) failures.push(`manual prompt review missing confirmation for ${id}`);
+  }
+  if (!report.review?.reviewer) failures.push('manual prompt review must record reviewer');
+  if (!report.review?.browser) failures.push('manual prompt review must record browser');
+  if (!report.review?.url) failures.push('manual prompt review must record reviewed URL');
+
+  add(
+    'local.manual-prompt-review',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Manual rendered prompt review is incomplete: ${failures.join(', ')}.`
+      : 'Manual rendered NPC, chest, and habitat/care prompt review is complete and current.',
+    {
+      reportPath: promptReportPath,
+      checkedAt: report.checkedAt,
+      status: report.review?.status,
+      url: report.review?.url,
+      hostedAllowed: report.review?.hostedAllowed,
+      completedChecks: report.completedChecks,
+      pendingChecks: report.pendingChecks,
       failures
     }
   );
