@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 
 const root = process.cwd();
@@ -36,6 +37,7 @@ const secretPatterns = [
 
 const failures = [];
 const scanned = [];
+const gitState = readGitState();
 
 for (const file of files) {
   const absolutePath = resolve(root, file);
@@ -81,7 +83,41 @@ async function writeReport(ok) {
     ok,
     checkedAt: new Date().toISOString(),
     scope: 'No-secret hygiene scan for ignored local Alpha RC reports and generated operator/sync approval checklists.',
+    git: gitState,
     scanned,
     failures
   }, null, 2)}\n`, 'utf8');
+}
+
+function readGitState() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = git(['rev-parse', 'HEAD']);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = git(['status', '--porcelain']);
+  return {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(localHead.stdout),
+    upstream: firstLine(upstream.stdout),
+    dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, worktree]
+      .filter((result) => !result.ok)
+      .map((result) => result.stderr || result.error || 'git command failed')
+  };
+}
+
+function git(args) {
+  const result = spawnSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false
+  });
+  return {
+    ok: result.status === 0,
+    stdout: result.stdout || '',
+    stderr: result.stderr || result.error?.message || ''
+  };
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
 }

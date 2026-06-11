@@ -317,6 +317,7 @@ function addReportHygieneRequirements() {
 
   const report = hygieneReport.data;
   const failures = Array.isArray(report.failures) ? report.failures : ['failures array missing'];
+  failures.push(...currentGitStateFailures(report.git, 'report hygiene report'));
   add(
     'local.report-hygiene',
     report.ok === true && failures.length === 0 ? 'pass' : 'fail',
@@ -330,6 +331,28 @@ function addReportHygieneRequirements() {
       failures
     }
   );
+}
+
+function currentGitStateFailures(gitState, label) {
+  const failures = [];
+  const head = commandAt(root, 'git', ['rev-parse', 'HEAD']);
+  const upstream = commandAt(root, 'git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = commandAt(root, 'git', ['status', '--porcelain']);
+  if (!gitState) failures.push(`${label} must include git state`);
+  if (!head.ok) failures.push('current local HEAD could not be read');
+  if (!upstream.ok) failures.push('current upstream could not be read');
+  if (!worktree.ok) failures.push('current worktree status could not be read');
+  if (!gitState || !head.ok || !upstream.ok || !worktree.ok) return failures;
+
+  const currentHead = firstLine(head.stdout);
+  const currentUpstream = firstLine(upstream.stdout);
+  const currentDirty = worktree.stdout.split(/\r?\n/).filter(Boolean);
+  if (gitState.localHead !== currentHead) failures.push(`${label} localHead does not match current HEAD`);
+  if (gitState.upstream !== currentUpstream) failures.push(`${label} upstream does not match current upstream`);
+  if (!Array.isArray(gitState.dirty) || gitState.dirty.length !== currentDirty.length) {
+    failures.push(`${label} dirty state does not match current worktree`);
+  }
+  return failures;
 }
 
 function addSyncApprovalRequirements() {

@@ -117,7 +117,7 @@ Manual gates:
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
 - `npm run alpha:local-evidence` passes and writes the no-secret ignored `reports/alpha-local-evidence.json` / `.md` summary, with acceptance, load, browser, visual, operator, and built-server reports tied to the same local suite evidence set and current local HEAD.
 - `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet with a cost-sensitive action matrix before requesting any push/CI/provider approval. `npm run alpha:rc-audit` fails if that packet is stale against the current local HEAD, upstream, or dirty state.
-- `npm run alpha:report-hygiene` passes and writes `reports/alpha-report-hygiene.json` after scanning ignored local reports and generated no-secret checklist artifacts.
+- `npm run alpha:report-hygiene` passes and writes `reports/alpha-report-hygiene.json` after scanning ignored local reports and generated no-secret checklist artifacts. `npm run alpha:rc-audit` fails if the hygiene report is stale against the current local HEAD, upstream, or dirty state.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.
 - Feedback submission appears in the admin audit view.

@@ -140,7 +140,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',
-    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-sync-approval.md', 'Unredacted local suite token', 'Wallet daemon password assignment', 'Supabase service role assignment']
+    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-sync-approval.md', 'Unredacted local suite token', 'Wallet daemon password assignment', 'Supabase service role assignment']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',
@@ -156,7 +156,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',
-    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'provider.external-gates', 'local.sync-approval-current', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md']
+    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'provider.external-gates', 'local.sync-approval-current', 'currentGitStateFailures', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md']
   }
 ];
 
