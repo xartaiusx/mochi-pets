@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:rc-audit"', '"smoke"']
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
   },
   {
     file: '.github/workflows/ci.yml',
@@ -185,7 +185,11 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-sync-approval.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'GitHub Actions/PR checks', 'Suggested combined approval text for both GitHub sync gates', 'I approve pushing', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'readPrFixture', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'GitHub Actions/PR checks', 'Suggested combined approval text for both GitHub sync gates', 'I approve pushing', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
+  },
+  {
+    file: 'scripts/check-alpha-sync-approval-self-test.mjs',
+    includes: ['Mochi Social sync approval self-test OK', 'writePrFixture', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'localHeadMatchesPrHead === false', '## PR State', 'local HEAD does not match PR head', 'fakeToken']
   },
   {
     file: 'scripts/check-alpha-preview-ready.mjs',

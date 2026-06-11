@@ -10,6 +10,7 @@ const reportPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JSON || 
 const auditPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const externalGatePath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
 const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const prStateFixturePath = process.env.MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE || '';
 const generatedAt = new Date().toISOString();
 
 const gitState = readGitState();
@@ -146,6 +147,9 @@ function readExternalGateSummary() {
 }
 
 function readPr(repo, number, localHead) {
+  const fixture = readPrFixture(repo, number, localHead);
+  if (fixture) return fixture;
+
   const result = spawnSync('gh', ['pr', 'view', number, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title'], {
     cwd: root,
     encoding: 'utf8',
@@ -190,6 +194,51 @@ function readPr(repo, number, localHead) {
       message: 'GitHub PR JSON could not be parsed.'
     };
   }
+}
+
+function readPrFixture(repo, number, localHead) {
+  if (!prStateFixturePath) return null;
+  const fixture = readJson(resolve(prStateFixturePath));
+  if (!fixture.ok) {
+    return {
+      repo,
+      number,
+      ok: false,
+      message: `PR fixture could not be read: ${fixture.message}`
+    };
+  }
+
+  const key = `${repo}#${number}`;
+  const data = fixture.data?.[key] || fixture.data?.[repo]?.[number] || null;
+  if (!data) {
+    return {
+      repo,
+      number,
+      ok: false,
+      message: `PR fixture missing ${key}`
+    };
+  }
+
+  const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
+  const failingChecks = checks
+    .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
+    .map((check) => sanitize(check.name || check.context))
+    .filter(Boolean);
+  const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+  return {
+    repo,
+    number,
+    ok: data.mergeStateStatus === 'CLEAN' && failingChecks.length === 0,
+    url: sanitize(data.url),
+    title: sanitize(data.title),
+    isDraft: data.isDraft === true,
+    headRefOid: sanitize(data.headRefOid),
+    localHead: sanitize(localHead),
+    localHeadMatchesPrHead: Boolean(localHead && data.headRefOid && localHead === data.headRefOid),
+    mergeStateStatus: sanitize(data.mergeStateStatus),
+    checkNames,
+    failingChecks
+  };
 }
 
 function buildApprovalActions(currentGitState, currentSiteGitState, currentExternalGateSummary) {
