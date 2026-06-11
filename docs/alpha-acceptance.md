@@ -115,7 +115,7 @@ Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates` i
 
 `npm run alpha:preview-ready` writes `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It proves the tester-entry lane separately from funded-chain Alpha RC gates by requiring current local evidence, current no-secret hygiene, completed manual prompt review, current handoff packets, synced game/site branches, and green `preview-live-gates` from an explicitly approved hosted external-gates run.
 
-The Mochirii repo mirrors this with `npm run check:mochi-social-preview-ready`, which writes ignored no-secret site-side reports and requires game Preview Ready evidence, site branch sync, hosted game contract proof, Supabase Edge smoke, and explicit manual browser gate confirmation before testers enter.
+The Mochirii repo mirrors this with `npm run check:mochi-social-preview-ready`, which writes ignored no-secret site-side reports and requires the local bridge-state self-test, game Preview Ready evidence, site branch sync, hosted game contract proof, Supabase Edge smoke, and explicit manual browser gate confirmation before testers enter.
 
 Full `npm run alpha:rc-audit` reads the Mochirii site-side report from `../Mochirii/reports/mochi-social-preview-ready.json` and fails until it is green and current, because allowlist, terms, feedback, and browser-gate proof belong to the website repo.
 
