@@ -1,6 +1,6 @@
 # Alpha Acceptance
 
-This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, and the manual map-object visual check that still needs human eyes.
+This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, a static map-object contract test, and the final manual map-object visual check that still needs human eyes.
 
 ## Local Script
 
@@ -87,7 +87,7 @@ For live Enjin completion, the operator must also provide non-public server env/
 
 The browser smoke is local-only by default to avoid hosted preview usage. Set `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true` only after explicit hosted-preview approval. It prefers installed Chrome. If Chrome is installed outside the default Playwright channel, set `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to the browser executable path. Set `MOCHI_SOCIAL_BROWSER_HEADFUL=true` when you want to watch the check run.
 
-The browser smoke proves HUD-level two-tab presence, canvas movement response, and a synchronized observer-side canvas change. The remaining human visual check is for map object prompts and overall scene confidence before Alpha RC Ready:
+The browser smoke proves HUD-level two-tab presence, canvas movement response, and a synchronized observer-side canvas change. The unit suite also includes `apps/game/tests/map-object-contract.test.ts`, which verifies stable RPGJS event IDs, event coordinates, prompt/save-source snippets, companion habitat labels, and collision-layer evidence for the first town. The remaining human visual check is for rendered prompt behavior and overall scene confidence before Alpha RC Ready:
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm the game canvas, HUD, and town scene are visually coherent.
@@ -95,7 +95,7 @@ The browser smoke proves HUD-level two-tab presence, canvas movement response, a
 4. Confirm the prompts and notifications match the alpha no-real-value scope.
 5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
 
-Keep the manual map-object check until a later RPGJS event-level automation can assert NPC, chest, habitat, and dialog state directly.
+Keep the manual map-object check until a later RPGJS runtime-level automation can interact with NPC, chest, habitat, and dialog state directly inside the canvas.
 
 ## Alpha RC Stop Point
 

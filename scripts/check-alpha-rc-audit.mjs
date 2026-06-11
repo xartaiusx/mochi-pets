@@ -125,6 +125,19 @@ function addStaticRequirements() {
     'createHash',
     'canvas'
   ]);
+  requireFileIncludes('game.map-object-contract', 'Map-object contract test verifies stable town event IDs, prompts, save sources, habitat, and collision evidence.', 'apps/game/tests/map-object-contract.test.ts', [
+    'Mochi town map object contract',
+    'runtimeEventPlacements',
+    'welcome-npc',
+    'token-chest',
+    'care-shrine',
+    'market-board',
+    'trade-post',
+    'canary-shrine',
+    'no-real-value Enjin Canary certificate request',
+    'Lantern Garden',
+    '25 * 18'
+  ]);
   requireFileIncludes('game.acceptance-docs', 'Alpha acceptance docs name every local and preview gate.', 'docs/alpha-acceptance.md', [
     'alpha:local-acceptance',
     'alpha:load-smoke',

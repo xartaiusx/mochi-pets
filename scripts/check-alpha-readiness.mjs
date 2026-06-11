@@ -95,6 +95,10 @@ const checks = [
     includes: ['allowlistRequired', 'noRealValue', 'finalityRequired']
   },
   {
+    file: 'apps/game/tests/map-object-contract.test.ts',
+    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'token-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Lantern Garden', '25 * 18']
+  },
+  {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
     includes: ['scoped server token in a header only', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action']
   },
