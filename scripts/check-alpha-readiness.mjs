@@ -44,7 +44,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'canvas movement response', 'observer-side canvas change', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-local-evidence.md', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-local-evidence.md', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -132,11 +132,11 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-local-suite.mjs',
-    includes: ['No-cost localhost Alpha RC suite', 'npmCommand', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:enjin-operator-smoke', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'delete env.ENJIN_PLATFORM_TOKEN', 'reports/alpha-local-suite.json']
+    includes: ['No-cost localhost Alpha RC suite', 'readGitState', 'localHead', 'npmCommand', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:enjin-operator-smoke', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'delete env.ENJIN_PLATFORM_TOKEN', 'reports/alpha-local-suite.json']
   },
   {
     file: 'scripts/check-alpha-local-evidence.mjs',
-    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'same-suite evidence', 'browser presence must prove observer-side movement', 'visual snapshot canvas PNG must be non-empty', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'same-suite evidence', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'visual snapshot canvas PNG must be non-empty', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',

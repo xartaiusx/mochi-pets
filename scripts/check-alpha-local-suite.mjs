@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(currentDir, '..');
@@ -22,6 +22,7 @@ const report = {
   runId,
   baseUrl,
   saveDir,
+  git: readGitState(),
   commands: [],
   server: null
 };
@@ -219,6 +220,39 @@ function recordServerOutput() {
 
 function npmCommand() {
   return process.platform === 'win32' ? 'npm.cmd' : 'npm';
+}
+
+function readGitState() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = git(['rev-parse', 'HEAD']);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const worktree = git(['status', '--porcelain']);
+  return {
+    branch: sanitize(firstLine(branch.stdout)),
+    localHead: sanitize(firstLine(localHead.stdout)),
+    upstream: sanitize(firstLine(upstream.stdout)),
+    dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, worktree]
+      .filter((result) => !result.ok)
+      .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
+}
+
+function git(args) {
+  const result = spawnSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false
+  });
+  return {
+    ok: result.status === 0,
+    stdout: result.stdout || '',
+    stderr: result.stderr || result.error?.message || ''
+  };
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
 }
 
 function delay(ms) {

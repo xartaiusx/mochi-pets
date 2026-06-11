@@ -107,6 +107,8 @@ function addStaticRequirements() {
   ]);
   requireFileIncludes('game.local-suite', 'Local Alpha suite builds, starts the built runtime, runs localhost smokes, strips live provider env, and writes one no-secret report.', 'scripts/check-alpha-local-suite.mjs', [
     'No-cost localhost Alpha RC suite',
+    'readGitState',
+    'localHead',
     'npmCommand',
     'alpha:local-acceptance',
     'alpha:load-smoke',
@@ -123,6 +125,8 @@ function addStaticRequirements() {
     'alpha-local-evidence.json',
     'alpha-local-evidence.md',
     'same-suite evidence',
+    'assertCurrentGitState',
+    'current HEAD',
     'browser presence must prove observer-side movement',
     'visual snapshot canvas PNG must be non-empty',
     'built server smoke must prove tokened Enjin route fails closed',
