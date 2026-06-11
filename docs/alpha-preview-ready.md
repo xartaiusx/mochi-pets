@@ -69,6 +69,7 @@ npm run build
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:enjin-operator-smoke
+npm run alpha:preview-ready
 ```
 
 Mochirii preview checks:
@@ -92,6 +93,18 @@ Browser preview gates:
 - The parent sends only `MOCHI_SOCIAL_AUTH`.
 - The chain request shows stub/no-real-value messaging.
 - Feedback appears in the admin/audit flow.
+
+Preview Ready audit:
+
+```powershell
+$env:MOCHI_SOCIAL_GAME_URL="https://mochi-social-game.fly.dev"
+$env:MOCHI_SOCIAL_SITE_PREVIEW_URL="<Mochirii Vercel Preview URL>"
+$env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"
+npm run alpha:external-gates
+npm run alpha:preview-ready
+```
+
+`npm run alpha:preview-ready` writes ignored no-secret reports to `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It can pass with funded-chain gates red, but it cannot pass until `preview-live-gates` are green, hosted checks were explicitly approved, and both local branches are synced to their PR branches.
 
 ## Funding Later
 

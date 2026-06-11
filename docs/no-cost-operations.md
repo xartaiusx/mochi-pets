@@ -15,7 +15,7 @@ Mochi Social development is no-cost by default. Agents may inspect local files, 
 Allowed without extra approval:
 
 - Read local files and edit repo docs/code.
-- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:visual-review`, `npm run alpha:manual-prompt-review`, `npm run alpha:wallet-daemon-check`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:provider-preflight`, `npm run alpha:sync-approval`, and `npm run alpha:report-hygiene`.
+- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:visual-review`, `npm run alpha:manual-prompt-review`, `npm run alpha:wallet-daemon-check`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:provider-preflight`, `npm run alpha:sync-approval`, `npm run alpha:preview-ready`, and `npm run alpha:report-hygiene`.
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
@@ -58,5 +58,6 @@ Before a cost-bearing action, state:
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, CI, or load-smoke step.
 - Prefer Alpha Preview Ready work until the user explicitly authorizes funded-chain work. The funded-chain lane is expected red while Enjin remains `configured-preview-stub`.
 - `npm run alpha:external-gates` refuses hosted Fly/Vercel contract fetches unless `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` is set for an explicitly approved hosted verification run. Its ignored report records current Git state and `hostedChecksAllowed`, and `npm run alpha:rc-audit` rejects stale or pre-guard external gate evidence.
+- `npm run alpha:preview-ready` reads ignored no-secret reports and exits red until branches are synced and approved hosted preview contract checks are recorded. It does not submit Enjin work and does not require funded-chain gates.
 - Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.
 - Use `npm run alpha:sync-approval` after refreshing `npm run alpha:external-gates` and stamping a current `npm run alpha:rc-audit` report. It summarizes the unpushed commits, current external blockers, and cost-sensitive approval text before requesting approval.

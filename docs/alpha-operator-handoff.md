@@ -95,6 +95,7 @@ npm run alpha:external-gates
 npm run alpha:operator-checklist
 npm run alpha:sync-approval
 npm run alpha:report-hygiene
+npm run alpha:preview-ready
 npm run alpha:rc-audit
 ```
 
@@ -147,6 +148,7 @@ Manual gates:
 - Feedback submission appears in the admin audit view.
 - For Alpha Preview Ready, Enjin chain UI is visible with `configured-preview-stub`, no dummy Enjin IDs are set, and chain request rows are audit-only/no-real-value preview records.
 - For Alpha RC Ready, Enjin Canary managed wallet, Fuel Tank sponsorship, Wallet Daemon signing, one hot-to-cold proof, one finalized cold-to-hot proof, and one fixed-listing proof are submitted through `POST /integration/alpha/enjin/submit` and recorded in the chain ledger.
+- `npm run alpha:preview-ready` proves the tester-entry lane after hosted preview checks are approved. It can pass while funded-chain gates are red, but it cannot pass with unsynced local branches or disabled hosted contract checks.
 - `npm run alpha:enjin-operator-smoke` proves the private Enjin route fails closed; live Canary smoke is operator-approved only and requires explicit smoke request/transaction IDs.
 - `npm run alpha:external-gates` can prove `preview-live-gates` with the Fly URL, Vercel preview URL, Supabase preview ref, and `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for an approved hosted verification run while funded-chain readiness remains red.
 - `npm run alpha:external-gates` only proves full Alpha RC Ready when operator-confirmed Enjin readiness flags are set from real Canary resources and finalized proof evidence.

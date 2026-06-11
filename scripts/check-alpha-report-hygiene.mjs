@@ -32,6 +32,12 @@ const files = [
   resolve(credsDir, 'mochi-social-alpha-sync-approval.md')
 ];
 
+const optionalFiles = [
+  'reports/alpha-preview-ready.json',
+  'reports/alpha-preview-ready.md',
+  resolve(credsDir, 'mochi-social-alpha-preview-ready.md')
+];
+
 const secretPatterns = [
   { label: 'GitHub token', pattern: /\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{20,}\b/ },
   { label: 'OpenAI key', pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/ },
@@ -56,6 +62,15 @@ for (const file of files) {
     failures.push(`${pathForReport(absolutePath)}: expected no-secret artifact is missing.`);
     continue;
   }
+  scanFile(absolutePath);
+}
+
+for (const file of optionalFiles) {
+  const absolutePath = resolve(root, file);
+  if (existsSync(absolutePath)) scanFile(absolutePath);
+}
+
+function scanFile(absolutePath) {
   const text = readFileSync(absolutePath, 'utf8');
   scanned.push(pathForReport(absolutePath));
   for (const { label, pattern } of secretPatterns) {

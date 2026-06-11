@@ -59,6 +59,7 @@ Recommended slash goal:
    - Run `npm run alpha:local-suite` for the local no-cost bundled RC pass.
    - Run `npm run alpha:local-evidence` to validate and summarize the ignored localhost evidence reports.
    - Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates`, stamp a current `npm run alpha:rc-audit` report, then run `npm run alpha:sync-approval` and `npm run alpha:report-hygiene` to summarize blocked approval steps and scan local evidence plus no-secret handoff artifacts for accidental secret leakage.
+   - Run `npm run alpha:preview-ready` after approved hosted preview checks to prove the tester-entry stop point separately from later funded-chain Alpha RC gates.
    - Run local alpha acceptance against a started game server with `npm run alpha:local-acceptance`.
    - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke` locally by default. Hosted load smoke requires explicit user approval.
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions; then complete the manual NPC/chest/habitat map-object prompt check.
@@ -142,6 +143,7 @@ npm run alpha:operator-checklist
 npm run alpha:provider-preflight
 npm run alpha:sync-approval
 npm run alpha:report-hygiene
+npm run alpha:preview-ready
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
