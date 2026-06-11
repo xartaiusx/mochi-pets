@@ -341,6 +341,17 @@ function renderMarkdown(report) {
   const previewLane = formatLaneStatus(report.externalGates.lanes?.previewLive);
   const fundedLane = formatLaneStatus(report.externalGates.lanes?.fundedChain);
   const rcLane = formatLaneStatus(report.externalGates.lanes?.alphaRcReady);
+  const gameSyncAction = report.approvalActions.find((action) => action.id === 'github-branch-sync');
+  const siteSyncAction = report.approvalActions.find((action) => action.id === 'github-site-branch-sync');
+  const combinedGitHubSyncApproval = gameSyncAction?.currentlyRequired && siteSyncAction?.currentlyRequired
+    ? `Suggested combined approval text for both GitHub sync gates:
+
+\`\`\`text
+I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, and I approve GitHub Actions/PR checks to run for both Mochi Social and Mochirii.
+\`\`\`
+
+`
+    : '';
   const approvals = report.approvalsRequired.length
     ? report.approvalsRequired.map((item) => `- ${item}`).join('\n')
     : '- None. No immediate cost-sensitive approval is required by this packet.';
@@ -447,7 +458,7 @@ ${approvals}
 
 ${actionMatrix}
 
-Suggested explicit approval text for the GitHub sync gate:
+${combinedGitHubSyncApproval}Suggested explicit approval text for the GitHub sync gate:
 
 \`\`\`text
 I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochi Social.
@@ -455,7 +466,7 @@ I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.bra
 
 Suggested explicit approval text for the Mochirii site sync gate:
 
-${report.approvalActions.find((action) => action.id === 'github-site-branch-sync')?.currentlyRequired ? '' : 'No Mochirii site push is required right now because the site branch is already synced.\n\n'}
+${siteSyncAction?.currentlyRequired ? '' : 'No Mochirii site push is required right now because the site branch is already synced.\n\n'}
 \`\`\`text
 I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochirii.
 \`\`\`
