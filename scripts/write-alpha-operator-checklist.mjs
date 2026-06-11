@@ -20,6 +20,7 @@ const walletDaemonSummary = readWalletDaemonSummary();
 const manualPromptSummary = readManualPromptSummary();
 const credentialFiles = listCredentialFiles();
 const gitState = readGitState();
+const providerActionQueue = buildProviderActionQueue();
 
 await mkdir(credsDir, { recursive: true });
 await writeFile(outputPath, renderChecklist(), 'utf8');
@@ -181,6 +182,7 @@ function renderReport() {
     externalGateSummary,
     walletDaemonSummary,
     manualPromptSummary,
+    providerActionQueue,
     noCostRule: 'No push, CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact action.'
   };
 }
@@ -246,6 +248,13 @@ function renderChecklist() {
   const manualPromptPending = manualPromptSummary.pendingChecks?.length
     ? manualPromptSummary.pendingChecks.map((check) => `- ${check}`).join('\n')
     : '- None';
+  const actionQueue = providerActionQueue.length
+    ? providerActionQueue.map((item, index) => `${index + 1}. ${item.title}
+   - Provider: ${item.provider}
+   - Blocker: ${item.blocker}
+   - Exact approval needed: ${item.approvalText}
+   - No-cost fallback: ${item.noCostFallback}`).join('\n')
+    : '1. No provider or sync actions are queued from the latest reports.';
   const dirtyList = gitState.dirty.length
     ? gitState.dirty.slice(0, 20).map((line) => `- ${line}`).join('\n')
     : '- No tracked dirty files were recorded when this checklist was generated.';
@@ -282,6 +291,12 @@ ${fileList}
 Failing or missing gates:
 
 ${gateList}
+
+## Provider Action Queue
+
+This queue is generated from the latest local audit and external gate report. It is not approval and it does not contain secrets.
+
+${actionQueue}
 
 ## Local Wallet Daemon Binary Check
 
@@ -422,16 +437,85 @@ function readGitState() {
   const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
   const localHead = git(['rev-parse', 'HEAD']);
   const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const counts = upstream.ok ? git(['rev-list', '--left-right', '--count', `${firstLine(upstream.stdout)}...HEAD`]) : { ok: false, stdout: '', stderr: upstream.stderr };
   const worktree = git(['status', '--porcelain']);
+  const [behindText = '0', aheadText = '0'] = firstLine(counts.stdout).split(/\s+/);
   return {
     branch: firstLine(branch.stdout),
     localHead: firstLine(localHead.stdout),
     upstream: firstLine(upstream.stdout),
+    ahead: Number.parseInt(aheadText, 10) || 0,
+    behind: Number.parseInt(behindText, 10) || 0,
     dirty: worktree.ok ? worktree.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
-    errors: [branch, localHead, upstream, worktree]
+    errors: [branch, localHead, upstream, counts, worktree]
       .filter((result) => !result.ok)
       .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
   };
+}
+
+function buildProviderActionQueue() {
+  const queue = [];
+  const failures = new Set(externalGateSummary.failures || []);
+  const hasExternalFailure = (needle) => [...failures].some((failure) => failure.includes(needle));
+  const branch = gitState.branch || 'codex/mochi-social-alpha-rc';
+  const upstream = gitState.upstream || `origin/${branch}`;
+
+  if ((gitState.ahead || 0) > 0 || gitState.dirty.length > 0) {
+    queue.push({
+      id: 'github-branch-sync',
+      provider: 'GitHub',
+      title: 'Sync the local game branch only after CI-trigger approval.',
+      blocker: `${gitState.ahead || 0} local commit(s) ahead of ${upstream}; remote PR checks cannot prove this HEAD.`,
+      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream} and allow GitHub Actions/PR checks to run for Mochi Social.`,
+      noCostFallback: 'Keep the branch local and leave github.local-branch-sync red.'
+    });
+  }
+
+  if (hasExternalFailure('Fly secret names')) {
+    queue.push({
+      id: 'fly-secret-update',
+      provider: 'Fly.io',
+      title: 'Set the missing Fly secret names for Enjin Canary runtime wiring.',
+      blocker: 'Fly is missing ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID in the latest external gate report.',
+      approvalText: 'I approve setting the missing Fly secret names on mochi-social-game and understand this may restart hosted resources or add usage.',
+      noCostFallback: 'Leave the Fly runtime in configured-preview-stub mode and keep local Enjin smoke fail-closed.'
+    });
+  }
+
+  if (hasExternalFailure('Live game URL')) {
+    queue.push({
+      id: 'fly-live-game-url',
+      provider: 'Fly.io',
+      title: 'Record and verify the Fly game URL after an approved deploy or existing live runtime check.',
+      blocker: 'MOCHI_SOCIAL_GAME_URL is not recorded, so hosted game contract checks cannot run.',
+      approvalText: 'I approve the specific Fly hosted action: <exact deploy or hosted smoke command>. I understand it may add usage or charges.',
+      noCostFallback: 'Use localhost only and leave the live game URL gate red.'
+    });
+  }
+
+  if (hasExternalFailure('Site preview contract')) {
+    queue.push({
+      id: 'vercel-supabase-preview-contract',
+      provider: 'Vercel/Supabase',
+      title: 'Bind the Mochirii preview to the Fly game URL and verify the site contract.',
+      blocker: 'MOCHI_SOCIAL_GAME_URL and MOCHI_SOCIAL_SITE_PREVIEW_URL are not both recorded.',
+      approvalText: 'I approve the specific Vercel/Supabase preview action: <exact env/deploy/check command or dashboard action>. I understand it may add usage or charges.',
+      noCostFallback: 'Keep local game/site contract checks only.'
+    });
+  }
+
+  if (hasExternalFailure('Enjin Canary operator readiness')) {
+    queue.push({
+      id: 'enjin-canary-readiness',
+      provider: 'Enjin Canary',
+      title: 'Complete operator-confirmed Enjin Canary readiness before live proof smoke.',
+      blocker: 'The latest report lacks Enjin token/collection/Fuel Tank inputs and connected Wallet Daemon confirmation flags.',
+      approvalText: 'I approve the specific Enjin Canary action: <exact collection, Fuel Tank, Wallet Daemon, or transaction proof action>. I understand it may add usage, sponsored transaction cost, or cloud/resource charges.',
+      noCostFallback: 'Keep Enjin readiness flags unset and use configured-preview-stub plus local fail-closed operator smoke.'
+    });
+  }
+
+  return queue;
 }
 
 function git(args) {
