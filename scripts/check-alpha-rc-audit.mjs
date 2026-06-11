@@ -460,7 +460,7 @@ function addSiteRequirements() {
     'MOCHI_SOCIAL_SITE_BROWSER_GATES_ALLOW_HOSTED',
     'MOCHI_SOCIAL_SITE_BROWSER_GATES_NOTES',
     'assertNoForbiddenMaterial',
-    'wallet.seed'
+    'wallet\\.seed'
   ]);
   requireSiteFileIncludes('site.checklist', 'Mochirii repo can generate its no-secret website-side operator checklist.', 'scripts/prepare-mochi-social-alpha-operator-checklist.mjs', [
     'mochirii-mochi-social-alpha-operator-next-steps.md',
