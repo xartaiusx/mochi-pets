@@ -19,7 +19,7 @@ Allowed without extra approval:
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
-- Generate `npm run alpha:sync-approval` before requesting a push, CI rerun, hosted smoke, deploy, or provider mutation. The packet is not approval; it records the exact state, cost/usage risk, no-cost alternative, and approval text to review.
+- Generate `npm run alpha:sync-approval` before CI reruns, hosted smoke, deploy, or provider mutation. The packet is not approval; it records the exact state, branch sync status, cost/usage risk, no-cost alternative, and provider approval text to review. Public-repo commits and pushes are allowed under the current user policy and should be followed by PR/CI verification.
 - Implement local code/docs/tests for Alpha Preview Ready, including the visible Enjin `configured-preview-stub` path, as long as no provider state is mutated.
 
 ## Stop And Ask First
@@ -31,7 +31,7 @@ Ask for fresh, explicit user approval before:
 - Deploying to Vercel, changing Vercel plan/add-ons, enabling paid analytics, or triggering production/preview traffic tests.
 - Creating Supabase projects/branches that may bill, upgrading plans, changing compute size, creating paid storage, or running heavy Edge/database load.
 - Creating, funding, or dispatching Enjin Fuel Tanks; minting, burning, listing, or transferring any Enjin asset; requesting faucets; or submitting live chain proofs.
-- Pushing branches, rerunning GitHub Actions, enabling branch protection checks, or creating workflows when that can consume Actions minutes/storage. Treat push branches that trigger CI as cost-bearing until approved.
+- Rerunning GitHub Actions, enabling branch protection checks, or creating workflows when that can consume Actions minutes/storage. Public-repo branch pushes are allowed without a separate prompt under the current user policy; verify the resulting checks afterward.
 - Running `npm run alpha:load-smoke` or browser presence checks against hosted URLs. Keep those local unless the user approves a hosted smoke.
 - Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
 - Setting dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags just to clear funded-chain gates.
@@ -59,5 +59,5 @@ Before a cost-bearing action, state:
 - Prefer Alpha Preview Ready work until the user explicitly authorizes funded-chain work. The funded-chain lane is expected red while Enjin remains `configured-preview-stub`.
 - `npm run alpha:external-gates` refuses hosted Fly/Vercel contract fetches unless `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` is set for an explicitly approved hosted verification run. Its ignored report records current Git state and `hostedChecksAllowed`, and `npm run alpha:rc-audit` rejects stale or pre-guard external gate evidence.
 - `npm run alpha:preview-ready` reads ignored no-secret reports and exits red until branches are synced and approved hosted preview contract checks are recorded. It does not submit Enjin work and does not require funded-chain gates.
-- Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. That is expected; do not push just to clear it unless the user explicitly approves the CI-triggering sync.
-- Use `npm run alpha:sync-approval` after refreshing `npm run alpha:external-gates` and stamping a current `npm run alpha:rc-audit` report. It summarizes the unpushed commits, current external blockers, and cost-sensitive approval text before requesting approval.
+- Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. Under the current user policy, public-repo pushes are allowed; push the branch and verify PR/CI results afterward when branch sync is the remaining blocker.
+- Use `npm run alpha:sync-approval` after refreshing `npm run alpha:external-gates` and stamping a current `npm run alpha:rc-audit` report. It summarizes branch sync state, current external blockers, and cost-sensitive provider approval text.

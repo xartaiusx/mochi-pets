@@ -27,7 +27,7 @@ This contract tells Codex how to upgrade Mochi Social art without breaking the R
 3. For this pass, implement HD Source Export + Crisp Pixel Kit + Town Readability First. Improve the town terrain, landmarks, object shadows, and interactable cues before character/pet/HUD-only polish.
 4. Run local visual checks, then upgrade the rest of the asset set.
 5. Update `docs/asset-ledger.md` with asset dimensions, role, source note, prompt/source method, and license.
-6. Run local checks before handoff. Do not push, deploy, or run hosted checks without explicit approval.
+6. Run local checks before handoff. Commits and public-repo pushes are allowed under the current user policy; verify PR checks afterward. Do not deploy, mutate provider state, or run hosted checks without explicit approval when the action can create real provider cost or external-state changes.
 
 ## Codex Visual Upgrade Prompt
 

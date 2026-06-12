@@ -4,7 +4,7 @@ This handoff keeps Mochi Social closed, no-real-value, and preview-only. It cove
 
 For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gates, Supabase authority, Enjin state handling, Fuel Tank dispatch, WebSocket presence, and Discord boundaries, follow [`docs/codex-external-ops.md`](codex-external-ops.md).
 
-For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-operations.md). Do not deploy, scale, push CI-triggering branches, run hosted load smoke, create provider resources, fund Fuel Tanks, or submit live Enjin transactions without explicit user approval for that exact action.
+For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-operations.md). Public-repo commits and pushes are allowed without a separate prompt; verify PR/CI results afterward. Do not deploy, scale, run hosted load smoke, create provider resources, set provider secrets/env vars, fund Fuel Tanks, or submit live Enjin transactions without explicit user approval for that exact action.
 
 ## Stop Points
 
@@ -20,7 +20,7 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 - Game runtime target: Fly app `mochi-social-game`.
 - Website preview target: Mochirii Vercel preview route `/games/mochi-social`.
 - Chain target: Enjin Canary only.
-- Local no-cost commits may leave the game or Mochirii branch ahead of GitHub. In that state `npm run alpha:rc-audit` must remain red at `github.local-branch-sync` or `github.site-local-branch-sync` until the user explicitly approves a push/CI-triggering sync.
+- Local no-cost commits may leave the game or Mochirii branch ahead of GitHub. Under the current user policy, public-repo pushes are allowed without a separate approval prompt; push the branch, verify PR checks, and rerun `npm run alpha:rc-audit` so `github.local-branch-sync` or `github.site-local-branch-sync` can clear.
 
 ## Operator Sequence
 
@@ -55,7 +55,7 @@ npm run alpha:provider-preflight
 npm run alpha:sync-approval
 ```
 
-The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md`, `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-external-gates-status.md`, `reports/alpha-operator-checklist.json`, `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-provider-preflight.md`, `reports/alpha-provider-preflight.json`, `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md`, and `reports/alpha-sync-approval.json` by default. They may list local credential filenames, required secret names, gate status, commit subjects, branch drift, provider action queue items, cost/usage risk, no-cost alternatives, and placeholder commands. They must not contain raw secret values. The operator checklist JSON, provider preflight, and sync packet must match the current local HEAD, upstream, and dirty state before `npm run alpha:rc-audit` can pass. The sync packet is not approval; it prepares the exact push/CI/provider approval text for the operator to review.
+The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-operator-next-steps.md`, `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-external-gates-status.md`, `reports/alpha-operator-checklist.json`, `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-provider-preflight.md`, `reports/alpha-provider-preflight.json`, `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-sync-approval.md`, and `reports/alpha-sync-approval.json` by default. They may list local credential filenames, required secret names, gate status, commit subjects, branch drift, provider action queue items, cost/usage risk, no-cost alternatives, and placeholder commands. They must not contain raw secret values. The operator checklist JSON, provider preflight, and sync packet must match the current local HEAD, upstream, and dirty state before `npm run alpha:rc-audit` can pass. The sync packet is not approval; it records branch sync status and prepares exact provider approval text for cost-bearing work.
 
 ## Current Private Gates
 
@@ -142,7 +142,7 @@ Manual gates:
 - `npm run alpha:provider-preflight` writes the no-secret ignored `reports/alpha-provider-preflight.json` and local `mochi-social-alpha-provider-preflight.md` handoff with expected private input filenames, provider action queue IDs, and missing filename status. It never reads private credential file contents. `npm run alpha:rc-audit` fails if that preflight report is stale against the current local HEAD or missing expected queue/private-input evidence.
 - `npm run alpha:external-gates` writes the no-secret ignored `reports/alpha-external-gates.json` with current Git state and `hostedChecksAllowed`. `npm run alpha:rc-audit` fails if that external gate report is stale, was generated before the hosted-check guard, or tries to count hosted Fly/Vercel contract proof without explicit hosted-check approval.
 - Run `npm run alpha:rc-audit` once after the current external-gates report so `reports/alpha-rc-audit.json` has current Git state, then run `npm run alpha:sync-approval`.
-- `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet with a cost-sensitive action matrix before requesting any push/CI/provider approval. The packet separates raw prior audit failures from the expected blockers after the packet is freshly generated, so prior `local.sync-approval-current` self-freshness and post-packet `local.report-hygiene` freshness failures do not look like active provider blockers. `npm run alpha:rc-audit` fails if that packet is stale against the current local HEAD, upstream, dirty state, current audit report Git state, or current external-gate report checkedAt/HEAD/hosted approval state.
+- `npm run alpha:sync-approval` writes the no-secret ignored `reports/alpha-sync-approval.json` and local `mochi-social-alpha-sync-approval.md` packet with a cost-sensitive action matrix before requesting any provider approval. Public-repo pushes are allowed, but the packet still records branch drift and PR state. The packet separates raw prior audit failures from the expected blockers after the packet is freshly generated, so prior `local.sync-approval-current` self-freshness and post-packet `local.report-hygiene` freshness failures do not look like active provider blockers. `npm run alpha:rc-audit` fails if that packet is stale against the current local HEAD, upstream, dirty state, current audit report Git state, or current external-gate report checkedAt/HEAD/hosted approval state.
 - `npm run alpha:report-hygiene` passes and writes `reports/alpha-report-hygiene.json` after scanning ignored local reports and generated no-secret checklist artifacts. `npm run alpha:rc-audit` fails if the hygiene report is stale against the current local HEAD, upstream, or dirty state.
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.

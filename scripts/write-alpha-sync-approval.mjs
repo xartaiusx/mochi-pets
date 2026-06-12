@@ -24,7 +24,7 @@ const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
 const previewEnv = readPreviewEnvFile(previewEnvPath);
 const approvalActions = buildApprovalActions(gitState, siteGitState, externalGateSummary, previewEnv);
-const requiredApprovalActions = approvalActions.filter((action) => action.currentlyRequired);
+const requiredApprovalActions = approvalActions.filter((action) => action.currentlyRequired && action.requiresApproval !== false);
 
 const summary = {
   ok: true,
@@ -265,11 +265,12 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       phase: 'Alpha Preview Ready',
       currentlyRequired: gameSyncNeeded,
       requirementReason: gameSyncNeeded ? `Game branch is ahead ${currentGitState.ahead} / behind ${currentGitState.behind} or has local state that remote PR checks cannot prove.` : 'Game branch is already synced and clean.',
-      action: 'Push local game branch to origin and allow GitHub Actions/PR checks to run.',
+      action: 'Push local game branch to origin and verify GitHub Actions/PR checks.',
       exactAction: `git push origin ${branch}`,
-      costRisk: 'Pushes can trigger GitHub Actions minutes, storage, and PR check usage depending on account and repository settings.',
-      noCostAlternative: 'Keep the branch local, continue local verification, and leave github.local-branch-sync red in npm run alpha:rc-audit.',
-      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream} and allow GitHub Actions/PR checks to run for Mochi Social.`
+      costRisk: 'No separate approval required under current user policy for public-repo commits/pushes; verify the resulting PR checks afterward.',
+      noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
+      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
+      requiresApproval: false
     },
     {
       id: 'github-site-branch-sync',
@@ -277,11 +278,12 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       phase: 'Alpha Preview Ready',
       currentlyRequired: siteSyncNeeded,
       requirementReason: siteSyncNeeded ? `Mochirii branch is ahead ${currentSiteGitState.ahead} / behind ${currentSiteGitState.behind} or has local state that remote PR checks cannot prove.` : 'Mochirii site branch is already synced and clean.',
-      action: 'Push local Mochirii site branch to origin and allow GitHub Actions/PR checks to run.',
+      action: 'Push local Mochirii site branch to origin and verify GitHub Actions/PR checks.',
       exactAction: `git -C C:\\Users\\xtyty\\Documents\\Mochirii push origin ${siteBranch}`,
-      costRisk: 'Pushes can trigger GitHub Actions minutes, Vercel preview builds, Supabase preview checks, storage, and PR check usage depending on account and repository settings.',
-      noCostAlternative: 'Keep the site branch local, continue local verification, and leave github.site-local-branch-sync red in npm run alpha:rc-audit.',
-      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream} and allow GitHub Actions/PR checks to run for Mochirii.`
+      costRisk: 'No separate approval required under current user policy for public-repo commits/pushes; verify the resulting PR checks afterward.',
+      noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.site-local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
+      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
+      requiresApproval: false
     },
     {
       id: 'fly-secret-update',
@@ -500,10 +502,10 @@ function renderMarkdown(report) {
   const gameSyncAction = report.approvalActions.find((action) => action.id === 'github-branch-sync');
   const siteSyncAction = report.approvalActions.find((action) => action.id === 'github-site-branch-sync');
   const combinedGitHubSyncApproval = gameSyncAction?.currentlyRequired && siteSyncAction?.currentlyRequired
-    ? `Suggested combined approval text for both GitHub sync gates:
+    ? `Suggested combined public-repo sync command note:
 
 \`\`\`text
-I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, and I approve GitHub Actions/PR checks to run for both Mochi Social and Mochirii.
+Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and push C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}; then verify GitHub Actions/PR checks for both Mochi Social and Mochirii.
 \`\`\`
 
 `
@@ -530,7 +532,7 @@ I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.bra
 
 Generated: ${report.generatedAt}
 
-This file is intentionally no-secret. It summarizes local branch sync, Alpha RC audit, and external gate state so the next cost-sensitive actions can be approved deliberately. It does not contain API tokens, wallet seeds, passphrases, payment details, one-time codes, or raw secret values.
+This file is intentionally no-secret. It summarizes local branch sync, Alpha RC audit, and external gate state so the next provider/cost-sensitive actions can be approved deliberately. Public-repo commits and pushes are allowed under the current user policy; provider mutations and real-cost actions still require explicit approval. It does not contain API tokens, wallet seeds, passphrases, payment details, one-time codes, or raw secret values.
 
 ## Current Branch
 
@@ -635,17 +637,17 @@ ${approvals}
 
 ${actionMatrix}
 
-${combinedGitHubSyncApproval}Suggested explicit approval text for the GitHub sync gate:
+${combinedGitHubSyncApproval}Public-repo sync note for the GitHub game branch:
 
 \`\`\`text
-I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochi Social.
+Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
-Suggested explicit approval text for the Mochirii site sync gate:
+Public-repo sync note for the Mochirii site branch:
 
 ${siteSyncAction?.currentlyRequired ? '' : 'No Mochirii site push is required right now because the site branch is already synced.\n\n'}
 \`\`\`text
-I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'} and allow GitHub Actions/PR checks to run for Mochirii.
+Push C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 Suggested explicit approval text for hosted/provider gates:
@@ -654,7 +656,7 @@ Suggested explicit approval text for hosted/provider gates:
 I approve the specific provider action: <exact Fly/Vercel/Supabase/Enjin action>. I understand it may add usage or charges.
 \`\`\`
 
-Do not use this packet as approval by itself. It is a checklist for the operator and Codex before requesting or granting approval.
+Do not use this packet as approval by itself. It is a checklist for the operator and Codex before requesting or granting approval for provider/cost-sensitive work.
 `;
 }
 

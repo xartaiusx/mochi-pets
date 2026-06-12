@@ -187,7 +187,7 @@ function renderReport() {
     walletDaemonSummary,
     manualPromptSummary,
     providerActionQueue,
-    noCostRule: 'No push, CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact action.'
+    noCostRule: 'Public-repo commits and pushes are allowed; verify PR checks afterward. No CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact cost-bearing action.'
   };
 }
 
@@ -241,7 +241,7 @@ ${failures}
 
 ## No-Cost Boundary
 
-Read-only provider status checks are allowed. Creating resources, setting secrets, deploying, running hosted smoke/load/browser checks, submitting Enjin Canary operations, funding Fuel Tanks, or pushing a branch that triggers CI still requires explicit approval for that exact action.
+Read-only provider status checks are allowed. Public-repo commits and pushes are allowed; verify PR checks afterward. Creating resources, setting secrets, deploying, running hosted smoke/load/browser checks, submitting Enjin Canary operations, funding Fuel Tanks, or rerunning CI still requires explicit approval when it can create real provider cost or mutate external state.
 `;
 }
 
@@ -275,7 +275,7 @@ Generated: ${generatedAt}
 
 This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into Codex chat, Git, PR comments, screenshots, or reports.
 
-No-cost rule: do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun Actions, or push CI-triggering branches without explicit user approval for that exact action. Prefer local checks and read-only provider status commands.
+No-cost rule: public-repo commits and pushes are allowed; verify PR checks afterward. Do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun Actions, set provider secrets/env vars, or mutate provider resources without explicit user approval for that exact cost-bearing action. Prefer local checks and read-only provider status commands.
 
 ## Git State
 
@@ -521,10 +521,10 @@ function buildProviderActionQueue() {
     queue.push({
       id: 'github-branch-sync',
       provider: 'GitHub',
-      title: 'Sync the local game branch only after CI-trigger approval.',
+      title: 'Sync the local game branch and verify PR checks.',
       blocker: `${gitState.ahead || 0} local commit(s) ahead of ${upstream}; remote PR checks cannot prove this HEAD.`,
-      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream} and allow GitHub Actions/PR checks to run for Mochi Social.`,
-      noCostFallback: 'Keep the branch local and leave github.local-branch-sync red.'
+      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
+      noCostFallback: 'Keep the branch local only if intentionally avoiding a sync; github.local-branch-sync remains red until pushed.'
     });
   }
 
@@ -534,10 +534,10 @@ function buildProviderActionQueue() {
     queue.push({
       id: 'github-site-branch-sync',
       provider: 'GitHub',
-      title: 'Sync the local Mochirii site branch only after CI-trigger approval.',
+      title: 'Sync the local Mochirii site branch and verify PR checks.',
       blocker: `${siteGitState.ahead || 0} local site commit(s) ahead of ${siteUpstream}; remote PR checks cannot prove this HEAD.`,
-      approvalText: `I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream} and allow GitHub Actions/PR checks to run for Mochirii.`,
-      noCostFallback: 'Keep the site branch local and leave github.site-local-branch-sync red.'
+      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
+      noCostFallback: 'Keep the site branch local only if intentionally avoiding a sync; github.site-local-branch-sync remains red until pushed.'
     });
   }
 

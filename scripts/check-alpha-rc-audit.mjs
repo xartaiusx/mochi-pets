@@ -157,7 +157,7 @@ function addStaticRequirements() {
     'Wallet daemon password assignment',
     'Supabase service role assignment'
   ]);
-  requireFileIncludes('game.sync-approval-script', 'Sync approval packet summarizes local branch drift and external gates before cost-sensitive push/provider work.', 'scripts/write-alpha-sync-approval.mjs', [
+  requireFileIncludes('game.sync-approval-script', 'Sync approval packet summarizes local branch drift and external gates before cost-sensitive provider work.', 'scripts/write-alpha-sync-approval.mjs', [
     'mochi-social-alpha-sync-approval.md',
     'alpha-sync-approval.json',
     'This file is intentionally no-secret',
@@ -167,7 +167,7 @@ function addStaticRequirements() {
     'noCostAlternative',
     'Cost-Sensitive Action Matrix',
     'GitHub Actions/PR checks',
-    'I approve pushing'
+    'Proceed with public-repo sync'
   ]);
   requireFileIncludes('game.operator-checklist-script', 'Operator checklist writes no-secret Markdown and current Git-state JSON evidence for handoff freshness.', 'scripts/write-alpha-operator-checklist.mjs', [
     'mochi-social-alpha-operator-next-steps.md',
@@ -701,8 +701,8 @@ function addOperatorChecklistRequirements() {
   if (!String(report.markdownPath || '').includes('mochi-social-alpha-operator-next-steps.md')) {
     failures.push('operator checklist report must point to the generated Markdown checklist');
   }
-  if (!String(report.noCostRule || '').includes('No push')) {
-    failures.push('operator checklist report must include the no-cost approval rule');
+  if (!String(report.noCostRule || '').includes('Public-repo commits and pushes are allowed')) {
+    failures.push('operator checklist report must include the public-repo push policy');
   }
   if (!report.externalGateSummary || typeof report.externalGateSummary !== 'object') {
     failures.push('operator checklist report must include the latest external gate summary');
@@ -1081,7 +1081,7 @@ function addLocalHandoffRequirements() {
     'Approval Required Before Continuing',
     'Cost-Sensitive Action Matrix',
     'No-cost alternative',
-    'I approve pushing'
+    'Proceed with public-repo sync'
   ]);
   requireLocalFile('handoff.site-checklist', resolve(credsDir, 'mochirii-mochi-social-alpha-operator-next-steps.md'), [
     'This file is intentionally no-secret',

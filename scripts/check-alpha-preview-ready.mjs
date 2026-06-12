@@ -264,14 +264,14 @@ ${rows}
 
 ${failures}
 
-## Next Approval Prompts
+## Next Actions
 
 \`\`\`text
-I approve pushing C:\\Users\\xtyty\\Documents\\Local RPG branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc and allow GitHub Actions/PR checks to run for Mochi Social.
+Push C:\\Users\\xtyty\\Documents\\Local RPG branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
 \`\`\`text
-I approve pushing C:\\Users\\xtyty\\Documents\\Mochirii branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc and allow GitHub Actions/PR checks to run for Mochirii.
+Push C:\\Users\\xtyty\\Documents\\Mochirii branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 \`\`\`text

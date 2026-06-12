@@ -35,7 +35,7 @@ When source behavior conflicts with repo intent, stop and record the conflict be
 
 ## No-Cost Default
 
-Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any external operation. Provider interactions are read-only by default. Do not create resources, deploy, scale, fund, mint, submit chain operations, trigger hosted load tests, rerun Actions, or push branches that trigger CI unless the user explicitly approves that exact action after a cost note.
+Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any external operation. Provider interactions are read-only by default. Public-repo commits and pushes are allowed without a separate prompt; verify PR/CI results afterward. Do not create resources, deploy, scale, fund, mint, submit chain operations, trigger hosted load tests, rerun Actions, set provider secrets/env vars, or mutate provider state unless the user explicitly approves that exact action after a cost note.
 
 When a needed Alpha RC step may add charges, record the blocked gate and the no-cost alternative instead of proceeding. Local tests and local smoke checks are preferred until hosted work is approved.
 
@@ -128,7 +128,7 @@ Supabase Edge Function secret ownership:
 4. Keep check names unique before enabling required status checks.
 5. Enable branch protection only after the first successful check run exists.
 6. Do not merge while the job has zero steps, no log, or a billing/runner failure.
-7. Do not push branches only to refresh checks unless the user approves the CI-triggering push.
+7. Public-repo pushes are allowed under the current user policy; after pushing, verify the resulting PR checks instead of treating the push itself as blocked.
 
 ## Supabase Authority Matrix
 

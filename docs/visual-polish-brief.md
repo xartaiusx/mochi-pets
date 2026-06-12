@@ -62,7 +62,7 @@ This brief keeps the next polish pass focused on Alpha Preview Ready. It improve
 
 ## No-Cost Boundary
 
-Local code, docs, generated assets, tests, builds, and localhost visual checks are allowed. Do not push, deploy, redeploy, mutate provider settings, set hosted flags, run hosted checks, fund cENJ, create or fund Fuel Tanks, start signer-connected Wallet Daemon work, or submit Enjin transactions without fresh action-specific approval.
+Local code, docs, generated assets, tests, builds, localhost visual checks, commits, and public-repo pushes are allowed. Do not deploy, redeploy, mutate provider settings, set hosted flags, run hosted checks, fund cENJ, create or fund Fuel Tanks, start signer-connected Wallet Daemon work, or submit Enjin transactions without fresh action-specific approval when the action can create real provider cost or mutate external state.
 Vercel advanced deployment protection and similar provider features can add cost; do not enable them as part of visual polish.
 
 ## Acceptance
