@@ -22,6 +22,18 @@ const ALPHA_ITEMS = {
 
 const ALPHA_PROMPT_MS = 2600;
 
+type AlphaHudStatePatch = {
+  canaryRequested?: boolean;
+  charmListed?: boolean;
+  pet?: {
+    bond: number;
+    growth: string;
+    id: string;
+  };
+  tokenClaimed?: boolean;
+  tradeProof?: boolean;
+};
+
 function showAlphaPrompt(player: RpgPlayer, message: string) {
   if (typeof player.gui !== 'function' || typeof player.removeGui !== 'function') {
     void player.showText(message);
@@ -47,6 +59,12 @@ function showAlphaPrompt(player: RpgPlayer, message: string) {
   setTimeout(() => {
     player.removeGui(PrebuiltGui.Dialog, undefined, openId);
   }, ALPHA_PROMPT_MS);
+}
+
+function emitAlphaHudState(player: RpgPlayer, patch: AlphaHudStatePatch) {
+  if (typeof (player as { emit?: unknown }).emit === 'function') {
+    (player as { emit(type: string, value?: unknown): void }).emit('mochi-social-alpha-state', patch);
+  }
 }
 
 export const SPIRITS = [
@@ -101,6 +119,7 @@ export function SpiritEvent(spirit: (typeof SPIRITS)[number]): EventDefinition {
       player.setVariable(`mochiSocial.alpha.pet.${spirit.id}.bond`, 1);
       player.setVariable(`mochiSocial.alpha.pet.${spirit.id}.growth`, 'seed');
       player.showNotification(`${spirit.name} befriended`, { time: 1800, icon: spirit.graphic });
+      emitAlphaHudState(player, { pet: { id: spirit.id, bond: 1, growth: 'seed' } });
       await player.save('auto', { title: 'Mochi Spirit befriended' }, { reason: 'auto', source: 'pet-befriend' });
       showAlphaPrompt(player, `${spirit.name} joined your alpha companion list. Care at the garden shrine to grow your bond.`);
     }
@@ -126,6 +145,7 @@ export function CareShrine(): EventDefinition {
       player.setVariable(bondKey, nextBond);
       player.setVariable(`mochiSocial.alpha.pet.${activePet}.growth`, nextGrowth);
       player.showNotification(`Bond ${nextBond}/5`, { time: 1800, icon: 'friend' });
+      emitAlphaHudState(player, { pet: { id: activePet, bond: nextBond, growth: nextGrowth } });
       await player.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'pet-care' });
       showAlphaPrompt(player, `Care complete. Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
     }
@@ -143,6 +163,7 @@ export function MarketBoard(): EventDefinition {
         player.addItem(ALPHA_ITEMS.charm, 1);
         player.setVariable('mochiSocial.alpha.charmListed', true);
         player.showNotification('Fixed listing proof', { time: 1800, icon: 'market-board' });
+        emitAlphaHudState(player, { charmListed: true });
         await player.save('auto', { title: 'Alpha market proof' }, { reason: 'auto', source: 'market-board' });
         showAlphaPrompt(player, 'You listed a Lantern Charm for test soft currency. This proves fixed-price market flow without real value.');
         return;
@@ -162,6 +183,7 @@ export function TradePost(): EventDefinition {
     async onAction(player: RpgPlayer) {
       player.setVariable('mochiSocial.alpha.tradeProof', true);
       player.showNotification('Direct trade proof', { time: 1800, icon: 'trade-post' });
+      emitAlphaHudState(player, { tradeProof: true });
       await player.save('auto', { title: 'Alpha trade proof' }, { reason: 'auto', source: 'trade-post' });
       showAlphaPrompt(player, 'Direct trade proof recorded. Alpha direct trades stay eligible-assets-only and no-real-value.');
     }
@@ -185,6 +207,7 @@ export function CanaryShrine(): EventDefinition {
         player.setVariable('mochiSocial.alpha.canaryCertificateRequested', true);
       }
       player.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
+      emitAlphaHudState(player, { canaryRequested: true });
       await player.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
       showAlphaPrompt(
         player,
@@ -209,6 +232,7 @@ export function TokenChest(): EventDefinition {
       player.addItem(TOKEN_ITEM, 1);
       player.setVariable('mochiSocial.tokenClaimed', true);
       player.showNotification('Mochi Token added', { time: 1800, icon: 'chest' });
+      emitAlphaHudState(player, { tokenClaimed: true });
       await player.save('auto', { title: 'Mochi Social first token' }, { reason: 'auto', source: 'token-chest' });
       showAlphaPrompt(player, 'You found a Mochi Token. The server saved this little milestone.');
     }

@@ -4,7 +4,7 @@ This contract tells Codex how to upgrade Mochi Social art without breaking the R
 
 ## Source And Runtime Split
 
-- Source intent, prompts, and art-direction notes live in docs and optional source folders under `assets/source/game/`.
+- Source intent, prompts, and art-direction notes live in docs and optional source folders under `assets/source/game/`. The current high-detail source brief is `assets/source/game/hd-source-export.md`.
 - Runtime assets stay in the existing RPGJS paths:
   - `apps/game/src/tiled/mochi-tiles.png`
   - `apps/game/src/tiled/mochi-tiles.tsx`
@@ -24,7 +24,7 @@ This contract tells Codex how to upgrade Mochi Social art without breaking the R
 
 1. Read `docs/game-art-bible.md`, `docs/visual-polish-brief.md`, and `AGENTS.md`.
 2. Run or inspect the current local asset generator before editing.
-3. Upgrade a small style probe first: town tile sample, one character, one spirit, one prop, and HUD treatment.
+3. For this pass, implement HD Source Export + Crisp Pixel Kit + Town Readability First. Improve the town terrain, landmarks, object shadows, and interactable cues before character/pet/HUD-only polish.
 4. Run local visual checks, then upgrade the rest of the asset set.
 5. Update `docs/asset-ledger.md` with asset dimensions, role, source note, prompt/source method, and license.
 6. Run local checks before handoff. Do not push, deploy, or run hosted checks without explicit approval.
@@ -32,7 +32,7 @@ This contract tells Codex how to upgrade Mochi Social art without breaking the R
 ## Codex Visual Upgrade Prompt
 
 ```text
-Implement the next Mochi Social visual upgrade against Alpha Preview Ready only. Use the Cozy Wushu painterly/pixel hybrid art bible, preserve RPGJS/Tiled runtime contracts, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, push, deploy, fund Enjin, or clear funded-chain gates.
+Upgrade Mochi Social art as crisp Cozy Wushu 2D assets for Alpha Preview Ready only. Use HD source-export thinking, prioritize town readability first, preserve RPGJS dimensions, paths, Tiled contracts, tests, no-real-value labels, and local-only verification, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, push, deploy, fund Enjin, or clear funded-chain gates.
 ```
 
 ## Rejection Conditions

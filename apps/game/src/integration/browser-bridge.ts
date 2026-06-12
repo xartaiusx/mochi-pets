@@ -24,6 +24,18 @@ interface AlphaHudState {
   chat: string[];
 }
 
+export interface AlphaWorldStatePatch {
+  canaryRequested?: boolean;
+  charmListed?: boolean;
+  pet?: {
+    bond: number;
+    growth: string;
+    id: string;
+  };
+  tokenClaimed?: boolean;
+  tradeProof?: boolean;
+}
+
 type AlphaLocalActionType = 'pet.inspect' | 'profile.view' | 'friend.add' | 'status.set';
 
 interface PresenceMessage {
@@ -382,6 +394,47 @@ function readAlphaState(): AlphaHudState {
 function writeAlphaState(state: AlphaHudState) {
   localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-12) }));
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
+}
+
+function appendUniqueAlphaChat(state: AlphaHudState, message: string) {
+  if (state.chat[state.chat.length - 1] !== message) {
+    state.chat.push(message);
+  }
+}
+
+export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
+  const state = readAlphaState();
+
+  if (typeof patch.tokenClaimed === 'boolean') {
+    window.dispatchEvent(new CustomEvent('mochi-social-token-state', { detail: { claimed: patch.tokenClaimed } }));
+  }
+
+  if (patch.pet?.id) {
+    const pet = MOCHI_SPIRITS.find((spirit) => spirit.id === patch.pet?.id);
+    state.petId = patch.pet.id;
+    state.bond = Math.max(0, Math.min(5, Number(patch.pet.bond) || 0));
+    state.growth = patch.pet.growth || growthStageFromBond(state.bond);
+    if (pet) {
+      appendUniqueAlphaChat(state, `${pet.name}: ${state.growth} growth, bond ${state.bond}/5.`);
+    }
+  }
+
+  if (patch.charmListed) {
+    state.charmListed = true;
+    appendUniqueAlphaChat(state, 'Lantern Charm listed from the town board. Test soft currency only.');
+  }
+
+  if (patch.tradeProof) {
+    state.tradeProof = true;
+    appendUniqueAlphaChat(state, 'Direct trade proof recorded from the trade post. No real value.');
+  }
+
+  if (patch.canaryRequested) {
+    state.canaryRequested = true;
+    appendUniqueAlphaChat(state, 'Canary certificate request staged from the shrine as preview stub. No real value.');
+  }
+
+  writeAlphaState(state);
 }
 
 async function loadAlphaStatus() {

@@ -23,6 +23,7 @@ function createFakePlayer() {
     variables,
     items: [] as Array<{ item: { id: string; name: string; description: string }; quantity: number }>,
     notifications: [] as Array<{ message: string; options: unknown }>,
+    emitted: [] as Array<{ type: string; value: unknown }>,
     saves: [] as FakeSaveEntry[],
     texts: [] as string[],
     getVariable<T>(key: string): T | undefined {
@@ -36,6 +37,9 @@ function createFakePlayer() {
     },
     showNotification(message: string, options: unknown) {
       this.notifications.push({ message, options });
+    },
+    emit(type: string, value: unknown) {
+      this.emitted.push({ type, value });
     },
     async save(slot: string, metadata: unknown, options: { reason?: string; source?: string }) {
       this.saves.push({ slot, metadata, options });
@@ -136,6 +140,10 @@ describe('Mochi town event behavior', () => {
     expect(player.items[0].item.id).toBe('mochi-token');
     expect(player.variables.get('mochiSocial.tokenClaimed')).toBe(true);
     expect(player.notifications[0].message).toBe('Mochi Token added');
+    expect(player.emitted[0]).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { tokenClaimed: true }
+    });
     expect(player.saves[0].options.source).toBe('token-chest');
     expect(player.texts[0]).toContain('server saved');
     expect(player.texts[1]).toContain('already tucked away');
@@ -152,6 +160,10 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.alpha.pet.momo.bond')).toBe(1);
     expect(player.variables.get('mochiSocial.alpha.pet.momo.growth')).toBe('seed');
     expect(player.saves.at(-1)?.options.source).toBe('pet-befriend');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { pet: { id: 'momo', bond: 1, growth: 'seed' } }
+    });
     expect(player.texts.at(-1)).toContain('Care at the garden shrine');
 
     for (let i = 0; i < 4; i += 1) {
@@ -161,6 +173,10 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.alpha.pet.momo.bond')).toBe(5);
     expect(player.variables.get('mochiSocial.alpha.pet.momo.growth')).toBe('glow');
     expect(player.saves.filter((save) => save.options.source === 'pet-care')).toHaveLength(4);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { pet: { id: 'momo', bond: 5, growth: 'glow' } }
+    });
     expect(player.texts.at(-1)).toContain('Care complete');
     expect(player.texts.at(-1)).toContain('bond 5/5');
   });
@@ -171,11 +187,19 @@ describe('Mochi town event behavior', () => {
     await runAction(MarketBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('lantern-charm');
     expect(player.variables.get('mochiSocial.alpha.charmListed')).toBe(true);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { charmListed: true }
+    });
     expect(player.saves.at(-1)?.options.source).toBe('market-board');
     expect(player.texts.at(-1)).toContain('without real value');
 
     await runAction(TradePost(), player);
     expect(player.variables.get('mochiSocial.alpha.tradeProof')).toBe(true);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { tradeProof: true }
+    });
     expect(player.saves.at(-1)?.options.source).toBe('trade-post');
     expect(player.texts.at(-1)).toContain('no-real-value');
 
@@ -186,6 +210,10 @@ describe('Mochi town event behavior', () => {
     await runAction(CanaryShrine(), player);
     expect(player.items.at(-1)?.item.id).toBe('momo-canary-certificate');
     expect(player.variables.get('mochiSocial.alpha.canaryCertificateRequested')).toBe(true);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { canaryRequested: true }
+    });
     expect(player.saves.at(-1)?.options.source).toBe('canary-shrine');
     expect(player.texts.at(-1)).toContain('no-real-value Enjin Canary certificate request');
     expect(player.texts.at(-1)).toContain('Wallet Daemon services');

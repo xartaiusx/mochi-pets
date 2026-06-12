@@ -58,13 +58,13 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Preserve the public game routes, postMessage bridge, test hooks, and no-real-value labels while improving art, layout, contrast, and first-screen clarity.
 - Keep the first visible game screen playable. Do not add a landing page, onboarding wall, marketing hero, or production/live-value language inside the game runtime.
 - Use original/project-authored, generated-for-project, MIT-compatible, or clearly CC0 visuals only. Update `docs/asset-ledger.md` whenever art changes.
-- Follow `docs/game-art-bible.md` and `docs/asset-pipeline-contract.md` for game art work. The target is high-fidelity Cozy Wushu painterly/pixel hybrid, not tiny photorealism.
+- Follow `docs/game-art-bible.md` and `docs/asset-pipeline-contract.md` for game art work. The active next-pass target is HD Source Export + Crisp Pixel Kit + Town Readability First: Cozy Wushu mood, crisp silhouettes, cleaner values, fewer noisy textures, readable object roles, and clear map zones.
 - Keep source prompts and source-art notes separate from runtime assets. Runtime files must keep their existing RPGJS paths, filenames, and dimensions unless tests/docs change in the same scoped task.
 - Keep 32px tiles, 96x192 event spritesheets, Tiled layer names, object IDs, collision behavior, and alpha event placements stable during visual passes.
 - Maintain readable UI over game art with semi-opaque backing, strong focus states, keyboard-usable controls, and non-color-only status labels for auth, market, trade, chain, and error states.
 - Enjin UI must stay visibly Canary and `configured-preview-stub` until funded-chain gates are approved. Canary copy must say preview stub, request staged, no real value, and must not imply settlement before `FINALIZED`.
 - Website tester-gate polish belongs in the Mochirii repo. Game town, HUD, runtime manifest, and asset ledger polish belong here.
-- For follow-up visual work, use this prompt: `Implement the next Mochi Social visual upgrade against Alpha Preview Ready only. Use the Cozy Wushu painterly/pixel hybrid art bible, preserve RPGJS/Tiled runtime contracts, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, push, deploy, fund Enjin, or clear funded-chain gates.`
+- For follow-up visual work, use this prompt: `Upgrade Mochi Social art as crisp Cozy Wushu 2D assets for Alpha Preview Ready only. Use HD source-export thinking, prioritize town readability first, preserve RPGJS dimensions, paths, Tiled contracts, tests, no-real-value labels, and local-only verification, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, push, deploy, fund Enjin, or clear funded-chain gates.`
 
 ## Done When Playable
 

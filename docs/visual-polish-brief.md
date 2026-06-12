@@ -29,8 +29,9 @@ This brief keeps the next polish pass focused on Alpha Preview Ready. It improve
 - Landmarks should be recognizable: habitat nook, NPC welcome area, chest, market board, trade post, Canary shrine, path, greenery, signage, lantern-like accents, and soft shadows.
 - Keep collision and map object IDs stable unless tests and docs are updated in the same change.
 - Keep the asset pipeline reproducible through `apps/game/scripts/generate-assets.mjs`.
-- Follow `docs/game-art-bible.md` for the visual target: high-fidelity Cozy Wushu painterly/pixel hybrid, dusk lantern lighting, jade/red timber palette, readable silhouettes, and strong interaction cues.
+- Follow `docs/game-art-bible.md` for the visual target: HD Source Export + Crisp Pixel Kit + Town Readability First, with Cozy Wushu dusk lantern mood, jade/red timber palette, readable silhouettes, and strong interaction cues.
 - Follow `docs/asset-pipeline-contract.md` for the source/runtime split. Runtime assets keep existing paths, filenames, and dimensions; source prompts and art-direction notes live separately.
+- Follow `assets/source/game/hd-source-export.md` for the source-art intent behind exported runtime PNGs.
 - Treat the Mochirii gate image as a fidelity and atmosphere reference, not as a mandate for photorealistic tiny sprites.
 
 ## Access And Provider Boundaries

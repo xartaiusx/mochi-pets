@@ -51,9 +51,9 @@ const report = {
   },
   noCostBoundary: 'Preflight checks filenames and generated no-secret reports only. Pushing, setting secrets, deploying, hosted smokes, Wallet Daemon startup/import, Enjin operations, and Fuel Tank funding still require explicit action-specific approval.',
   privateInputs,
-  providerActionQueue: actionQueue,
+  providerActionQueue: mergeProviderActionQueue(actionQueue, externalGates.data?.checks || []),
   externalFailures,
-  nextApprovalIds: actionQueue.map((item) => item.id),
+  nextApprovalIds: mergeProviderActionQueue(actionQueue, externalGates.data?.checks || []).map((item) => item.id),
   missingExpectedPrivateInputFiles: privateInputs.filter((input) => input.expectedBeforeProviderWork && !input.exists).map((input) => input.fileName)
 };
 
@@ -128,6 +128,55 @@ function sanitizeAction(action) {
     approvalText: sanitize(action.approvalText),
     noCostFallback: sanitize(action.noCostFallback)
   };
+}
+
+function mergeProviderActionQueue(operatorQueue, externalChecks) {
+  const merged = [...operatorQueue];
+  const existingIds = new Set(merged.map((item) => item.id));
+
+  for (const action of derivedExternalGateActions(externalChecks)) {
+    if (!existingIds.has(action.id)) {
+      merged.push(action);
+      existingIds.add(action.id);
+    }
+  }
+
+  return merged;
+}
+
+function derivedExternalGateActions(checks) {
+  if (!Array.isArray(checks)) return [];
+
+  const failed = new Set(
+    checks
+      .filter((check) => check?.status === 'fail')
+      .map((check) => String(check.name || ''))
+  );
+  const actions = [];
+
+  if (failed.has('Live game contract')) {
+    actions.push({
+      id: 'fly-live-game-contract',
+      provider: 'Fly.io',
+      title: 'Run the approved hosted Fly game contract check.',
+      blocker: 'Hosted Fly game contract checks are gated until MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true is approved for the current Fly URL.',
+      approvalText: 'I approve running the hosted Fly game contract check with MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true against https://mochi-social-game.fly.dev. I understand this may hit Fly resources and add usage.',
+      noCostFallback: 'Keep the check local-only and leave the live game contract gate red.'
+    });
+  }
+
+  if (failed.has('Site preview contract')) {
+    actions.push({
+      id: 'vercel-supabase-preview-contract',
+      provider: 'Vercel/Supabase/Fly',
+      title: 'Run the approved hosted Mochirii preview contract check.',
+      blocker: 'Hosted site/game preview contract checks are gated until MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true is approved for the current Vercel Preview and Fly URLs.',
+      approvalText: 'I approve running the hosted Mochirii preview contract check with MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true against the configured Vercel Preview, Fly game URL, and Supabase Preview URLs. I understand this may hit Vercel/Supabase/Fly resources and add usage.',
+      noCostFallback: 'Keep the check local-only and leave the site preview contract gate red.'
+    });
+  }
+
+  return actions;
 }
 
 function summarizeSource(source, file) {

@@ -12,6 +12,7 @@ const browserPresencePath = resolve(root, process.env.MOCHI_SOCIAL_BROWSER_PRESE
 const mapEventPath = resolve(root, 'apps/game/src/modules/main/event.ts');
 const mapServerPath = resolve(root, 'apps/game/src/modules/main/server.ts');
 const alphaContentPath = resolve(root, 'apps/game/src/alpha/content.ts');
+const assetLedgerPath = resolve(root, 'docs/asset-ledger.md');
 
 const failures = [];
 const visualSnapshot = readJson(visualSnapshotPath);
@@ -19,6 +20,7 @@ const browserPresence = readJson(browserPresencePath);
 const mapEventSource = readText(mapEventPath);
 const mapServerSource = readText(mapServerPath);
 const alphaContentSource = readText(alphaContentPath);
+const assetLedgerSource = readText(assetLedgerPath);
 
 assertReport('visual snapshot', visualSnapshot);
 assertReport('browser presence', browserPresence);
@@ -72,6 +74,52 @@ for (const snippet of [
 }
 assert((alphaContentSource.match(/habitat:\s*'Lantern Garden'/g) || []).length === 3, 'three Mochi Spirits must share the Lantern Garden habitat');
 
+const expectedAssetLedgerEntries = [
+  'mochi-tiles.png',
+  'mochi.png',
+  'friend.png',
+  'chest.png',
+  'spirit-momo.png',
+  'spirit-yuzu.png',
+  'spirit-sora.png',
+  'market-board.png',
+  'trade-post.png',
+  'canary-shrine.png',
+  'hd-source-export.md',
+  'no Kenney files are copied'
+];
+
+for (const entry of expectedAssetLedgerEntries) {
+  assert(assetLedgerSource.includes(entry), `asset ledger missing visual source entry: ${entry}`);
+}
+
+const visualChecklist = {
+  firstScreenReadability: {
+    status: failures.length === 0 ? 'machine-supported' : 'blocked',
+    records: 'First screen has current page/canvas PNG evidence; human review must still confirm the town reads as polished within 3 seconds.'
+  },
+  interactableRecognition: {
+    status: mapObjects.every((id) => mapServerSource.includes(`id: '${id}'`)) ? 'machine-supported' : 'blocked',
+    records: 'NPC, chest, care shrine, market board, trade post, and Canary shrine are present in the stable map-object contract.'
+  },
+  hudContrast: {
+    status: Boolean(visualSnapshot.data?.dom?.hud) ? 'machine-supported' : 'blocked',
+    records: 'HUD DOM is present in the first-screen snapshot; human review checks text contrast over the rendered map.'
+  },
+  canaryNoRealValueClarity: {
+    status: browserPresence.data?.hudAction?.state?.canaryRequested === true ? 'machine-supported' : 'blocked',
+    records: 'Canary action remains a staged preview/no-real-value HUD flow; funded-chain gates stay out of this visual pass.'
+  },
+  twoTabPresence: {
+    status: browserPresence.data?.tabs?.length === 2 ? 'machine-supported' : 'blocked',
+    records: 'Two browser tabs report Nearby: 2 testers and observer-side movement.'
+  },
+  assetLedgerCoverage: {
+    status: expectedAssetLedgerEntries.every((entry) => assetLedgerSource.includes(entry)) ? 'machine-supported' : 'blocked',
+    records: 'Asset ledger covers runtime PNGs, HD source-export intent, and Kenney reference-only boundaries.'
+  }
+};
+
 const report = {
   ok: failures.length === 0,
   checkedAt: new Date().toISOString(),
@@ -102,6 +150,7 @@ const report = {
       canaryRequest: browserPresence.data?.hudAction?.state?.canaryRequested === true
     }
   },
+  visualChecklist,
   manualPromptGate: {
     requiredBeforeAlphaRcReady: true,
     status: 'pending-human-review',
@@ -272,6 +321,15 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - HUD action loop: pet care ${summary.machineReview.hudActionLoop.petCare ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, friend proof ${summary.machineReview.hudActionLoop.friendProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, pet inspect ${summary.machineReview.hudActionLoop.petInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
+
+## Visual Checklist
+
+- First-screen readability: ${summary.visualChecklist.firstScreenReadability.status}
+- Interactable recognition: ${summary.visualChecklist.interactableRecognition.status}
+- HUD contrast: ${summary.visualChecklist.hudContrast.status}
+- Canary no-real-value clarity: ${summary.visualChecklist.canaryNoRealValueClarity.status}
+- Two-tab presence: ${summary.visualChecklist.twoTabPresence.status}
+- Asset ledger coverage: ${summary.visualChecklist.assetLedgerCoverage.status}
 
 ## Manual Prompt Gate
 
