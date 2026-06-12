@@ -32,7 +32,8 @@ This contract tells Codex how to upgrade Mochi Social art without breaking the R
 ## Codex Visual Upgrade Prompt
 
 ```text
-Upgrade Mochi Social art as crisp Cozy Wushu 2D assets for Alpha Preview Ready only. Use HD source-export thinking, prioritize town readability first, preserve RPGJS dimensions, paths, Tiled contracts, tests, no-real-value labels, and local-only verification, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, push, deploy, fund Enjin, or clear funded-chain gates.
+Upgrade Mochi Social art as crisp Cozy Wushu 2D assets for Alpha Preview Ready only. Use HD source-export thinking, prioritize town readability first, preserve RPGJS dimensions, paths, Tiled contracts, tests, no-real-value labels, and local verification, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, deploy, fund Enjin, or clear funded-chain gates.
+Public-repo commits and pushes are allowed under the current user policy; verify PR checks afterward.
 ```
 
 ## Rejection Conditions

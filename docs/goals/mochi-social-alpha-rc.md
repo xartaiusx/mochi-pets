@@ -164,6 +164,6 @@ npm run lint
 npm run build
 ```
 
-External operator steps stay interactive and no-cost gated: Fly/Vercel/Supabase/Enjin login, secret entry, Wallet Daemon seed creation, Fuel Tank funding, hosted load smoke, CI reruns, branch pushes, and preview deploy promotion.
+External operator steps stay interactive and cost-gated when they can add charges or mutate sensitive provider state: Fly/Vercel/Supabase/Enjin login, secret entry, Wallet Daemon seed creation, Fuel Tank funding, hosted load smoke, paid/quota-bearing CI reruns, and preview deploy promotion. Public-repo branch pushes are allowed under the current user policy; verify PR/CI checks afterward.
 
 Hosted external gate checks stay no-cost gated too. Set `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` only for an explicitly approved hosted verification run; without it, `npm run alpha:external-gates` must refuse hosted Fly/Vercel contract fetches.

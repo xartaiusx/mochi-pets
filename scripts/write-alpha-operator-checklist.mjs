@@ -187,7 +187,7 @@ function renderReport() {
     walletDaemonSummary,
     manualPromptSummary,
     providerActionQueue,
-    noCostRule: 'Public-repo commits and pushes are allowed; verify PR checks afterward. No CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact cost-bearing action.'
+    noCostRule: 'Public-repo commits and pushes are allowed; verify PR checks afterward. No paid/quota-bearing CI rerun, deploy, hosted smoke, provider mutation, Fuel Tank funding, or live Enjin transaction without explicit approval for that exact cost-bearing action.'
   };
 }
 
@@ -241,7 +241,7 @@ ${failures}
 
 ## No-Cost Boundary
 
-Read-only provider status checks are allowed. Public-repo commits and pushes are allowed; verify PR checks afterward. Creating resources, setting secrets, deploying, running hosted smoke/load/browser checks, submitting Enjin Canary operations, funding Fuel Tanks, or rerunning CI still requires explicit approval when it can create real provider cost or mutate external state.
+Read-only provider status checks are allowed. Public-repo commits and pushes are allowed; verify PR checks afterward. Creating resources, setting secrets, deploying, running hosted smoke/load/browser checks, submitting Enjin Canary operations, funding Fuel Tanks, or rerunning paid/quota-bearing CI still requires explicit approval when it can create real provider cost or mutate external state.
 `;
 }
 
@@ -275,7 +275,7 @@ Generated: ${generatedAt}
 
 This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into Codex chat, Git, PR comments, screenshots, or reports.
 
-No-cost rule: public-repo commits and pushes are allowed; verify PR checks afterward. Do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun Actions, set provider secrets/env vars, or mutate provider resources without explicit user approval for that exact cost-bearing action. Prefer local checks and read-only provider status commands.
+No-cost rule: public-repo commits and pushes are allowed; verify PR checks afterward. Do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun paid/quota-bearing Actions, set provider secrets/env vars, or mutate provider resources without explicit user approval for that exact cost-bearing action. Prefer local checks and read-only provider status commands.
 
 ## Git State
 

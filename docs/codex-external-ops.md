@@ -35,7 +35,7 @@ When source behavior conflicts with repo intent, stop and record the conflict be
 
 ## No-Cost Default
 
-Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any external operation. Provider interactions are read-only by default. Public-repo commits and pushes are allowed without a separate prompt; verify PR/CI results afterward. Do not create resources, deploy, scale, fund, mint, submit chain operations, trigger hosted load tests, rerun Actions, set provider secrets/env vars, or mutate provider state unless the user explicitly approves that exact action after a cost note.
+Follow [`docs/no-cost-operations.md`](no-cost-operations.md) before any external operation. Provider interactions are read-only by default. Public-repo commits and pushes are allowed without a separate prompt; verify PR/CI results afterward. Do not create resources, deploy, scale, fund, mint, submit chain operations, trigger hosted load tests, rerun paid/quota-bearing Actions, set provider secrets/env vars, or mutate provider state unless the user explicitly approves that exact cost-bearing action after a cost note.
 
 When a needed Alpha RC step may add charges, record the blocked gate and the no-cost alternative instead of proceeding. Local tests and local smoke checks are preferred until hosted work is approved.
 
@@ -123,7 +123,7 @@ Supabase Edge Function secret ownership:
 ## CI Gate Checklist
 
 1. Resolve GitHub Actions billing, payment, and budget blocks before deployment work.
-2. Rerun the latest failed game PR workflow only after explicit user approval, because reruns can consume Actions usage.
+2. Rerun the latest failed game PR workflow without a separate prompt when it is the normal public PR check path; ask first only if repository/account settings indicate the rerun can create actual charges.
 3. Require green `Verify Mochi Social` before merge.
 4. Keep check names unique before enabling required status checks.
 5. Enable branch protection only after the first successful check run exists.
