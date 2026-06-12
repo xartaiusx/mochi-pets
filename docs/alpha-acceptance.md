@@ -79,6 +79,8 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 
 `npm run alpha:built-server-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with throwaway server-token env, no Enjin live secrets, and no Supabase Edge forwarding. It verifies `/healthz`, `/play`, `/integration/game-manifest.json`, `/integration/alpha/status`, and the private Enjin operator route fail-closed path. This catches server bundle/runtime drift before any Fly deploy. The ignored `reports/built-server-smoke.json` report includes sanitized server stdout/stderr, Git state, exit code, exit signal, and stopped status even if the built server exits before readiness.
 
+The built server smoke and local suite use file-backed saves, so they are also the local guard for save durability regressions before Fly volume deployment. Save writes must remain per-player serialized and written through a temporary file before rename, so overlapping autosave and event-save writes cannot leave malformed JSON in the save directory.
+
 ## Local Alpha Suite
 
 `npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, runs the local Wallet Daemon binary metadata check, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, visual review, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
@@ -89,7 +91,7 @@ Run `npm run alpha:local-evidence` after the local suite to validate the ignored
 
 ## Manual Prompt Review Gate
 
-`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, focuses the game canvas, stands adjacent to the map object, holds Space/Action for about 200ms, confirms the rendered welcome NPC dialog, token chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars.
+`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, focuses the game canvas, stands adjacent to the map object, holds the relevant facing direction toward that object, presses Space/Action for about 200ms, confirms the rendered welcome NPC dialog, token chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars.
 
 Local completion example:
 
@@ -178,7 +180,7 @@ Those tests prove the event contract and behavior. The remaining human visual ch
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm the game canvas, HUD, and town scene are visually coherent.
-3. Interact with the NPC, chest, and habitat/care loop in at least one tab. Focus the canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+3. Interact with the NPC, chest, and habitat/care loop in at least one tab. Focus the canvas, stand adjacent to the object, hold the relevant facing direction toward it, and press Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 4. Confirm the prompts and notifications match the alpha no-real-value scope.
 5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
 

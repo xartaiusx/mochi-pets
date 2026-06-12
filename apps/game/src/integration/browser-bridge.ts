@@ -133,39 +133,49 @@ function createHud() {
   hud.id = 'mochi-social-hud';
   hud.setAttribute('aria-label', 'Mochi Social status');
   hud.innerHTML = `
-    <div class="mochi-hud__top">
-      <strong>Mochi Social</strong>
-      <span data-auth-label>Guest</span>
-      <span data-token-label>Token: 0/1</span>
-      <span data-presence-label>Nearby: 1 tester</span>
+    <div class="mochi-hud__status-strip">
+      <div class="mochi-hud__brand">
+        <strong>Mochi Social</strong>
+        <span data-alpha-label>Canary preview stub - no real value</span>
+      </div>
+      <div class="mochi-hud__status-pills" aria-label="Connection status">
+        <span data-auth-label>Guest</span>
+        <span data-token-label>Token: 0/1</span>
+        <span data-presence-label>Nearby: 1 tester</span>
+      </div>
     </div>
-    <div class="mochi-hud__alpha">
-      <span data-alpha-label>Closed Canary alpha - no real value</span>
+    <div class="mochi-hud__social-card" aria-label="Tester social state">
       <span data-profile-label>Profile: guest tester</span>
       <span data-friend-label>Friends: none</span>
       <span data-status-label>Status: exploring</span>
-      <span data-pet-label>Pet: none</span>
       <span data-market-label>Market: ready</span>
     </div>
-    <div class="mochi-hud__actions" aria-label="Alpha quick actions">
-      <button type="button" data-alpha-local-action="profile.view">Profile</button>
-      <button type="button" data-alpha-local-action="friend.add">Friend</button>
-      <button type="button" data-alpha-local-action="status.set">Mood</button>
-      <button type="button" data-alpha-action="pet.care">Care</button>
-      <button type="button" data-alpha-local-action="pet.inspect">Inspect</button>
-      <button type="button" data-alpha-action="emote.send">Wave</button>
-      <button type="button" data-alpha-action="market.fixed_list">List</button>
-      <button type="button" data-alpha-action="trade.direct_offer">Trade</button>
-      <button type="button" data-alpha-action="chain.withdraw_request">Canary</button>
+    <div class="mochi-hud__pet-card" aria-label="Active Mochi Spirit">
+      <span class="mochi-hud__kicker">Active Spirit</span>
+      <strong data-pet-label>Pet: none</strong>
+      <span class="mochi-hud__hint">Care raises bond and growth. Canary remains preview stub.</span>
     </div>
-    <form class="mochi-hud__chat" data-chat-form>
-      <label>
-        <span>Local chat</span>
-        <input data-chat-input maxlength="120" autocomplete="off" placeholder="Say hello" />
-      </label>
-      <button type="submit">Send</button>
-    </form>
-    <ol class="mochi-hud__feed" data-alpha-feed aria-live="polite"></ol>
+    <div class="mochi-hud__actions" aria-label="Alpha quick actions">
+      <button type="button" data-alpha-local-action="profile.view" aria-label="Open tester profile">Profile</button>
+      <button type="button" data-alpha-local-action="friend.add" aria-label="Add local buddy proof">Friend</button>
+      <button type="button" data-alpha-local-action="status.set" aria-label="Set cozy status mood">Mood</button>
+      <button type="button" data-alpha-action="pet.care" aria-label="Care for active Mochi Spirit">Care</button>
+      <button type="button" data-alpha-local-action="pet.inspect" aria-label="Inspect active Mochi Spirit">Inspect</button>
+      <button type="button" data-alpha-action="emote.send" aria-label="Wave to nearby testers">Wave</button>
+      <button type="button" data-alpha-action="market.fixed_list" aria-label="List a no-real-value market item">List</button>
+      <button type="button" data-alpha-action="trade.direct_offer" aria-label="Record a no-real-value direct trade proof">Trade</button>
+      <button type="button" data-alpha-action="chain.withdraw_request" aria-label="Stage a no-real-value Enjin Canary preview request">Canary</button>
+    </div>
+    <section class="mochi-hud__feed-panel" aria-label="Local chat and action log">
+      <form class="mochi-hud__chat" data-chat-form>
+        <label>
+          <span>Local chat</span>
+          <input data-chat-input maxlength="120" autocomplete="off" placeholder="Say hello" />
+        </label>
+        <button type="submit">Send</button>
+      </form>
+      <ol class="mochi-hud__feed" data-alpha-feed aria-live="polite"></ol>
+    </section>
   `;
   document.body.appendChild(hud);
 
@@ -193,16 +203,16 @@ function createHud() {
       statusLabel.textContent = `Status: ${state.statusMood || 'exploring'}`;
     }
     if (petLabel) {
-      petLabel.textContent = pet ? `${pet.name}: ${state.growth} bond ${state.bond}` : 'Pet: none';
+      petLabel.textContent = pet ? `${pet.name}: ${state.growth} growth, bond ${state.bond}/5` : 'Pet: none';
     }
     if (marketLabel) {
       marketLabel.textContent = state.canaryRequested
-        ? 'Canary: requested'
+        ? 'Canary: requested - preview stub'
         : state.tradeProof
-          ? 'Trade: proofed'
+          ? 'Trade: proofed - test only'
           : state.charmListed
-            ? 'Market: listed'
-            : 'Market: ready';
+            ? 'Market: listed - test soft currency'
+            : 'Market: ready - fixed price';
     }
     if (feed) {
       feed.innerHTML = '';
@@ -438,17 +448,17 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
 
   if (type === 'market.fixed_list') {
     state.charmListed = true;
-    state.chat.push('Lantern Charm listed for test soft currency.');
+    state.chat.push('Lantern Charm listed for test soft currency. No real value.');
   }
 
   if (type === 'trade.direct_offer') {
     state.tradeProof = true;
-    state.chat.push('Direct trade proof recorded.');
+    state.chat.push('Direct trade proof recorded for alpha testing. No real value.');
   }
 
   if (type === 'chain.withdraw_request') {
     state.canaryRequested = true;
-    state.chat.push('Canary certificate request staged. No real value.');
+    state.chat.push('Canary certificate request staged as preview stub. No real value.');
   }
 
   if (type === 'chat.send') {

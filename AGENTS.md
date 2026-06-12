@@ -52,6 +52,20 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Supabase schema, privileged database writes, tester allowlist, terms acknowledgement, feedback, and admin UI belong in the separate Mochirii website repo. This repo owns the game runtime, contracts, Enjin orchestration, and game-side docs.
 - The game backend may hold a scoped game bridge token in Fly secrets. It must not hold a Supabase service-role key, Enjin wallet seed, or wallet daemon passphrase.
 
+## Visual Polish Lane
+
+- Treat visual polish as Alpha Preview Ready work, not production launch. The target is Cozy Wushu, tester-password first, playable-town first, local verification first.
+- Preserve the public game routes, postMessage bridge, test hooks, and no-real-value labels while improving art, layout, contrast, and first-screen clarity.
+- Keep the first visible game screen playable. Do not add a landing page, onboarding wall, marketing hero, or production/live-value language inside the game runtime.
+- Use original/project-authored, generated-for-project, MIT-compatible, or clearly CC0 visuals only. Update `docs/asset-ledger.md` whenever art changes.
+- Follow `docs/game-art-bible.md` and `docs/asset-pipeline-contract.md` for game art work. The target is high-fidelity Cozy Wushu painterly/pixel hybrid, not tiny photorealism.
+- Keep source prompts and source-art notes separate from runtime assets. Runtime files must keep their existing RPGJS paths, filenames, and dimensions unless tests/docs change in the same scoped task.
+- Keep 32px tiles, 96x192 event spritesheets, Tiled layer names, object IDs, collision behavior, and alpha event placements stable during visual passes.
+- Maintain readable UI over game art with semi-opaque backing, strong focus states, keyboard-usable controls, and non-color-only status labels for auth, market, trade, chain, and error states.
+- Enjin UI must stay visibly Canary and `configured-preview-stub` until funded-chain gates are approved. Canary copy must say preview stub, request staged, no real value, and must not imply settlement before `FINALIZED`.
+- Website tester-gate polish belongs in the Mochirii repo. Game town, HUD, runtime manifest, and asset ledger polish belong here.
+- For follow-up visual work, use this prompt: `Implement the next Mochi Social visual upgrade against Alpha Preview Ready only. Use the Cozy Wushu painterly/pixel hybrid art bible, preserve RPGJS/Tiled runtime contracts, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, push, deploy, fund Enjin, or clear funded-chain gates.`
+
 ## Done When Playable
 
 - A fresh clone passes install, typecheck, lint, test, and build.
