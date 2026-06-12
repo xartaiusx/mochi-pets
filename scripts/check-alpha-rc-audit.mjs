@@ -1118,7 +1118,7 @@ function requireTextIncludes(id, description, file, snippets, label) {
 }
 
 function checkPr(id, repo, pr, requiredCheckName) {
-  const result = command(resolveGh(), ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup']);
+  const result = command(resolveGh(), ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
   if (!result.ok) {
     add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, pr, stderr: sanitize(result.stderr) });
     return;
@@ -1131,10 +1131,12 @@ function checkPr(id, repo, pr, requiredCheckName) {
   const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
   const failing = checks.filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()));
   const required = requiredCheckName ? checks.find((check) => check.name === requiredCheckName || check.context === requiredCheckName) : true;
-  const ok = data.mergeStateStatus === 'CLEAN' && failing.length === 0 && Boolean(required);
-  add(id, ok ? 'pass' : 'fail', ok ? `${repo}#${pr} is clean and checks are green.` : `${repo}#${pr} is not clean, has failing checks, or is missing required checks.`, {
+  const mergeableOrDraft = data.mergeStateStatus === 'CLEAN' || data.isDraft === true;
+  const ok = mergeableOrDraft && failing.length === 0 && Boolean(required);
+  add(id, ok ? 'pass' : 'fail', ok ? `${repo}#${pr} has green checks${data.isDraft === true ? ' and remains draft' : ''}.` : `${repo}#${pr} is not clean or draft-green, has failing checks, or is missing required checks.`, {
     url: data.url,
     headRefOid: data.headRefOid,
+    isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checks: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)

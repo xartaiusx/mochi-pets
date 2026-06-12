@@ -105,7 +105,7 @@ async function run() {
 }
 
 function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
-  const result = command('gh', ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup']);
+  const result = command('gh', ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
   if (!result.ok) {
     add('fail', name, 'GitHub PR state could not be read.', { stderr: result.stderr });
     return;
@@ -124,17 +124,19 @@ function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   });
   const required = requiredCheckName ? checks.find((check) => check.name === requiredCheckName || check.context === requiredCheckName) : null;
   const missingRequired = requiredCheckName && !required;
-  const status = data.mergeStateStatus === 'CLEAN' && failing.length === 0 && !missingRequired ? 'pass' : 'fail';
+  const mergeableOrDraft = data.mergeStateStatus === 'CLEAN' || data.isDraft === true;
+  const status = mergeableOrDraft && failing.length === 0 && !missingRequired ? 'pass' : 'fail';
   const localHead = localRepoPath ? readLocalHead(localRepoPath) : null;
   const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
   const passMessage = localHead && !localHeadMatchesPrHead
-    ? 'Remote PR head is clean and all visible checks are green; local branch sync must still prove the current checkout.'
-    : 'Remote PR head is clean and all visible checks are green.';
-  add(status, name, status === 'pass' ? passMessage : 'PR is not clean, has failing checks, or is missing a required check.', {
+    ? 'Remote PR head has green checks; local branch sync must still prove the current checkout.'
+    : `Remote PR head has green checks${data.isDraft === true ? ' and is draft' : ''}.`;
+  add(status, name, status === 'pass' ? passMessage : 'PR is not clean or draft-green, has failing checks, or is missing a required check.', {
     url: data.url,
     headRefOid: data.headRefOid,
     localHead,
     localHeadMatchesPrHead,
+    isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checkNames: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)

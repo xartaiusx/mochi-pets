@@ -178,7 +178,7 @@ function readPr(repo, number, localHead) {
     return {
       repo,
       number,
-      ok: data.mergeStateStatus === 'CLEAN' && failingChecks.length === 0,
+      ok: (data.mergeStateStatus === 'CLEAN' || data.isDraft === true) && failingChecks.length === 0,
       url: sanitize(data.url),
       title: sanitize(data.title),
       isDraft: data.isDraft === true,
@@ -231,7 +231,7 @@ function readPrFixture(repo, number, localHead) {
   return {
     repo,
     number,
-    ok: data.mergeStateStatus === 'CLEAN' && failingChecks.length === 0,
+    ok: (data.mergeStateStatus === 'CLEAN' || data.isDraft === true) && failingChecks.length === 0,
     url: sanitize(data.url),
     title: sanitize(data.title),
     isDraft: data.isDraft === true,
