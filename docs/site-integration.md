@@ -10,9 +10,9 @@ The future Vercel/Supabase website should stay in its own repo. It only needs th
 The current Mochirii website pass may also place the page behind a parent-owned tester password. That gate belongs to the website repo, not the game runtime:
 
 - `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password`
-- `MOCHI_SOCIAL_TESTER_PASSWORD` or `MOCHI_SOCIAL_TESTER_PASSWORD_SHA256`
+- `MOCHI_SOCIAL_TESTER_PASSWORD`
 
-Do not expose a tester password through a `NEXT_PUBLIC_*` or `VITE_*` variable.
+Do not expose a tester password through a `NEXT_PUBLIC_*` or `VITE_*` variable. The website should verify it server-side with a slow password KDF and an HttpOnly route-scoped cookie.
 
 ## Embed
 

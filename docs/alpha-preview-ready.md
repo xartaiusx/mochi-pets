@@ -17,7 +17,7 @@ Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. I
 - Game runtime: Fly app `mochi-social-game`.
 - Website doorway: Mochirii Vercel Preview route `/games/mochi-social`.
 - Website public env: `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
-- Website server env for the first live pass: `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password` plus either `MOCHI_SOCIAL_TESTER_PASSWORD` or `MOCHI_SOCIAL_TESTER_PASSWORD_SHA256`.
+- Website server env for the first live pass: `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password` plus `MOCHI_SOCIAL_TESTER_PASSWORD`.
 - Supabase authority: Mochirii Edge Functions own allowlist, terms, action ledger, feedback, admin, and chain operation rows.
 - Enjin: Canary only, visible unfunded preview stub until collection, Fuel Tank, Wallet Daemon signing, and cENJ funding are approved.
 
