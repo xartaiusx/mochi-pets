@@ -5,7 +5,8 @@ body,
   height: 100vh;
   margin: 0;
   overflow: hidden;
-  background: #10252a;
+  background:
+    linear-gradient(180deg, #18363a 0%, #10252a 56%, #172017 100%);
 }
 
 body {
@@ -20,49 +21,322 @@ body {
     sans-serif;
 }
 
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 18% 16%, rgb(255 214 137 / 12%), transparent 26%),
+    radial-gradient(circle at 82% 20%, rgb(128 211 174 / 10%), transparent 28%),
+    linear-gradient(180deg, rgb(20 47 47 / 20%), rgb(18 27 20 / 34%));
+  content: "";
+  pointer-events: none;
+}
+
 #mochi-social-hud {
   position: fixed;
-  top: 12px;
-  left: 12px;
+  inset: 0;
   z-index: 20;
-  display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 8px;
-  align-items: center;
-  max-width: calc(100vw - 24px);
-  padding: 7px 9px;
-  border: 1px solid rgb(255 255 255 / 18%);
-  border-radius: 8px;
-  background: rgb(12 23 26 / 76%);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+  display: block;
   font-size: 13px;
-  line-height: 1;
+  line-height: 1.25;
   pointer-events: none;
 }
 
 #mochi-social-hud strong {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   white-space: nowrap;
 }
 
 #mochi-social-hud span {
   display: inline-flex;
-  min-width: 62px;
-  justify-content: center;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 12%);
-  padding: 5px 7px;
+  align-items: center;
+  min-height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  background:
+    linear-gradient(180deg, rgb(255 245 203 / 13%), rgb(255 255 255 / 7%)),
+    rgb(19 34 31 / 62%);
+  padding: 5px 8px;
   white-space: nowrap;
 }
 
-@media (max-width: 520px) {
+#mochi-social-hud button {
+  min-height: 40px;
+  border: 1px solid rgb(255 224 142 / 24%);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgb(255 225 156 / 18%), rgb(255 255 255 / 7%)),
+    rgb(37 63 54 / 84%);
+  color: #f8faf6;
+  cursor: pointer;
+  font:
+    700 12px/1.1 Inter,
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+  padding: 8px 10px;
+  pointer-events: auto;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 34%);
+}
+
+#mochi-social-hud button:hover,
+#mochi-social-hud button:focus-visible {
+  border-color: rgb(255 223 145 / 58%);
+  background:
+    linear-gradient(180deg, rgb(255 223 145 / 22%), rgb(255 255 255 / 8%)),
+    rgb(31 69 58 / 88%);
+}
+
+#mochi-social-hud button:focus-visible,
+.mochi-hud__chat input:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 74%);
+  outline-offset: 3px;
+}
+
+.mochi-hud__status-strip,
+.mochi-hud__social-card,
+.mochi-hud__pet-card,
+.mochi-hud__feed-panel,
+.mochi-hud__actions {
+  position: absolute;
+  border: 1px solid rgb(255 224 142 / 18%);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgb(41 35 29 / 88%), rgb(10 25 23 / 82%)),
+    rgb(14 24 22 / 84%);
+  box-shadow:
+    0 12px 34px rgb(0 0 0 / 28%),
+    inset 0 1px 0 rgb(255 241 193 / 12%);
+  pointer-events: auto;
+  backdrop-filter: blur(12px);
+}
+
+.mochi-hud__status-strip {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 8px 10px;
+}
+
+.mochi-hud__brand,
+.mochi-hud__status-pills,
+.mochi-hud__social-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.mochi-hud__brand span {
+  border: 1px solid rgb(255 223 145 / 26%);
+  background:
+    linear-gradient(180deg, rgb(255 223 145 / 18%), rgb(113 86 50 / 28%));
+  color: #fff3cd;
+}
+
+.mochi-hud__status-pills span[data-presence-label] {
+  border: 1px solid rgb(126 218 178 / 25%);
+  background:
+    linear-gradient(180deg, rgb(126 218 178 / 17%), rgb(44 95 82 / 26%));
+}
+
+.mochi-hud__social-card {
+  top: 82px;
+  left: 12px;
+  width: min(390px, calc(100vw - 24px));
+  padding: 8px;
+}
+
+.mochi-hud__social-card span[data-market-label] {
+  border: 1px solid rgb(255 223 145 / 20%);
+  background:
+    linear-gradient(180deg, rgb(255 223 145 / 15%), rgb(88 60 40 / 28%));
+}
+
+.mochi-hud__pet-card {
+  top: 176px;
+  left: 12px;
+  display: grid;
+  gap: 6px;
+  width: min(300px, calc(100vw - 24px));
+  padding: 10px;
+}
+
+.mochi-hud__pet-card strong {
+  white-space: normal;
+}
+
+.mochi-hud__kicker,
+.mochi-hud__hint {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.mochi-hud__kicker {
+  min-height: 0 !important;
+  color: #ffdf91;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.mochi-hud__hint {
+  min-height: 0 !important;
+  color: rgb(248 250 246 / 74%);
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal !important;
+}
+
+.mochi-hud__actions {
+  left: 50%;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(9, minmax(62px, 1fr));
+  gap: 6px;
+  width: min(820px, calc(100vw - 24px));
+  padding: 8px;
+  transform: translateX(-50%);
+}
+
+.mochi-hud__actions button[data-alpha-action="chain.withdraw_request"] {
+  border-color: rgb(255 240 155 / 34%);
+  background:
+    linear-gradient(180deg, rgb(255 240 155 / 22%), rgb(119 101 177 / 18%)),
+    rgb(46 41 71 / 88%);
+}
+
+.mochi-hud__feed-panel {
+  right: 12px;
+  top: 82px;
+  display: grid;
+  gap: 8px;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(360px, calc(100vh - 190px));
+  padding: 9px;
+}
+
+.mochi-hud__chat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.mochi-hud__chat label {
+  display: flex;
+  flex: 1 1 220px;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.mochi-hud__chat label span {
+  flex: 0 0 auto;
+  background: rgb(255 255 255 / 9%);
+}
+
+.mochi-hud__chat input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 12%);
+  color: #f8faf6;
+  padding: 6px 8px;
+  font: inherit;
+  pointer-events: auto;
+}
+
+.mochi-hud__chat input::placeholder {
+  color: rgb(248 250 246 / 66%);
+}
+
+.mochi-hud__feed {
+  display: grid;
+  gap: 4px;
+  max-height: 230px;
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}
+
+.mochi-hud__feed li {
+  border-left: 2px solid rgb(255 224 142 / 52%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 7%);
+  padding: 5px 6px;
+  color: rgb(248 250 246 / 86%);
+}
+
+@media (max-width: 920px) {
+  .mochi-hud__status-strip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mochi-hud__social-card,
+  .mochi-hud__pet-card,
+  .mochi-hud__feed-panel {
+    width: min(340px, calc(100vw - 24px));
+  }
+
+  .mochi-hud__pet-card {
+    top: 214px;
+  }
+
+  .mochi-hud__feed-panel {
+    top: auto;
+    right: 12px;
+    bottom: 74px;
+    max-height: 180px;
+  }
+
+  .mochi-hud__actions {
+    grid-template-columns: repeat(3, minmax(72px, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
   #mochi-social-hud {
-    grid-template-columns: 1fr auto;
     font-size: 12px;
   }
 
-  #mochi-social-hud strong {
-    grid-column: 1 / -1;
+  .mochi-hud__status-strip,
+  .mochi-hud__social-card,
+  .mochi-hud__pet-card,
+  .mochi-hud__feed-panel,
+  .mochi-hud__actions {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    transform: none;
+  }
+
+  .mochi-hud__status-strip {
+    top: 8px;
+  }
+
+  .mochi-hud__social-card {
+    top: 150px;
+  }
+
+  .mochi-hud__pet-card,
+  .mochi-hud__feed-panel {
+    display: none;
+  }
+
+  .mochi-hud__actions {
+    bottom: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

@@ -1,4 +1,5 @@
 import { BRIDGE_EVENTS, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
+import { ALPHA_FEATURES } from './alpha-contract';
 
 export interface GameManifest {
   name: 'Mochi Social';
@@ -17,9 +18,14 @@ export interface GameManifest {
   auth: {
     provider: 'supabase';
     required: boolean;
-    mode: 'guest-first';
+    mode: 'guest-first' | 'closed-alpha';
     tokenPolicy: 'access-token-only';
   };
+  alpha: typeof ALPHA_FEATURES.alpha;
+  economy: typeof ALPHA_FEATURES.economy;
+  chain: typeof ALPHA_FEATURES.chain;
+  market: typeof ALPHA_FEATURES.market;
+  ugc: typeof ALPHA_FEATURES.ugc;
 }
 
 function trimTrailingSlash(origin: string) {
@@ -46,8 +52,9 @@ export function createGameManifest(origin: string, version = '0.1.0'): GameManif
     auth: {
       provider: 'supabase',
       required: process.env.SUPABASE_AUTH_REQUIRED === 'true',
-      mode: 'guest-first',
+      mode: process.env.SUPABASE_AUTH_REQUIRED === 'true' ? 'closed-alpha' : 'guest-first',
       tokenPolicy: 'access-token-only'
-    }
+    },
+    ...ALPHA_FEATURES
   };
 }

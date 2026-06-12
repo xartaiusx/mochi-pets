@@ -1,0 +1,242 @@
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+const failures = [];
+
+const checks = [
+  {
+    file: 'package.json',
+    includes: ['"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
+  },
+  {
+    file: '.github/workflows/ci.yml',
+    includes: ['npm run secret-scan', 'npm run alpha:readiness', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+  },
+  {
+    file: 'AGENTS.md',
+    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'Do not set dummy', 'Never credit inventory', 'Mochirii Vercel Preview', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL', 'MOCHI_SOCIAL_AUTH', 'check:mochi-social-bridge-state', 'Alpha Preview Ready can pass while funded-chain gates are red']
+  },
+  {
+    file: 'docs/no-cost-operations.md',
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red']
+  },
+  {
+    file: 'docs/codex-external-ops.md',
+    includes: [
+      'Source Hierarchy',
+      'Source Basis',
+      'Alpha Preview Ready Lane',
+      'preview-live-gates',
+      'funded-chain-gates',
+      'Do not set dummy Enjin IDs',
+      'Build the next alpha feature against no-real-value Alpha Preview Ready',
+      'Secret Entry Protocol',
+      'Preview Environment Matrix',
+      'CI Gate Checklist',
+      'Supabase Authority Matrix',
+      'Enjin Canary State Machine',
+      'Fuel Tank Dispatch Contract',
+      'WebSocket And Presence Verification',
+      'Discord Boundary',
+      'Computer Use',
+      'No-Cost Default'
+    ]
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
+  },
+  {
+    file: 'docs/site-integration.md',
+    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
+  },
+  {
+    file: 'docs/deployment.md',
+    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready']
+  },
+  {
+    file: 'docs/enjin-canary-alpha.md',
+    includes: ['ENJIN_NETWORK="CANARY"', 'Fuel Tank', 'Only when state is `FINALIZED`', 'no inbound ports', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'pollEnjinTransaction', '/integration/alpha/enjin/submit', 'x-mochi-social-server-token', 'confirmNoRealValue=true', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'Cloud Wallet Daemon Gate', 'Local Wallet Daemon Binary Check', 'AWS CloudFormation', 'KEY_PASS', 'PLATFORM_KEY', 'For Alpha Preview Ready']
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['noRealValue: true', "network: 'CANARY'", "'chain.operation_update'"]
+  },
+  {
+    file: 'apps/game/src/integration/enjin-canary.ts',
+    includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'data-profile-label', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-friend-label', 'data-alpha-local-action="friend.add"', 'friendProof', 'data-status-label', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="pet.inspect"', 'lastInspectedPetId', 'configured-preview-stub']
+  },
+  {
+    file: 'scripts/check-alpha-browser-bridge-auth.mjs',
+    includes: ['Mochi Social browser bridge auth check passed', 'payload.accessToken', 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'postToParent(BRIDGE_EVENTS.authState', 'refreshToken', 'SUPABASE_SERVICE_ROLE_KEY', 'ENJIN_PLATFORM_TOKEN']
+  },
+  {
+    file: 'apps/game/src/integration/supabase-edge-client.ts',
+    includes: ['MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'x-mochi-social-server-token', 'ALPHA_EDGE_FUNCTIONS.action', 'JSON.stringify(action)']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
+  },
+  {
+    file: 'apps/game/tests/enjin-canary.test.ts',
+    includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update', 'submits hot-to-cold certificate proof', 'submits fixed listing proof', 'polls Enjin finality']
+  },
+  {
+    file: 'apps/game/tests/enjin-operator-contract.test.ts',
+    includes: ['allows finality polling without token id or amount fields', 'requires token id and amount for asset-moving submissions', 'requires fixed listing prices to be integer strings', 'keeps the no-real-value confirmation mandatory']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['allowlistRequired', 'noRealValue', 'finalityRequired']
+  },
+  {
+    file: 'apps/game/tests/map-object-contract.test.ts',
+    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'token-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Lantern Garden', '25 * 18']
+  },
+  {
+    file: 'apps/game/tests/map-event-behavior.test.ts',
+    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochi Token', 'pet-care', 'bond 5/5', 'market-board', 'trade-post', 'no-real-value Enjin Canary certificate request', 'Wallet Daemon services']
+  },
+  {
+    file: 'apps/game/tests/supabase-edge-client.test.ts',
+    includes: ['scoped server token in a header only', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action']
+  },
+  {
+    file: 'apps/game/scripts/smoke.mjs',
+    includes: ['/integration/alpha/status', 'closed Enjin Canary alpha contract', 'fixed-price/no-auction', 'configured-preview-stub']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'canvasMovement.changedAfterFirstTabMove=true', 'momo-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'configured-preview-stub']
+  },
+  {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'simulated testers', 'HTTP alpha contract load smoke']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="friend.add"', 'friendProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="pet.inspect"', 'lastInspectedPetId', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowRight', 'ArrowDown', 'canvas']
+  },
+  {
+    file: 'scripts/check-alpha-visual-snapshot.mjs',
+    includes: ['playwright-core', 'alpha-visual-snapshot.json', 'alpha-visual-page.png', 'alpha-visual-canvas.png', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'local-only by default', 'manualReview', 'createHash', 'canvas']
+  },
+  {
+    file: 'scripts/check-enjin-operator-smoke.mjs',
+    includes: ['/integration/alpha/enjin/submit', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE', 'MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID', 'MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID', 'enjin_canary_not_configured', 'invalid_game_server_token']
+  },
+  {
+    file: 'scripts/check-built-server-smoke.mjs',
+    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'configured-preview-stub', 'invalid_game_server_token', 'enjin_canary_not_configured', 'Local-only built Express server smoke']
+  },
+  {
+    file: 'scripts/check-alpha-local-suite.mjs',
+    includes: ['No-cost localhost Alpha RC suite', 'readGitState', 'localHead', 'npmCommand', 'alpha:wallet-daemon-check', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'delete env.ENJIN_PLATFORM_TOKEN', 'reports/alpha-local-suite.json']
+  },
+  {
+    file: 'scripts/check-alpha-local-evidence.mjs',
+    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'readGitState', 'localHead', 'same-suite evidence', 'built server smoke report', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'visual snapshot canvas PNG must be non-empty', 'visual review must keep rendered prompt interaction as a manual pre-RC gate', 'Wallet Daemon local check must stay no-cost and metadata-only', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+  },
+  {
+    file: 'scripts/check-alpha-report-hygiene.mjs',
+    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'alpha-operator-checklist.json', 'alpha-provider-preflight.json', 'alpha-external-gates.json', 'alpha-preview-ready.json', 'alpha-visual-review.json', 'alpha-manual-prompt-review.json', 'wallet-daemon-local.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochi-social-alpha-preview-ready.md', 'Unredacted local suite token', 'Wallet daemon password assignment', 'Supabase service role assignment']
+  },
+  {
+    file: 'scripts/check-alpha-gate-contracts.mjs',
+    includes: ['Mochi Social alpha gate contract checks passed', 'previewLiveGateNames', 'fundedChainGateNames', 'previewFlySecrets', 'Live game contract', 'Site preview contract', 'Fly funded-chain secret names', 'Enjin Canary operator readiness', 'requiresHostedApproval(gameUrl)', 'fetchJson(`${gameUrl}/healthz`)', 'fundedChainRequiredForPreview: false']
+  },
+  {
+    file: 'scripts/write-alpha-manual-prompt-review.mjs',
+    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED']
+  },
+  {
+    file: 'scripts/check-wallet-daemon-local.mjs',
+    includes: ['wallet-daemon-local.json', 'wallet-daemon-local.md', 'No-cost local Wallet Daemon binary check', 'never runs wallet-daemon import', 'never runs wallet-daemon print-seed', 'never starts a long-running signer process', 'never contacts Enjin Platform', 'MOCHI_SOCIAL_WALLET_DAEMON_PATH', 'MOCHI_SOCIAL_WALLET_DAEMON_REQUIRED', 'sha256']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'token-chest', 'Lantern Garden']
+  },
+  {
+    file: 'scripts/check-alpha-external-gates.mjs',
+    includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'readPreviewEnvFile', 'urlFieldsRead', 'hostedChecksAllowed', 'readGitState', 'localHead', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'previewFlySecrets', 'fundedChainFlySecrets', 'preview-live-gates', 'funded-chain-gates', 'summarizeGateLanes', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
+  },
+  {
+    file: 'scripts/write-alpha-operator-checklist.mjs',
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'alpha-operator-checklist.json', 'readGitState', 'localHead', 'walletDaemonSummary', 'manualPromptSummary', 'providerActionQueue', 'buildProviderActionQueue', 'Provider Action Queue', 'approvalText', 'noCostFallback', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'vercel-supabase-preview-contract', 'enjin-canary-readiness', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'noCostRule', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:external-gates']
+  },
+  {
+    file: 'scripts/write-alpha-provider-preflight.mjs',
+    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'Known Provider Action IDs', 'Next Approval IDs', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
+  },
+  {
+    file: 'scripts/write-alpha-sync-approval.mjs',
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'readPrFixture', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readNamedUrl', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'GitHub Actions/PR checks', 'Suggested combined public-repo sync command note', 'Proceed with public-repo sync', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
+  },
+  {
+    file: 'scripts/check-alpha-sync-approval-self-test.mjs',
+    includes: ['Mochi Social sync approval self-test OK', 'writePrFixture', 'writePreviewEnvFixture', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'localHeadMatchesPrHead === false', '## PR State', '## Local Preview URL File', 'https://preview.example.test', 'local HEAD does not match PR head', 'fakeToken']
+  },
+  {
+    file: 'scripts/check-alpha-preview-ready.mjs',
+    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json']
+  },
+  {
+    file: 'scripts/check-alpha-rc-audit.mjs',
+    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'readGitState', 'provider.external-gates', 'hostedChecksAllowed', 'external gate report', 'game.visual-review', 'game.manual-prompt-review-script', 'game.wallet-daemon-local-check', 'game.map-event-behavior', 'local.manual-prompt-review', 'syncExternalGateSnapshotFailures', 'local.evidence-summary', 'local.operator-checklist-current', 'local.provider-preflight-current', 'providerActionQueueIds', 'operator checklist provider action queue missing', 'provider preflight queue missing', 'local.sync-approval-current', 'currentGitStateFailures', 'currentGitStateFailuresForRepo', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-vercel-preview.local.txt', 'site.bridge-helper', 'site.bridge-state-self-test', 'site.auth-bridge-check', 'resolveMochiSocialBridgeMessage', 'check-mochi-social-bridge-state.mjs', 'site.edge-authority-check', 'site.edge-authority', 'check-mochi-social-edge-authority.mjs', 'site.preview-key-loader-self-test', 'site.preview-key-loader', 'check-mochi-social-preview-key-loader.mjs', 'site.preview-url-self-test', 'check-mochi-social-preview-url-self-test.mjs', 'site.browser-gate-writer', 'write-mochi-social-browser-gates.mjs', 'site.browser-gate-self-test', 'check-mochi-social-browser-gate-self-test.mjs', 'site.report-hygiene-check', 'check-mochi-social-report-hygiene.mjs', 'site.discord-oauth-self-test', 'site.discord-oauth-detector', 'check-mochi-social-discord-oauth-self-test.mjs', 'site.preview-ready-audit', 'site.bridge-state', 'site.auth-bridge', 'MOCHI_SOCIAL_SITE_PREVIEW_READY_SKIP_SELF_TEST_COMMANDS', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readPreviewEnvFile', 'MOCHI_SOCIAL_SITE_BROWSER_GATES_JSON', 'stored browser gate report', 'MOCHI_SOCIAL_SITE_REPORT_HYGIENE_JSON', 'site.report-hygiene', 'site.preview-ready-report', 'check-mochi-social-preview-ready.mjs', 'mochi-social-preview-ready.json']
+  }
+];
+
+function read(file) {
+  const fullPath = path.join(root, file);
+  if (!existsSync(fullPath)) {
+    failures.push(`${file}: missing required file.`);
+    return '';
+  }
+  return readFileSync(fullPath, 'utf8');
+}
+
+for (const check of checks) {
+  const text = read(check.file);
+  for (const snippet of check.includes) {
+    if (!text.includes(snippet)) {
+      failures.push(`${check.file}: expected snippet not found: ${snippet}`);
+    }
+  }
+}
+
+const manifestText = read('apps/game/src/integration/manifest.ts');
+if (/network:\s*['"]ENJIN['"]/.test(manifestText)) {
+  failures.push('apps/game/src/integration/manifest.ts: alpha manifest must not expose Enjin mainnet.');
+}
+
+const packageJson = JSON.parse(read('package.json') || '{}');
+if (packageJson.engines?.node !== '>=22 <23') {
+  failures.push('package.json: Node 22 engine contract changed.');
+}
+
+if (failures.length) {
+  console.error('Mochi Social alpha readiness failed:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log('Mochi Social alpha readiness checks passed.');

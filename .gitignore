@@ -3,6 +3,12 @@ dist/
 .vite/
 .turbo/
 coverage/
+reports/*.json
+reports/*.png
+reports/*.md
+reports/**/*.json
+reports/**/*.png
+reports/**/*.md
 .local/
 .env
 .env.*

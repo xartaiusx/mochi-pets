@@ -31,7 +31,25 @@ For endpoint checks against a running server:
 ```powershell
 $env:MOCHI_SOCIAL_BASE_URL='http://localhost:3000'
 npm run smoke
+npm run alpha:local-acceptance
+npm run alpha:load-smoke
+npm run alpha:browser-presence
+npm run alpha:visual-snapshot
+npm run alpha:enjin-operator-smoke
 ```
+
+`npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. `npm run alpha:browser-presence` uses local Chrome or `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to verify two tabs show the playable canvas, HUD, presence chip, canvas movement signatures, observer-side canvas change, and HUD care/chat/emote/market/trade/Canary action loop. `npm run alpha:visual-snapshot` captures ignored first-screen page/canvas PNGs for local review. Both browser checks are local-only unless their hosted allow flags are set after explicit hosted-preview approval. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and avoids live Enjin submissions unless an operator explicitly opts in. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the remaining manual NPC/chest/habitat map-object check.
+
+For the local no-cost release-candidate pass, run:
+
+```powershell
+npm run alpha:local-suite
+npm run alpha:local-evidence
+npm run alpha:operator-checklist
+npm run alpha:report-hygiene
+```
+
+The suite builds once, starts the built Express runtime on a disposable localhost port with throwaway env, runs endpoint smoke, local alpha acceptance, 10-25 tester HTTP load smoke, two-tab browser presence, first-screen visual snapshot, and the private Enjin operator fail-closed check, then writes `reports/alpha-local-suite.json` and shuts the server down. The evidence command reads the ignored localhost reports and writes no-secret `reports/alpha-local-evidence.json` and `reports/alpha-local-evidence.md` summaries. The checklist command refreshes the no-secret operator handoff, and the hygiene command scans ignored local reports plus that generated checklist for accidental secret patterns.
 
 ## Deployment Boundary
 
