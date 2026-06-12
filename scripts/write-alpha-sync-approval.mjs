@@ -18,7 +18,7 @@ const gitState = readGitState();
 const siteGitState = readGitStateAt(siteRepoPath);
 const prState = {
   game: readPr('xartaiusx/mochi-social', '1', gitState.localHead),
-  site: readPr('Mochirii-Wushu/Mochirii', '258', siteGitState.localHead)
+  site: readPr('Mochirii-Wushu/Mochirii', '259', siteGitState.localHead)
 };
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();

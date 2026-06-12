@@ -96,7 +96,7 @@ try {
 
 async function run() {
   checkGitHubPr('game PR', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social', root);
-  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', '258', undefined, siteRepoPath);
+  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', '259', undefined, siteRepoPath);
   checkSupabasePreviewSecrets();
   checkFly();
   await checkLiveGameContract();

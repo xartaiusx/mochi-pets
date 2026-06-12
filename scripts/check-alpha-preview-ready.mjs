@@ -271,7 +271,7 @@ Push C:\\Users\\xtyty\\Documents\\Local RPG branch codex/mochi-social-alpha-rc t
 \`\`\`
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Mochirii branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
+Push C:\\Users\\xtyty\\Documents\\Mochirii branch codex/reaper-pending-verification-containment to origin/codex/reaper-pending-verification-containment if it is ahead, then verify GitHub Actions/PR checks for Mochirii PR #259.
 \`\`\`
 
 \`\`\`text

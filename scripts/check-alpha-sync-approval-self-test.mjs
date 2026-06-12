@@ -74,8 +74,8 @@ function writePrFixture() {
         { name: `Verify ${fakeToken} Mochi Social`, conclusion: 'SUCCESS', status: 'COMPLETED' },
       ],
     },
-    'Mochirii-Wushu/Mochirii#258': {
-      url: 'https://github.com/Mochirii-Wushu/Mochirii/pull/258',
+    'Mochirii-Wushu/Mochirii#259': {
+      url: 'https://github.com/Mochirii-Wushu/Mochirii/pull/259',
       headRefOid: '2222222222222222222222222222222222222222',
       mergeStateStatus: 'CLEAN',
       isDraft: true,

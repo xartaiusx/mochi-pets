@@ -989,7 +989,7 @@ function syncExternalGateSnapshotFailures(syncReport) {
 
 function addPrRequirements() {
   checkPr('github.game-pr', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social');
-  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', '258');
+  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', '259');
 }
 
 function addLocalBranchRequirements() {

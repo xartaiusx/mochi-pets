@@ -16,7 +16,7 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 ## Starting Point
 
 - Game repo PR: `xartaiusx/mochi-social`, branch `codex/mochi-social-alpha-rc`.
-- Website repo PR: `Mochirii-Wushu/Mochirii`, branch `codex/mochi-social-alpha-rc`.
+- Website repo PR: `Mochirii-Wushu/Mochirii#259`, branch `codex/reaper-pending-verification-containment`.
 - Game runtime target: Fly app `mochi-social-game`.
 - Website preview target: Mochirii Vercel preview route `/games/mochi-social`.
 - Chain target: Enjin Canary only.

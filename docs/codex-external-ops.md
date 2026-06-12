@@ -82,7 +82,7 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 | Surface | Owner | Value |
 | --- | --- | --- |
 | Game branch | `xartaiusx/mochi-social` | `codex/mochi-social-alpha-rc` |
-| Site branch | `Mochirii-Wushu/Mochirii` | `codex/mochi-social-alpha-rc` |
+| Site branch | `Mochirii-Wushu/Mochirii` | `codex/reaper-pending-verification-containment` |
 | Game host | Fly | `mochi-social-game`, region `sjc` |
 | Game saves | Fly volume | `mochi_social_data` mounted at `/data` |
 | Site host | Vercel Preview | `/games/mochi-social` |
