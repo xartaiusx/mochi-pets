@@ -42,6 +42,12 @@ type AlphaHudStatePatch = {
     roster: string[];
     spiritId: string;
   };
+  party?: {
+    activeSpiritId?: string;
+    message?: string;
+    partyIds: string[];
+    supportIds: string[];
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -58,6 +64,13 @@ type AlphaHudStatePatch = {
     proof: boolean;
   };
   sealClaimed?: boolean;
+  spar?: {
+    message?: string;
+    opponentId: string;
+    victory: boolean;
+    wins: number;
+    xp: number;
+  };
   training?: {
     message?: string;
     victories: number;
@@ -91,6 +104,16 @@ type SpiritCaptureProfile = {
   habitatNote: string;
 };
 
+type SpiritSparOpponent = {
+  id: string;
+  name: string;
+  affinity: string;
+  baseFocus: number;
+  preferredRoles: readonly ('guardian' | 'trickster' | 'scout')[];
+  rewardXp: number;
+  bondDelta: number;
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -103,6 +126,7 @@ type MochiSpirit = {
   certificateEligible: boolean;
   capture: SpiritCaptureProfile;
   battle: {
+    role: 'guardian' | 'trickster' | 'scout';
     baseFocus: number;
     moves: SpiritBattleMove[];
   };
@@ -152,6 +176,7 @@ const spirits = [
       habitatNote: 'Appears where warm lanterns, quiet friends, and soft tea steam overlap.'
     },
     battle: {
+      role: 'guardian',
       baseFocus: 4,
       moves: [
         { id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 },
@@ -182,6 +207,7 @@ const spirits = [
       habitatNote: 'Appears beside generous trades, guild ribbons, and bright market chatter.'
     },
     battle: {
+      role: 'trickster',
       baseFocus: 5,
       moves: [
         { id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 },
@@ -211,6 +237,7 @@ const spirits = [
       habitatNote: 'Appears near open air, guild bells, and wayfarers who keep promises.'
     },
     battle: {
+      role: 'scout',
       baseFocus: 6,
       moves: [
         { id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 },
@@ -222,6 +249,29 @@ const spirits = [
     ]
   }
 ] as const satisfies readonly MochiSpirit[];
+
+const partyLimit = 3;
+
+const sparLadder = [
+  {
+    id: 'jade-echo-apprentice',
+    name: 'Jade Echo Apprentice',
+    affinity: 'jade-echo',
+    baseFocus: 17,
+    preferredRoles: ['guardian', 'scout'],
+    rewardXp: 5,
+    bondDelta: 1
+  },
+  {
+    id: 'silk-river-disciple',
+    name: 'Silk River Disciple',
+    affinity: 'silk-river',
+    baseFocus: 21,
+    preferredRoles: ['trickster', 'guardian'],
+    rewardXp: 7,
+    bondDelta: 1
+  }
+] as const satisfies readonly SpiritSparOpponent[];
 
 const quests = [
   {
@@ -239,8 +289,12 @@ function growthStageFromBond(bond: number): SpiritGrowthStage {
   return 'seed';
 }
 
+function getSpirit(spiritId: string) {
+  return spirits.find((entry) => entry.id === spiritId);
+}
+
 function resolveSpiritCapture(spiritId: string, offeredItemId: string, harmonyScore = 1, roster: readonly string[] = []) {
-  const spirit = spirits.find((entry) => entry.id === spiritId);
+  const spirit = getSpirit(spiritId);
   if (!spirit) {
     return {
       ok: false,
@@ -273,6 +327,72 @@ function resolveSpiritCapture(spiritId: string, offeredItemId: string, harmonySc
       : `${spirit.name} notices the grove, but this invitation needs ${spirit.capture.lureItemId} and harmony ${spirit.capture.harmonyRequired}.`,
     bond: ok ? 1 : 0,
     growth: 'seed' as SpiritGrowthStage
+  };
+}
+
+function resolveSpiritParty(roster: readonly string[], activeSpiritId?: string) {
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getSpirit(spiritId)));
+  if (!knownRoster.length) {
+    return {
+      ok: false,
+      partyIds: [] as string[],
+      supportIds: [] as string[],
+      message: 'Invite a Mochi Spirit before forming a Mochirii party.'
+    };
+  }
+
+  const requestedActive = activeSpiritId && knownRoster.includes(activeSpiritId) ? activeSpiritId : knownRoster[0];
+  const partyIds = [requestedActive, ...knownRoster.filter((spiritId) => spiritId !== requestedActive)].slice(0, partyLimit);
+  const activeSpirit = getSpirit(requestedActive);
+  return {
+    ok: true,
+    activeSpiritId: requestedActive,
+    partyIds,
+    supportIds: partyIds.slice(1),
+    message: `${activeSpirit?.name || requestedActive} leads a ${partyIds.length}-spirit Mochirii party for no-injury sparring.`
+  };
+}
+
+function resolveSpiritSparLadder(partyIds: readonly string[], opponentId: string = sparLadder[0].id, bondBySpiritId: Record<string, number> = {}, priorWins = 0) {
+  const party = Array.from(new Set(partyIds)).map((spiritId) => getSpirit(spiritId)).filter(Boolean) as MochiSpirit[];
+  const opponent: SpiritSparOpponent = sparLadder.find((entry) => entry.id === opponentId) || sparLadder[0];
+  if (!party.length) {
+    return {
+      ok: false,
+      opponentId: opponent.id,
+      opponentName: opponent.name,
+      partyIds: [] as string[],
+      victory: false,
+      focusScore: 0,
+      opponentScore: opponent.baseFocus,
+      trainingXp: 0,
+      bondDelta: 0,
+      message: 'A Mochirii party is required before entering the spar ladder.'
+    };
+  }
+
+  const focusScore = party.reduce((total, spirit, index) => {
+    const bond = Math.max(1, Math.min(5, Math.floor(bondBySpiritId[spirit.id] || 1)));
+    const roleBonus = opponent.preferredRoles.includes(spirit.battle.role) ? 2 : 0;
+    const leadBonus = index === 0 ? 2 : 0;
+    return total + spirit.battle.baseFocus + bond + roleBonus + leadBonus;
+  }, 0);
+  const opponentScore = opponent.baseFocus + Math.max(0, Math.min(5, Math.floor(priorWins)));
+  const victory = focusScore >= opponentScore;
+
+  return {
+    ok: true,
+    opponentId: opponent.id,
+    opponentName: opponent.name,
+    partyIds: party.map((spirit) => spirit.id),
+    victory,
+    focusScore,
+    opponentScore,
+    trainingXp: victory ? opponent.rewardXp : Math.max(1, Math.floor(opponent.rewardXp / 2)),
+    bondDelta: victory ? opponent.bondDelta : 0,
+    message: victory
+      ? `${party[0].name}'s party clears the ${opponent.name} spar ladder with calm wuxia teamwork.`
+      : `${party[0].name}'s party studies the ${opponent.name} spar ladder rhythm and prepares for another no-injury round.`
   };
 }
 
@@ -421,6 +541,17 @@ function activeSpiritId(actingPlayer: RpgPlayer) {
   return actingPlayer.getVariable<string>('mochiSocial.spirits.active') || bondedSpirits(actingPlayer)[0];
 }
 
+function partyIds(actingPlayer: RpgPlayer) {
+  const party = actingPlayer.getVariable<string[]>('mochiSocial.spirits.party');
+  return Array.isArray(party) ? party : [];
+}
+
+function bondMap(actingPlayer: RpgPlayer, party: readonly string[]) {
+  return Object.fromEntries(
+    party.map((spiritId) => [spiritId, Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.bond`) || 1)])
+  );
+}
+
 function spiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
@@ -538,6 +669,37 @@ function habitatGrove(): EventDefinition {
   };
 }
 
+function partyBanner(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('party-banner');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const formation = resolveSpiritParty(bondedSpirits(actingPlayer), activeSpiritId(actingPlayer));
+      if (!formation.ok) {
+        showAlphaPrompt(actingPlayer, formation.message);
+        return;
+      }
+
+      actingPlayer.setVariable('mochiSocial.spirits.party', formation.partyIds);
+      actingPlayer.setVariable('mochiSocial.spirits.active', formation.activeSpiritId);
+      actingPlayer.setVariable('mochiSocial.spirits.support', formation.supportIds);
+      actingPlayer.showNotification('Party formed', { time: 1800, icon: 'party-banner' });
+      emitAlphaHudState(actingPlayer, {
+        party: {
+          activeSpiritId: formation.activeSpiritId,
+          partyIds: formation.partyIds,
+          supportIds: formation.supportIds,
+          message: formation.message
+        }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit party formed' }, { reason: 'auto', source: 'party-banner' });
+      showAlphaPrompt(actingPlayer, `${formation.message} Party formation stays no-injury, social-first, and no-real-value.`);
+    }
+  };
+}
+
 function trainingRing(): EventDefinition {
   return {
     onInit() {
@@ -565,13 +727,21 @@ function trainingRing(): EventDefinition {
       const currentXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
       const currentVictories = Number(actingPlayer.getVariable<number>(victoryKey) || 0);
       const result = resolveSpiritTrainingBattle(activeSpirit, move.id, currentBond, currentVictories + 1);
+      const sparParty = partyIds(actingPlayer).length ? partyIds(actingPlayer) : [activeSpirit];
+      const priorSparWins = Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0);
+      const spar = resolveSpiritSparLadder(sparParty, 'jade-echo-apprentice', bondMap(actingPlayer, sparParty), priorSparWins);
       const nextXp = currentXp + result.trainingXp;
       const nextVictories = currentVictories + (result.victory ? 1 : 0);
+      const nextSparXp = Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderXp') || 0) + spar.trainingXp;
+      const nextSparWins = priorSparWins + (spar.victory ? 1 : 0);
       const nextBond = result.victory ? Math.min(5, currentBond + result.bondDelta) : currentBond;
       const nextGrowth = growthStageFromBond(nextBond);
 
       actingPlayer.setVariable(xpKey, nextXp);
       actingPlayer.setVariable(victoryKey, nextVictories);
+      actingPlayer.setVariable('mochiSocial.battle.sparLadderXp', nextSparXp);
+      actingPlayer.setVariable('mochiSocial.battle.sparLadderWins', nextSparWins);
+      actingPlayer.setVariable('mochiSocial.battle.lastSparOpponent', spar.opponentId);
       actingPlayer.setVariable(bondKey, nextBond);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
       actingPlayer.showNotification('Training spar complete', { time: 1800, icon: 'training-ring' });
@@ -581,10 +751,17 @@ function trainingRing(): EventDefinition {
           xp: nextXp,
           victories: nextVictories,
           message: result.message
+        },
+        spar: {
+          opponentId: spar.opponentId,
+          victory: spar.victory,
+          xp: nextSparXp,
+          wins: nextSparWins,
+          message: spar.message
         }
       });
       await actingPlayer.save('auto', { title: 'Mochi Spirit training spar' }, { reason: 'auto', source: 'training-ring' });
-      showAlphaPrompt(actingPlayer, `Training spar complete: ${result.message} Training is no-injury guild practice with no real value.`);
+      showAlphaPrompt(actingPlayer, `Training spar complete: ${result.message} ${spar.message} Training is no-injury guild practice with no real value.`);
     }
   };
 }
@@ -778,6 +955,12 @@ const mainServerModule = defineModule({
           x: 896,
           y: 320,
           event: habitatGrove()
+        },
+        {
+          id: 'party-banner',
+          x: 1152,
+          y: 320,
+          event: partyBanner()
         },
         {
           id: 'training-ring',

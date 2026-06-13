@@ -65,6 +65,13 @@ const spriteSpecs = [
     palette: { leaf: '#5fa46f', stone: '#b8c8af', tea: '#f2c65f', ribbon: '#d85f4d', bamboo: '#8fc36b', light: '#fff0b6' }
   },
   {
+    id: 'party-banner',
+    role: 'Mochi Spirit party formation banner',
+    prompt: 'Mochirii party formation banner with three jade spirit medallions, lacquer frame, silk tassels, warm lantern glow, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'party',
+    palette: { wood: '#6f4d3b', silk: '#4f9b7c', medallion: '#bfe3cf', accent: '#f2c65f', ribbon: '#d85f4d', light: '#fff0b6' }
+  },
+  {
     id: 'market-board',
     role: 'Fixed-price market board',
     prompt: 'Mochirii guild market board with lacquer posts, parchment tags, jade pins, warm lantern accent, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -207,6 +214,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'spirit') return spiritFrame(spec, row, col, bob);
   if (spec.kind === 'chest') return chestFrame(spec, row, col, bob);
   if (spec.kind === 'grove') return groveFrame(spec, row, col, bob);
+  if (spec.kind === 'party') return partyFrame(spec, row, col, bob);
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
   if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
   return shrineFrame(spec, row, col, bob);
@@ -335,6 +343,33 @@ function groveFrame(spec, _row, col, _bob) {
     <circle cx="156" cy="207" r="6" fill="#fff8d4" opacity="0.62"/>
     <circle cx="128" cy="192" r="5" fill="#fff8d4" opacity="0.66"/>
     <path d="M87 252 C111 265 145 265 170 252" stroke="#fff4cf" stroke-width="8" stroke-linecap="round" opacity="0.42" fill="none"/>
+  `;
+}
+
+function partyFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.4 : 0.25;
+  return `
+    <ellipse cx="128" cy="318" rx="78" ry="20" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="198" rx="98" ry="92" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="58" y="118" width="22" height="180" rx="8" fill="#221f1e"/>
+    <rect x="176" y="118" width="22" height="180" rx="8" fill="#221f1e"/>
+    <rect x="63" y="126" width="12" height="164" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="181" y="126" width="12" height="164" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M52 118 L204 118 L190 169 L66 169 Z" fill="#221f1e"/>
+    <path d="M63 126 L193 126 L183 158 L73 158 Z" fill="${spec.palette.silk}"/>
+    <rect x="68" y="160" width="120" height="102" rx="18" fill="#221f1e"/>
+    <rect x="78" y="169" width="100" height="83" rx="15" fill="url(#silk-${spec.id})"/>
+    <circle cx="100" cy="207" r="19" fill="#1f2724"/>
+    <circle cx="100" cy="207" r="13" fill="${spec.palette.medallion}"/>
+    <circle cx="128" cy="207" r="22" fill="#1f2724"/>
+    <circle cx="128" cy="207" r="15" fill="${spec.palette.medallion}"/>
+    <circle cx="156" cy="207" r="19" fill="#1f2724"/>
+    <circle cx="156" cy="207" r="13" fill="${spec.palette.medallion}"/>
+    <path d="M94 207 H106 M122 207 H134 M150 207 H162" stroke="#4f8b78" stroke-width="6" stroke-linecap="round"/>
+    <path d="M83 249 C105 266 151 266 174 249" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M68 170 C94 188 162 188 188 170" stroke="${spec.palette.ribbon}" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M76 160 C82 193 68 219 56 237" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" opacity="0.72" fill="none"/>
+    <path d="M180 160 C174 193 188 219 200 237" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" opacity="0.72" fill="none"/>
   `;
 }
 

@@ -5,7 +5,9 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritSparLadder,
   resolveSpiritTrainingBattle
 } from '../src/alpha/content';
 import { ALPHA_ACTION_TYPES, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
@@ -15,6 +17,8 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.alpha.noRealValue).toBe(true);
     expect(ALPHA_FEATURES.alpha.allowlistRequired).toBe(true);
     expect(ALPHA_FEATURES.chain.network).toBe('CANARY');
+    expect(ALPHA_FEATURES.gameplay.partyFormation).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -45,6 +49,8 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
+    expect(ALPHA_ACTION_TYPES).toContain('party.set');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
     expect(ALPHA_ACTION_TYPES).toContain('quest.accept');
@@ -54,7 +60,7 @@ describe('alpha contract', () => {
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);
   });
 
-  it('resolves original Mochirii capture, attunement, training, raising, and quest content', () => {
+  it('resolves original Mochirii capture, attunement, party, spar, training, raising, and quest content', () => {
     const capture = resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, []);
     expect(capture).toMatchObject({
       ok: true,
@@ -77,6 +83,26 @@ describe('alpha contract', () => {
       source: 'spirit-attune'
     });
     expect(resolveSpiritAttunement('jintari', 'mochirii-guild-seal').ok).toBe(false);
+
+    const party = resolveSpiritParty(['lirabao', 'jintari', 'aozhen'], 'jintari');
+    expect(party).toMatchObject({
+      ok: true,
+      activeSpiritId: 'jintari',
+      partyIds: ['jintari', 'lirabao', 'aozhen'],
+      supportIds: ['lirabao', 'aozhen'],
+      source: 'party-formation'
+    });
+    expect(resolveSpiritParty([]).ok).toBe(false);
+
+    const spar = resolveSpiritSparLadder(['lirabao', 'jintari', 'aozhen'], 'jade-echo-apprentice', {
+      lirabao: 3,
+      jintari: 2,
+      aozhen: 2
+    });
+    expect(spar.ok).toBe(true);
+    expect(spar.victory).toBe(true);
+    expect(spar.trainingXp).toBeGreaterThan(0);
+    expect(spar.message).toContain('spar ladder');
 
     const battle = resolveSpiritTrainingBattle('lirabao', 'lantern-pulse', 5, 1);
     expect(battle.ok).toBe(true);

@@ -76,6 +76,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'party-banner',
+            image: '/spritesheets/party-banner.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
             ...SPIRIT_SHEET

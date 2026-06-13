@@ -147,11 +147,15 @@ async function readCanvasMovementPulse(page) {
 }
 
 async function exerciseAlphaHud(page) {
+  await page.bringToFront();
+  await page.waitForTimeout(300);
   const chatMessage = `Hello from browser smoke ${Date.now().toString(36)}`;
   await page.click('[data-alpha-action="spirit.capture"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.attune"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="party.set"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.train"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.spar_ladder"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.raise"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="profile.view"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="guild.buddy"]', { timeout: timeoutMs });
@@ -172,6 +176,7 @@ async function exerciseAlphaHud(page) {
       const profile = document.querySelector('[data-profile-label]')?.textContent || '';
       const guild = document.querySelector('[data-guild-label]')?.textContent || '';
       const status = document.querySelector('[data-status-label]')?.textContent || '';
+      const party = document.querySelector('[data-party-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
@@ -182,8 +187,11 @@ async function exerciseAlphaHud(page) {
         && profile.includes('Profile: reviewed')
         && guild.includes('Guild: 1 local buddy')
         && status.includes('Status: cozy')
+        && party.includes('Party:')
+        && !party.includes('not formed')
         && training.includes('Training:')
         && training.includes('XP')
+        && training.includes('ladder')
         && quest.includes('First Lantern Vow')
         && market.includes('Canary: requested')
         && state.spiritId === 'lirabao'
@@ -191,6 +199,10 @@ async function exerciseAlphaHud(page) {
         && state.lastCaptureSpiritId === 'lirabao'
         && Array.isArray(state.attunedSpiritIds)
         && state.attunedSpiritIds.includes('lirabao')
+        && Array.isArray(state.partyIds)
+        && state.partyIds.includes('lirabao')
+        && state.sparLadderXp >= 1
+        && state.lastSparOpponentId === 'jade-echo-apprentice'
         && state.trainingXp >= 1
         && state.raisingProof === true
         && state.activeQuestId === 'first-lantern-vow'
@@ -214,6 +226,8 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Canary certificate request staged')
         && chat.includes('Lantern Harmony Invitation')
         && chat.includes('accepts the Lantern Invite')
+        && chat.includes('Mochirii party')
+        && chat.includes('spar ladder')
         && chat.includes('guild spar')
         && chat.includes('Jade brush grooming')
         && chat.includes('Quest accepted: First Lantern Vow')
@@ -232,6 +246,7 @@ async function exerciseAlphaHud(page) {
       guild: document.querySelector('[data-guild-label]')?.textContent?.trim() || '',
       status: document.querySelector('[data-status-label]')?.textContent?.trim() || '',
       spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
+      party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
@@ -245,8 +260,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.lastCaptureSpiritId === 'lirabao', 'HUD invite action must record Lirabao as the invited spirit.');
   assert(snapshot.state.bond >= 1, 'HUD care action must increase spirit bond.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('lirabao'), 'HUD attune action must add Lirabao to the local spirit roster.');
+  assert(snapshot.party.includes('Party:'), 'HUD party label must show party state.');
+  assert(Array.isArray(snapshot.state.partyIds) && snapshot.state.partyIds.includes('lirabao'), 'HUD party action must form a Mochi Spirit party with Lirabao.');
   assert(snapshot.training.includes('Training:'), 'HUD training label must show training state.');
   assert(snapshot.state.trainingXp >= 1, 'HUD training action must record training XP.');
+  assert(snapshot.state.sparLadderXp >= 1, 'HUD spar ladder action must record ladder XP.');
+  assert(snapshot.state.lastSparOpponentId === 'jade-echo-apprentice', 'HUD spar ladder action must record the first spar opponent.');
   assert(snapshot.state.raisingProof === true, 'HUD raising action must record raising proof.');
   assert(snapshot.quest.includes('First Lantern Vow'), 'HUD quest label must show the active quest.');
   assert(snapshot.state.activeQuestId === 'first-lantern-vow', 'HUD quest action must record the first quest.');
@@ -264,8 +283,10 @@ async function exerciseAlphaHud(page) {
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
   assert(chat.some((line) => String(line).includes('Lantern Harmony Invitation')), 'HUD chat state must record the spirit invitation action.');
   assert(chat.some((line) => String(line).includes('accepts the Lantern Invite')), 'HUD chat state must record the attunement action.');
+  assert(chat.some((line) => String(line).includes('Mochirii party')), 'HUD chat state must record the party formation action.');
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
   assert(chat.some((line) => String(line).includes('guild spar')), 'HUD chat state must record the training battle action.');
+  assert(chat.some((line) => String(line).includes('spar ladder')), 'HUD chat state must record the spar ladder action.');
   assert(chat.some((line) => String(line).includes('Jade brush grooming')), 'HUD chat state must record the raising action.');
   assert(chat.some((line) => String(line).includes('Quest accepted: First Lantern Vow')), 'HUD chat state must record the quest accept action.');
   assert(chat.some((line) => String(line).includes('Quest progress: First Lantern Vow')), 'HUD chat state must record the quest progress action.');

@@ -39,6 +39,8 @@ const ALPHA_FEATURES = {
   gameplay: {
     spiritCapture: true,
     spiritAttunement: true,
+    partyFormation: true,
+    sparringLadder: true,
     trainingBattles: true,
     raisingCare: true,
     roleplayQuests: true,
@@ -62,6 +64,8 @@ const ALPHA_ACTION_TYPES = [
   'spirit.attune',
   'spirit.bond',
   'spirit.care',
+  'party.set',
+  'battle.spar_ladder',
   'spirit.train',
   'spirit.raise',
   'quest.accept',

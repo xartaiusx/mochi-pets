@@ -16,6 +16,7 @@ const expectedPlacements = {
   'care-shrine': { x: 768, y: 320 },
   'habitat-grove': { x: 896, y: 320 },
   'training-ring': { x: 1024, y: 320 },
+  'party-banner': { x: 1152, y: 320 },
   'quest-board': { x: 1024, y: 704 },
   'market-board': { x: 1152, y: 704 },
   'trade-post': { x: 1280, y: 704 },
@@ -58,6 +59,7 @@ describe('Mochi town map object contract', () => {
       "this.setGraphic('sifu-narao')",
       "this.setGraphic('chest')",
       "this.setGraphic('habitat-grove')",
+      "this.setGraphic('party-banner')",
       "this.setGraphic('market-board')",
       "this.setGraphic('trade-post')",
       "this.setGraphic('training-ring')",
@@ -68,6 +70,7 @@ describe('Mochi town map object contract', () => {
       'Bond with a Mochi Spirit first',
       'Care complete',
       'spirit invitation',
+      'Party formed',
       'Training spar complete',
       'test soft currency',
       'Direct trade proof recorded',
@@ -75,6 +78,7 @@ describe('Mochi town map object contract', () => {
       "source: 'spirit-bond'",
       "source: 'spirit-care'",
       "source: 'habitat-grove'",
+      "source: 'party-banner'",
       "source: 'training-ring'",
       "source: 'quest-board'",
       "source: 'market-board'",
@@ -89,7 +93,9 @@ describe('Mochi town map object contract', () => {
     }
 
     expect(alphaContentSource).toContain('First Lantern Vow');
+    expect(alphaContentSource).toContain('Jade Echo Apprentice');
     expect(runtimeServerSource).toContain('First Lantern Vow');
+    expect(runtimeServerSource).toContain('Jade Echo Apprentice');
   });
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {

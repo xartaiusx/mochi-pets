@@ -55,6 +55,8 @@ async function run() {
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
   assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
+  assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
+  assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
   assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
@@ -63,6 +65,8 @@ async function run() {
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
   assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
+  assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
+  assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
   assert(alphaStatus.body.gameplay?.roleplayQuests === true, 'Alpha status must expose roleplay quests.');
@@ -133,6 +137,16 @@ async function run() {
       requestId: `${runId}-attune`,
       type: 'spirit.attune',
       payload: { spiritId: 'lirabao', offeredItemId: 'mochirii-guild-seal', source: 'acceptance-script' }
+    },
+    {
+      requestId: `${runId}-party`,
+      type: 'party.set',
+      payload: { partyIds: ['lirabao'], activeSpiritId: 'lirabao', source: 'acceptance-script' }
+    },
+    {
+      requestId: `${runId}-spar`,
+      type: 'battle.spar_ladder',
+      payload: { partyIds: ['lirabao'], opponentId: 'jade-echo-apprentice', priorWins: 0, noInjury: true }
     },
     {
       requestId: `${runId}-bond`,

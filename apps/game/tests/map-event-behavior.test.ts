@@ -5,6 +5,7 @@ import {
   GuildSealChest,
   HabitatGrove,
   MarketBoard,
+  PartyBanner,
   QuestBoard,
   SPIRITS,
   SpiritEvent,
@@ -205,6 +206,9 @@ describe('Mochi town event behavior', () => {
 
     expect(player.variables.get('mochiSocial.spirit.lirabao.trainingXp')).toBe(3);
     expect(player.variables.get('mochiSocial.spirit.lirabao.trainingVictories')).toBe(1);
+    expect(player.variables.get('mochiSocial.battle.sparLadderXp')).toBe(2);
+    expect(player.variables.get('mochiSocial.battle.sparLadderWins')).toBe(0);
+    expect(player.variables.get('mochiSocial.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
     expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(2);
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toEqual({
@@ -215,6 +219,13 @@ describe('Mochi town event behavior', () => {
           xp: 3,
           victories: 1,
           message: 'Lirabao completes a no-injury guild spar with Lantern Pulse.'
+        },
+        spar: {
+          opponentId: 'jade-echo-apprentice',
+          victory: false,
+          xp: 2,
+          wins: 0,
+          message: "Lirabao's party studies the Jade Echo Apprentice spar ladder rhythm and prepares for another no-injury round."
         }
       }
     });
@@ -243,6 +254,63 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('First Lantern Vow complete');
     expect(player.texts.at(-1)).toContain('no-real-value alpha progress');
+  });
+
+  it('forms a Mochi Spirit party and clears the first no-injury spar ladder', async () => {
+    const player = createFakePlayer();
+
+    await runAction(PartyBanner(), player);
+    expect(player.texts.at(-1)).toContain('Invite a Mochi Spirit before forming a Mochirii party');
+
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+    await runAction(PartyBanner(), player);
+
+    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari', 'aozhen']);
+    expect(player.variables.get('mochiSocial.spirits.active')).toBe('aozhen');
+    expect(player.variables.get('mochiSocial.spirits.party')).toEqual(['aozhen', 'lirabao', 'jintari']);
+    expect(player.variables.get('mochiSocial.spirits.support')).toEqual(['lirabao', 'jintari']);
+    expect(player.notifications.at(-1)?.message).toBe('Party formed');
+    expect(player.saves.at(-1)?.options.source).toBe('party-banner');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        party: {
+          activeSpiritId: 'aozhen',
+          partyIds: ['aozhen', 'lirabao', 'jintari'],
+          supportIds: ['lirabao', 'jintari'],
+          message: 'Aozhen leads a 3-spirit Mochirii party for no-injury sparring.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('social-first');
+
+    await runAction(TrainingRing(), player);
+
+    expect(player.variables.get('mochiSocial.battle.sparLadderXp')).toBe(5);
+    expect(player.variables.get('mochiSocial.battle.sparLadderWins')).toBe(1);
+    expect(player.variables.get('mochiSocial.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        spirit: { id: 'aozhen', bond: 2, growth: 'seed' },
+        training: {
+          xp: 3,
+          victories: 1,
+          message: 'Aozhen completes a no-injury guild spar with Skybell Guard.'
+        },
+        spar: {
+          opponentId: 'jade-echo-apprentice',
+          victory: true,
+          xp: 5,
+          wins: 1,
+          message: "Aozhen's party clears the Jade Echo Apprentice spar ladder with calm wuxia teamwork."
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('spar ladder');
+    expect(player.texts.at(-1)).toContain('no real value');
   });
 
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {

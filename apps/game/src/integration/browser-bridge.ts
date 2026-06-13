@@ -5,7 +5,9 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritSparLadder,
   resolveSpiritTrainingBattle
 } from '../alpha/content';
 import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
@@ -31,6 +33,12 @@ interface AlphaHudState {
   growth: string;
   captureProof: boolean;
   lastCaptureSpiritId?: string;
+  activePartyId?: string;
+  partyIds: string[];
+  supportSpiritIds: string[];
+  sparLadderXp: number;
+  sparLadderWins: number;
+  lastSparOpponentId?: string;
   trainingXp: number;
   trainingVictories: number;
   raisingProof: boolean;
@@ -50,6 +58,12 @@ export interface AlphaWorldStatePatch {
     roster: string[];
     spiritId: string;
   };
+  party?: {
+    activeSpiritId?: string;
+    message?: string;
+    partyIds: string[];
+    supportIds: string[];
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -66,6 +80,13 @@ export interface AlphaWorldStatePatch {
     proof: boolean;
   };
   sealClaimed?: boolean;
+  spar?: {
+    message?: string;
+    opponentId: string;
+    victory: boolean;
+    wins: number;
+    xp: number;
+  };
   training?: {
     message?: string;
     victories: number;
@@ -106,6 +127,10 @@ function defaultAlphaState(): AlphaHudState {
     bond: 0,
     growth: 'seed',
     captureProof: false,
+    partyIds: [],
+    supportSpiritIds: [],
+    sparLadderXp: 0,
+    sparLadderWins: 0,
     trainingXp: 0,
     trainingVictories: 0,
     raisingProof: false,
@@ -217,6 +242,7 @@ function createHud() {
     <div class="mochi-hud__spirit-card" aria-label="Active Mochi Spirit">
       <span class="mochi-hud__kicker">Active Spirit</span>
       <strong data-spirit-label>Spirit: none</strong>
+      <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
     </div>
@@ -226,8 +252,10 @@ function createHud() {
       <button type="button" data-alpha-local-action="status.set" aria-label="Set cozy status mood">Mood</button>
       <button type="button" data-alpha-action="spirit.capture" aria-label="Invite a Mochi Spirit from the habitat grove">Invite</button>
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
+      <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
+      <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
       <button type="button" data-alpha-action="spirit.raise" aria-label="Raise and groom the active Mochi Spirit">Raise</button>
       <button type="button" data-alpha-local-action="spirit.inspect" aria-label="Inspect active Mochi Spirit">Inspect</button>
       <button type="button" data-alpha-action="quest.accept" aria-label="Accept the first Mochirii guild quest">Quest</button>
@@ -256,6 +284,7 @@ function createHud() {
   const guildLabel = hud.querySelector('[data-guild-label]');
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
+  const partyLabel = hud.querySelector('[data-party-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
   const marketLabel = hud.querySelector('[data-market-label]');
@@ -278,8 +307,13 @@ function createHud() {
     if (spiritLabel) {
       spiritLabel.textContent = spirit ? `${spirit.name}: ${state.growth} growth, bond ${state.bond}/5` : 'Spirit: none';
     }
+    if (partyLabel) {
+      partyLabel.textContent = state.partyIds.length
+        ? `Party: ${state.partyIds.length} spirit${state.partyIds.length === 1 ? '' : 's'}, ${state.sparLadderWins} ladder win${state.sparLadderWins === 1 ? '' : 's'}`
+        : 'Party: not formed';
+    }
     if (trainingLabel) {
-      trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ${state.raisingProof ? 'raised' : 'needs care'}`;
+      trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? 'raised' : 'needs care'}`;
     }
     if (questLabel) {
       const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === state.activeQuestId);
@@ -507,6 +541,8 @@ function readAlphaState(): AlphaHudState {
       ...defaultAlphaState(),
       ...(parsed || {}),
       attunedSpiritIds: Array.isArray(parsed?.attunedSpiritIds) ? parsed.attunedSpiritIds.map(String) : [],
+      partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
+      supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-24).map(String) : []
     };
@@ -563,10 +599,24 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
   }
 
+  if (patch.party) {
+    state.activePartyId = patch.party.activeSpiritId || patch.party.partyIds[0];
+    state.partyIds = patch.party.partyIds.map(String);
+    state.supportSpiritIds = patch.party.supportIds.map(String);
+    appendUniqueAlphaChat(state, patch.party.message || `Party formed with ${state.partyIds.length} Mochi Spirits.`);
+  }
+
   if (patch.training) {
     state.trainingXp = Math.max(state.trainingXp, Number(patch.training.xp) || 0);
     state.trainingVictories = Math.max(state.trainingVictories, Number(patch.training.victories) || 0);
     appendUniqueAlphaChat(state, patch.training.message || `Training ring: ${state.trainingXp} XP, ${state.trainingVictories} spar wins.`);
+  }
+
+  if (patch.spar) {
+    state.sparLadderXp = Math.max(state.sparLadderXp, Number(patch.spar.xp) || 0);
+    state.sparLadderWins = Math.max(state.sparLadderWins, Number(patch.spar.wins) || 0);
+    state.lastSparOpponentId = patch.spar.opponentId;
+    appendUniqueAlphaChat(state, patch.spar.message || `Spar ladder ${patch.spar.victory ? 'cleared' : 'practiced'}.`);
   }
 
   if (patch.raising) {
@@ -621,6 +671,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       moveId: spirit.battle.moves[0].id,
       bond: state.bond || 1,
       round: Math.max(1, state.trainingVictories + 1)
+    };
+  }
+
+  if (type === 'party.set') {
+    return {
+      partyIds: state.attunedSpiritIds.slice(0, 3),
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0]
+    };
+  }
+
+  if (type === 'battle.spar_ladder') {
+    return {
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      opponentId: 'jade-echo-apprentice',
+      bondBySpiritId: Object.fromEntries((state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3)).map((spiritId) => [spiritId, state.bond || 1])),
+      priorWins: state.sparLadderWins
     };
   }
 
@@ -754,6 +820,36 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.bond = Math.min(5, state.bond + 1);
     state.growth = growthStageFromBond(state.bond);
     state.chat.push(`Care complete: ${state.growth} bond ${state.bond}`);
+  }
+
+  if (type === 'party.set') {
+    const requestedParty = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.attunedSpiritIds;
+    const result = resolveSpiritParty(requestedParty, String(payload.activeSpiritId || state.spiritId || requestedParty[0] || ''));
+    if (result.ok) {
+      state.activePartyId = result.activeSpiritId;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.supportIds;
+      state.spiritId = result.activeSpiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.spar_ladder') {
+    const requestedParty = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
+    const result = resolveSpiritSparLadder(requestedParty, String(payload.opponentId || 'jade-echo-apprentice'), { [state.spiritId || 'lirabao']: state.bond || 1 }, Number(payload.priorWins || state.sparLadderWins || 0));
+    if (result.ok) {
+      state.partyIds = result.partyIds;
+      state.activePartyId = result.partyIds[0];
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.sparLadderXp += result.trainingXp;
+      state.lastSparOpponentId = result.opponentId;
+      if (result.victory) {
+        state.sparLadderWins += 1;
+        state.bond = Math.min(5, Math.max(state.bond, 1) + result.bondDelta);
+        state.growth = growthStageFromBond(state.bond);
+      }
+    }
+    state.chat.push(result.message);
   }
 
   if (type === 'spirit.train') {

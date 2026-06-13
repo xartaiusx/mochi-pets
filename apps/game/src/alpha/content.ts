@@ -87,6 +87,26 @@ export interface MochiSpiritQuest {
   rewardBond: number;
 }
 
+export interface SpiritPartyFormation {
+  ok: boolean;
+  activeSpiritId?: string;
+  partyIds: string[];
+  supportIds: string[];
+  message: string;
+  source: string;
+}
+
+export interface SpiritSparOpponent {
+  id: string;
+  name: string;
+  title: string;
+  affinity: string;
+  baseFocus: number;
+  preferredRoles: readonly SpiritBattleRole[];
+  rewardXp: number;
+  bondDelta: number;
+}
+
 export interface SpiritAttunementResult {
   ok: boolean;
   spiritId: string;
@@ -116,6 +136,20 @@ export interface SpiritTrainingBattleResult {
   bondDelta: number;
   trainingXp: number;
   message: string;
+}
+
+export interface SpiritSparLadderResult {
+  ok: boolean;
+  opponentId: string;
+  opponentName: string;
+  partyIds: string[];
+  victory: boolean;
+  focusScore: number;
+  opponentScore: number;
+  trainingXp: number;
+  bondDelta: number;
+  message: string;
+  source: string;
 }
 
 export interface SpiritRaisingResult {
@@ -201,6 +235,8 @@ export const SPIRIT_MOVES = {
     effectSummary: 'A defensive chime that protects the spirit roster.'
   }
 } as const satisfies Record<string, SpiritBattleMove>;
+
+export const MOCHI_SPIRIT_PARTY_LIMIT = 3;
 
 export const MOCHI_SPIRITS = [
   {
@@ -371,6 +407,29 @@ export const MOCHI_SPIRIT_QUESTS = [
   }
 ] as const satisfies readonly MochiSpiritQuest[];
 
+export const SPIRIT_SPAR_LADDER = [
+  {
+    id: 'jade-echo-apprentice',
+    name: 'Jade Echo Apprentice',
+    title: 'First Court Sparring Echo',
+    affinity: 'jade-echo',
+    baseFocus: 17,
+    preferredRoles: ['guardian', 'scout'],
+    rewardXp: 5,
+    bondDelta: 1
+  },
+  {
+    id: 'silk-river-disciple',
+    name: 'Silk River Disciple',
+    title: 'Market Path Sparring Echo',
+    affinity: 'silk-river',
+    baseFocus: 21,
+    preferredRoles: ['trickster', 'guardian'],
+    rewardXp: 7,
+    bondDelta: 1
+  }
+] as const satisfies readonly SpiritSparOpponent[];
+
 export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
   tileSize: 64,
   tilesheet: {
@@ -386,6 +445,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'spirit-jintari',
     'spirit-aozhen',
     'habitat-grove',
+    'party-banner',
     'market-board',
     'trade-post',
     'training-ring',
@@ -478,6 +538,83 @@ export function resolveSpiritCapture(spiritId: string, offeredItemId: string, ha
     bond: ok ? 1 : 0,
     growth: 'seed',
     source: 'spirit-capture'
+  };
+}
+
+export function resolveSpiritParty(roster: readonly string[], activeSpiritId?: string): SpiritPartyFormation {
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getMochiSpirit(spiritId)));
+  if (!knownRoster.length) {
+    return {
+      ok: false,
+      partyIds: [],
+      supportIds: [],
+      message: 'Invite a Mochi Spirit before forming a Mochirii party.',
+      source: 'party-formation'
+    };
+  }
+
+  const requestedActive = activeSpiritId && knownRoster.includes(activeSpiritId) ? activeSpiritId : knownRoster[0];
+  const orderedParty = [requestedActive, ...knownRoster.filter((spiritId) => spiritId !== requestedActive)].slice(0, MOCHI_SPIRIT_PARTY_LIMIT);
+  const activeSpirit = getMochiSpirit(requestedActive);
+  const supportIds = orderedParty.slice(1);
+
+  return {
+    ok: true,
+    activeSpiritId: requestedActive,
+    partyIds: orderedParty,
+    supportIds,
+    message: `${activeSpirit?.name || requestedActive} leads a ${orderedParty.length}-spirit Mochirii party for no-injury sparring.`,
+    source: 'party-formation'
+  };
+}
+
+export function resolveSpiritSparLadder(
+  partyIds: readonly string[],
+  opponentId: string = SPIRIT_SPAR_LADDER[0].id,
+  bondBySpiritId: Record<string, number> = {},
+  priorWins = 0
+): SpiritSparLadderResult {
+  const party = Array.from(new Set(partyIds)).map((spiritId) => getMochiSpirit(spiritId)).filter(Boolean) as MochiSpirit[];
+  const opponent: SpiritSparOpponent = SPIRIT_SPAR_LADDER.find((entry) => entry.id === opponentId) || SPIRIT_SPAR_LADDER[0];
+  if (!party.length) {
+    return {
+      ok: false,
+      opponentId: opponent.id,
+      opponentName: opponent.name,
+      partyIds: [],
+      victory: false,
+      focusScore: 0,
+      opponentScore: opponent.baseFocus,
+      trainingXp: 0,
+      bondDelta: 0,
+      message: 'A Mochirii party is required before entering the spar ladder.',
+      source: 'battle-spar-ladder'
+    };
+  }
+
+  const focusScore = party.reduce((total, spirit, index) => {
+    const bond = Math.max(1, Math.min(5, Math.floor(bondBySpiritId[spirit.id] || 1)));
+    const roleBonus = opponent.preferredRoles.includes(spirit.battle.role) ? 2 : 0;
+    const leadBonus = index === 0 ? 2 : 0;
+    return total + spirit.battle.baseFocus + bond + roleBonus + leadBonus;
+  }, 0);
+  const opponentScore = opponent.baseFocus + Math.max(0, Math.min(5, Math.floor(priorWins)));
+  const victory = focusScore >= opponentScore;
+
+  return {
+    ok: true,
+    opponentId: opponent.id,
+    opponentName: opponent.name,
+    partyIds: party.map((spirit) => spirit.id),
+    victory,
+    focusScore,
+    opponentScore,
+    trainingXp: victory ? opponent.rewardXp : Math.max(1, Math.floor(opponent.rewardXp / 2)),
+    bondDelta: victory ? opponent.bondDelta : 0,
+    message: victory
+      ? `${party[0].name}'s party clears the ${opponent.name} spar ladder with calm wuxia teamwork.`
+      : `${party[0].name}'s party studies the ${opponent.name} spar ladder rhythm and prepares for another no-injury round.`,
+    source: 'battle-spar-ladder'
   };
 }
 
