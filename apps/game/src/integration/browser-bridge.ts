@@ -7,6 +7,7 @@ import {
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_ROUTE_MASTERIES,
@@ -23,6 +24,7 @@ import {
   resolveSpiritExpedition,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
@@ -84,6 +86,11 @@ interface AlphaHudState {
   routeMasteryTitle: string;
   routeMasteryScore: number;
   routeMasteryKnotClaimed: boolean;
+  habitatBondProof: boolean;
+  habitatBondId?: string;
+  habitatBondName: string;
+  habitatBondScore: number;
+  habitatTasselClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -193,6 +200,18 @@ export interface AlphaWorldStatePatch {
     message?: string;
     proof: boolean;
     totalCount: number;
+  };
+  habitatBond?: {
+    activeSpiritId?: string;
+    bondId: string;
+    bondName: string;
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    title: string;
   };
   technique?: {
     focusScore: number;
@@ -354,6 +373,10 @@ function defaultAlphaState(): AlphaHudState {
     routeMasteryTitle: 'Unmastered',
     routeMasteryScore: 0,
     routeMasteryKnotClaimed: false,
+    habitatBondProof: false,
+    habitatBondName: 'Unbonded',
+    habitatBondScore: 0,
+    habitatTasselClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -501,6 +524,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
       <span class="mochi-hud__hint" data-route-invite-label>Route Invite: pending</span>
       <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
+      <span class="mochi-hud__hint" data-habitat-bond-label>Habitat Bond: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
@@ -524,6 +548,7 @@ function createHud() {
       <button type="button" data-alpha-action="battle.team_spar_match" aria-label="Clear the no-injury full-party team spar match">Match</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
+      <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -567,6 +592,7 @@ function createHud() {
   const expeditionLabel = hud.querySelector('[data-expedition-label]');
   const routeInviteLabel = hud.querySelector('[data-route-invite-label]');
   const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
+  const habitatBondLabel = hud.querySelector('[data-habitat-bond-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
@@ -619,6 +645,11 @@ function createHud() {
       routeMasteryLabel.textContent = state.routeMasteryProof
         ? `Route Mastery: ${state.routeMasteryTitle}, score ${state.routeMasteryScore}`
         : 'Route Mastery: pending';
+    }
+    if (habitatBondLabel) {
+      habitatBondLabel.textContent = state.habitatBondProof
+        ? `Habitat Bond: ${state.habitatBondName}, score ${state.habitatBondScore}`
+        : 'Habitat Bond: pending';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -950,6 +981,17 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.journal.message || `Mochirii spirit journal ${state.journalDiscoveredCount}/${state.journalTotal}.`);
   }
 
+  if (patch.habitatBond) {
+    state.habitatBondProof = patch.habitatBond.proof || state.habitatBondProof;
+    state.habitatBondId = patch.habitatBond.bondId || state.habitatBondId;
+    state.habitatBondName = patch.habitatBond.bondName || state.habitatBondName;
+    state.habitatBondScore = Math.max(state.habitatBondScore, Number(patch.habitatBond.score) || 0);
+    state.habitatTasselClaimed = state.habitatTasselClaimed || patch.habitatBond.rewardItemId === 'jade-court-habitat-tassel';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.habitatBond.roster.map(String)]));
+    state.spiritId = patch.habitatBond.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.habitatBond.message || `${state.habitatBondName} recorded as no-real-value habitat proof.`);
+  }
+
   if (patch.expedition) {
     state.expeditionProof = patch.expedition.proof || state.expeditionProof;
     state.lastExpeditionRouteId = patch.expedition.routeId || state.lastExpeditionRouteId;
@@ -1185,6 +1227,21 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       activeSpiritId: state.spiritId || roster[0],
       bondBySpiritId: Object.fromEntries(roster.map((id) => [id, state.bond || 1])),
       growthBySpiritId: Object.fromEntries(roster.map((id) => [id, state.growth || 'seed']))
+    };
+  }
+
+  if (type === 'spirit.habitat_bond') {
+    return {
+      bondId: SPIRIT_HABITAT_BONDS[0].id,
+      roster: state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      careProof: state.raisingProof || state.bond > 1,
+      bond: state.bond || 1,
+      growth: state.growth || 'seed',
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood
     };
   }
 
@@ -1501,6 +1558,33 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.journalDiscoveredCount = result.discoveredCount;
       state.journalTotal = result.totalCount;
       state.lastJournalSpiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.habitat_bond') {
+    const result = resolveSpiritHabitatBond(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        careProof: Boolean(payload.careProof ?? state.raisingProof ?? state.bond > 1),
+        bond: Number(payload.bond || state.bond || 1),
+        growth: String(payload.growth || state.growth || 'seed'),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || '')
+      },
+      String(payload.bondId || SPIRIT_HABITAT_BONDS[0].id)
+    );
+    if (result.bonded) {
+      state.habitatBondProof = true;
+      state.habitatBondId = result.bondId;
+      state.habitatBondName = result.bondName;
+      state.habitatBondScore = result.score;
+      state.habitatTasselClaimed = result.rewardItemId === 'jade-court-habitat-tassel';
+      state.attunedSpiritIds = result.roster;
+      state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
   }

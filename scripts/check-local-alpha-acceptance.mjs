@@ -57,6 +57,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
   assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
+  assert(manifest.body.gameplay?.habitatBonds === true, 'Manifest must expose Mochi Spirit habitat bonds.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -79,6 +80,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
+  assert(alphaStatus.body.gameplay?.habitatBonds === true, 'Alpha status must expose Mochi Spirit habitat bonds.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -204,6 +206,23 @@ async function run() {
         completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
         guildRankProof: true,
         rankTrialId: 'jade-court-initiate',
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-habitat-bond`,
+      type: 'spirit.habitat_bond',
+      payload: {
+        bondId: 'jade-court-habitat-bond',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        journalDiscoveredCount: 3,
+        careProof: true,
+        bond: 3,
+        growth: 'sprout',
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
         noRealValue: true
       }
     },

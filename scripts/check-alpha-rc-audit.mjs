@@ -101,6 +101,8 @@ function addStaticRequirements() {
   requireFileIncludes('game.local-acceptance', 'Local acceptance covers spirit, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
     'spirit.bond',
     'spirit.care',
+    'spirit.habitat_bond',
+    'jade-court-habitat-bond',
     'market.fixed_list',
     'trade.direct_offer',
     'chain.withdraw_request',
@@ -241,6 +243,8 @@ function addStaticRequirements() {
     'routeInviteProof',
     'data-alpha-action="world.route_mastery"',
     'routeMasteryProof',
+    'data-alpha-action="spirit.habitat_bond"',
+    'habitatBondProof',
     'data-alpha-action="party.harmony_form"',
     'harmonyFormProof',
     'data-alpha-action="battle.harmony_trial"',
@@ -293,6 +297,7 @@ function addStaticRequirements() {
     'route-invitation-altar',
     'fieldExpedition',
     'routeInvitation',
+    'habitatBond',
     'affinity-dais',
     'techniqueMastery',
     'battleTactic',
@@ -341,6 +346,7 @@ function addStaticRequirements() {
     'trade-post',
     'canary-shrine',
     'no-real-value Enjin Canary certificate request',
+    'Jade Court Habitat Bond',
     'Jade Lantern Court',
     '25 * 18'
   ]);
@@ -350,6 +356,7 @@ function addStaticRequirements() {
     'Mochirii Guild Seal',
     'spirit-care',
     'bond 5/5',
+    'Jade Court Habitat Bond',
     'expedition-gate',
     'route-invitation-altar',
     'technique-dojo',

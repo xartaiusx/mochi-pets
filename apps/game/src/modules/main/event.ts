@@ -8,6 +8,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -19,6 +20,7 @@ import {
   resolveSpiritExpedition,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
@@ -61,6 +63,18 @@ type AlphaHudStatePatch = {
     message?: string;
     proof: boolean;
     rewardItemId: string;
+    score: number;
+    title: string;
+  };
+  habitatBond?: {
+    activeSpiritId?: string;
+    bondId: string;
+    bondName: string;
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
     score: number;
     title: string;
   };
@@ -393,6 +407,57 @@ export function HabitatGrove(): EventDefinition {
 
     async onAction(player: RpgPlayer) {
       const roster = bondedSpirits(player);
+      if (roster.length >= MOCHI_SPIRITS.length) {
+        const activeSpirit = activeSpiritId(player) || roster[0];
+        const bond = resolveSpiritHabitatBond(
+          {
+            roster,
+            activeSpiritId: activeSpirit,
+            journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+            careProof: Boolean(player.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.raisingProof`)),
+            bond: Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1),
+            growth: player.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.growth`) || 'seed',
+            profileViewed: Boolean(player.getVariable<boolean>('mochiSocial.social.profileViewed')),
+            guildBuddyProof: Boolean(player.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+            statusMood: player.getVariable<string>('mochiSocial.social.statusMood')
+          },
+          SPIRIT_HABITAT_BONDS[0].id
+        );
+
+        if (!bond.bonded) {
+          showAlphaPrompt(player, bond.message);
+          return;
+        }
+
+        player.setVariable('mochiSocial.spirits.habitatBondProof', true);
+        player.setVariable('mochiSocial.spirits.habitatBond', bond.bondId);
+        player.setVariable('mochiSocial.spirits.habitatBondName', bond.bondName);
+        player.setVariable('mochiSocial.spirits.habitatBondScore', bond.score);
+        if (!player.getVariable<boolean>('mochiSocial.spirits.habitatTasselClaimed')) {
+          player.addItem(ALPHA_ITEMS.habitatTassel, 1);
+          player.setVariable('mochiSocial.spirits.habitatTasselClaimed', true);
+        }
+
+        player.showNotification('Habitat bond recorded', { time: 1800, icon: 'habitat-grove' });
+        emitAlphaHudState(player, {
+          habitatBond: {
+            bondId: bond.bondId,
+            bondName: bond.bondName,
+            title: bond.title,
+            habitat: bond.habitat,
+            activeSpiritId: bond.activeSpiritId,
+            roster: bond.roster,
+            score: bond.score,
+            rewardItemId: bond.rewardItemId,
+            proof: true,
+            message: bond.message
+          }
+        });
+        await player.save('auto', { title: 'Mochi Spirit habitat bond' }, { reason: 'auto', source: 'habitat-grove' });
+        showAlphaPrompt(player, `${bond.message} The Jade Court Habitat Tassel is no-real-value closed-alpha raising and roleplay proof.`);
+        return;
+      }
+
       const targetSpirit = MOCHI_SPIRITS.find((spirit) => !roster.includes(spirit.id)) || MOCHI_SPIRITS[0];
       const result = resolveSpiritCapture(targetSpirit.id, targetSpirit.capture.lureItemId, targetSpirit.capture.harmonyRequired, roster);
 

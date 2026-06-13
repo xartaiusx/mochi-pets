@@ -5,6 +5,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_ROUTE_MASTERIES,
@@ -23,6 +24,7 @@ import {
   resolveSpiritBattleTactic,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritTeamSparMatch,
@@ -45,6 +47,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -84,6 +87,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -238,6 +242,45 @@ describe('alpha contract', () => {
       completedQuestIds: ['first-lantern-vow'],
       guildRankProof: false
     }).mastered).toBe(false);
+
+    expect(SPIRIT_HABITAT_BONDS.map((bond) => bond.id)).toEqual(['jade-court-habitat-bond']);
+    const habitatBond = resolveSpiritHabitatBond({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      careProof: true,
+      bond: 3,
+      growth: 'sprout',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy'
+    });
+    expect(habitatBond).toMatchObject({
+      ok: true,
+      bonded: true,
+      bondId: 'jade-court-habitat-bond',
+      bondName: 'Jade Court Habitat Bond',
+      title: 'First Shared Habitat Bond',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      score: 18,
+      requiredScore: 15,
+      rewardItemId: 'jade-court-habitat-tassel',
+      source: 'spirit-habitat-bond'
+    });
+    expect(habitatBond.message).toContain('journal, care, guild, status, and profile proof');
+    expect(resolveSpiritHabitatBond({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      careProof: false,
+      bond: 3,
+      growth: 'sprout',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy'
+    }).bonded).toBe(false);
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

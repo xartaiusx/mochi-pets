@@ -93,6 +93,7 @@ describe('Mochi town map object contract', () => {
       'Affinity trial',
       'Concord trial cleared',
       'spirit invitation',
+      'Habitat bond recorded',
       'Party formed',
       'Harmony formed',
       'Training spar complete',
@@ -135,6 +136,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Cloudbell Circuit');
     expect(alphaContentSource).toContain('cloudbell-route-knot');
     expect(alphaContentSource).toContain('world-route-mastery');
+    expect(alphaContentSource).toContain('Jade Court Habitat Bond');
+    expect(alphaContentSource).toContain('jade-court-habitat-tassel');
+    expect(alphaContentSource).toContain('spirit-habitat-bond');
     expect(alphaContentSource).toContain('spirit-route-invite');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
     expect(alphaContentSource).toContain('Goldleaf Opening Form');
@@ -163,6 +167,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Cloudbell Circuit');
     expect(runtimeServerSource).toContain('cloudbell-route-knot');
     expect(runtimeServerSource).toContain('world-route-mastery');
+    expect(runtimeServerSource).toContain('Jade Court Habitat Bond');
+    expect(runtimeServerSource).toContain('jade-court-habitat-tassel');
+    expect(runtimeServerSource).toContain('spirit-habitat-bond');
     expect(runtimeServerSource).toContain('spirit-route-invite');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
     expect(runtimeServerSource).toContain('Goldleaf Opening Form');

@@ -539,6 +539,50 @@ describe('Mochi town event behavior', () => {
     expect(player.items.filter((entry) => entry.item.id === 'lantern-harmony-tea')).toHaveLength(1);
   });
 
+  it('records the Jade Court Habitat Bond after roster, journal, care, and local social proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'aozhen');
+    player.variables.set('mochiSocial.spirits.journalCount', 3);
+    player.variables.set('mochiSocial.spirit.aozhen.raisingProof', true);
+    player.variables.set('mochiSocial.spirit.aozhen.bond', 3);
+    player.variables.set('mochiSocial.spirit.aozhen.growth', 'sprout');
+    player.variables.set('mochiSocial.social.profileViewed', true);
+    player.variables.set('mochiSocial.social.guildBuddyProof', true);
+    player.variables.set('mochiSocial.social.statusMood', 'cozy');
+
+    await runAction(HabitatGrove(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('jade-court-habitat-tassel');
+    expect(player.variables.get('mochiSocial.spirits.habitatBondProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.habitatBond')).toBe('jade-court-habitat-bond');
+    expect(player.variables.get('mochiSocial.spirits.habitatBondName')).toBe('Jade Court Habitat Bond');
+    expect(player.variables.get('mochiSocial.spirits.habitatBondScore')).toBe(18);
+    expect(player.variables.get('mochiSocial.spirits.habitatTasselClaimed')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Habitat bond recorded');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit habitat bond' });
+    expect(player.saves.at(-1)?.options.source).toBe('habitat-grove');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        habitatBond: {
+          bondId: 'jade-court-habitat-bond',
+          bondName: 'Jade Court Habitat Bond',
+          title: 'First Shared Habitat Bond',
+          habitat: 'Jade Lantern Court',
+          activeSpiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          score: 18,
+          rewardItemId: 'jade-court-habitat-tassel',
+          proof: true,
+          message: 'Jade Court Habitat Bond recorded: Aozhen and the first-court roster settle into Jade Lantern Court with journal, care, guild, status, and profile proof.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Court Habitat Bond recorded');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha raising and roleplay proof');
+  });
+
   it('records discovered Mochi Spirits in the field journal pavilion', async () => {
     const player = createFakePlayer();
 
