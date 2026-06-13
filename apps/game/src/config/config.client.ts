@@ -86,6 +86,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'technique-dojo',
+            image: '/spritesheets/technique-dojo.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
             ...SPIRIT_SHEET

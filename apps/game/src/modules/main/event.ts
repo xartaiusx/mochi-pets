@@ -10,6 +10,7 @@ import {
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritSparLadder,
+  resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle,
   type MochiSpirit
 } from '../../alpha/content';
@@ -59,6 +60,15 @@ type AlphaHudStatePatch = {
     victory: boolean;
     wins: number;
     xp: number;
+  };
+  technique?: {
+    focusScore: number;
+    masteryLevel: string;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
   };
   training?: {
     message?: string;
@@ -324,6 +334,57 @@ export function JournalPavilion(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochi Spirit journal reviewed' }, { reason: 'auto', source: 'journal-pavilion' });
       showAlphaPrompt(player, `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`);
+    }
+  };
+}
+
+export function TechniqueDojo(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('technique-dojo');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const activeSpirit = activeSpiritId(player);
+      if (!activeSpirit) {
+        showAlphaPrompt(player, 'Attune with a Mochi Spirit before practicing at the Mochirii Technique Dojo.');
+        return;
+      }
+
+      const spirit = MOCHI_SPIRITS.find((entry) => entry.id === activeSpirit);
+      const move = spirit?.battle.moves[0];
+      if (!spirit || !move) {
+        showAlphaPrompt(player, 'The Technique Dojo cannot find a registered Mochirii spirit move for this alpha save.');
+        return;
+      }
+
+      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const bond = Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const currentXp = Number(player.getVariable<number>(xpKey) || 0);
+      const technique = resolveSpiritTechniqueMastery(activeSpirit, move.id, currentXp, bond);
+      if (!technique.ok) {
+        showAlphaPrompt(player, technique.message);
+        return;
+      }
+
+      player.setVariable(xpKey, technique.masteryXp);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, technique.masteryLevel);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.focusScore`, technique.focusScore);
+      player.showNotification('Technique refined', { time: 1800, icon: 'technique-dojo' });
+      emitAlphaHudState(player, {
+        technique: {
+          spiritId: activeSpirit,
+          moveId: move.id,
+          masteryXp: technique.masteryXp,
+          masteryLevel: technique.masteryLevel,
+          focusScore: technique.focusScore,
+          proof: true,
+          message: technique.message
+        }
+      });
+      await player.save('auto', { title: 'Mochi Spirit technique practice' }, { reason: 'auto', source: 'technique-dojo' });
+      showAlphaPrompt(player, `${technique.message} Technique mastery is no-injury alpha progression with no real value.`);
     }
   };
 }

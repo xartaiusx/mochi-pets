@@ -6,6 +6,8 @@ export type SpiritBattleRole = 'guardian' | 'trickster' | 'scout';
 
 export type SpiritEncounterRarity = 'common' | 'uncommon' | 'rare';
 
+export type SpiritTechniqueMasteryLevel = 'novice' | 'practiced' | 'adept';
+
 export interface SpiritJournalEntry {
   title: string;
   summary: string;
@@ -136,6 +138,18 @@ export interface SpiritTrainingBattleResult {
   bondDelta: number;
   trainingXp: number;
   message: string;
+}
+
+export interface SpiritTechniqueMasteryResult {
+  ok: boolean;
+  spiritId: string;
+  moveId: string;
+  masteryLevel: SpiritTechniqueMasteryLevel;
+  masteryXp: number;
+  awardedXp: number;
+  focusScore: number;
+  message: string;
+  source: string;
 }
 
 export interface SpiritSparLadderResult {
@@ -475,6 +489,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'habitat-grove',
     'party-banner',
     'journal-pavilion',
+    'technique-dojo',
     'market-board',
     'trade-post',
     'training-ring',
@@ -495,6 +510,12 @@ export function growthStageFromBond(bond: number): SpiritGrowthStage {
   if (bond >= 5) return 'glow';
   if (bond >= 3) return 'sprout';
   return 'seed';
+}
+
+export function techniqueMasteryLevelFromXp(xp: number): SpiritTechniqueMasteryLevel {
+  if (xp >= 18) return 'adept';
+  if (xp >= 7) return 'practiced';
+  return 'novice';
 }
 
 export function getMochiSpirit(spiritId: string) {
@@ -731,6 +752,48 @@ export function resolveSpiritTrainingBattle(spiritId: string, moveId: string, bo
     message: victory
       ? `${spirit.name} completes a no-injury guild spar with ${move.label}.`
       : `${spirit.name} practices ${move.label} and learns the training rhythm.`
+  };
+}
+
+export function resolveSpiritTechniqueMastery(
+  spiritId: string,
+  moveId: string,
+  currentMasteryXp = 0,
+  bond = 1
+): SpiritTechniqueMasteryResult {
+  const spirit = getMochiSpirit(spiritId);
+  const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
+  if (!spirit || !move) {
+    return {
+      ok: false,
+      spiritId,
+      moveId,
+      masteryLevel: 'novice',
+      masteryXp: Math.max(0, Math.floor(currentMasteryXp)),
+      awardedXp: 0,
+      focusScore: 0,
+      message: 'Technique practice could not start because the spirit or move is not in the Mochirii registry.',
+      source: 'spirit-technique'
+    };
+  }
+
+  const boundedBond = Math.max(1, Math.min(5, Math.floor(bond)));
+  const boundedCurrentXp = Math.max(0, Math.min(30, Math.floor(currentMasteryXp)));
+  const focusScore = spirit.battle.baseFocus + move.power + boundedBond - move.focusCost;
+  const awardedXp = Math.max(2, move.power + boundedBond - move.focusCost);
+  const masteryXp = Math.min(30, boundedCurrentXp + awardedXp);
+  const masteryLevel = techniqueMasteryLevelFromXp(masteryXp);
+
+  return {
+    ok: true,
+    spiritId: spirit.id,
+    moveId: move.id,
+    masteryLevel,
+    masteryXp,
+    awardedXp,
+    focusScore,
+    message: `${spirit.name} refines ${move.label} at the Mochirii Technique Dojo: ${masteryLevel} mastery, ${masteryXp} XP. No-injury wuxia practice only.`,
+    source: 'spirit-technique'
   };
 }
 

@@ -265,6 +265,8 @@ function addStaticRequirements() {
     'pending-human-review',
     'observerMovement',
     'guild-seal-chest',
+    'technique-dojo',
+    'techniqueMastery',
     'Jade Lantern Court'
   ]);
   requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
@@ -296,6 +298,7 @@ function addStaticRequirements() {
     'welcome-npc',
     'guild-seal-chest',
     'care-shrine',
+    'technique-dojo',
     'market-board',
     'trade-post',
     'canary-shrine',
@@ -309,6 +312,7 @@ function addStaticRequirements() {
     'Mochirii Guild Seal',
     'spirit-care',
     'bond 5/5',
+    'technique-dojo',
     'market-board',
     'trade-post',
     'no-real-value Enjin Canary certificate request',

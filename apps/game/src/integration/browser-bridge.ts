@@ -9,6 +9,7 @@ import {
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritSparLadder,
+  resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
 } from '../alpha/content';
 import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
@@ -38,6 +39,11 @@ interface AlphaHudState {
   journalDiscoveredCount: number;
   journalTotal: number;
   lastJournalSpiritId?: string;
+  techniqueProof: boolean;
+  techniqueMoveId?: string;
+  techniqueMasteryXp: number;
+  techniqueMasteryLevel: string;
+  techniqueFocusScore: number;
   activePartyId?: string;
   partyIds: string[];
   supportSpiritIds: string[];
@@ -69,6 +75,15 @@ export interface AlphaWorldStatePatch {
     message?: string;
     proof: boolean;
     totalCount: number;
+  };
+  technique?: {
+    focusScore: number;
+    masteryLevel: string;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
   };
   party?: {
     activeSpiritId?: string;
@@ -142,6 +157,10 @@ function defaultAlphaState(): AlphaHudState {
     journalProof: false,
     journalDiscoveredCount: 0,
     journalTotal: MOCHI_SPIRITS.length,
+    techniqueProof: false,
+    techniqueMasteryXp: 0,
+    techniqueMasteryLevel: 'novice',
+    techniqueFocusScore: 0,
     partyIds: [],
     supportSpiritIds: [],
     sparLadderXp: 0,
@@ -258,6 +277,7 @@ function createHud() {
       <span class="mochi-hud__kicker">Active Spirit</span>
       <strong data-spirit-label>Spirit: none</strong>
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
+      <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
@@ -271,6 +291,7 @@ function createHud() {
       <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
+      <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
       <button type="button" data-alpha-action="spirit.raise" aria-label="Raise and groom the active Mochi Spirit">Raise</button>
@@ -302,6 +323,7 @@ function createHud() {
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
   const journalLabel = hud.querySelector('[data-journal-label]');
+  const techniqueLabel = hud.querySelector('[data-technique-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
@@ -327,6 +349,9 @@ function createHud() {
     }
     if (journalLabel) {
       journalLabel.textContent = `Journal: ${state.journalDiscoveredCount}/${state.journalTotal || MOCHI_SPIRITS.length} records`;
+    }
+    if (techniqueLabel) {
+      techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
     }
     if (partyLabel) {
       partyLabel.textContent = state.partyIds.length
@@ -623,6 +648,16 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.journal.message || `Mochirii spirit journal ${state.journalDiscoveredCount}/${state.journalTotal}.`);
   }
 
+  if (patch.technique) {
+    state.techniqueProof = patch.technique.proof || state.techniqueProof;
+    state.techniqueMoveId = patch.technique.moveId || state.techniqueMoveId;
+    state.techniqueMasteryXp = Math.max(state.techniqueMasteryXp, Number(patch.technique.masteryXp) || 0);
+    state.techniqueMasteryLevel = patch.technique.masteryLevel || state.techniqueMasteryLevel;
+    state.techniqueFocusScore = Math.max(state.techniqueFocusScore, Number(patch.technique.focusScore) || 0);
+    state.spiritId = patch.technique.spiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.technique.message || `Technique mastery ${state.techniqueMasteryLevel} ${state.techniqueMasteryXp} XP.`);
+  }
+
   if (patch.charmListed) {
     state.charmListed = true;
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
@@ -710,6 +745,16 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       activeSpiritId: state.spiritId || roster[0],
       bondBySpiritId: Object.fromEntries(roster.map((id) => [id, state.bond || 1])),
       growthBySpiritId: Object.fromEntries(roster.map((id) => [id, state.growth || 'seed']))
+    };
+  }
+
+  if (type === 'spirit.technique') {
+    const spirit = MOCHI_SPIRITS.find((entry) => entry.id === state.spiritId) || MOCHI_SPIRITS[0];
+    return {
+      spiritId: spirit.id,
+      moveId: spirit.battle.moves[0].id,
+      currentMasteryXp: state.techniqueMasteryXp,
+      bond: state.bond || 1
     };
   }
 
@@ -869,6 +914,24 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.journalDiscoveredCount = result.discoveredCount;
       state.journalTotal = result.totalCount;
       state.lastJournalSpiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.technique') {
+    const spirit = MOCHI_SPIRITS.find((entry) => entry.id === String(payload.spiritId || state.spiritId)) || MOCHI_SPIRITS[0];
+    const moveId = String(payload.moveId || spirit.battle.moves[0].id);
+    const result = resolveSpiritTechniqueMastery(spirit.id, moveId, Number(payload.currentMasteryXp || state.techniqueMasteryXp || 0), Number(payload.bond || state.bond || 1));
+    if (result.ok) {
+      state.techniqueProof = true;
+      state.techniqueMoveId = result.moveId;
+      state.techniqueMasteryXp = result.masteryXp;
+      state.techniqueMasteryLevel = result.masteryLevel;
+      state.techniqueFocusScore = result.focusScore;
+      state.spiritId = result.spiritId;
+      if (!state.attunedSpiritIds.includes(result.spiritId)) {
+        state.attunedSpiritIds.push(result.spiritId);
+      }
     }
     state.chat.push(result.message);
   }

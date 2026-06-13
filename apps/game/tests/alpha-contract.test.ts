@@ -9,6 +9,7 @@ import {
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritSparLadder,
+  resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
 } from '../src/alpha/content';
 import { ALPHA_ACTION_TYPES, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
@@ -21,6 +22,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.partyFormation).toBe(true);
     expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -52,6 +54,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -63,7 +66,7 @@ describe('alpha contract', () => {
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);
   });
 
-  it('resolves original Mochirii capture, attunement, journal, party, spar, training, raising, and quest content', () => {
+  it('resolves original Mochirii capture, attunement, journal, technique, party, spar, training, raising, and quest content', () => {
     const capture = resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, []);
     expect(capture).toMatchObject({
       ok: true,
@@ -99,6 +102,20 @@ describe('alpha contract', () => {
     expect(journal.records.find((record) => record.spiritId === 'aozhen')?.discovered).toBe(false);
     expect(journal.message).toContain('Mochirii spirit journal');
     expect(resolveSpiritJournal([]).ok).toBe(false);
+
+    const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
+    expect(technique).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      moveId: 'lantern-pulse',
+      masteryLevel: 'practiced',
+      masteryXp: 7,
+      awardedXp: 7,
+      focusScore: 11,
+      source: 'spirit-technique'
+    });
+    expect(technique.message).toContain('Mochirii Technique Dojo');
+    expect(resolveSpiritTechniqueMastery('lirabao', 'missing-technique').ok).toBe(false);
 
     const party = resolveSpiritParty(['lirabao', 'jintari', 'aozhen'], 'jintari');
     expect(party).toMatchObject({

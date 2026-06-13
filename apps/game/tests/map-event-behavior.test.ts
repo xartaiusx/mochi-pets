@@ -10,6 +10,7 @@ import {
   QuestBoard,
   SPIRITS,
   SpiritEvent,
+  TechniqueDojo,
   TradePost,
   TrainingRing,
   WelcomeNpc
@@ -374,6 +375,41 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('habitat, rarity, temperament, role, and care notes');
     expect(player.texts.at(-1)).toContain('no-real-value alpha lore');
+  });
+
+  it('records no-injury technique mastery at the Mochirii dojo', async () => {
+    const player = createFakePlayer();
+
+    await runAction(TechniqueDojo(), player);
+    expect(player.texts.at(-1)).toContain('Attune with a Mochi Spirit before practicing');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(CareShrine(), player);
+    await runAction(CareShrine(), player);
+    await runAction(TechniqueDojo(), player);
+
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp')).toBe(7);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.level')).toBe('practiced');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lastMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.focusScore')).toBe(11);
+    expect(player.notifications.at(-1)?.message).toBe('Technique refined');
+    expect(player.saves.at(-1)?.options.source).toBe('technique-dojo');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        technique: {
+          spiritId: 'lirabao',
+          moveId: 'lantern-pulse',
+          masteryXp: 7,
+          masteryLevel: 'practiced',
+          focusScore: 11,
+          proof: true,
+          message: 'Lirabao refines Lantern Pulse at the Mochirii Technique Dojo: practiced mastery, 7 XP. No-injury wuxia practice only.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Technique mastery is no-injury alpha progression');
+    expect(player.texts.at(-1)).toContain('no real value');
   });
 
   it('records no-real-value market, direct trade, and Canary certificate proofs', async () => {

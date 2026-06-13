@@ -79,6 +79,13 @@ const spriteSpecs = [
     palette: { wood: '#6c4a3a', paper: '#f4e7bd', jade: '#8ed0b1', accent: '#f2c65f', ribbon: '#5d9a88', light: '#fff0b6' }
   },
   {
+    id: 'technique-dojo',
+    role: 'Mochi Spirit technique mastery dojo',
+    prompt: 'Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, warm lanterns, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'dojo',
+    palette: { wood: '#654338', floor: '#67a98d', scroll: '#f4e7bd', jade: '#8ed0b1', ribbon: '#d85f4d', accent: '#f2c65f', light: '#fff0b6' }
+  },
+  {
     id: 'market-board',
     role: 'Fixed-price market board',
     prompt: 'Mochirii guild market board with lacquer posts, parchment tags, jade pins, warm lantern accent, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -223,6 +230,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'grove') return groveFrame(spec, row, col, bob);
   if (spec.kind === 'party') return partyFrame(spec, row, col, bob);
   if (spec.kind === 'journal') return journalFrame(spec, row, col, bob);
+  if (spec.kind === 'dojo') return techniqueDojoFrame(spec, row, col, bob);
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
   if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
   return shrineFrame(spec, row, col, bob);
@@ -406,6 +414,38 @@ function journalFrame(spec, _row, col, _bob) {
     <ellipse cx="198" cy="126" rx="15" ry="22" fill="#221f1e"/>
     <ellipse cx="198" cy="126" rx="9" ry="16" fill="${spec.palette.accent}"/>
     <path d="M65 162 C96 180 160 180 191 162" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" opacity="0.55" fill="none"/>
+  `;
+}
+
+function techniqueDojoFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.42 : 0.26;
+  return `
+    <ellipse cx="128" cy="318" rx="86" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="202" rx="106" ry="94" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="52" y="126" width="23" height="180" rx="9" fill="#221f1e"/>
+    <rect x="181" y="126" width="23" height="180" rx="9" fill="#221f1e"/>
+    <rect x="58" y="135" width="12" height="163" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="187" y="135" width="12" height="163" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M45 120 L211 120 L194 165 L62 165 Z" fill="#221f1e"/>
+    <path d="M59 130 L197 130 L186 154 L70 154 Z" fill="${spec.palette.ribbon}"/>
+    <ellipse cx="128" cy="239" rx="74" ry="38" fill="#221f1e"/>
+    <ellipse cx="128" cy="233" rx="62" ry="30" fill="${spec.palette.floor}"/>
+    <ellipse cx="128" cy="232" rx="42" ry="20" fill="none" stroke="#fff4cf" stroke-width="8" stroke-opacity="0.55"/>
+    <rect x="72" y="165" width="112" height="54" rx="12" fill="#221f1e"/>
+    <rect x="82" y="174" width="92" height="37" rx="9" fill="${spec.palette.wood}"/>
+    <path d="M92 190 H164" stroke="${spec.palette.scroll}" stroke-width="13" stroke-linecap="round"/>
+    <path d="M101 190 H155" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.62"/>
+    <circle cx="93" cy="190" r="9" fill="${spec.palette.jade}"/>
+    <circle cx="163" cy="190" r="9" fill="${spec.palette.jade}"/>
+    <path d="M77 221 C100 204 156 204 179 221" stroke="${spec.palette.ribbon}" stroke-width="11" stroke-linecap="round" opacity="0.86" fill="none"/>
+    <path d="M90 252 C113 268 143 268 166 252" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M92 148 L116 114 M164 148 L140 114" stroke="#221f1e" stroke-width="13" stroke-linecap="round"/>
+    <path d="M96 146 L119 120 M160 146 L137 120" stroke="${spec.palette.jade}" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="56" cy="122" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="56" cy="122" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <ellipse cx="200" cy="122" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="200" cy="122" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <path d="M64 160 C96 181 160 181 192 160" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.44" fill="none"/>
   `;
 }
 
