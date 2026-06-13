@@ -81,6 +81,7 @@ function addStaticRequirements() {
     'configured-preview-stub',
     'data-alpha-action="guild.social_rally"',
     'data-rally-label',
+    'guildSocialRally',
     'rallyProof'
   ]);
   requireFileIncludes('game.supabase-edge-bridge', 'Supabase Edge bridge uses the scoped game server token header and keeps service-role secrets out of game requests.', 'apps/game/src/integration/supabase-edge-client.ts', [
@@ -355,6 +356,7 @@ function addStaticRequirements() {
     'guildCommission',
     'commissionProof',
     'socialRally',
+    'guildSocialRally',
     'rallyProof',
     'emoteProof',
     'affinity-dais',
@@ -417,6 +419,9 @@ function addStaticRequirements() {
     'no-real-value Enjin Canary certificate request',
     'Jade Court Habitat Bond',
     'Jade Court Research Folio',
+    'Jade Courtyard Rally',
+    'jade-courtyard-rally-knot',
+    'guild-social-rally',
     'Jade Lantern Court',
     '25 * 18'
   ]);
@@ -437,6 +442,10 @@ function addStaticRequirements() {
     'affinity-dais',
     'market-board',
     'trade-post',
+    'Jade Courtyard Rally',
+    'jade-courtyard-rally-knot',
+    'guildSocialRally',
+    'mochiSocial.guild.rallyProof',
     'no-real-value Enjin Canary certificate request',
     'Wallet Daemon services'
   ]);

@@ -131,6 +131,18 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  guildSocialRally?: {
+    habitat: string;
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    rallyId: string;
+    rallyName: string;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   harmonyForm?: {
     formId: string;
     message?: string;
@@ -616,6 +628,32 @@ type GuildCommissionProgress = {
   chatLines?: readonly string[];
 };
 
+type GuildSocialRally = {
+  id: string;
+  name: string;
+  title: string;
+  habitat: 'Jade Lantern Court';
+  requiredPartySize: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type GuildSocialRallyProgress = {
+  partyIds: readonly string[];
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+  emoteProof: boolean;
+  commissionProof: boolean;
+  harmonyFormProof: boolean;
+  harmonyTrialProof: boolean;
+  teamSparMatchProof: boolean;
+};
+
 type SpiritHarmonyForm = {
   id: string;
   name: string;
@@ -961,6 +999,11 @@ const alphaItems = {
     id: 'jade-court-commission-knot',
     name: 'Jade Court Commission Knot',
     description: 'A no-real-value guild commission proof for closed-alpha Mochirii social roleplay progression.'
+  },
+  rallyKnot: {
+    id: 'jade-courtyard-rally-knot',
+    name: 'Jade Courtyard Rally Knot',
+    description: 'A no-real-value two-tester guild rally proof for closed-alpha Mochirii social play.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -1321,6 +1364,20 @@ const guildCommissions: readonly GuildCommission[] = [
     requiredScore: 24,
     rewardItemId: alphaItems.commissionKnot.id,
     summary: 'A no-real-value roleplay commission proof for testers who connect the first quest chain, profile, guild buddy, provisions, training, market, and trade loops.'
+  }
+];
+
+const guildSocialRallies: readonly GuildSocialRally[] = [
+  {
+    id: 'jade-courtyard-rally',
+    name: 'Jade Courtyard Rally',
+    title: 'First Two-Tester Guild Rally',
+    habitat: 'Jade Lantern Court',
+    requiredPartySize: spirits.length,
+    requiredPresenceCount: 2,
+    requiredScore: 22,
+    rewardItemId: alphaItems.rallyKnot.id,
+    summary: 'A no-real-value social rally proof for testers who coordinate two local presences, chat, emote, guild buddy, commission, and full-party Mochi Spirit readiness.'
   }
 ];
 
@@ -2043,6 +2100,95 @@ function resolveGuildCommission(progress: GuildCommissionProgress, commissionId:
       ? `${commission.name} complete: ${activeName} signs a first social commission with quest, provision, training, market, trade, profile, guild buddy, and status proof. No-real-value guild reputation only.`
       : `${commission.name} needs ${missing.join(', ')} before the first social commission can be recorded.`,
     source: 'guild-commission-ledger'
+  };
+}
+
+function resolveGuildSocialRally(progress: GuildSocialRallyProgress, rallyId: string = guildSocialRallies[0].id) {
+  const rally = guildSocialRallies.find((entry) => entry.id === rallyId) || guildSocialRallies[0];
+  const requiredSpiritIds = new Set<string>(spirits.map((spirit) => spirit.id));
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => requiredSpiritIds.has(spiritId));
+  const missing: string[] = [];
+
+  if (party.length < rally.requiredPartySize) {
+    missing.push(`party:${party.length}/${rally.requiredPartySize}`);
+  }
+
+  const localPresenceCount = Math.max(1, Math.floor(progress.localPresenceCount || 1));
+  if (localPresenceCount < rally.requiredPresenceCount) {
+    missing.push(`presence:${localPresenceCount}/${rally.requiredPresenceCount}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  if (!progress.emoteProof) {
+    missing.push('emote');
+  }
+
+  if (!progress.commissionProof) {
+    missing.push('commission');
+  }
+
+  if (!progress.harmonyFormProof) {
+    missing.push('harmony');
+  }
+
+  if (!progress.harmonyTrialProof) {
+    missing.push('concord');
+  }
+
+  if (!progress.teamSparMatchProof) {
+    missing.push('team-match');
+  }
+
+  const score =
+    Math.min(party.length, rally.requiredPartySize) * 2 +
+    Math.min(localPresenceCount, rally.requiredPresenceCount) * 3 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 2 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0) +
+    (progress.emoteProof ? 1 : 0) +
+    (progress.commissionProof ? 3 : 0) +
+    (progress.harmonyFormProof ? 3 : 0) +
+    (progress.harmonyTrialProof ? 3 : 0) +
+    (progress.teamSparMatchProof ? 3 : 0);
+  const rallied = missing.length === 0 && score >= rally.requiredScore;
+  const partyNames = party.map((spiritId) => getSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    rallied,
+    rallyId: rally.id,
+    rallyName: rally.name,
+    title: rally.title,
+    habitat: rally.habitat,
+    partyIds: party,
+    localPresenceCount,
+    score,
+    requiredScore: rally.requiredScore,
+    missing,
+    rewardItemId: rally.rewardItemId,
+    message: rallied
+      ? `${rally.name} complete: ${partyNames} rally with ${localPresenceCount} local testers, chat, emote, commission, and no-injury party proof. No-real-value social proof only.`
+      : `${rally.name} needs ${missing.join(', ')} before the two-tester guild rally can be recorded.`,
+    source: 'guild-social-rally'
   };
 }
 
@@ -4508,7 +4654,59 @@ function questBoard(): EventDefinition {
       const completedQuestChainIds = completedQuestIds(actingPlayer);
       if (completedQuestChainIds.length >= quests.length) {
         if (actingPlayer.getVariable<boolean>('mochiSocial.guild.commissionKnotClaimed')) {
-          showAlphaPrompt(actingPlayer, 'Your Jade Court Commission Ledger is already recorded for this alpha save. Guild reputation remains no-real-value.');
+          if (actingPlayer.getVariable<boolean>('mochiSocial.guild.rallyKnotClaimed')) {
+            showAlphaPrompt(actingPlayer, 'Your Jade Courtyard Rally is already recorded for this alpha save. Rally proof remains no-real-value.');
+            return;
+          }
+
+          const currentPartyIds = partyIds(actingPlayer);
+          const rally = resolveGuildSocialRally(
+            {
+              partyIds: currentPartyIds.length ? currentPartyIds : roster,
+              localPresenceCount: Number(actingPlayer.getVariable<number>('mochiSocial.social.localPresenceCount') || 1),
+              profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
+              guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+              statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
+              chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || [],
+              emoteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.emoteProof')),
+              commissionProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.guild.commissionProof')),
+              harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.party.harmonyFormProof')),
+              harmonyTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')),
+              teamSparMatchProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.teamSparMatchProof'))
+            },
+            guildSocialRallies[0].id
+          );
+
+          if (!rally.rallied) {
+            showAlphaPrompt(actingPlayer, rally.message);
+            return;
+          }
+
+          actingPlayer.setVariable('mochiSocial.guild.rallyProof', true);
+          actingPlayer.setVariable('mochiSocial.guild.rally', rally.rallyId);
+          actingPlayer.setVariable('mochiSocial.guild.rallyName', rally.rallyName);
+          actingPlayer.setVariable('mochiSocial.guild.rallyScore', rally.score);
+          actingPlayer.setVariable('mochiSocial.guild.rallyPresenceCount', rally.localPresenceCount);
+          actingPlayer.setVariable('mochiSocial.guild.rallyParty', rally.partyIds);
+          actingPlayer.addItem(alphaItems.rallyKnot, 1);
+          actingPlayer.setVariable('mochiSocial.guild.rallyKnotClaimed', true);
+          actingPlayer.showNotification('Guild rally recorded', { time: 1800, icon: 'quest-board' });
+          emitAlphaHudState(actingPlayer, {
+            guildSocialRally: {
+              rallyId: rally.rallyId,
+              rallyName: rally.rallyName,
+              title: rally.title,
+              habitat: rally.habitat,
+              partyIds: rally.partyIds,
+              localPresenceCount: rally.localPresenceCount,
+              score: rally.score,
+              rewardItemId: rally.rewardItemId,
+              proof: true,
+              message: rally.message
+            }
+          });
+          await actingPlayer.save('auto', { title: 'Mochirii guild rally' }, { reason: 'auto', source: 'quest-board' });
+          showAlphaPrompt(actingPlayer, `${rally.message} The Jade Courtyard Rally Knot is no-real-value closed-alpha social proof.`);
           return;
         }
 

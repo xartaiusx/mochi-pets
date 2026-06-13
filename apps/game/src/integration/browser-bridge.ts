@@ -349,6 +349,18 @@ export interface AlphaWorldStatePatch {
     score: number;
     title: string;
   };
+  guildSocialRally?: {
+    habitat: string;
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    rallyId: string;
+    rallyName: string;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   technique?: {
     focusScore: number;
     masteryLevel: string;
@@ -1388,6 +1400,20 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.guildCommission.completedQuestIds.map(String)]));
     state.spiritId = patch.guildCommission.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.guildCommission.message || `${state.commissionName} recorded as no-real-value guild proof.`);
+  }
+
+  if (patch.guildSocialRally) {
+    state.rallyProof = patch.guildSocialRally.proof || state.rallyProof;
+    state.rallyId = patch.guildSocialRally.rallyId || state.rallyId;
+    state.rallyName = patch.guildSocialRally.rallyName || state.rallyName;
+    state.rallyScore = Math.max(state.rallyScore, Number(patch.guildSocialRally.score) || 0);
+    state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.guildSocialRally.localPresenceCount) || 1);
+    state.rallyKnotClaimed = state.rallyKnotClaimed || patch.guildSocialRally.rewardItemId === 'jade-courtyard-rally-knot';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.guildSocialRally.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.activePartyId = state.partyIds[0] || state.activePartyId;
+    state.spiritId = state.partyIds[0] || state.spiritId;
+    appendUniqueAlphaChat(state, patch.guildSocialRally.message || `${state.rallyName} recorded as no-real-value two-tester guild proof.`);
   }
 
   if (patch.expedition) {

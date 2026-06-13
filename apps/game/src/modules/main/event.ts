@@ -3,6 +3,7 @@ import type { EventDefinition, RpgPlayer } from '@rpgjs/server';
 import {
   ALPHA_ITEMS,
   GUILD_COMMISSIONS,
+  GUILD_SOCIAL_RALLIES,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -31,6 +32,7 @@ import {
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveGuildCommission,
+  resolveGuildSocialRally,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
@@ -147,6 +149,18 @@ type AlphaHudStatePatch = {
     proof: boolean;
     rewardItemId: string;
     roster: string[];
+    score: number;
+    title: string;
+  };
+  guildSocialRally?: {
+    habitat: string;
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    rallyId: string;
+    rallyName: string;
+    rewardItemId: string;
     score: number;
     title: string;
   };
@@ -1604,7 +1618,59 @@ export function QuestBoard(): EventDefinition {
       const completedQuestChainIds = completedQuestIds(player);
       if (completedQuestChainIds.length >= MOCHI_SPIRIT_QUESTS.length) {
         if (player.getVariable<boolean>('mochiSocial.guild.commissionKnotClaimed')) {
-          showAlphaPrompt(player, 'Your Jade Court Commission Ledger is already recorded for this alpha save. Guild reputation remains no-real-value.');
+          if (player.getVariable<boolean>('mochiSocial.guild.rallyKnotClaimed')) {
+            showAlphaPrompt(player, 'Your Jade Courtyard Rally is already recorded for this alpha save. Rally proof remains no-real-value.');
+            return;
+          }
+
+          const currentPartyIds = partyIds(player);
+          const rally = resolveGuildSocialRally(
+            {
+              partyIds: currentPartyIds.length ? currentPartyIds : roster,
+              localPresenceCount: Number(player.getVariable<number>('mochiSocial.social.localPresenceCount') || 1),
+              profileViewed: Boolean(player.getVariable<boolean>('mochiSocial.social.profileViewed')),
+              guildBuddyProof: Boolean(player.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+              statusMood: player.getVariable<string>('mochiSocial.social.statusMood'),
+              chatLines: player.getVariable<string[]>('mochiSocial.social.chatLines') || [],
+              emoteProof: Boolean(player.getVariable<boolean>('mochiSocial.social.emoteProof')),
+              commissionProof: Boolean(player.getVariable<boolean>('mochiSocial.guild.commissionProof')),
+              harmonyFormProof: Boolean(player.getVariable<boolean>('mochiSocial.party.harmonyFormProof')),
+              harmonyTrialProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')),
+              teamSparMatchProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.teamSparMatchProof'))
+            },
+            GUILD_SOCIAL_RALLIES[0].id
+          );
+
+          if (!rally.rallied) {
+            showAlphaPrompt(player, rally.message);
+            return;
+          }
+
+          player.setVariable('mochiSocial.guild.rallyProof', true);
+          player.setVariable('mochiSocial.guild.rally', rally.rallyId);
+          player.setVariable('mochiSocial.guild.rallyName', rally.rallyName);
+          player.setVariable('mochiSocial.guild.rallyScore', rally.score);
+          player.setVariable('mochiSocial.guild.rallyPresenceCount', rally.localPresenceCount);
+          player.setVariable('mochiSocial.guild.rallyParty', rally.partyIds);
+          player.addItem(ALPHA_ITEMS.rallyKnot, 1);
+          player.setVariable('mochiSocial.guild.rallyKnotClaimed', true);
+          player.showNotification('Guild rally recorded', { time: 1800, icon: 'quest-board' });
+          emitAlphaHudState(player, {
+            guildSocialRally: {
+              rallyId: rally.rallyId,
+              rallyName: rally.rallyName,
+              title: rally.title,
+              habitat: rally.habitat,
+              partyIds: rally.partyIds,
+              localPresenceCount: rally.localPresenceCount,
+              score: rally.score,
+              rewardItemId: rally.rewardItemId,
+              proof: true,
+              message: rally.message
+            }
+          });
+          await player.save('auto', { title: 'Mochirii guild rally' }, { reason: 'auto', source: 'quest-board' });
+          showAlphaPrompt(player, `${rally.message} The Jade Courtyard Rally Knot is no-real-value closed-alpha social proof.`);
           return;
         }
 

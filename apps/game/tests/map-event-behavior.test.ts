@@ -1493,6 +1493,43 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Jade Court Commission Ledger complete');
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha guild reputation proof');
 
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.social.localPresenceCount', 2);
+    player.variables.set('mochiSocial.social.chatLines', ['Ready for the first guild rally.']);
+    player.variables.set('mochiSocial.social.emoteProof', true);
+    player.variables.set('mochiSocial.party.harmonyFormProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
+    player.variables.set('mochiSocial.battle.teamSparMatchProof', true);
+
+    await runAction(QuestBoard(), player);
+    expect(player.items.at(-1)?.item.id).toBe('jade-courtyard-rally-knot');
+    expect(player.variables.get('mochiSocial.guild.rallyProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.guild.rally')).toBe('jade-courtyard-rally');
+    expect(player.variables.get('mochiSocial.guild.rallyName')).toBe('Jade Courtyard Rally');
+    expect(player.variables.get('mochiSocial.guild.rallyScore')).toBe(30);
+    expect(player.variables.get('mochiSocial.guild.rallyPresenceCount')).toBe(2);
+    expect(player.variables.get('mochiSocial.guild.rallyParty')).toEqual(['lirabao', 'jintari', 'aozhen']);
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        guildSocialRally: {
+          rallyId: 'jade-courtyard-rally',
+          rallyName: 'Jade Courtyard Rally',
+          title: 'First Two-Tester Guild Rally',
+          habitat: 'Jade Lantern Court',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          localPresenceCount: 2,
+          score: 30,
+          rewardItemId: 'jade-courtyard-rally-knot',
+          proof: true,
+          message: expect.stringContaining('No-real-value social proof')
+        }
+      }
+    });
+    expect(player.saves.at(-1)?.options.source).toBe('quest-board');
+    expect(player.texts.at(-1)).toContain('Jade Courtyard Rally complete');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha social proof');
+
     await runAction(CanaryShrine(), player);
     expect(player.items.at(-1)?.item.id).toBe('lirabao-canary-certificate');
     expect(player.variables.get('mochiSocial.alpha.canaryCertificateRequested')).toBe(true);

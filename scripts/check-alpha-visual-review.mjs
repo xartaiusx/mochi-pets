@@ -304,6 +304,7 @@ const report = {
       provisionSatchel: browserPresence.data?.hudAction?.state?.provisionProof === true,
       guildCommission: browserPresence.data?.hudAction?.state?.commissionProof === true,
       socialRally: browserPresence.data?.hudAction?.state?.rallyProof === true && browserPresence.data?.hudAction?.state?.rallyPresenceCount >= 2,
+      guildSocialRally: browserPresence.data?.hudAction?.state?.rallyProof === true && browserPresence.data?.hudAction?.state?.rallyPresenceCount >= 2,
       partyHarmony: browserPresence.data?.hudAction?.state?.harmonyFormProof === true,
       harmonyTrial: browserPresence.data?.hudAction?.state?.harmonyTrialProof === true,
       teamSparMatch: browserPresence.data?.hudAction?.state?.teamSparMatchProof === true,

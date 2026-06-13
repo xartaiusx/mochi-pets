@@ -158,6 +158,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Court Commission Knot');
     expect(alphaContentSource).toContain('jade-court-commission-knot');
     expect(alphaContentSource).toContain('guild-commission-ledger');
+    expect(alphaContentSource).toContain('Jade Courtyard Rally');
+    expect(alphaContentSource).toContain('jade-courtyard-rally-knot');
+    expect(alphaContentSource).toContain('guild-social-rally');
     expect(alphaContentSource).toContain('spirit-route-invite');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
     expect(alphaContentSource).toContain('Goldleaf Opening Form');
@@ -218,6 +221,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Court Commission Knot');
     expect(runtimeServerSource).toContain('jade-court-commission-knot');
     expect(runtimeServerSource).toContain('guild-commission-ledger');
+    expect(runtimeServerSource).toContain('Jade Courtyard Rally');
+    expect(runtimeServerSource).toContain('jade-courtyard-rally-knot');
+    expect(runtimeServerSource).toContain('guild-social-rally');
     expect(runtimeServerSource).toContain('spirit-route-invite');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
     expect(runtimeServerSource).toContain('Goldleaf Opening Form');
