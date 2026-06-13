@@ -214,6 +214,7 @@ async function exerciseAlphaHud(page) {
       const concord = document.querySelector('[data-harmony-trial-label]')?.textContent || '';
       const teamMatch = document.querySelector('[data-team-match-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
+      const battleRound = document.querySelector('[data-battle-round-label]')?.textContent || '';
       const growth = document.querySelector('[data-growth-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
@@ -248,6 +249,9 @@ async function exerciseAlphaHud(page) {
         && training.includes('Training:')
         && training.includes('XP')
         && training.includes('ladder')
+        && battleRound.includes('Battle Round:')
+        && battleRound.includes('Jade Echo Apprentice')
+        && !battleRound.includes('pending')
         && growth.includes('Moonwell Bloom Form')
         && quest.includes('Quest Chain')
         && market.includes('Canary: requested')
@@ -324,6 +328,14 @@ async function exerciseAlphaHud(page) {
         && state.partyIds.includes('aozhen')
         && state.sparLadderXp >= 1
         && state.lastSparOpponentId === 'jade-echo-apprentice'
+        && state.battleRoundProof === true
+        && state.battleRoundId === 'jade-echo-apprentice-round-1'
+        && state.battleRoundOpponentName === 'Jade Echo Apprentice'
+        && state.battleRoundFocusScore >= state.battleRoundOpponentScore
+        && state.battleRoundOpponentScore >= 1
+        && state.battleRoundVictory === true
+        && Array.isArray(state.battleRoundTranscript)
+        && state.battleRoundTranscript.length >= 1
         && state.trainingXp >= 1
         && state.raisingProof === true
         && state.activeQuestId === 'skybell-spar'
@@ -382,6 +394,7 @@ async function exerciseAlphaHud(page) {
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent || '',
+      battleRound: document.querySelector('[data-battle-round-label]')?.textContent || '',
       quest: document.querySelector('[data-quest-label]')?.textContent || '',
       state: JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}')
     }));
@@ -412,6 +425,7 @@ async function exerciseAlphaHud(page) {
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent?.trim() || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
+      battleRound: document.querySelector('[data-battle-round-label]')?.textContent?.trim() || '',
       growth: document.querySelector('[data-growth-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
@@ -502,6 +516,17 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.trainingXp >= 1, 'HUD training action must record training XP.');
   assert(snapshot.state.sparLadderXp >= 1, 'HUD spar ladder action must record ladder XP.');
   assert(snapshot.state.lastSparOpponentId === 'jade-echo-apprentice', 'HUD spar ladder action must record the first spar opponent.');
+  assert(snapshot.battleRound.includes('Battle Round:'), 'HUD battle round label must show transcript state.');
+  assert(snapshot.battleRound.includes('Jade Echo Apprentice'), 'HUD battle round label must name the spar opponent.');
+  assert(!snapshot.battleRound.includes('pending'), 'HUD battle round label must leave the pending state after spar/training.');
+  assert(snapshot.state.battleRoundProof === true, 'HUD battle round action must record transcript proof.');
+  assert(snapshot.state.battleRoundId === 'jade-echo-apprentice-round-1', 'HUD battle round action must record the first Jade Echo round id.');
+  assert(snapshot.state.battleRoundOpponentName === 'Jade Echo Apprentice', 'HUD battle round action must record the opponent name.');
+  assert(snapshot.state.battleRoundFocusScore >= snapshot.state.battleRoundOpponentScore, 'HUD battle round action must record a no-injury clear.');
+  assert(snapshot.state.battleRoundOpponentScore >= 1, 'HUD battle round action must record an opponent score.');
+  assert(snapshot.state.battleRoundVictory === true, 'HUD battle round action must mark the round as cleared.');
+  assert(Array.isArray(snapshot.state.battleRoundTranscript) && snapshot.state.battleRoundTranscript.length >= 1, 'HUD battle round action must record at least one transcript participant.');
+  assert(snapshot.state.battleRoundTranscript.every((entry) => String(entry).includes(':')), 'HUD battle round transcript entries must include spirit and move details.');
   assert(snapshot.state.raisingProof === true, 'HUD raising action must record raising proof.');
   assert(snapshot.growth.includes('Moonwell Bloom Form'), 'HUD growth label must show the growth rite form.');
   assert(snapshot.state.growthRiteProof === true, 'HUD growth rite action must record growth proof.');
