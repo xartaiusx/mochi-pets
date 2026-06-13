@@ -91,6 +91,42 @@ export interface MochiSpiritQuest {
   rewardBond: number;
 }
 
+export interface GuildRankTrial {
+  id: string;
+  title: string;
+  rankTitle: string;
+  requiredSpiritCount: number;
+  requiredQuestStepCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface GuildRankTrialProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  bond: number;
+  completedQuestSteps: readonly string[];
+  tacticProof: boolean;
+  affinityWins: number;
+  sparWins: number;
+  journalDiscoveredCount: number;
+  guildBuddyProof?: boolean;
+}
+
+export interface GuildRankTrialResult {
+  ok: boolean;
+  passed: boolean;
+  trialId: string;
+  trialTitle: string;
+  rankTitle: string;
+  score: number;
+  requiredScore: number;
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritExpeditionRoute {
   id: string;
   name: string;
@@ -514,6 +550,11 @@ export const ALPHA_ITEMS = {
     name: 'Moonbridge Field Ribbon',
     description: 'A no-real-value route-scouting proof for the first Mochirii field expedition.'
   },
+  rankSeal: {
+    id: 'jade-court-rank-seal',
+    name: 'Jade Court Rank Seal',
+    description: 'A no-real-value guild rank proof for closed-alpha Mochirii progression.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -552,6 +593,19 @@ export const MOCHI_SPIRIT_QUESTS = [
     rewardBond: 2
   }
 ] as const satisfies readonly MochiSpiritQuest[];
+
+export const GUILD_RANK_TRIALS: readonly GuildRankTrial[] = [
+  {
+    id: 'jade-court-initiate',
+    title: 'Jade Court Initiate Trial',
+    rankTitle: 'Jade Court Initiate',
+    requiredSpiritCount: 2,
+    requiredQuestStepCount: 1,
+    requiredScore: 9,
+    rewardItemId: ALPHA_ITEMS.rankSeal.id,
+    summary: 'A first guild rank proof for wayfarers who can bond, scout, plan tactics, and practice safely with friends.'
+  }
+];
 
 export const SPIRIT_EXPEDITION_ROUTES: readonly SpiritExpeditionRoute[] = [
   {
@@ -688,6 +742,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'trade-post',
     'training-ring',
     'quest-board',
+    'guild-rank-bell',
     'canary-shrine'
   ].map((id) => ({
     path: `public/spritesheets/${id}.png`,
@@ -1186,6 +1241,48 @@ export function resolveSpiritBattleTactic(
     bondDelta: tactic.bondDelta,
     message: `${spirit.name} studies ${tactic.name} with ${move.label}: ${tactic.stance} stance, ${focusScore} focus, ${masteryXp} tactic XP. ${tactic.lesson} No-injury Mochirii battle planning only; no real value.`,
     source: 'battle-tactic-scroll'
+  };
+}
+
+export function resolveGuildRankTrial(
+  progress: GuildRankTrialProgress,
+  trialId: string = GUILD_RANK_TRIALS[0].id
+): GuildRankTrialResult {
+  const trial = GUILD_RANK_TRIALS.find((entry) => entry.id === trialId) || GUILD_RANK_TRIALS[0];
+  const roster = Array.from(new Set(progress.roster || [])).filter((spiritId) => Boolean(getMochiSpirit(spiritId)));
+  const activeSpirit = getMochiSpirit(progress.activeSpiritId || roster[0] || '');
+  const bond = Math.max(0, Math.min(5, Math.floor(progress.bond || 0)));
+  const completedQuestSteps = Array.from(new Set((progress.completedQuestSteps || []).filter(Boolean)));
+  const affinityWins = Math.max(0, Math.floor(progress.affinityWins || 0));
+  const sparWins = Math.max(0, Math.floor(progress.sparWins || 0));
+  const journalDiscoveredCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  const score =
+    roster.length * 2 +
+    bond +
+    completedQuestSteps.length +
+    (progress.tacticProof ? 2 : 0) +
+    Math.min(4, affinityWins * 2) +
+    Math.min(2, sparWins) +
+    Math.min(2, journalDiscoveredCount) +
+    (progress.guildBuddyProof ? 1 : 0);
+  const enoughRoster = roster.length >= trial.requiredSpiritCount;
+  const enoughQuest = completedQuestSteps.length >= trial.requiredQuestStepCount;
+  const passed = enoughRoster && enoughQuest && progress.tacticProof && score >= trial.requiredScore;
+  const activeName = activeSpirit?.name || 'your lead Mochi Spirit';
+
+  return {
+    ok: passed,
+    passed,
+    trialId: trial.id,
+    trialTitle: trial.title,
+    rankTitle: trial.rankTitle,
+    score,
+    requiredScore: trial.requiredScore,
+    rewardItemId: trial.rewardItemId,
+    message: passed
+      ? `${activeName} presents the ${trial.title}: score ${score}/${trial.requiredScore}. ${trial.rankTitle} recorded as no-real-value Mochirii guild progress.`
+      : `${trial.title} needs ${trial.requiredSpiritCount} spirits, ${trial.requiredQuestStepCount} quest step, tactic proof, and score ${trial.requiredScore}. Current score ${score}; keep bonding, scouting, and practicing safely.`,
+    source: 'guild-rank-trial'
   };
 }
 

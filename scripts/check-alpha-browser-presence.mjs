@@ -169,6 +169,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-local-action="spirit.inspect"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="quest.accept"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="quest.progress"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="guild.rank_trial"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -181,6 +182,7 @@ async function exerciseAlphaHud(page) {
       const spirit = document.querySelector('[data-spirit-label]')?.textContent || '';
       const profile = document.querySelector('[data-profile-label]')?.textContent || '';
       const guild = document.querySelector('[data-guild-label]')?.textContent || '';
+      const rank = document.querySelector('[data-rank-label]')?.textContent || '';
       const status = document.querySelector('[data-status-label]')?.textContent || '';
       const journal = document.querySelector('[data-journal-label]')?.textContent || '';
       const expedition = document.querySelector('[data-expedition-label]')?.textContent || '';
@@ -198,6 +200,7 @@ async function exerciseAlphaHud(page) {
       return spirit.includes('Jintari')
         && profile.includes('Profile: reviewed')
         && guild.includes('Guild: 1 local buddy')
+        && rank.includes('Jade Court Initiate')
         && status.includes('Status: cozy')
         && journal.includes('Journal:')
         && journal.includes('1/3')
@@ -265,6 +268,11 @@ async function exerciseAlphaHud(page) {
         && state.completedQuestSteps.includes('attune-spirit')
         && state.profileViewed === true
         && state.guildBuddyProof === true
+        && state.guildRankProof === true
+        && state.guildRankId === 'jade-court-initiate'
+        && state.guildRankTitle === 'Jade Court Initiate'
+        && state.guildRankScore >= 9
+        && state.guildRankSealClaimed === true
         && state.statusMood === 'cozy'
         && state.lastInspectedSpiritId === 'jintari'
         && state.charmListed === true
@@ -293,6 +301,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Share mooncake')
         && chat.includes('Quest accepted: First Lantern Vow')
         && chat.includes('Quest progress: First Lantern Vow')
+        && chat.includes('Jade Court Initiate')
         && feed.includes('Canary');
     },
     undefined,
@@ -305,6 +314,7 @@ async function exerciseAlphaHud(page) {
     return {
       profile: document.querySelector('[data-profile-label]')?.textContent?.trim() || '',
       guild: document.querySelector('[data-guild-label]')?.textContent?.trim() || '',
+      rank: document.querySelector('[data-rank-label]')?.textContent?.trim() || '',
       status: document.querySelector('[data-status-label]')?.textContent?.trim() || '',
       spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
       journal: document.querySelector('[data-journal-label]')?.textContent?.trim() || '',
@@ -374,6 +384,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.profileViewed === true, 'HUD profile action must record local profile proof.');
   assert(snapshot.guild.includes('Guild: 1 local buddy'), 'HUD guild label must show a local guild buddy proof.');
   assert(snapshot.state.guildBuddyProof === true, 'HUD guild action must record local social proof.');
+  assert(snapshot.rank.includes('Jade Court Initiate'), 'HUD rank label must show the guild rank proof.');
+  assert(snapshot.state.guildRankProof === true, 'HUD rank action must record guild rank proof.');
+  assert(snapshot.state.guildRankId === 'jade-court-initiate', 'HUD rank action must record the Jade Court trial id.');
+  assert(snapshot.state.guildRankTitle === 'Jade Court Initiate', 'HUD rank action must record the Jade Court rank title.');
+  assert(snapshot.state.guildRankScore >= 9, 'HUD rank action must record a passing rank score.');
+  assert(snapshot.state.guildRankSealClaimed === true, 'HUD rank action must mark the no-real-value rank seal proof.');
   assert(snapshot.status.includes('Status: cozy'), 'HUD status label must show the local mood/status proof.');
   assert(snapshot.state.statusMood === 'cozy', 'HUD status action must record local social status proof.');
   assert(snapshot.state.lastInspectedSpiritId === 'jintari', 'HUD inspect action must record a Jintari spirit inspection proof.');
@@ -396,6 +412,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Share mooncake')), 'HUD chat state must record the raising action.');
   assert(chat.some((line) => String(line).includes('Quest accepted: First Lantern Vow')), 'HUD chat state must record the quest accept action.');
   assert(chat.some((line) => String(line).includes('Quest progress: First Lantern Vow')), 'HUD chat state must record the quest progress action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Initiate')), 'HUD chat state must record the guild rank trial action.');
   assert(chat.some((line) => String(line).includes('Profile: Mochirii Wayfarer')), 'HUD chat state must record the profile action.');
   assert(chat.some((line) => String(line).includes('Guild proof')), 'HUD chat state must record the guild action.');
   assert(chat.some((line) => String(line).includes('Status set: cozy')), 'HUD chat state must record the status action.');

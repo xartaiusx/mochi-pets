@@ -24,6 +24,7 @@ Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated 
 - Technique dojo: Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, and warm lanterns.
 - Tactic scroll stand: Mochirii battle tactic scroll stand with open silk-paper stance scrolls, jade focus weights, lacquered wuxia lesson frame, and gold lantern light.
 - Affinity dais: Mochirii affinity trial dais with jade mirror disc, silk affinity ribbons, lacquer base, and warm lantern reflection.
+- Guild rank bell: Mochirii guild rank trial bell with jade bell, lacquer arch, silk rank tassels, and gold no-real-value rank seal glow.
 - Party banner: Mochi Spirit party formation banner with three jade spirit medallions, lacquer frame, silk tassels, and lantern glow.
 - Market board: fixed-price test market board with parchment tags and jade pins.
 - Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.

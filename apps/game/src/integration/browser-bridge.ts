@@ -1,5 +1,6 @@
 import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
+  GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
@@ -12,6 +13,7 @@ import {
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritExpedition,
+  resolveGuildRankTrial,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -38,6 +40,11 @@ interface AlphaHudState {
   lastInspectedSpiritId?: string;
   profileViewed: boolean;
   guildBuddyProof: boolean;
+  guildRankProof: boolean;
+  guildRankId?: string;
+  guildRankTitle: string;
+  guildRankScore: number;
+  guildRankSealClaimed: boolean;
   statusMood: string;
   bond: number;
   growth: string;
@@ -160,6 +167,15 @@ export interface AlphaWorldStatePatch {
     tacticId: string;
     tacticName: string;
   };
+  rank?: {
+    message?: string;
+    proof: boolean;
+    rankTitle: string;
+    rewardItemId: string;
+    score: number;
+    trialId: string;
+    trialTitle: string;
+  };
   party?: {
     activeSpiritId?: string;
     message?: string;
@@ -225,6 +241,10 @@ function defaultAlphaState(): AlphaHudState {
     attunedSpiritIds: [],
     profileViewed: false,
     guildBuddyProof: false,
+    guildRankProof: false,
+    guildRankTitle: 'Visitor',
+    guildRankScore: 0,
+    guildRankSealClaimed: false,
     statusMood: 'exploring',
     bond: 0,
     growth: 'seed',
@@ -358,6 +378,7 @@ function createHud() {
     <div class="mochi-hud__social-card" aria-label="Tester social state">
       <span data-profile-label>Profile: Mochirii wayfarer</span>
       <span data-guild-label>Guild: no buddy</span>
+      <span data-rank-label>Rank: Visitor</span>
       <span data-status-label>Status: exploring</span>
       <span data-market-label>Market: ready</span>
     </div>
@@ -394,6 +415,7 @@ function createHud() {
       <button type="button" data-alpha-local-action="spirit.inspect" aria-label="Inspect active Mochi Spirit">Inspect</button>
       <button type="button" data-alpha-action="quest.accept" aria-label="Accept the first Mochirii guild quest">Quest</button>
       <button type="button" data-alpha-action="quest.progress" aria-label="Progress the active Mochirii guild quest">Step</button>
+      <button type="button" data-alpha-action="guild.rank_trial" aria-label="Record a no-real-value Mochirii guild rank trial">Rank</button>
       <button type="button" data-alpha-action="emote.send" aria-label="Wave to nearby testers">Wave</button>
       <button type="button" data-alpha-action="market.fixed_list" aria-label="List a no-real-value market item">List</button>
       <button type="button" data-alpha-action="trade.direct_offer" aria-label="Record a no-real-value direct trade proof">Trade</button>
@@ -416,6 +438,7 @@ function createHud() {
   const authLabel = hud.querySelector('[data-auth-label]');
   const profileLabel = hud.querySelector('[data-profile-label]');
   const guildLabel = hud.querySelector('[data-guild-label]');
+  const rankLabel = hud.querySelector('[data-rank-label]');
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
   const journalLabel = hud.querySelector('[data-journal-label]');
@@ -440,6 +463,11 @@ function createHud() {
     }
     if (guildLabel) {
       guildLabel.textContent = state.guildBuddyProof ? 'Guild: 1 local buddy' : 'Guild: no buddy';
+    }
+    if (rankLabel) {
+      rankLabel.textContent = state.guildRankProof
+        ? `Rank: ${state.guildRankTitle}, score ${state.guildRankScore}`
+        : `Rank: ${state.guildRankTitle || 'Visitor'}`;
     }
     if (statusLabel) {
       statusLabel.textContent = `Status: ${state.statusMood || 'exploring'}`;
@@ -820,6 +848,15 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.tactic.message || `Battle tactic ${state.lastTacticId || 'studied'} ${state.tacticMasteryXp} XP.`);
   }
 
+  if (patch.rank) {
+    state.guildRankProof = patch.rank.proof || state.guildRankProof;
+    state.guildRankId = patch.rank.trialId || state.guildRankId;
+    state.guildRankTitle = patch.rank.rankTitle || state.guildRankTitle;
+    state.guildRankScore = Math.max(state.guildRankScore, Number(patch.rank.score) || 0);
+    state.guildRankSealClaimed = state.guildRankSealClaimed || patch.rank.rewardItemId === 'jade-court-rank-seal';
+    appendUniqueAlphaChat(state, patch.rank.message || `Guild rank recorded: ${state.guildRankTitle}.`);
+  }
+
   if (patch.affinity) {
     state.affinityProof = patch.affinity.proof || state.affinityProof;
     state.lastAffinityTrialId = patch.affinity.trialId || state.lastAffinityTrialId;
@@ -1024,6 +1061,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     return {
       questId: quest.id,
       stepId: questSteps[state.completedQuestSteps.length] || questSteps[questSteps.length - 1]
+    };
+  }
+
+  if (type === 'guild.rank_trial') {
+    const trial = GUILD_RANK_TRIALS[0];
+    return {
+      trialId: trial.id,
+      roster: state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      bond: state.bond || 1,
+      completedQuestSteps: state.completedQuestSteps,
+      tacticProof: state.tacticProof,
+      affinityWins: state.affinityTrialWins,
+      sparWins: state.sparLadderWins,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      guildBuddyProof: state.guildBuddyProof
     };
   }
 
@@ -1370,6 +1423,31 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     } else {
       state.chat.push(`Quest progress: ${quest.title} ${state.completedQuestSteps.length}/${questSteps.length}.`);
     }
+  }
+
+  if (type === 'guild.rank_trial') {
+    const result = resolveGuildRankTrial(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        bond: Number(payload.bond || state.bond || 1),
+        completedQuestSteps: Array.isArray(payload.completedQuestSteps) ? payload.completedQuestSteps.map(String) : state.completedQuestSteps,
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        affinityWins: Number(payload.affinityWins ?? state.affinityTrialWins ?? 0),
+        sparWins: Number(payload.sparWins ?? state.sparLadderWins ?? 0),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof)
+      },
+      String(payload.trialId || GUILD_RANK_TRIALS[0].id)
+    );
+    if (result.passed) {
+      state.guildRankProof = true;
+      state.guildRankId = result.trialId;
+      state.guildRankTitle = result.rankTitle;
+      state.guildRankScore = result.score;
+      state.guildRankSealClaimed = result.rewardItemId === 'jade-court-rank-seal';
+    }
+    state.chat.push(result.message);
   }
 
   if (type === 'emote.send') {

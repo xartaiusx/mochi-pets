@@ -49,6 +49,7 @@ describe('game manifest', () => {
         trainingBattles: true,
         techniqueMastery: true,
         battleTactics: true,
+        guildRankTrials: true,
         affinityTrials: true,
         raisingCare: true,
         roleplayQuests: true,

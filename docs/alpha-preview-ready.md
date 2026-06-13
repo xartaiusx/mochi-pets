@@ -70,8 +70,8 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 
 Before testers enter the Vercel Preview:
 
-- Mochi Spirits loop works: attune, bond, care, field route scouting, route spirit invitation, technique mastery, tactic scroll planning, affinity trial, train, raise, inspect, roleplay quest progress, bond growth, journal/status, and active spirit status.
-- HUD works: profile view, guild buddy proof, social status, spirit status, inspect detail, chat, emote, market, trade, Canary request.
+- Mochi Spirits loop works: attune, bond, care, field route scouting, route spirit invitation, technique mastery, tactic scroll planning, guild rank trial proof, affinity trial, train, raise, inspect, roleplay quest progress, bond growth, journal/status, and active spirit status.
+- HUD works: profile view, guild buddy proof, social status, spirit status, inspect detail, Jade Court rank proof, chat, emote, market, trade, Canary request.
 - Social loop works: local guild buddy proof, chat/emote, and two-tab presence.
 - Economy loop is no-real-value: fixed market proof and direct trade proof stay alpha/test labeled.
 - Chain request stub works: visible Canary request records an audit-only request and explains `configured-preview-stub`.

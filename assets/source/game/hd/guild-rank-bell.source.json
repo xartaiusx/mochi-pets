@@ -1,0 +1,13 @@
+{
+  "id": "guild-rank-bell",
+  "role": "Mochirii guild rank trial bell",
+  "runtimePath": "apps/game/public/spritesheets/guild-rank-bell.png",
+  "masterPath": "assets/source/game/hd/guild-rank-bell-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Mochirii guild rank trial bell with jade bell, lacquer arch, silk rank tassels, gold no-real-value rank seal glow, transparent background, smooth illustrated 2D prop sprite sheet.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

@@ -4,6 +4,7 @@ import {
   CanaryShrine,
   CareShrine,
   ExpeditionGate,
+  GuildRankBell,
   GuildSealChest,
   HabitatGrove,
   JournalPavilion,
@@ -544,6 +545,46 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('Tactic scroll practice is no-injury alpha battle planning');
     expect(player.texts.at(-1)).toContain('no real value');
+  });
+
+  it('records the first Mochirii guild rank trial as no-real-value progression', async () => {
+    const player = createFakePlayer();
+
+    await runAction(GuildRankBell(), player);
+    expect(player.texts.at(-1)).toContain('Jade Court Initiate Trial needs');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(HabitatGrove(), player);
+    player.variables.set('mochiSocial.spirit.jintari.bond', 3);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit']);
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
+    player.variables.set('mochiSocial.spirits.journalCount', 2);
+    await runAction(GuildRankBell(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('jade-court-rank-seal');
+    expect(player.variables.get('mochiSocial.guild.rankTrialProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.guild.rankTrial')).toBe('jade-court-initiate');
+    expect(player.variables.get('mochiSocial.guild.rankTitle')).toBe('Jade Court Initiate');
+    expect(player.variables.get('mochiSocial.guild.rankScore')).toBe(14);
+    expect(player.variables.get('mochiSocial.guild.rankSealClaimed')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Guild rank recorded');
+    expect(player.saves.at(-1)?.options.source).toBe('guild-rank-bell');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        rank: {
+          trialId: 'jade-court-initiate',
+          trialTitle: 'Jade Court Initiate Trial',
+          rankTitle: 'Jade Court Initiate',
+          score: 14,
+          rewardItemId: 'jade-court-rank-seal',
+          proof: true,
+          message: 'Jintari presents the Jade Court Initiate Trial: score 14/9. Jade Court Initiate recorded as no-real-value Mochirii guild progress.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('closed-alpha, no-real-value progression');
   });
 
   it('records no-injury affinity trial battle proof at the Jade Mirror dais', async () => {

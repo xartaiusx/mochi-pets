@@ -142,6 +142,13 @@ const spriteSpecs = [
     palette: { wood: '#78543f', roof: '#5c8f77', cloth: '#f4e7bd', accent: '#d85f4d' }
   },
   {
+    id: 'guild-rank-bell',
+    role: 'Mochirii guild rank trial bell',
+    prompt: 'Mochirii guild rank trial bell with jade bell, lacquer arch, silk rank tassels, gold no-real-value rank seal glow, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'rank',
+    palette: { wood: '#5f463c', bell: '#8ed0b1', ribbon: '#d85f4d', seal: '#f2c65f', paper: '#f4e7bd', light: '#fff0b6', shadow: '#263a35' }
+  },
+  {
     id: 'canary-shrine',
     role: 'Enjin Canary preview-stub shrine',
     prompt: 'Canary preview shrine with violet lacquer base, gold crystal, no-real-value staging aura, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -265,6 +272,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'dais') return affinityDaisFrame(spec, row, col, bob);
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
   if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
+  if (spec.kind === 'rank') return guildRankBellFrame(spec, row, col, bob);
   return shrineFrame(spec, row, col, bob);
 }
 
@@ -653,6 +661,37 @@ function trainingRingFrame(spec, _row, col, _bob) {
     <circle cx="192" cy="126" r="16" fill="#221f1e"/>
     <circle cx="192" cy="126" r="10" fill="${spec.palette.accent}"/>
     <path d="M102 207 L119 221 L102 235 M154 207 L137 221 L154 235" stroke="#fff7d4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.78" fill="none"/>
+  `;
+}
+
+function guildRankBellFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.5 : 0.3;
+  const tassel = col === 1 ? -6 : col === 2 ? 5 : 0;
+  return `
+    <ellipse cx="128" cy="318" rx="80" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="192" rx="102" ry="112" fill="${spec.palette.light}" opacity="${pulse}"/>
+    <path d="M55 260 C57 170 84 119 128 119 C172 119 199 170 201 260" fill="none" stroke="#221f1e" stroke-width="24" stroke-linecap="round"/>
+    <path d="M68 258 C70 182 92 139 128 139 C164 139 186 182 188 258" fill="none" stroke="${spec.palette.wood}" stroke-width="12" stroke-linecap="round"/>
+    <path d="M47 252 L209 252 L221 305 L35 305 Z" fill="#221f1e"/>
+    <path d="M62 257 L194 257 L203 292 L53 292 Z" fill="${spec.palette.shadow}"/>
+    <path d="M92 151 C99 113 116 94 128 94 C140 94 157 113 164 151" fill="#221f1e"/>
+    <path d="M103 151 C108 123 121 111 128 111 C135 111 148 123 153 151" fill="${spec.palette.seal}"/>
+    <ellipse cx="128" cy="187" rx="48" ry="55" fill="#221f1e"/>
+    <path d="M88 192 C93 157 108 135 128 135 C148 135 163 157 168 192 L158 232 C141 245 115 245 98 232 Z" fill="${spec.palette.bell}"/>
+    <path d="M101 182 C113 171 143 171 155 182" stroke="#fff7d4" stroke-width="7" stroke-linecap="round" opacity="0.58" fill="none"/>
+    <path d="M94 215 C113 228 143 228 162 215" stroke="#25574d" stroke-width="7" stroke-linecap="round" opacity="0.44" fill="none"/>
+    <circle cx="128" cy="232" r="15" fill="#221f1e"/>
+    <circle cx="128" cy="232" r="9" fill="${spec.palette.seal}"/>
+    <rect x="82" y="245" width="92" height="32" rx="10" fill="#221f1e"/>
+    <rect x="93" y="251" width="70" height="20" rx="7" fill="${spec.palette.paper}"/>
+    <path d="M106 261 H151" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+    <path d="M76 ${160 + tassel} C95 ${178 + tassel} 102 ${201 + tassel} 89 ${225 + tassel}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M180 ${160 + tassel} C161 ${178 + tassel} 154 ${201 + tassel} 167 ${225 + tassel}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <circle cx="73" cy="145" r="15" fill="#221f1e"/>
+    <circle cx="73" cy="145" r="9" fill="${spec.palette.seal}"/>
+    <circle cx="183" cy="145" r="15" fill="#221f1e"/>
+    <circle cx="183" cy="145" r="9" fill="${spec.palette.seal}"/>
+    <path d="M86 270 C111 284 145 284 170 270" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
   `;
 }
 

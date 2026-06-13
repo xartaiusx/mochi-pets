@@ -24,6 +24,7 @@ const expectedPlacements = {
   'training-ring': { x: 1024, y: 320 },
   'party-banner': { x: 1152, y: 320 },
   'quest-board': { x: 1024, y: 704 },
+  'guild-rank-bell': { x: 1280, y: 512 },
   'market-board': { x: 1152, y: 704 },
   'trade-post': { x: 1280, y: 704 },
   'canary-shrine': { x: 1408, y: 320 }
@@ -76,6 +77,7 @@ describe('Mochi town map object contract', () => {
       "this.setGraphic('trade-post')",
       "this.setGraphic('training-ring')",
       "this.setGraphic('quest-board')",
+      "this.setGraphic('guild-rank-bell')",
       "this.setGraphic('canary-shrine')",
       'Welcome to Mochi Social',
       'Guild Seal added',
@@ -90,6 +92,7 @@ describe('Mochi town map object contract', () => {
       'spirit invitation',
       'Party formed',
       'Training spar complete',
+      'Guild rank recorded',
       'test soft currency',
       'Direct trade proof recorded',
       'no-real-value Enjin Canary certificate request',
@@ -105,6 +108,7 @@ describe('Mochi town map object contract', () => {
       "source: 'party-banner'",
       "source: 'training-ring'",
       "source: 'quest-board'",
+      "source: 'guild-rank-bell'",
       "source: 'market-board'",
       "source: 'trade-post'",
       "source: 'canary-shrine'",
@@ -125,6 +129,8 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('battle-tactic-scroll');
     expect(alphaContentSource).toContain('Jade Mirror Trial');
     expect(alphaContentSource).toContain('Jade Echo Apprentice');
+    expect(alphaContentSource).toContain('Jade Court Initiate Trial');
+    expect(alphaContentSource).toContain('guild-rank-trial');
     expect(runtimeServerSource).toContain('First Lantern Vow');
     expect(runtimeServerSource).toContain('Mochirii spirit journal updated');
     expect(runtimeServerSource).toContain('Moonbridge Bamboo Trail');
@@ -134,6 +140,8 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('battle-tactic-scroll');
     expect(runtimeServerSource).toContain('Jade Mirror Trial');
     expect(runtimeServerSource).toContain('Jade Echo Apprentice');
+    expect(runtimeServerSource).toContain('Jade Court Initiate Trial');
+    expect(runtimeServerSource).toContain('guild-rank-trial');
   });
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {

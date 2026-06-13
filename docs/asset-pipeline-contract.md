@@ -36,13 +36,14 @@ This contract tells Codex how to upgrade Mochi Social art without breaking RPGJS
 12. tactic scroll stand
 13. affinity dais
 14. party banner
-15. market board
-16. trade post
-17. training ring
-18. quest board
-19. Canary shrine
-20. town tilesheet and map polish
-21. HUD and action icons
+15. training ring
+16. quest board
+17. guild rank bell
+18. market board
+19. trade post
+20. Canary shrine
+21. town tilesheet and map polish
+22. HUD and action icons
 
 Each asset gets a source card, runtime export, ledger update, screenshot review, and tests before the next substantial visual pass.
 

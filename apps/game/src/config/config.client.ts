@@ -131,6 +131,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'guild-rank-bell',
+            image: '/spritesheets/guild-rank-bell.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'canary-shrine',
             image: '/spritesheets/canary-shrine.png',
             ...SPIRIT_SHEET

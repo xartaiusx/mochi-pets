@@ -2,6 +2,7 @@ import { PrebuiltGui } from '@rpgjs/common';
 import type { EventDefinition, RpgPlayer } from '@rpgjs/server';
 import {
   ALPHA_ITEMS,
+  GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
@@ -12,6 +13,7 @@ import {
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritExpedition,
+  resolveGuildRankTrial,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -121,6 +123,15 @@ type AlphaHudStatePatch = {
     stance: string;
     tacticId: string;
     tacticName: string;
+  };
+  rank?: {
+    message?: string;
+    proof: boolean;
+    rankTitle: string;
+    rewardItemId: string;
+    score: number;
+    trialId: string;
+    trialTitle: string;
   };
   training?: {
     message?: string;
@@ -805,6 +816,65 @@ export function QuestBoard(): EventDefinition {
       emitAlphaHudState(player, patch);
       await player.save('auto', { title: 'Mochirii quest board progress' }, { reason: 'auto', source: 'quest-board' });
       showAlphaPrompt(player, prompt);
+    }
+  };
+}
+
+export function GuildRankBell(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('guild-rank-bell');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const roster = bondedSpirits(player);
+      const activeSpirit = activeSpiritId(player);
+      const trial = GUILD_RANK_TRIALS[0];
+      const questStepsRaw = player.getVariable<string[]>(`mochiSocial.quest.${MOCHI_SPIRIT_QUESTS[0].id}.steps`);
+      const completedQuestSteps = Array.isArray(questStepsRaw) ? questStepsRaw : [];
+      const bond = activeSpirit ? Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 0;
+      const rank = resolveGuildRankTrial(
+        {
+          roster,
+          activeSpiritId: activeSpirit,
+          bond,
+          completedQuestSteps,
+          tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+          affinityWins: Number(player.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0),
+          sparWins: Number(player.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0),
+          journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || roster.length)
+        },
+        trial.id
+      );
+
+      if (!rank.passed) {
+        showAlphaPrompt(player, rank.message);
+        return;
+      }
+
+      player.setVariable('mochiSocial.guild.rankTrialProof', true);
+      player.setVariable('mochiSocial.guild.rankTrial', rank.trialId);
+      player.setVariable('mochiSocial.guild.rankTitle', rank.rankTitle);
+      player.setVariable('mochiSocial.guild.rankScore', rank.score);
+      if (!player.getVariable<boolean>('mochiSocial.guild.rankSealClaimed')) {
+        player.addItem(ALPHA_ITEMS.rankSeal, 1);
+        player.setVariable('mochiSocial.guild.rankSealClaimed', true);
+      }
+
+      player.showNotification('Guild rank recorded', { time: 1800, icon: 'guild-rank-bell' });
+      emitAlphaHudState(player, {
+        rank: {
+          trialId: rank.trialId,
+          trialTitle: rank.trialTitle,
+          rankTitle: rank.rankTitle,
+          score: rank.score,
+          rewardItemId: rank.rewardItemId,
+          proof: true,
+          message: rank.message
+        }
+      });
+      await player.save('auto', { title: 'Mochirii guild rank trial' }, { reason: 'auto', source: 'guild-rank-bell' });
+      showAlphaPrompt(player, `${rank.message} Guild rank is closed-alpha, no-real-value progression for tester coordination.`);
     }
   };
 }

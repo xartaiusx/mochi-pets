@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_BATTLE_TACTICS,
@@ -13,6 +14,7 @@ import {
   resolveSpiritRouteInvitation,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
+  resolveGuildRankTrial,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
@@ -32,6 +34,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -67,6 +70,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
@@ -193,6 +197,41 @@ describe('alpha contract', () => {
     });
     expect(tactic.message).toContain('No-injury Mochirii battle planning');
     expect(resolveSpiritBattleTactic('jintari', 'missing-move').ok).toBe(false);
+
+    expect(GUILD_RANK_TRIALS.map((trial) => trial.id)).toEqual(['jade-court-initiate']);
+    const rank = resolveGuildRankTrial({
+      roster: ['lirabao', 'jintari'],
+      activeSpiritId: 'jintari',
+      bond: 3,
+      completedQuestSteps: ['attune-spirit'],
+      tacticProof: true,
+      affinityWins: 1,
+      sparWins: 0,
+      journalDiscoveredCount: 2,
+      guildBuddyProof: true
+    });
+    expect(rank).toMatchObject({
+      ok: true,
+      passed: true,
+      trialId: 'jade-court-initiate',
+      trialTitle: 'Jade Court Initiate Trial',
+      rankTitle: 'Jade Court Initiate',
+      score: 15,
+      requiredScore: 9,
+      rewardItemId: 'jade-court-rank-seal',
+      source: 'guild-rank-trial'
+    });
+    expect(rank.message).toContain('no-real-value Mochirii guild progress');
+    expect(resolveGuildRankTrial({
+      roster: ['lirabao'],
+      activeSpiritId: 'lirabao',
+      bond: 1,
+      completedQuestSteps: [],
+      tacticProof: false,
+      affinityWins: 0,
+      sparWins: 0,
+      journalDiscoveredCount: 1
+    }).passed).toBe(false);
 
     const affinity = resolveSpiritAffinityTrial('lirabao', 'lantern-pulse', 'jade-mirror-trial', 3, 7);
     expect(affinity).toMatchObject({

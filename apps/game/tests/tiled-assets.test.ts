@@ -21,6 +21,7 @@ const runtimeAssets = [
   { path: 'public/spritesheets/trade-post.png', width: 384, height: 768 },
   { path: 'public/spritesheets/training-ring.png', width: 384, height: 768 },
   { path: 'public/spritesheets/quest-board.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/guild-rank-bell.png', width: 384, height: 768 },
   { path: 'public/spritesheets/canary-shrine.png', width: 384, height: 768 }
 ] as const;
 

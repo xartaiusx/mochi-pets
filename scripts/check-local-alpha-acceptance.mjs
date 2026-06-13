@@ -62,6 +62,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
   assert(manifest.body.gameplay?.techniqueMastery === true, 'Manifest must expose Mochi Spirit technique mastery.');
   assert(manifest.body.gameplay?.battleTactics === true, 'Manifest must expose Mochi Spirit battle tactics.');
+  assert(manifest.body.gameplay?.guildRankTrials === true, 'Manifest must expose Mochirii guild rank trials.');
   assert(manifest.body.gameplay?.affinityTrials === true, 'Manifest must expose Mochi Spirit affinity trials.');
   assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
@@ -78,6 +79,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
   assert(alphaStatus.body.gameplay?.techniqueMastery === true, 'Alpha status must expose Mochi Spirit technique mastery.');
   assert(alphaStatus.body.gameplay?.battleTactics === true, 'Alpha status must expose Mochi Spirit battle tactics.');
+  assert(alphaStatus.body.gameplay?.guildRankTrials === true, 'Alpha status must expose Mochirii guild rank trials.');
   assert(alphaStatus.body.gameplay?.affinityTrials === true, 'Alpha status must expose Mochi Spirit affinity trials.');
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
@@ -179,6 +181,11 @@ async function run() {
       requestId: `${runId}-tactic`,
       type: 'battle.tactic_scroll',
       payload: { spiritId: 'lirabao', moveId: 'lantern-pulse', tacticId: 'lantern-anchor', currentMasteryXp: 7, bond: 3, noInjury: true }
+    },
+    {
+      requestId: `${runId}-rank`,
+      type: 'guild.rank_trial',
+      payload: { roster: ['lirabao', 'jintari'], activeSpiritId: 'jintari', bond: 3, completedQuestSteps: ['attune-spirit'], tacticProof: true, affinityWins: 1, sparWins: 0, journalDiscoveredCount: 2, noRealValue: true }
     },
     {
       requestId: `${runId}-affinity`,
