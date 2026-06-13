@@ -7,6 +7,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_COMPENDIUMS,
+  SPIRIT_CONDITION_WEAVES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
@@ -31,6 +32,7 @@ import {
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
+  resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveGuildCommission,
   resolveGuildRankTrial,
@@ -152,6 +154,12 @@ interface AlphaHudState {
   traitLabel: string;
   traitAttunementScore: number;
   traitThreadClaimed: boolean;
+  conditionWeaveProof: boolean;
+  conditionWeaveId?: string;
+  conditionWeaveName: string;
+  conditionWeaveScore: number;
+  conditionIds: string[];
+  conditionCharmClaimed: boolean;
   affinityProof: boolean;
   affinityTrialWins: number;
   lastAffinityTrialId?: string;
@@ -431,6 +439,20 @@ export interface AlphaWorldStatePatch {
     traitLabel: string;
     traitName: string;
   };
+  conditionWeave?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    conditionIds: string[];
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    weaveId: string;
+    weaveName: string;
+  };
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
@@ -578,6 +600,11 @@ function defaultAlphaState(): AlphaHudState {
     traitLabel: 'No trait',
     traitAttunementScore: 0,
     traitThreadClaimed: false,
+    conditionWeaveProof: false,
+    conditionWeaveName: 'Pending',
+    conditionWeaveScore: 0,
+    conditionIds: [],
+    conditionCharmClaimed: false,
     affinityProof: false,
     affinityTrialWins: 0,
     affinityAdvantage: false,
@@ -738,6 +765,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
       <span class="mochi-hud__hint" data-trait-label>Trait: pending</span>
+      <span class="mochi-hud__hint" data-condition-label>Condition: pending</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
@@ -774,6 +802,7 @@ function createHud() {
       <button type="button" data-alpha-action="battle.tactic_scroll" aria-label="Study a no-injury Mochirii tactic scroll">Tactic</button>
       <button type="button" data-alpha-action="spirit.technique_loadout" aria-label="Prepare the three-spirit Mochirii move loadout">Moves</button>
       <button type="button" data-alpha-action="spirit.trait_attune" aria-label="Attune an original no-real-value Mochirii spirit trait">Trait</button>
+      <button type="button" data-alpha-action="battle.condition_weave" aria-label="Weave original no-injury Mochirii battle conditions">Weave</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
@@ -821,6 +850,7 @@ function createHud() {
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
   const traitLabel = hud.querySelector('[data-trait-label]');
+  const conditionLabel = hud.querySelector('[data-condition-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
@@ -916,6 +946,11 @@ function createHud() {
       traitLabel.textContent = state.traitAttunementProof
         ? `Trait: ${state.traitLabel}, score ${state.traitAttunementScore}`
         : 'Trait: pending';
+    }
+    if (conditionLabel) {
+      conditionLabel.textContent = state.conditionWeaveProof
+        ? `Condition: ${state.conditionWeaveName}, score ${state.conditionWeaveScore}`
+        : 'Condition: pending';
     }
     if (affinityLabel) {
       affinityLabel.textContent = state.affinityProof
@@ -1192,6 +1227,7 @@ function readAlphaState(): AlphaHudState {
       attunedSpiritIds: Array.isArray(parsed?.attunedSpiritIds) ? parsed.attunedSpiritIds.map(String) : [],
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
+      conditionIds: Array.isArray(parsed?.conditionIds) ? parsed.conditionIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-48).map(String) : []
@@ -1414,6 +1450,19 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.supportSpiritIds = state.partyIds.slice(1);
     state.spiritId = patch.traitAttunement.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.traitAttunement.message || `${state.traitLabel} recorded as no-real-value trait proof.`);
+  }
+
+  if (patch.conditionWeave) {
+    state.conditionWeaveProof = patch.conditionWeave.proof || state.conditionWeaveProof;
+    state.conditionWeaveId = patch.conditionWeave.weaveId || state.conditionWeaveId;
+    state.conditionWeaveName = patch.conditionWeave.weaveName || state.conditionWeaveName;
+    state.conditionWeaveScore = Math.max(state.conditionWeaveScore, Number(patch.conditionWeave.score) || 0);
+    state.conditionIds = Array.isArray(patch.conditionWeave.conditionIds) ? patch.conditionWeave.conditionIds.map(String) : state.conditionIds;
+    state.conditionCharmClaimed = state.conditionCharmClaimed || patch.conditionWeave.rewardItemId === 'jade-mirror-condition-charm';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.conditionWeave.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.spiritId = patch.conditionWeave.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.conditionWeave.message || `${state.conditionWeaveName} recorded as no-real-value condition proof.`);
   }
 
   if (patch.rank) {
@@ -1793,6 +1842,31 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       journalProof: state.journalProof,
       journalDiscoveredCount: state.journalDiscoveredCount,
       bondBySpiritId: Object.fromEntries(partyIds.map((partySpiritId) => [partySpiritId, state.bond || 1]))
+    };
+  }
+
+  if (type === 'battle.condition_weave') {
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    return {
+      weaveId: SPIRIT_CONDITION_WEAVES[0].id,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0],
+      tacticProof: state.tacticProof,
+      affinityProof: state.affinityProof,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      techniqueLoadoutId: state.techniqueLoadoutId,
+      traitAttunementProof: state.traitAttunementProof,
+      traitAttunementId: state.traitAttunementId,
+      mentorChallengeProof: state.mentorChallengeProof,
+      mentorChallengeId: state.mentorChallengeId,
+      sparLadderWins: state.sparLadderWins,
+      trainingXp: state.trainingXp,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
     };
   }
 
@@ -2375,6 +2449,45 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.spiritId = result.activeSpiritId;
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.condition_weave') {
+    const partyIds = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
+    const result = resolveSpiritConditionWeave(
+      {
+        partyIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || partyIds[0] || ''),
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        affinityProof: Boolean(payload.affinityProof ?? state.affinityProof),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        techniqueLoadoutId: String(payload.techniqueLoadoutId || state.techniqueLoadoutId || ''),
+        traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
+        traitAttunementId: String(payload.traitAttunementId || state.traitAttunementId || ''),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        mentorChallengeId: String(payload.mentorChallengeId || state.mentorChallengeId || ''),
+        sparLadderWins: Number(payload.sparLadderWins ?? state.sparLadderWins ?? 0),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.weaveId || SPIRIT_CONDITION_WEAVES[0].id)
+    );
+    if (result.woven) {
+      state.conditionWeaveProof = true;
+      state.conditionWeaveId = result.weaveId;
+      state.conditionWeaveName = result.weaveName;
+      state.conditionWeaveScore = result.score;
+      state.conditionIds = result.conditionIds;
+      state.conditionCharmClaimed = result.rewardItemId === 'jade-mirror-condition-charm';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.spiritId = result.activeSpiritId;
     }
     state.chat.push(result.message);
   }

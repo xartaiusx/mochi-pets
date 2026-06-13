@@ -68,6 +68,7 @@ async function run() {
   assert(manifest.body.gameplay?.teamSparMatches === true, 'Manifest must expose Mochi Spirit team spar matches.');
   assert(manifest.body.gameplay?.mentorChallenges === true, 'Manifest must expose Mochi Spirit mentor challenges.');
   assert(manifest.body.gameplay?.battleRoundTranscripts === true, 'Manifest must expose Mochi Spirit battle round transcripts.');
+  assert(manifest.body.gameplay?.conditionWeaves === true, 'Manifest must expose Mochi Spirit condition weaves.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
   assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
@@ -99,6 +100,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.teamSparMatches === true, 'Alpha status must expose Mochi Spirit team spar matches.');
   assert(alphaStatus.body.gameplay?.mentorChallenges === true, 'Alpha status must expose Mochi Spirit mentor challenges.');
   assert(alphaStatus.body.gameplay?.battleRoundTranscripts === true, 'Alpha status must expose Mochi Spirit battle round transcripts.');
+  assert(alphaStatus.body.gameplay?.conditionWeaves === true, 'Alpha status must expose Mochi Spirit condition weaves.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
   assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
@@ -420,6 +422,32 @@ async function run() {
         journalProof: true,
         journalDiscoveredCount: 3,
         bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 4 },
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-condition-weave`,
+      type: 'battle.condition_weave',
+      payload: {
+        weaveId: 'jade-mirror-condition-weave',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'lirabao',
+        tacticProof: true,
+        affinityProof: true,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        techniqueLoadoutProof: true,
+        techniqueLoadoutId: 'jade-step-loadout',
+        traitAttunementProof: true,
+        traitAttunementId: 'jade-heart-trait',
+        mentorChallengeProof: true,
+        mentorChallengeId: 'silk-banner-mentor-drill',
+        sparLadderWins: 1,
+        trainingXp: 3,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance condition weave proof.'],
         noRealValue: true
       }
     },

@@ -5,7 +5,9 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_BATTLE_TACTICS,
+  SPIRIT_BATTLE_CONDITIONS,
   SPIRIT_COMPENDIUMS,
+  SPIRIT_CONDITION_WEAVES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
@@ -21,6 +23,7 @@ import {
   resolveSpiritAttunement,
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
+  resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveGuildCommission,
   resolveSpiritJournal,
@@ -79,6 +82,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
     expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -130,6 +134,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
     expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -896,6 +901,59 @@ describe('alpha contract', () => {
       journalProof: false,
       journalDiscoveredCount: 0
     }).unlocked).toBe(false);
+
+    expect(SPIRIT_BATTLE_CONDITIONS.map((condition) => condition.id)).toEqual(['lantern-ward', 'goldleaf-tempo', 'skybell-guard']);
+    expect(SPIRIT_CONDITION_WEAVES.map((weave) => weave.id)).toEqual(['jade-mirror-condition-weave']);
+    const conditionWeave = resolveSpiritConditionWeave({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      tacticProof: true,
+      affinityProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Condition weave ready.']
+    });
+    expect(conditionWeave).toMatchObject({
+      ok: true,
+      woven: true,
+      weaveId: 'jade-mirror-condition-weave',
+      weaveName: 'Jade Mirror Condition Weave',
+      title: 'First Non-Injury Condition Weave',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      score: 49,
+      requiredScore: 34,
+      rewardItemId: 'jade-mirror-condition-charm',
+      source: 'battle-condition-weave'
+    });
+    expect(conditionWeave.message).toContain('no-injury battle conditions');
+    expect(resolveSpiritConditionWeave({
+      partyIds: ['lirabao'],
+      tacticProof: false,
+      affinityProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      techniqueLoadoutProof: false,
+      traitAttunementProof: false,
+      mentorChallengeProof: false,
+      sparLadderWins: 0,
+      trainingXp: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).woven).toBe(false);
 
     const battle = resolveSpiritTrainingBattle('lirabao', 'lantern-pulse', 5, 1);
     expect(battle.ok).toBe(true);

@@ -55,6 +55,7 @@ describe('game manifest', () => {
         teamSparMatches: true,
         mentorChallenges: true,
         battleRoundTranscripts: true,
+        conditionWeaves: true,
         fieldExpeditions: true,
         sparringLadder: true,
         trainingBattles: true,

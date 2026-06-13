@@ -187,6 +187,20 @@ type AlphaHudStatePatch = {
     traitLabel: string;
     traitName: string;
   };
+  conditionWeave?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    conditionIds: string[];
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    weaveId: string;
+    weaveName: string;
+  };
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
@@ -746,6 +760,55 @@ type SpiritTraitAttunementProgress = {
   bondBySpiritId?: Record<string, number>;
 };
 
+type SpiritBattleCondition = {
+  id: string;
+  name: string;
+  title: string;
+  spiritId: string;
+  moveId: string;
+  affinity: string;
+  role: SpiritBattleRole;
+  focusBonus: number;
+  effect: string;
+};
+
+type SpiritConditionWeave = {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredConditionIds: readonly string[];
+  requiredLoadoutId: string;
+  requiredTraitId: string;
+  requiredMentorChallengeId: string;
+  requiredSparWins: number;
+  requiredTrainingXp: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritConditionWeaveProgress = {
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  tacticProof: boolean;
+  affinityProof: boolean;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  techniqueLoadoutProof: boolean;
+  techniqueLoadoutId?: string;
+  traitAttunementProof: boolean;
+  traitAttunementId?: string;
+  mentorChallengeProof: boolean;
+  mentorChallengeId?: string;
+  sparLadderWins: number;
+  trainingXp: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+};
+
 type SpiritMentorChallenge = {
   id: string;
   name: string;
@@ -887,6 +950,11 @@ const alphaItems = {
     id: 'jade-heart-trait-thread',
     name: 'Jade Heart Trait Thread',
     description: 'A no-real-value trait attunement proof for closed-alpha Mochirii spirit raising.'
+  },
+  conditionCharm: {
+    id: 'jade-mirror-condition-charm',
+    name: 'Jade Mirror Condition Charm',
+    description: 'A no-real-value battle condition weave proof for closed-alpha Mochirii party rhythm.'
   },
   commissionKnot: {
     id: 'jade-court-commission-knot',
@@ -1365,6 +1433,60 @@ const traitAttunements: readonly SpiritTraitAttunement[] = [
       aozhen: 'Skybell Wayfinder'
     },
     summary: 'A no-real-value raising and battle identity proof that gives each first-court Mochi Spirit one original Mochirii trait after care, growth, loadout, mentor, and battle readiness.'
+  }
+];
+
+const battleConditions: readonly SpiritBattleCondition[] = [
+  {
+    id: 'lantern-ward',
+    name: 'Lantern Ward',
+    title: 'Blossom Guard Condition',
+    spiritId: 'lirabao',
+    moveId: 'lantern-pulse',
+    affinity: 'blossom',
+    role: 'guardian',
+    focusBonus: 3,
+    effect: 'Guards the party focus rhythm without damage or injury.'
+  },
+  {
+    id: 'goldleaf-tempo',
+    name: 'Goldleaf Tempo',
+    title: 'Citrus Initiative Condition',
+    spiritId: 'jintari',
+    moveId: 'goldleaf-feint',
+    affinity: 'citrus-gold',
+    role: 'trickster',
+    focusBonus: 3,
+    effect: 'Reads turn-order cues as bright movement timing without harm.'
+  },
+  {
+    id: 'skybell-guard',
+    name: 'Skybell Guard',
+    title: 'Sky-Jade Stability Condition',
+    spiritId: 'aozhen',
+    moveId: 'skybell-guard',
+    affinity: 'sky-jade',
+    role: 'scout',
+    focusBonus: 4,
+    effect: 'Keeps the formation steady with a soft focus barrier instead of injury.'
+  }
+];
+
+const conditionWeaves: readonly SpiritConditionWeave[] = [
+  {
+    id: 'jade-mirror-condition-weave',
+    name: 'Jade Mirror Condition Weave',
+    title: 'First Non-Injury Condition Weave',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredConditionIds: battleConditions.map((condition) => condition.id),
+    requiredLoadoutId: techniqueLoadouts[0].id,
+    requiredTraitId: traitAttunements[0].id,
+    requiredMentorChallengeId: mentorChallenges[0].id,
+    requiredSparWins: 1,
+    requiredTrainingXp: 3,
+    requiredScore: 34,
+    rewardItemId: alphaItems.conditionCharm.id,
+    summary: 'A no-real-value battle condition proof for testers who can coordinate a full Mochirii party, traits, move loadout, mentor readiness, and local social signals without injury.'
   }
 ];
 
@@ -2805,6 +2927,133 @@ function resolveSpiritTraitAttunement(
   };
 }
 
+function resolveSpiritConditionWeave(
+  progress: SpiritConditionWeaveProgress,
+  weaveId: string = conditionWeaves[0].id
+) {
+  const weave = conditionWeaves.find((entry) => entry.id === weaveId) || conditionWeaves[0];
+  const requiredSpiritIds = new Set(weave.requiredSpiritIds);
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && party.includes(progress.activeSpiritId) ? progress.activeSpiritId : party[0] || weave.requiredSpiritIds[0];
+  const activeSpirit = getSpirit(activeSpiritId) || spirits[0];
+  const missing: string[] = [];
+
+  for (const spiritId of weave.requiredSpiritIds) {
+    if (!party.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const conditionSet = new Set(weave.requiredConditionIds);
+  const conditions = battleConditions.filter((condition) => conditionSet.has(condition.id));
+  for (const conditionId of weave.requiredConditionIds) {
+    const condition = conditions.find((entry) => entry.id === conditionId);
+    if (!condition || !party.includes(condition.spiritId)) {
+      missing.push(`condition:${conditionId}`);
+    }
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.affinityProof) {
+    missing.push('affinity');
+  }
+
+  const battleReady = progress.battleRoundProof && progress.battleRoundVictory;
+  if (!battleReady) {
+    missing.push('battle-round');
+  }
+
+  const loadoutReady = progress.techniqueLoadoutProof && progress.techniqueLoadoutId === weave.requiredLoadoutId;
+  if (!loadoutReady) {
+    missing.push(`loadout:${weave.requiredLoadoutId}`);
+  }
+
+  const traitReady = progress.traitAttunementProof && progress.traitAttunementId === weave.requiredTraitId;
+  if (!traitReady) {
+    missing.push(`trait:${weave.requiredTraitId}`);
+  }
+
+  const mentorReady = progress.mentorChallengeProof && progress.mentorChallengeId === weave.requiredMentorChallengeId;
+  if (!mentorReady) {
+    missing.push(`mentor:${weave.requiredMentorChallengeId}`);
+  }
+
+  const sparWins = Math.max(0, Math.floor(progress.sparLadderWins || 0));
+  if (sparWins < weave.requiredSparWins) {
+    missing.push(`spar-wins:${sparWins}/${weave.requiredSparWins}`);
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < weave.requiredTrainingXp) {
+    missing.push(`training-xp:${trainingXp}/${weave.requiredTrainingXp}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  const conditionScore = conditions.reduce((total, condition) => total + condition.focusBonus, 0);
+  const score =
+    Math.min(party.length, weave.requiredSpiritIds.length) * 3 +
+    conditionScore +
+    (progress.tacticProof ? 3 : 0) +
+    (progress.affinityProof ? 2 : 0) +
+    (battleReady ? 4 : 0) +
+    (loadoutReady ? 4 : 0) +
+    (traitReady ? 4 : 0) +
+    (mentorReady ? 4 : 0) +
+    Math.min(sparWins, weave.requiredSparWins) * 2 +
+    Math.min(trainingXp, weave.requiredTrainingXp) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const woven = missing.length === 0 && score >= weave.requiredScore;
+  const conditionNames = conditions.map((condition) => condition.name);
+  const partyNames = party.map((spiritId) => getSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    woven,
+    weaveId: weave.id,
+    weaveName: weave.name,
+    title: weave.title,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    partyIds: party,
+    conditionIds: conditions.map((condition) => condition.id),
+    conditionNames,
+    score,
+    requiredScore: weave.requiredScore,
+    missing,
+    rewardItemId: weave.rewardItemId,
+    message: woven
+      ? `${weave.name} complete: ${partyNames} coordinate ${conditionNames.join(', ')} as no-injury battle conditions for closed-alpha testing. No-real-value condition proof only.`
+      : `${weave.name} needs ${missing.join(', ')} before non-injury battle conditions can be woven.`,
+    source: 'battle-condition-weave'
+  };
+}
+
 function resolveGuildRankTrial(progress: GuildRankTrialProgress, trialId: string = guildRankTrials[0].id) {
   const trial = guildRankTrials.find((entry) => entry.id === trialId) || guildRankTrials[0];
   const roster = Array.from(new Set(progress.roster || [])).filter((spiritId) => Boolean(getSpirit(spiritId)));
@@ -4177,6 +4426,59 @@ function trainingRing(): EventDefinition {
               notification = 'Trait attuned';
               saveTitle = 'Mochi Spirit trait attunement';
               prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} ${trait.message} The Jade Heart Trait Thread is no-real-value closed-alpha raising proof.`;
+
+              const conditionWeave = resolveSpiritConditionWeave(
+                {
+                  partyIds: trait.partyIds,
+                  activeSpiritId: trait.activeSpiritId,
+                  tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+                  affinityProof: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+                  battleRoundProof: battleRound.victory,
+                  battleRoundVictory: battleRound.victory,
+                  techniqueLoadoutProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.techniqueLoadoutProof')),
+                  techniqueLoadoutId: actingPlayer.getVariable<string>('mochiSocial.battle.techniqueLoadout'),
+                  traitAttunementProof: true,
+                  traitAttunementId: trait.traitId,
+                  mentorChallengeProof: true,
+                  mentorChallengeId: mentor.challengeId,
+                  sparLadderWins: nextSparWins,
+                  trainingXp: Math.max(trainingXpTotal(actingPlayer, trait.partyIds), nextXp),
+                  profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
+                  guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+                  statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
+                  chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || []
+                },
+                conditionWeaves[0].id
+              );
+
+              if (conditionWeave.woven) {
+                actingPlayer.setVariable('mochiSocial.battle.conditionWeaveProof', true);
+                actingPlayer.setVariable('mochiSocial.battle.conditionWeave', conditionWeave.weaveId);
+                actingPlayer.setVariable('mochiSocial.battle.conditionWeaveName', conditionWeave.weaveName);
+                actingPlayer.setVariable('mochiSocial.battle.conditionWeaveScore', conditionWeave.score);
+                actingPlayer.setVariable('mochiSocial.battle.conditionIds', conditionWeave.conditionIds);
+                if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.conditionCharmClaimed')) {
+                  actingPlayer.addItem(alphaItems.conditionCharm, 1);
+                  actingPlayer.setVariable('mochiSocial.battle.conditionCharmClaimed', true);
+                }
+                patch.conditionWeave = {
+                  weaveId: conditionWeave.weaveId,
+                  weaveName: conditionWeave.weaveName,
+                  title: conditionWeave.title,
+                  activeSpiritId: conditionWeave.activeSpiritId,
+                  activeSpiritName: conditionWeave.activeSpiritName,
+                  partyIds: conditionWeave.partyIds,
+                  conditionIds: conditionWeave.conditionIds,
+                  score: conditionWeave.score,
+                  requiredScore: conditionWeave.requiredScore,
+                  rewardItemId: conditionWeave.rewardItemId,
+                  proof: true,
+                  message: conditionWeave.message
+                };
+                notification = 'Condition weave complete';
+                saveTitle = 'Mochi Spirit condition weave';
+                prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} ${trait.message} ${conditionWeave.message} The Jade Mirror Condition Charm is no-real-value closed-alpha condition proof.`;
+              }
             }
           } else {
             notification = 'Team match cleared';

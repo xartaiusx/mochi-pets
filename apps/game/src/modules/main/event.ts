@@ -10,6 +10,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
+  SPIRIT_CONDITION_WEAVES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
@@ -27,6 +28,7 @@ import {
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
+  resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveGuildCommission,
   resolveGuildRankTrial,
@@ -238,6 +240,20 @@ type AlphaHudStatePatch = {
     traitId: string;
     traitLabel: string;
     traitName: string;
+  };
+  conditionWeave?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    conditionIds: string[];
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    weaveId: string;
+    weaveName: string;
   };
   mentorChallenge?: {
     challengeId: string;
@@ -1505,6 +1521,59 @@ export function TrainingRing(): EventDefinition {
               notification = 'Trait attuned';
               saveTitle = 'Mochi Spirit trait attunement';
               prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} ${trait.message} The Jade Heart Trait Thread is no-real-value closed-alpha raising proof.`;
+
+              const conditionWeave = resolveSpiritConditionWeave(
+                {
+                  partyIds: trait.partyIds,
+                  activeSpiritId: trait.activeSpiritId,
+                  tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+                  affinityProof: Number(player.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+                  battleRoundProof: battleRound.victory,
+                  battleRoundVictory: battleRound.victory,
+                  techniqueLoadoutProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.techniqueLoadoutProof')),
+                  techniqueLoadoutId: player.getVariable<string>('mochiSocial.battle.techniqueLoadout'),
+                  traitAttunementProof: true,
+                  traitAttunementId: trait.traitId,
+                  mentorChallengeProof: true,
+                  mentorChallengeId: mentor.challengeId,
+                  sparLadderWins: nextSparWins,
+                  trainingXp: Math.max(trainingXpTotal(player, trait.partyIds), nextXp),
+                  profileViewed: Boolean(player.getVariable<boolean>('mochiSocial.social.profileViewed')),
+                  guildBuddyProof: Boolean(player.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+                  statusMood: player.getVariable<string>('mochiSocial.social.statusMood'),
+                  chatLines: player.getVariable<string[]>('mochiSocial.social.chatLines') || []
+                },
+                SPIRIT_CONDITION_WEAVES[0].id
+              );
+
+              if (conditionWeave.woven) {
+                player.setVariable('mochiSocial.battle.conditionWeaveProof', true);
+                player.setVariable('mochiSocial.battle.conditionWeave', conditionWeave.weaveId);
+                player.setVariable('mochiSocial.battle.conditionWeaveName', conditionWeave.weaveName);
+                player.setVariable('mochiSocial.battle.conditionWeaveScore', conditionWeave.score);
+                player.setVariable('mochiSocial.battle.conditionIds', conditionWeave.conditionIds);
+                if (!player.getVariable<boolean>('mochiSocial.battle.conditionCharmClaimed')) {
+                  player.addItem(ALPHA_ITEMS.conditionCharm, 1);
+                  player.setVariable('mochiSocial.battle.conditionCharmClaimed', true);
+                }
+                patch.conditionWeave = {
+                  weaveId: conditionWeave.weaveId,
+                  weaveName: conditionWeave.weaveName,
+                  title: conditionWeave.title,
+                  activeSpiritId: conditionWeave.activeSpiritId,
+                  activeSpiritName: conditionWeave.activeSpiritName,
+                  partyIds: conditionWeave.partyIds,
+                  conditionIds: conditionWeave.conditionIds,
+                  score: conditionWeave.score,
+                  requiredScore: conditionWeave.requiredScore,
+                  rewardItemId: conditionWeave.rewardItemId,
+                  proof: true,
+                  message: conditionWeave.message
+                };
+                notification = 'Condition weave complete';
+                saveTitle = 'Mochi Spirit condition weave';
+                prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} ${trait.message} ${conditionWeave.message} The Jade Mirror Condition Charm is no-real-value closed-alpha condition proof.`;
+              }
             }
           }
           if (!mentor.cleared) {

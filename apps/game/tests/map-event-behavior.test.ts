@@ -673,6 +673,72 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Jade Heart Trait Thread is no-real-value closed-alpha raising proof');
   });
 
+  it('weaves the Jade Mirror battle conditions from the training ring after trait and social proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'lirabao');
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
+    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 17);
+    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiSocial.spirits.journalProof', true);
+    player.variables.set('mochiSocial.spirits.journalCount', 3);
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.tacticMasteryXp', 14);
+    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
+    player.variables.set('mochiSocial.battle.techniqueLoadoutProof', true);
+    player.variables.set('mochiSocial.battle.techniqueLoadout', 'jade-step-loadout');
+    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
+    player.variables.set('mochiSocial.social.profileViewed', true);
+    player.variables.set('mochiSocial.social.guildBuddyProof', true);
+    player.variables.set('mochiSocial.social.statusMood', 'cozy');
+    player.variables.set('mochiSocial.social.chatLines', ['Ready for the condition weave.']);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+
+    await runAction(TrainingRing(), player);
+
+    expect(player.variables.get('mochiSocial.spirits.traitAttunementProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.conditionWeaveProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.conditionWeave')).toBe('jade-mirror-condition-weave');
+    expect(player.variables.get('mochiSocial.battle.conditionWeaveName')).toBe('Jade Mirror Condition Weave');
+    expect(player.variables.get('mochiSocial.battle.conditionWeaveScore')).toBe(49);
+    expect(player.variables.get('mochiSocial.battle.conditionIds')).toEqual(['lantern-ward', 'goldleaf-tempo', 'skybell-guard']);
+    expect(player.variables.get('mochiSocial.battle.conditionCharmClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('jade-mirror-condition-charm');
+    expect(player.notifications.at(-1)?.message).toBe('Condition weave complete');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit condition weave' });
+    expect(player.saves.at(-1)?.options.source).toBe('training-ring');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        conditionWeave: {
+          weaveId: 'jade-mirror-condition-weave',
+          weaveName: 'Jade Mirror Condition Weave',
+          title: 'First Non-Injury Condition Weave',
+          activeSpiritId: 'lirabao',
+          activeSpiritName: 'Lirabao',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+          score: 49,
+          requiredScore: 34,
+          rewardItemId: 'jade-mirror-condition-charm',
+          proof: true,
+          message: 'Jade Mirror Condition Weave complete: Lirabao, Jintari, Aozhen coordinate Lantern Ward, Goldleaf Tempo, Skybell Guard as no-injury battle conditions for closed-alpha testing. No-real-value condition proof only.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Mirror Condition Weave complete');
+    expect(player.texts.at(-1)).toContain('Jade Mirror Condition Charm is no-real-value closed-alpha condition proof');
+  });
+
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
     const player = createFakePlayer();
 

@@ -183,6 +183,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Heart Trait Attunement');
     expect(alphaContentSource).toContain('jade-heart-trait-thread');
     expect(alphaContentSource).toContain('spirit-trait-attunement');
+    expect(alphaContentSource).toContain('Jade Mirror Condition Weave');
+    expect(alphaContentSource).toContain('jade-mirror-condition-charm');
+    expect(alphaContentSource).toContain('battle-condition-weave');
     expect(alphaContentSource).toContain('Silk Banner Mentor Drill');
     expect(alphaContentSource).toContain('silk-banner-mentor-seal');
     expect(alphaContentSource).toContain('battle-mentor-challenge');
@@ -240,6 +243,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Heart Trait Attunement');
     expect(runtimeServerSource).toContain('jade-heart-trait-thread');
     expect(runtimeServerSource).toContain('spirit-trait-attunement');
+    expect(runtimeServerSource).toContain('Jade Mirror Condition Weave');
+    expect(runtimeServerSource).toContain('jade-mirror-condition-charm');
+    expect(runtimeServerSource).toContain('battle-condition-weave');
     expect(runtimeServerSource).toContain('Silk Banner Mentor Drill');
     expect(runtimeServerSource).toContain('silk-banner-mentor-seal');
     expect(runtimeServerSource).toContain('battle-mentor-challenge');
