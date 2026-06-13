@@ -90,6 +90,19 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  compendium?: {
+    activeSpiritId?: string;
+    compendiumId: string;
+    compendiumName: string;
+    discoveredRoutes: string[];
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    title: string;
+  };
   harmonyForm?: {
     formId: string;
     message?: string;
@@ -476,6 +489,33 @@ type SpiritResearchFolioProgress = {
   trainingXp: number;
 };
 
+type SpiritCompendiumCompletion = {
+  id: string;
+  name: string;
+  title: string;
+  habitat: 'Jade Lantern Court';
+  requiredSpiritIds: readonly string[];
+  requiredRouteIds: readonly string[];
+  requiredJournalCount: number;
+  requiredHabitatBondId: string;
+  requiredResearchFolioId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritCompendiumProgress = {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  discoveredRoutes: readonly string[];
+  journalDiscoveredCount: number;
+  habitatBondProof: boolean;
+  habitatBondId?: string;
+  researchProof: boolean;
+  researchFolioId?: string;
+  routeMasteryProof: boolean;
+};
+
 type SpiritHarmonyForm = {
   id: string;
   name: string;
@@ -702,6 +742,11 @@ const alphaItems = {
     id: 'jade-court-research-folio',
     name: 'Jade Court Research Folio',
     description: 'A no-real-value field-guide proof for closed-alpha Mochirii spirit research.'
+  },
+  compendiumSeal: {
+    id: 'jade-court-compendium-seal',
+    name: 'Jade Court Compendium Seal',
+    description: 'A no-real-value species compendium proof for closed-alpha Mochirii spirit collection.'
   },
   habitatTassel: {
     id: 'jade-court-habitat-tassel',
@@ -1056,6 +1101,23 @@ const researchFolios: readonly SpiritResearchFolio[] = [
     requiredScore: 18,
     rewardItemId: alphaItems.researchFolio.id,
     summary: 'A no-real-value research folio for testers who connect first-court species, routes, journal notes, habitat trust, and safe battle practice.'
+  }
+];
+
+const compendiums: readonly SpiritCompendiumCompletion[] = [
+  {
+    id: 'jade-court-spirit-compendium',
+    name: 'Jade Court Spirit Compendium',
+    title: 'First-Court Spirit Collection Proof',
+    habitat: 'Jade Lantern Court',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredRouteIds: expeditionRoutes.map((route) => route.id),
+    requiredJournalCount: spirits.length,
+    requiredHabitatBondId: habitatBonds[0].id,
+    requiredResearchFolioId: researchFolios[0].id,
+    requiredScore: 25,
+    rewardItemId: alphaItems.compendiumSeal.id,
+    summary: 'A no-real-value first-court species compendium for testers who collect every original Mochi Spirit, scout both field routes, and prove habitat plus research coverage.'
   }
 ];
 
@@ -1496,6 +1558,79 @@ function resolveSpiritResearchFolio(progress: SpiritResearchFolioProgress, folio
       ? `${folio.name} recorded: ${activeName} anchors a full first-court research folio with roster, routes, journal, habitat, technique, tactic, affinity, and training proof.`
       : `${folio.name} needs ${missing.join(', ')} before the first Mochirii field guide can be recorded.`,
     source: 'spirit-research-folio'
+  };
+}
+
+function resolveSpiritCompendiumCompletion(progress: SpiritCompendiumProgress, compendiumId: string = compendiums[0].id) {
+  const compendium = compendiums.find((entry) => entry.id === compendiumId) || compendiums[0];
+  const requiredSpiritIds = new Set(compendium.requiredSpiritIds);
+  const requiredRouteIds = new Set(compendium.requiredRouteIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const discoveredRoutes = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const missing: string[] = [];
+
+  for (const spiritId of compendium.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const routeId of compendium.requiredRouteIds) {
+    if (!discoveredRoutes.includes(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < compendium.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${compendium.requiredJournalCount}`);
+  }
+
+  const habitatReady = progress.habitatBondProof && progress.habitatBondId === compendium.requiredHabitatBondId;
+  if (!habitatReady) {
+    missing.push(`habitat:${compendium.requiredHabitatBondId}`);
+  }
+
+  const researchReady = progress.researchProof && progress.researchFolioId === compendium.requiredResearchFolioId;
+  if (!researchReady) {
+    missing.push(`research:${compendium.requiredResearchFolioId}`);
+  }
+
+  if (!progress.routeMasteryProof) {
+    missing.push('route-mastery');
+  }
+
+  const score =
+    Math.min(roster.length, compendium.requiredSpiritIds.length) * 3 +
+    Math.min(discoveredRoutes.length, compendium.requiredRouteIds.length) * 3 +
+    Math.min(journalCount, compendium.requiredJournalCount) +
+    (habitatReady ? 3 : 0) +
+    (researchReady ? 5 : 0) +
+    (progress.routeMasteryProof ? 3 : 0);
+  const completed = missing.length === 0 && score >= compendium.requiredScore;
+  const activeName = getSpirit(activeSpiritId || '')?.name || 'the first-court roster';
+
+  return {
+    ok: true,
+    completed,
+    compendiumId: compendium.id,
+    compendiumName: compendium.name,
+    title: compendium.title,
+    habitat: compendium.habitat,
+    activeSpiritId,
+    roster,
+    discoveredRoutes,
+    score,
+    requiredScore: compendium.requiredScore,
+    missing,
+    rewardItemId: compendium.rewardItemId,
+    message: completed
+      ? `${compendium.name} complete: ${activeName} anchors all first-court Mochi Spirit records with roster, journal, route, habitat, and research proof. No-real-value collection progress only.`
+      : `${compendium.name} needs ${missing.join(', ')} before the first-court species collection can be sealed.`,
+    source: 'spirit-compendium'
   };
 }
 
@@ -3038,6 +3173,47 @@ function journalPavilion(): EventDefinition {
         };
         prompt = `${journal.message} ${research.message} The Jade Court Research Folio is no-real-value closed-alpha field-guide proof.`;
         saveTitle = 'Mochi Spirit research folio recorded';
+
+        const compendium = resolveSpiritCompendiumCompletion(
+          {
+            roster,
+            activeSpiritId: research.activeSpiritId,
+            discoveredRoutes,
+            journalDiscoveredCount: journal.discoveredCount,
+            habitatBondProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.habitatBondProof')),
+            habitatBondId: actingPlayer.getVariable<string>('mochiSocial.spirits.habitatBond'),
+            researchProof: true,
+            researchFolioId: research.folioId,
+            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof'))
+          },
+          compendiums[0].id
+        );
+
+        if (compendium.completed) {
+          actingPlayer.setVariable('mochiSocial.spirits.compendiumProof', true);
+          actingPlayer.setVariable('mochiSocial.spirits.compendium', compendium.compendiumId);
+          actingPlayer.setVariable('mochiSocial.spirits.compendiumName', compendium.compendiumName);
+          actingPlayer.setVariable('mochiSocial.spirits.compendiumScore', compendium.score);
+          if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.compendiumSealClaimed')) {
+            actingPlayer.addItem(alphaItems.compendiumSeal, 1);
+            actingPlayer.setVariable('mochiSocial.spirits.compendiumSealClaimed', true);
+          }
+          patch.compendium = {
+            compendiumId: compendium.compendiumId,
+            compendiumName: compendium.compendiumName,
+            title: compendium.title,
+            habitat: compendium.habitat,
+            activeSpiritId: compendium.activeSpiritId,
+            roster: compendium.roster,
+            discoveredRoutes: compendium.discoveredRoutes,
+            score: compendium.score,
+            rewardItemId: compendium.rewardItemId,
+            proof: true,
+            message: compendium.message
+          };
+          prompt = `${journal.message} ${research.message} ${compendium.message} The Jade Court Compendium Seal is no-real-value closed-alpha collection proof.`;
+          saveTitle = 'Mochi Spirit compendium sealed';
+        }
       }
 
       actingPlayer.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });

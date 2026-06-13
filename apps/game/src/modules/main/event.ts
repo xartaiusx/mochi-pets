@@ -5,6 +5,7 @@ import {
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_COMPENDIUMS,
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
@@ -23,6 +24,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
+  resolveSpiritCompendiumCompletion,
   resolveSpiritExpedition,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
@@ -94,6 +96,19 @@ type AlphaHudStatePatch = {
     discoveredRoutes: string[];
     folioId: string;
     folioName: string;
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    title: string;
+  };
+  compendium?: {
+    activeSpiritId?: string;
+    compendiumId: string;
+    compendiumName: string;
+    discoveredRoutes: string[];
     habitat: string;
     message?: string;
     proof: boolean;
@@ -747,6 +762,47 @@ export function JournalPavilion(): EventDefinition {
         };
         prompt = `${journal.message} ${research.message} The Jade Court Research Folio is no-real-value closed-alpha field-guide proof.`;
         saveTitle = 'Mochi Spirit research folio recorded';
+
+        const compendium = resolveSpiritCompendiumCompletion(
+          {
+            roster,
+            activeSpiritId: research.activeSpiritId,
+            discoveredRoutes,
+            journalDiscoveredCount: journal.discoveredCount,
+            habitatBondProof: Boolean(player.getVariable<boolean>('mochiSocial.spirits.habitatBondProof')),
+            habitatBondId: player.getVariable<string>('mochiSocial.spirits.habitatBond'),
+            researchProof: true,
+            researchFolioId: research.folioId,
+            routeMasteryProof: Boolean(player.getVariable<boolean>('mochiSocial.world.routeMasteryProof'))
+          },
+          SPIRIT_COMPENDIUMS[0].id
+        );
+
+        if (compendium.completed) {
+          player.setVariable('mochiSocial.spirits.compendiumProof', true);
+          player.setVariable('mochiSocial.spirits.compendium', compendium.compendiumId);
+          player.setVariable('mochiSocial.spirits.compendiumName', compendium.compendiumName);
+          player.setVariable('mochiSocial.spirits.compendiumScore', compendium.score);
+          if (!player.getVariable<boolean>('mochiSocial.spirits.compendiumSealClaimed')) {
+            player.addItem(ALPHA_ITEMS.compendiumSeal, 1);
+            player.setVariable('mochiSocial.spirits.compendiumSealClaimed', true);
+          }
+          patch.compendium = {
+            compendiumId: compendium.compendiumId,
+            compendiumName: compendium.compendiumName,
+            title: compendium.title,
+            habitat: compendium.habitat,
+            activeSpiritId: compendium.activeSpiritId,
+            roster: compendium.roster,
+            discoveredRoutes: compendium.discoveredRoutes,
+            score: compendium.score,
+            rewardItemId: compendium.rewardItemId,
+            proof: true,
+            message: compendium.message
+          };
+          prompt = `${journal.message} ${research.message} ${compendium.message} The Jade Court Compendium Seal is no-real-value closed-alpha collection proof.`;
+          saveTitle = 'Mochi Spirit compendium sealed';
+        }
       }
 
       player.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });

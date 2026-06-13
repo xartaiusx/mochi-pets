@@ -182,6 +182,7 @@ async function exerciseAlphaHud(page) {
     await page.click('[data-alpha-action="quest.progress"]', { timeout: timeoutMs });
   }
   await page.click('[data-alpha-action="world.route_mastery"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.compendium_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.technique_loadout"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.harmony_form"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.harmony_trial"]', { timeout: timeoutMs });
@@ -209,6 +210,7 @@ async function exerciseAlphaHud(page) {
       const routeMastery = document.querySelector('[data-route-mastery-label]')?.textContent || '';
       const habitatBond = document.querySelector('[data-habitat-bond-label]')?.textContent || '';
       const research = document.querySelector('[data-research-label]')?.textContent || '';
+      const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const tactic = document.querySelector('[data-tactic-label]')?.textContent || '';
       const loadout = document.querySelector('[data-loadout-label]')?.textContent || '';
@@ -241,6 +243,7 @@ async function exerciseAlphaHud(page) {
         && routeMastery.includes('Jade Cloudbell Circuit')
         && habitatBond.includes('Jade Court Habitat Bond')
         && research.includes('Jade Court Research Folio')
+        && compendium.includes('Jade Court Spirit Compendium')
         && technique.includes('Technique:')
         && technique.includes('XP')
         && tactic.includes('Tactic:')
@@ -296,6 +299,11 @@ async function exerciseAlphaHud(page) {
         && state.researchFolioName === 'Jade Court Research Folio'
         && state.researchScore >= 18
         && state.researchFolioClaimed === true
+        && state.compendiumProof === true
+        && state.compendiumId === 'jade-court-spirit-compendium'
+        && state.compendiumName === 'Jade Court Spirit Compendium'
+        && state.compendiumScore >= 25
+        && state.compendiumSealClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
         && state.harmonyFormName === 'Triune Jade Harmony'
@@ -402,6 +410,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Cloudbell Circuit mastered')
         && chat.includes('Jade Court Habitat Bond recorded')
         && chat.includes('Jade Court Research Folio recorded')
+        && chat.includes('Jade Court Spirit Compendium complete')
         && chat.includes('Jade Step Loadout prepared')
         && chat.includes('Jade Heart Trait Attunement')
         && chat.includes('Triune Jade Harmony formed')
@@ -423,6 +432,7 @@ async function exerciseAlphaHud(page) {
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent || '',
       research: document.querySelector('[data-research-label]')?.textContent || '',
+      compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
       trait: document.querySelector('[data-trait-label]')?.textContent || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
@@ -452,6 +462,7 @@ async function exerciseAlphaHud(page) {
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent?.trim() || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent?.trim() || '',
       research: document.querySelector('[data-research-label]')?.textContent?.trim() || '',
+      compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       tactic: document.querySelector('[data-tactic-label]')?.textContent?.trim() || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent?.trim() || '',
@@ -512,6 +523,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.researchFolioName === 'Jade Court Research Folio', 'HUD research action must record the research folio name.');
   assert(snapshot.state.researchScore >= 18, 'HUD research action must record a passing research score.');
   assert(snapshot.state.researchFolioClaimed === true, 'HUD research action must mark the no-real-value research folio proof.');
+  assert(snapshot.compendium.includes('Jade Court Spirit Compendium'), 'HUD compendium label must show the completed collection proof.');
+  assert(snapshot.state.compendiumProof === true, 'HUD compendium action must record compendium proof.');
+  assert(snapshot.state.compendiumId === 'jade-court-spirit-compendium', 'HUD compendium action must record the compendium id.');
+  assert(snapshot.state.compendiumName === 'Jade Court Spirit Compendium', 'HUD compendium action must record the compendium name.');
+  assert(snapshot.state.compendiumScore >= 25, 'HUD compendium action must record a passing compendium score.');
+  assert(snapshot.state.compendiumSealClaimed === true, 'HUD compendium action must mark the no-real-value compendium seal proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
   assert(snapshot.state.harmonyFormId === 'triune-jade-harmony', 'HUD harmony action must record the harmony form id.');
@@ -620,6 +637,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Circuit mastered')), 'HUD chat state must record the route mastery action.');
   assert(chat.some((line) => String(line).includes('Jade Court Habitat Bond recorded')), 'HUD chat state must record the habitat bond action.');
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
   assert(chat.some((line) => String(line).includes('Jade Step Loadout prepared')), 'HUD chat state must record the technique loadout action.');
   assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');

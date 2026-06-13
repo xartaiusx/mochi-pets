@@ -5,6 +5,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
+  SPIRIT_COMPENDIUMS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
@@ -27,6 +28,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
+  resolveSpiritCompendiumCompletion,
   resolveSpiritExpedition,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
@@ -106,6 +108,11 @@ interface AlphaHudState {
   researchFolioName: string;
   researchScore: number;
   researchFolioClaimed: boolean;
+  compendiumProof: boolean;
+  compendiumId?: string;
+  compendiumName: string;
+  compendiumScore: number;
+  compendiumSealClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -260,6 +267,19 @@ export interface AlphaWorldStatePatch {
     discoveredRoutes: string[];
     folioId: string;
     folioName: string;
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    title: string;
+  };
+  compendium?: {
+    activeSpiritId?: string;
+    compendiumId: string;
+    compendiumName: string;
+    discoveredRoutes: string[];
     habitat: string;
     message?: string;
     proof: boolean;
@@ -486,6 +506,10 @@ function defaultAlphaState(): AlphaHudState {
     researchFolioName: 'Unresearched',
     researchScore: 0,
     researchFolioClaimed: false,
+    compendiumProof: false,
+    compendiumName: 'Unsealed',
+    compendiumScore: 0,
+    compendiumSealClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -656,6 +680,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
       <span class="mochi-hud__hint" data-habitat-bond-label>Habitat Bond: pending</span>
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
+      <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
@@ -686,6 +711,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
       <button type="button" data-alpha-action="spirit.research" aria-label="Record the Mochirii spirit research folio">Research</button>
+      <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -733,6 +759,7 @@ function createHud() {
   const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
   const habitatBondLabel = hud.querySelector('[data-habitat-bond-label]');
   const researchLabel = hud.querySelector('[data-research-label]');
+  const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
@@ -799,6 +826,11 @@ function createHud() {
       researchLabel.textContent = state.researchProof
         ? `Research: ${state.researchFolioName}, score ${state.researchScore}`
         : 'Research: pending';
+    }
+    if (compendiumLabel) {
+      compendiumLabel.textContent = state.compendiumProof
+        ? `Compendium: ${state.compendiumName}, score ${state.compendiumScore}`
+        : 'Compendium: pending';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -1190,6 +1222,18 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.research.message || `${state.researchFolioName} recorded as no-real-value research proof.`);
   }
 
+  if (patch.compendium) {
+    state.compendiumProof = patch.compendium.proof || state.compendiumProof;
+    state.compendiumId = patch.compendium.compendiumId || state.compendiumId;
+    state.compendiumName = patch.compendium.compendiumName || state.compendiumName;
+    state.compendiumScore = Math.max(state.compendiumScore, Number(patch.compendium.score) || 0);
+    state.compendiumSealClaimed = state.compendiumSealClaimed || patch.compendium.rewardItemId === 'jade-court-compendium-seal';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.compendium.roster.map(String)]));
+    state.discoveredRouteIds = Array.from(new Set([...(state.discoveredRouteIds || []), ...patch.compendium.discoveredRoutes.map(String)]));
+    state.spiritId = patch.compendium.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.compendium.message || `${state.compendiumName} sealed as no-real-value collection proof.`);
+  }
+
   if (patch.expedition) {
     state.expeditionProof = patch.expedition.proof || state.expeditionProof;
     state.lastExpeditionRouteId = patch.expedition.routeId || state.lastExpeditionRouteId;
@@ -1506,6 +1550,21 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       tacticProof: state.tacticProof,
       affinityProof: state.affinityProof,
       trainingXp: state.trainingXp
+    };
+  }
+
+  if (type === 'spirit.compendium_complete') {
+    return {
+      compendiumId: SPIRIT_COMPENDIUMS[0].id,
+      roster: state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      discoveredRoutes: state.discoveredRouteIds,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      habitatBondProof: state.habitatBondProof,
+      habitatBondId: state.habitatBondId,
+      researchProof: state.researchProof,
+      researchFolioId: state.researchFolioId,
+      routeMasteryProof: state.routeMasteryProof
     };
   }
 
@@ -1897,6 +1956,34 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.researchFolioName = result.folioName;
       state.researchScore = result.score;
       state.researchFolioClaimed = result.rewardItemId === 'jade-court-research-folio';
+      state.attunedSpiritIds = result.roster;
+      state.discoveredRouteIds = result.discoveredRoutes;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.compendium_complete') {
+    const result = resolveSpiritCompendiumCompletion(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        habitatBondProof: Boolean(payload.habitatBondProof ?? state.habitatBondProof),
+        habitatBondId: String(payload.habitatBondId || state.habitatBondId || ''),
+        researchProof: Boolean(payload.researchProof ?? state.researchProof),
+        researchFolioId: String(payload.researchFolioId || state.researchFolioId || ''),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof)
+      },
+      String(payload.compendiumId || SPIRIT_COMPENDIUMS[0].id)
+    );
+    if (result.completed) {
+      state.compendiumProof = true;
+      state.compendiumId = result.compendiumId;
+      state.compendiumName = result.compendiumName;
+      state.compendiumScore = result.score;
+      state.compendiumSealClaimed = result.rewardItemId === 'jade-court-compendium-seal';
       state.attunedSpiritIds = result.roster;
       state.discoveredRouteIds = result.discoveredRoutes;
       state.spiritId = result.activeSpiritId || state.spiritId;

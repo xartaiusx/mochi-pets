@@ -834,6 +834,54 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha field-guide proof');
   });
 
+  it('seals the Jade Court Spirit Compendium from the journal pavilion after collection proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'aozhen');
+    player.variables.set('mochiSocial.spirit.aozhen.bond', 3);
+    player.variables.set('mochiSocial.spirit.aozhen.growth', 'sprout');
+    player.variables.set('mochiSocial.world.discoveredRoutes', ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.spirits.habitatBondProof', true);
+    player.variables.set('mochiSocial.spirits.habitatBond', 'jade-court-habitat-bond');
+    player.variables.set('mochiSocial.spirit.aozhen.technique.lastMove', 'skybell-guard');
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
+    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
+
+    await runAction(JournalPavilion(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('jade-court-compendium-seal');
+    expect(player.variables.get('mochiSocial.spirits.researchProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.compendiumProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.compendium')).toBe('jade-court-spirit-compendium');
+    expect(player.variables.get('mochiSocial.spirits.compendiumName')).toBe('Jade Court Spirit Compendium');
+    expect(player.variables.get('mochiSocial.spirits.compendiumScore')).toBe(29);
+    expect(player.variables.get('mochiSocial.spirits.compendiumSealClaimed')).toBe(true);
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit compendium sealed' });
+    expect(player.saves.at(-1)?.options.source).toBe('journal-pavilion');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        compendium: {
+          compendiumId: 'jade-court-spirit-compendium',
+          compendiumName: 'Jade Court Spirit Compendium',
+          title: 'First-Court Spirit Collection Proof',
+          habitat: 'Jade Lantern Court',
+          activeSpiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+          score: 29,
+          rewardItemId: 'jade-court-compendium-seal',
+          proof: true,
+          message: 'Jade Court Spirit Compendium complete: Aozhen anchors all first-court Mochi Spirit records with roster, journal, route, habitat, and research proof. No-real-value collection progress only.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Court Spirit Compendium complete');
+    expect(player.texts.at(-1)).toContain('Jade Court Compendium Seal is no-real-value closed-alpha collection proof');
+  });
+
   it('records Moonbridge field expedition scouting as no-real-value route proof', async () => {
     const player = createFakePlayer();
 
