@@ -15,6 +15,7 @@ const runtimeAssets = [
   { path: 'public/spritesheets/expedition-gate.png', width: 384, height: 768 },
   { path: 'public/spritesheets/route-invitation-altar.png', width: 384, height: 768 },
   { path: 'public/spritesheets/technique-dojo.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/tactic-scroll-stand.png', width: 384, height: 768 },
   { path: 'public/spritesheets/affinity-dais.png', width: 384, height: 768 },
   { path: 'public/spritesheets/market-board.png', width: 384, height: 768 },
   { path: 'public/spritesheets/trade-post.png', width: 384, height: 768 },

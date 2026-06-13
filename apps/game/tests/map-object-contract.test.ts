@@ -14,6 +14,7 @@ const expectedPlacements = {
   'expedition-gate': { x: 256, y: 704 },
   'route-invitation-altar': { x: 384, y: 704 },
   'technique-dojo': { x: 896, y: 704 },
+  'tactic-scroll-stand': { x: 1280, y: 320 },
   'affinity-dais': { x: 1408, y: 704 },
   'spirit-lirabao': { x: 384, y: 320 },
   'spirit-jintari': { x: 512, y: 320 },
@@ -67,6 +68,7 @@ describe('Mochi town map object contract', () => {
       "this.setGraphic('expedition-gate')",
       "this.setGraphic('route-invitation-altar')",
       "this.setGraphic('technique-dojo')",
+      "this.setGraphic('tactic-scroll-stand')",
       "this.setGraphic('affinity-dais')",
       "this.setGraphic('habitat-grove')",
       "this.setGraphic('party-banner')",
@@ -83,6 +85,7 @@ describe('Mochi town map object contract', () => {
       'Route scouted',
       'Route spirit invited',
       'Technique refined',
+      'Tactic scroll studied',
       'Affinity trial',
       'spirit invitation',
       'Party formed',
@@ -96,6 +99,7 @@ describe('Mochi town map object contract', () => {
       "source: 'expedition-gate'",
       "source: 'route-invitation-altar'",
       "source: 'technique-dojo'",
+      "source: 'tactic-scroll-stand'",
       "source: 'affinity-dais'",
       "source: 'habitat-grove'",
       "source: 'party-banner'",
@@ -117,6 +121,8 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Moonbridge Bamboo Trail');
     expect(alphaContentSource).toContain('spirit-route-invite');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
+    expect(alphaContentSource).toContain('Goldleaf Opening Form');
+    expect(alphaContentSource).toContain('battle-tactic-scroll');
     expect(alphaContentSource).toContain('Jade Mirror Trial');
     expect(alphaContentSource).toContain('Jade Echo Apprentice');
     expect(runtimeServerSource).toContain('First Lantern Vow');
@@ -124,6 +130,8 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Moonbridge Bamboo Trail');
     expect(runtimeServerSource).toContain('spirit-route-invite');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
+    expect(runtimeServerSource).toContain('Goldleaf Opening Form');
+    expect(runtimeServerSource).toContain('battle-tactic-scroll');
     expect(runtimeServerSource).toContain('Jade Mirror Trial');
     expect(runtimeServerSource).toContain('Jade Echo Apprentice');
   });

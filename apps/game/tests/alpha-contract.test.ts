@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_BATTLE_TACTICS,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -11,6 +12,7 @@ import {
   resolveSpiritRaisingAction,
   resolveSpiritRouteInvitation,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleTactic,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
@@ -29,6 +31,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -63,6 +66,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
@@ -167,6 +171,28 @@ describe('alpha contract', () => {
     });
     expect(technique.message).toContain('Mochirii Technique Dojo');
     expect(resolveSpiritTechniqueMastery('lirabao', 'missing-technique').ok).toBe(false);
+
+    expect(SPIRIT_BATTLE_TACTICS.map((tactic) => tactic.id)).toEqual([
+      'lantern-anchor',
+      'goldleaf-opening',
+      'skybell-ward'
+    ]);
+    const tactic = resolveSpiritBattleTactic('jintari', 'goldleaf-feint', 'goldleaf-opening', 5, 1);
+    expect(tactic).toMatchObject({
+      ok: true,
+      spiritId: 'jintari',
+      moveId: 'goldleaf-feint',
+      tacticId: 'goldleaf-opening',
+      tacticName: 'Goldleaf Opening Form',
+      stance: 'feint',
+      focusScore: 15,
+      masteryXp: 14,
+      awardedXp: 9,
+      bondDelta: 1,
+      source: 'battle-tactic-scroll'
+    });
+    expect(tactic.message).toContain('No-injury Mochirii battle planning');
+    expect(resolveSpiritBattleTactic('jintari', 'missing-move').ok).toBe(false);
 
     const affinity = resolveSpiritAffinityTrial('lirabao', 'lantern-pulse', 'jade-mirror-trial', 3, 7);
     expect(affinity).toMatchObject({

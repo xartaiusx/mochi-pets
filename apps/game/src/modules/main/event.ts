@@ -7,7 +7,9 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_EXPEDITION_ROUTES,
   growthStageFromBond,
+  techniqueMasteryLevelFromXp,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritExpedition,
   resolveSpiritJournal,
@@ -108,6 +110,17 @@ type AlphaHudStatePatch = {
     moveId: string;
     proof: boolean;
     spiritId: string;
+  };
+  tactic?: {
+    focusScore: number;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
+    stance: string;
+    tacticId: string;
+    tacticName: string;
   };
   training?: {
     message?: string;
@@ -543,6 +556,72 @@ export function TechniqueDojo(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochi Spirit technique practice' }, { reason: 'auto', source: 'technique-dojo' });
       showAlphaPrompt(player, `${technique.message} Technique mastery is no-injury alpha progression with no real value.`);
+    }
+  };
+}
+
+export function TacticScrollStand(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('tactic-scroll-stand');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const activeSpirit = activeSpiritId(player);
+      if (!activeSpirit) {
+        showAlphaPrompt(player, 'Attune with a Mochi Spirit before studying a Mochirii tactic scroll.');
+        return;
+      }
+
+      const spirit = MOCHI_SPIRITS.find((entry) => entry.id === activeSpirit);
+      const lastMove = player.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`);
+      const move = spirit?.battle.moves.find((entry) => entry.id === lastMove) || spirit?.battle.moves[0];
+      if (!spirit || !move) {
+        showAlphaPrompt(player, 'The tactic scroll stand cannot find a registered Mochirii spirit move for this alpha save.');
+        return;
+      }
+
+      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const currentXp = Number(player.getVariable<number>(xpKey) || 0);
+      const currentBond = Number(player.getVariable<number>(bondKey) || 1);
+      const tactic = resolveSpiritBattleTactic(activeSpirit, move.id, '', currentXp, currentBond);
+      if (!tactic.ok) {
+        showAlphaPrompt(player, tactic.message);
+        return;
+      }
+
+      const nextBond = Math.min(5, currentBond + tactic.bondDelta);
+      const nextGrowth = growthStageFromBond(nextBond);
+      const nextLevel = techniqueMasteryLevelFromXp(tactic.masteryXp);
+      player.setVariable(xpKey, tactic.masteryXp);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, nextLevel);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.last`, tactic.tacticId);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.lastMove`, tactic.moveId);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.stance`, tactic.stance);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.focusScore`, tactic.focusScore);
+      player.setVariable('mochiSocial.battle.lastTacticScroll', tactic.tacticId);
+      player.setVariable('mochiSocial.battle.tacticScrollProof', true);
+      player.setVariable(bondKey, nextBond);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      player.showNotification('Tactic scroll studied', { time: 1800, icon: 'tactic-scroll-stand' });
+      emitAlphaHudState(player, {
+        tactic: {
+          spiritId: activeSpirit,
+          moveId: move.id,
+          tacticId: tactic.tacticId,
+          tacticName: tactic.tacticName,
+          stance: tactic.stance,
+          masteryXp: tactic.masteryXp,
+          focusScore: tactic.focusScore,
+          proof: true,
+          message: tactic.message
+        },
+        spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth }
+      });
+      await player.save('auto', { title: 'Mochi Spirit tactic scroll practice' }, { reason: 'auto', source: 'tactic-scroll-stand' });
+      showAlphaPrompt(player, `${tactic.message} Tactic scroll practice is no-injury alpha battle planning with no real value.`);
     }
   };
 }

@@ -100,6 +100,13 @@ const spriteSpecs = [
     palette: { wood: '#654338', floor: '#67a98d', scroll: '#f4e7bd', jade: '#8ed0b1', ribbon: '#d85f4d', accent: '#f2c65f', light: '#fff0b6' }
   },
   {
+    id: 'tactic-scroll-stand',
+    role: 'Mochi Spirit battle tactic scroll stand',
+    prompt: 'Mochirii battle tactic scroll stand with open silk-paper stance scrolls, jade focus weights, lacquered wuxia lesson frame, gold lantern light, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'tactic',
+    palette: { wood: '#5f463c', paper: '#f4e7bd', jade: '#8ed0b1', ribbon: '#d85f4d', ink: '#53423a', accent: '#f2c65f', light: '#fff0b6', shadow: '#263a35' }
+  },
+  {
     id: 'affinity-dais',
     role: 'Mochi Spirit affinity trial dais',
     prompt: 'Mochirii affinity trial dais with jade mirror disc, silk affinity ribbons, lacquer base, warm lantern reflection, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -254,6 +261,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'gate') return expeditionGateFrame(spec, row, col, bob);
   if (spec.kind === 'altar') return routeInvitationAltarFrame(spec, row, col, bob);
   if (spec.kind === 'dojo') return techniqueDojoFrame(spec, row, col, bob);
+  if (spec.kind === 'tactic') return tacticScrollStandFrame(spec, row, col, bob);
   if (spec.kind === 'dais') return affinityDaisFrame(spec, row, col, bob);
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
   if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
@@ -530,6 +538,43 @@ function techniqueDojoFrame(spec, _row, col, _bob) {
     <ellipse cx="200" cy="122" rx="15" ry="22" fill="#221f1e"/>
     <ellipse cx="200" cy="122" rx="9" ry="16" fill="${spec.palette.accent}"/>
     <path d="M64 160 C96 181 160 181 192 160" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.44" fill="none"/>
+  `;
+}
+
+function tacticScrollStandFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.48 : 0.3;
+  const ribbonLift = col === 1 ? -5 : col === 2 ? 4 : 0;
+  return `
+    <ellipse cx="128" cy="318" rx="82" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="199" rx="104" ry="96" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="54" y="124" width="22" height="184" rx="9" fill="#221f1e"/>
+    <rect x="180" y="124" width="22" height="184" rx="9" fill="#221f1e"/>
+    <rect x="60" y="133" width="11" height="166" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="186" y="133" width="11" height="166" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M47 118 L209 118 L195 159 L61 159 Z" fill="#221f1e"/>
+    <path d="M61 127 L195 127 L186 149 L70 149 Z" fill="${spec.palette.ribbon}"/>
+    <rect x="61" y="161" width="134" height="107" rx="15" fill="#221f1e"/>
+    <rect x="73" y="171" width="110" height="86" rx="12" fill="${spec.palette.paper}"/>
+    <path d="M83 187 C103 177 121 183 128 198 C136 183 154 177 174 187 L174 236 C153 226 137 230 128 244 C119 230 103 226 83 236 Z" fill="#fff1c7"/>
+    <path d="M84 188 C104 178 121 184 128 199 L128 244 C119 230 103 226 83 236 Z" fill="${spec.palette.paper}"/>
+    <path d="M172 188 C152 178 135 184 128 199 L128 244 C137 230 153 226 173 236 Z" fill="#ead8a9"/>
+    <path d="M93 199 H118 M92 211 H116 M139 199 H164 M140 211 H165 M101 225 H117 M140 225 H155" stroke="${spec.palette.ink}" stroke-width="5" stroke-linecap="round" opacity="0.68"/>
+    <circle cx="89" cy="245" r="11" fill="#221f1e"/>
+    <circle cx="89" cy="245" r="7" fill="${spec.palette.jade}"/>
+    <circle cx="167" cy="245" r="11" fill="#221f1e"/>
+    <circle cx="167" cy="245" r="7" fill="${spec.palette.jade}"/>
+    <path d="M71 ${203 + ribbonLift} C93 ${187 + ribbonLift} 163 ${187 + ribbonLift} 185 ${203 + ribbonLift}" stroke="${spec.palette.ribbon}" stroke-width="10" stroke-linecap="round" opacity="0.84" fill="none"/>
+    <path d="M78 270 C105 286 151 286 178 270" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M64 154 C95 174 161 174 192 154" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.44" fill="none"/>
+    <path d="M102 129 L118 99 M154 129 L138 99" stroke="#221f1e" stroke-width="13" stroke-linecap="round"/>
+    <path d="M106 127 L121 106 M150 127 L135 106" stroke="${spec.palette.jade}" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="128" cy="103" r="18" fill="#221f1e"/>
+    <circle cx="128" cy="103" r="12" fill="${spec.palette.accent}"/>
+    <path d="M122 103 H134 M128 97 V109" stroke="#fff7d4" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="57" cy="120" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="57" cy="120" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <ellipse cx="199" cy="120" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="199" cy="120" rx="9" ry="16" fill="${spec.palette.accent}"/>
   `;
 }
 

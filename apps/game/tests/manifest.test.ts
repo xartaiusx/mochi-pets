@@ -48,6 +48,7 @@ describe('game manifest', () => {
         sparringLadder: true,
         trainingBattles: true,
         techniqueMastery: true,
+        battleTactics: true,
         affinityTrials: true,
         raisingCare: true,
         roleplayQuests: true,

@@ -121,6 +121,17 @@ type AlphaHudStatePatch = {
     proof: boolean;
     spiritId: string;
   };
+  tactic?: {
+    focusScore: number;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
+    stance: string;
+    tacticId: string;
+    tacticName: string;
+  };
   training?: {
     message?: string;
     victories: number;
@@ -130,6 +141,10 @@ type AlphaHudStatePatch = {
 };
 
 type SpiritGrowthStage = 'seed' | 'sprout' | 'glow';
+
+type SpiritBattleRole = 'guardian' | 'trickster' | 'scout';
+
+type SpiritBattleStance = 'anchor' | 'feint' | 'ward';
 
 type SpiritTechniqueMasteryLevel = 'novice' | 'practiced' | 'adept';
 
@@ -168,7 +183,7 @@ type SpiritSparOpponent = {
   name: string;
   affinity: string;
   baseFocus: number;
-  preferredRoles: readonly ('guardian' | 'trickster' | 'scout')[];
+  preferredRoles: readonly SpiritBattleRole[];
   rewardXp: number;
   bondDelta: number;
 };
@@ -181,6 +196,18 @@ type SpiritAffinityTrial = {
   baseFocus: number;
   favoredAffinities: readonly string[];
   rewardXp: number;
+  bondDelta: number;
+  lesson: string;
+};
+
+type SpiritBattleTactic = {
+  id: string;
+  name: string;
+  stance: SpiritBattleStance;
+  preferredRoles: readonly SpiritBattleRole[];
+  favoredAffinities: readonly string[];
+  recommendedMoveId: string;
+  masteryXp: number;
   bondDelta: number;
   lesson: string;
 };
@@ -210,7 +237,7 @@ type MochiSpirit = {
   capture: SpiritCaptureProfile;
   journal: SpiritJournalEntry;
   battle: {
-    role: 'guardian' | 'trickster' | 'scout';
+    role: SpiritBattleRole;
     baseFocus: number;
     moves: SpiritBattleMove[];
   };
@@ -399,6 +426,42 @@ const affinityTrials: readonly SpiritAffinityTrial[] = [
     rewardXp: 6,
     bondDelta: 1,
     lesson: 'The silk-cinder reflection rewards bright feints and warm resolve without harm, damage, or real-value settlement.'
+  }
+];
+
+const battleTactics: readonly SpiritBattleTactic[] = [
+  {
+    id: 'lantern-anchor',
+    name: 'Lantern Anchor Form',
+    stance: 'anchor',
+    preferredRoles: ['guardian'],
+    favoredAffinities: ['blossom'],
+    recommendedMoveId: 'lantern-pulse',
+    masteryXp: 5,
+    bondDelta: 1,
+    lesson: 'Plants a warm lantern stance so a companion can defend friends before striking.'
+  },
+  {
+    id: 'goldleaf-opening',
+    name: 'Goldleaf Opening Form',
+    stance: 'feint',
+    preferredRoles: ['trickster'],
+    favoredAffinities: ['citrus-gold'],
+    recommendedMoveId: 'goldleaf-feint',
+    masteryXp: 6,
+    bondDelta: 1,
+    lesson: 'Reads the first market-path beat and turns a bright side-step into clean initiative.'
+  },
+  {
+    id: 'skybell-ward',
+    name: 'Skybell Ward Form',
+    stance: 'ward',
+    preferredRoles: ['scout', 'guardian'],
+    favoredAffinities: ['sky-jade'],
+    recommendedMoveId: 'skybell-guard',
+    masteryXp: 5,
+    bondDelta: 1,
+    lesson: 'Listens for the bell before motion, keeping the whole party in a safe scouting rhythm.'
   }
 ];
 
@@ -801,6 +864,59 @@ function resolveSpiritTechniqueMastery(spiritId: string, moveId: string, current
     awardedXp,
     focusScore,
     message: `${spirit.name} refines ${move.label} at the Mochirii Technique Dojo: ${masteryLevel} mastery, ${masteryXp} XP. No-injury wuxia practice only.`
+  };
+}
+
+function resolveSpiritBattleTactic(spiritId: string, moveId: string, tacticId = '', currentMasteryXp = 0, bond = 1) {
+  const spirit = spirits.find((entry) => entry.id === spiritId);
+  const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
+  const fallbackTactic = battleTactics[0];
+  const tactic =
+    battleTactics.find((entry) => entry.id === tacticId) ||
+    battleTactics.find((entry) => entry.recommendedMoveId === move?.id) ||
+    battleTactics.find((entry) => move && entry.favoredAffinities.includes(move.affinity)) ||
+    battleTactics.find((entry) => spirit && entry.preferredRoles.includes(spirit.battle.role)) ||
+    fallbackTactic;
+
+  if (!spirit || !move) {
+    return {
+      ok: false,
+      tacticId: tactic.id,
+      tacticName: tactic.name,
+      stance: tactic.stance,
+      spiritId,
+      moveId,
+      focusScore: 0,
+      masteryXp: Math.max(0, Math.min(30, Math.floor(currentMasteryXp))),
+      awardedXp: 0,
+      bondDelta: 0,
+      message: 'Battle tactic planning could not start because the spirit or move is not in the Mochirii registry.',
+      source: 'battle-tactic-scroll'
+    };
+  }
+
+  const boundedBond = Math.max(1, Math.min(5, Math.floor(bond)));
+  const boundedCurrentXp = Math.max(0, Math.min(30, Math.floor(currentMasteryXp)));
+  const roleMatch = tactic.preferredRoles.includes(spirit.battle.role);
+  const affinityMatch = tactic.favoredAffinities.includes(move.affinity);
+  const moveMatch = tactic.recommendedMoveId === move.id;
+  const focusScore = spirit.battle.baseFocus + move.power + boundedBond + (roleMatch ? 2 : 0) + (affinityMatch ? 3 : 0) - move.focusCost;
+  const awardedXp = tactic.masteryXp + (roleMatch ? 1 : 0) + (affinityMatch ? 1 : 0) + (moveMatch ? 1 : 0);
+  const masteryXp = Math.min(30, boundedCurrentXp + awardedXp);
+
+  return {
+    ok: true,
+    tacticId: tactic.id,
+    tacticName: tactic.name,
+    stance: tactic.stance,
+    spiritId: spirit.id,
+    moveId: move.id,
+    focusScore,
+    masteryXp,
+    awardedXp,
+    bondDelta: tactic.bondDelta,
+    message: `${spirit.name} studies ${tactic.name} with ${move.label}: ${tactic.stance} stance, ${focusScore} focus, ${masteryXp} tactic XP. ${tactic.lesson} No-injury Mochirii battle planning only; no real value.`,
+    source: 'battle-tactic-scroll'
   };
 }
 
@@ -1346,6 +1462,72 @@ function techniqueDojo(): EventDefinition {
   };
 }
 
+function tacticScrollStand(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('tactic-scroll-stand');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const activeSpirit = activeSpiritId(actingPlayer);
+      if (!activeSpirit) {
+        showAlphaPrompt(actingPlayer, 'Attune with a Mochi Spirit before studying a Mochirii tactic scroll.');
+        return;
+      }
+
+      const spirit = spirits.find((entry) => entry.id === activeSpirit);
+      const lastMove = actingPlayer.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`);
+      const move = spirit?.battle.moves.find((entry) => entry.id === lastMove) || spirit?.battle.moves[0];
+      if (!spirit || !move) {
+        showAlphaPrompt(actingPlayer, 'The tactic scroll stand cannot find a registered Mochirii spirit move for this alpha save.');
+        return;
+      }
+
+      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const currentXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
+      const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
+      const tactic = resolveSpiritBattleTactic(activeSpirit, move.id, '', currentXp, currentBond);
+      if (!tactic.ok) {
+        showAlphaPrompt(actingPlayer, tactic.message);
+        return;
+      }
+
+      const nextBond = Math.min(5, currentBond + tactic.bondDelta);
+      const nextGrowth = growthStageFromBond(nextBond);
+      const nextLevel = techniqueMasteryLevelFromXp(tactic.masteryXp);
+      actingPlayer.setVariable(xpKey, tactic.masteryXp);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, nextLevel);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.last`, tactic.tacticId);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.lastMove`, tactic.moveId);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.stance`, tactic.stance);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.focusScore`, tactic.focusScore);
+      actingPlayer.setVariable('mochiSocial.battle.lastTacticScroll', tactic.tacticId);
+      actingPlayer.setVariable('mochiSocial.battle.tacticScrollProof', true);
+      actingPlayer.setVariable(bondKey, nextBond);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.showNotification('Tactic scroll studied', { time: 1800, icon: 'tactic-scroll-stand' });
+      emitAlphaHudState(actingPlayer, {
+        tactic: {
+          spiritId: activeSpirit,
+          moveId: move.id,
+          tacticId: tactic.tacticId,
+          tacticName: tactic.tacticName,
+          stance: tactic.stance,
+          masteryXp: tactic.masteryXp,
+          focusScore: tactic.focusScore,
+          proof: true,
+          message: tactic.message
+        },
+        spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit tactic scroll practice' }, { reason: 'auto', source: 'tactic-scroll-stand' });
+      showAlphaPrompt(actingPlayer, `${tactic.message} Tactic scroll practice is no-injury alpha battle planning with no real value.`);
+    }
+  };
+}
+
 function affinityDais(): EventDefinition {
   return {
     onInit() {
@@ -1657,6 +1839,12 @@ const mainServerModule = defineModule({
           x: 896,
           y: 704,
           event: techniqueDojo()
+        },
+        {
+          id: 'tactic-scroll-stand',
+          x: 1280,
+          y: 320,
+          event: tacticScrollStand()
         },
         {
           id: 'affinity-dais',

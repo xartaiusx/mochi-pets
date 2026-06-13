@@ -1,6 +1,6 @@
 import { defineModule } from '@rpgjs/common';
 import type { RpgServer } from '@rpgjs/server';
-import { AffinityDais, CanaryShrine, CareShrine, ExpeditionGate, GuildSealChest, HabitatGrove, JournalPavilion, MarketBoard, PartyBanner, QuestBoard, RouteInvitationAltar, SPIRITS, SpiritEvent, TechniqueDojo, TradePost, TrainingRing, WelcomeNpc } from './event';
+import { AffinityDais, CanaryShrine, CareShrine, ExpeditionGate, GuildSealChest, HabitatGrove, JournalPavilion, MarketBoard, PartyBanner, QuestBoard, RouteInvitationAltar, SPIRITS, SpiritEvent, TacticScrollStand, TechniqueDojo, TradePost, TrainingRing, WelcomeNpc } from './event';
 import { player } from './player';
 
 export default defineModule<RpgServer>({
@@ -44,6 +44,12 @@ export default defineModule<RpgServer>({
           x: 896,
           y: 704,
           event: TechniqueDojo()
+        },
+        {
+          id: 'tactic-scroll-stand',
+          x: 1280,
+          y: 320,
+          event: TacticScrollStand()
         },
         {
           id: 'affinity-dais',

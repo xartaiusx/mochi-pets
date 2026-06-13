@@ -156,6 +156,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.expedition"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.route_invite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.technique"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.tactic_scroll"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.affinity_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.set"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care"]', { timeout: timeoutMs });
@@ -185,6 +186,7 @@ async function exerciseAlphaHud(page) {
       const expedition = document.querySelector('[data-expedition-label]')?.textContent || '';
       const routeInvite = document.querySelector('[data-route-invite-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
+      const tactic = document.querySelector('[data-tactic-label]')?.textContent || '';
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
@@ -205,6 +207,8 @@ async function exerciseAlphaHud(page) {
         && routeInvite.includes('jintari')
         && technique.includes('Technique:')
         && technique.includes('XP')
+        && tactic.includes('Tactic:')
+        && tactic.includes('goldleaf-opening')
         && affinity.includes('Affinity:')
         && !affinity.includes('not started')
         && party.includes('Party:')
@@ -234,6 +238,13 @@ async function exerciseAlphaHud(page) {
         && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
         && ['novice', 'practiced', 'adept'].includes(state.techniqueMasteryLevel)
+        && state.tacticProof === true
+        && state.lastTacticId === 'goldleaf-opening'
+        && state.lastTacticSpiritId === 'jintari'
+        && state.lastTacticMoveId === 'goldleaf-feint'
+        && state.tacticStance === 'feint'
+        && state.tacticFocusScore >= 1
+        && state.tacticMasteryXp >= 1
         && state.affinityProof === true
         && state.lastAffinityTrialId === 'silk-cinder-trial'
         && state.affinityAdvantage === true
@@ -274,6 +285,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Moonbridge Bamboo Trail')
         && chat.includes('Goldleaf Ribbon Invitation')
         && chat.includes('Mochirii Technique Dojo')
+        && chat.includes('Goldleaf Opening Form')
         && chat.includes('Silk Cinder Trial')
         && chat.includes('Mochirii party')
         && chat.includes('spar ladder')
@@ -299,6 +311,7 @@ async function exerciseAlphaHud(page) {
       expedition: document.querySelector('[data-expedition-label]')?.textContent?.trim() || '',
       routeInvite: document.querySelector('[data-route-invite-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
+      tactic: document.querySelector('[data-tactic-label]')?.textContent?.trim() || '',
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
@@ -333,6 +346,14 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.techniqueProof === true, 'HUD technique action must record technique proof.');
   assert(snapshot.state.techniqueMoveId === 'goldleaf-feint', 'HUD technique action must record the practiced route-spirit move.');
   assert(snapshot.state.techniqueMasteryXp >= 1, 'HUD technique action must record mastery XP.');
+  assert(snapshot.tactic.includes('Tactic:'), 'HUD tactic label must show battle tactic state.');
+  assert(snapshot.state.tacticProof === true, 'HUD tactic action must record tactic scroll proof.');
+  assert(snapshot.state.lastTacticId === 'goldleaf-opening', 'HUD tactic action must record the Goldleaf tactic.');
+  assert(snapshot.state.lastTacticSpiritId === 'jintari', 'HUD tactic action must record Jintari as the tactic spirit.');
+  assert(snapshot.state.lastTacticMoveId === 'goldleaf-feint', 'HUD tactic action must record the Goldleaf Feint move.');
+  assert(snapshot.state.tacticStance === 'feint', 'HUD tactic action must record the feint stance.');
+  assert(snapshot.state.tacticFocusScore >= 1, 'HUD tactic action must record a focus score.');
+  assert(snapshot.state.tacticMasteryXp >= 1, 'HUD tactic action must record tactic mastery XP.');
   assert(snapshot.affinity.includes('Affinity:'), 'HUD affinity label must show trial state.');
   assert(snapshot.state.affinityProof === true, 'HUD affinity action must record affinity trial proof.');
   assert(snapshot.state.lastAffinityTrialId === 'silk-cinder-trial', 'HUD affinity action must record the Silk Cinder trial.');
@@ -366,6 +387,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Moonbridge Bamboo Trail')), 'HUD chat state must record the field expedition action.');
   assert(chat.some((line) => String(line).includes('Goldleaf Ribbon Invitation')), 'HUD chat state must record the route invitation action.');
   assert(chat.some((line) => String(line).includes('Mochirii Technique Dojo')), 'HUD chat state must record the spirit technique action.');
+  assert(chat.some((line) => String(line).includes('Goldleaf Opening Form')), 'HUD chat state must record the tactic scroll action.');
   assert(chat.some((line) => String(line).includes('Silk Cinder Trial')), 'HUD chat state must record the affinity trial action.');
   assert(chat.some((line) => String(line).includes('Mochirii party')), 'HUD chat state must record the party formation action.');
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');

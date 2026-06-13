@@ -22,6 +22,7 @@ Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated 
 - Expedition gate: Mochirii Moonbridge field expedition gate with curved lacquer moon-arch, bamboo trail markers, jade route lanterns, and silk scout ribbons.
 - Route invitation altar: Mochirii route spirit invitation altar with jade offering bowl, silk route ribbons, lacquer crescent stand, and gold harmony seals.
 - Technique dojo: Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, and warm lanterns.
+- Tactic scroll stand: Mochirii battle tactic scroll stand with open silk-paper stance scrolls, jade focus weights, lacquered wuxia lesson frame, and gold lantern light.
 - Affinity dais: Mochirii affinity trial dais with jade mirror disc, silk affinity ribbons, lacquer base, and warm lantern reflection.
 - Party banner: Mochi Spirit party formation banner with three jade spirit medallions, lacquer frame, silk tassels, and lantern glow.
 - Market board: fixed-price test market board with parchment tags and jade pins.

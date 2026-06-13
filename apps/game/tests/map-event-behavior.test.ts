@@ -13,6 +13,7 @@ import {
   RouteInvitationAltar,
   SPIRITS,
   SpiritEvent,
+  TacticScrollStand,
   TechniqueDojo,
   TradePost,
   TrainingRing,
@@ -496,6 +497,52 @@ describe('Mochi town event behavior', () => {
       }
     });
     expect(player.texts.at(-1)).toContain('Technique mastery is no-injury alpha progression');
+    expect(player.texts.at(-1)).toContain('no real value');
+  });
+
+  it('records no-injury battle tactic scroll planning before affinity trials', async () => {
+    const player = createFakePlayer();
+
+    await runAction(TacticScrollStand(), player);
+    expect(player.texts.at(-1)).toContain('Attune with a Mochi Spirit before studying');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(CareShrine(), player);
+    await runAction(CareShrine(), player);
+    await runAction(TechniqueDojo(), player);
+    await runAction(TacticScrollStand(), player);
+
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp')).toBe(15);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.level')).toBe('practiced');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lastMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.last')).toBe('lantern-anchor');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.lastMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.stance')).toBe('anchor');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.focusScore')).toBe(16);
+    expect(player.variables.get('mochiSocial.battle.lastTacticScroll')).toBe('lantern-anchor');
+    expect(player.variables.get('mochiSocial.battle.tacticScrollProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(4);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('sprout');
+    expect(player.notifications.at(-1)?.message).toBe('Tactic scroll studied');
+    expect(player.saves.at(-1)?.options.source).toBe('tactic-scroll-stand');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        tactic: {
+          spiritId: 'lirabao',
+          moveId: 'lantern-pulse',
+          tacticId: 'lantern-anchor',
+          tacticName: 'Lantern Anchor Form',
+          stance: 'anchor',
+          masteryXp: 15,
+          focusScore: 16,
+          proof: true,
+          message: 'Lirabao studies Lantern Anchor Form with Lantern Pulse: anchor stance, 16 focus, 15 tactic XP. Plants a warm lantern stance so a companion can defend friends before striking. No-injury Mochirii battle planning only; no real value.'
+        },
+        spirit: { id: 'lirabao', bond: 4, growth: 'sprout' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Tactic scroll practice is no-injury alpha battle planning');
     expect(player.texts.at(-1)).toContain('no real value');
   });
 

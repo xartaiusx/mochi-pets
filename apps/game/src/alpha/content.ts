@@ -4,6 +4,8 @@ export type SpiritGrowthStage = 'seed' | 'sprout' | 'glow';
 
 export type SpiritBattleRole = 'guardian' | 'trickster' | 'scout';
 
+export type SpiritBattleStance = 'anchor' | 'feint' | 'ward';
+
 export type SpiritEncounterRarity = 'common' | 'uncommon' | 'rare';
 
 export type SpiritTechniqueMasteryLevel = 'novice' | 'practiced' | 'adept';
@@ -190,6 +192,33 @@ export interface SpiritTechniqueMasteryResult {
   masteryXp: number;
   awardedXp: number;
   focusScore: number;
+  message: string;
+  source: string;
+}
+
+export interface SpiritBattleTactic {
+  id: string;
+  name: string;
+  stance: SpiritBattleStance;
+  preferredRoles: readonly SpiritBattleRole[];
+  favoredAffinities: readonly string[];
+  recommendedMoveId: string;
+  masteryXp: number;
+  bondDelta: number;
+  lesson: string;
+}
+
+export interface SpiritBattleTacticResult {
+  ok: boolean;
+  tacticId: string;
+  tacticName: string;
+  stance: SpiritBattleStance;
+  spiritId: string;
+  moveId: string;
+  focusScore: number;
+  masteryXp: number;
+  awardedXp: number;
+  bondDelta: number;
   message: string;
   source: string;
 }
@@ -597,6 +626,42 @@ export const SPIRIT_AFFINITY_TRIALS: readonly SpiritAffinityTrial[] = [
   }
 ];
 
+export const SPIRIT_BATTLE_TACTICS: readonly SpiritBattleTactic[] = [
+  {
+    id: 'lantern-anchor',
+    name: 'Lantern Anchor Form',
+    stance: 'anchor',
+    preferredRoles: ['guardian'],
+    favoredAffinities: ['blossom'],
+    recommendedMoveId: SPIRIT_MOVES.lanternPulse.id,
+    masteryXp: 5,
+    bondDelta: 1,
+    lesson: 'Plants a warm lantern stance so a companion can defend friends before striking.'
+  },
+  {
+    id: 'goldleaf-opening',
+    name: 'Goldleaf Opening Form',
+    stance: 'feint',
+    preferredRoles: ['trickster'],
+    favoredAffinities: ['citrus-gold'],
+    recommendedMoveId: SPIRIT_MOVES.goldleafFeint.id,
+    masteryXp: 6,
+    bondDelta: 1,
+    lesson: 'Reads the first market-path beat and turns a bright side-step into clean initiative.'
+  },
+  {
+    id: 'skybell-ward',
+    name: 'Skybell Ward Form',
+    stance: 'ward',
+    preferredRoles: ['scout', 'guardian'],
+    favoredAffinities: ['sky-jade'],
+    recommendedMoveId: SPIRIT_MOVES.skybellGuard.id,
+    masteryXp: 5,
+    bondDelta: 1,
+    lesson: 'Listens for the bell before motion, keeping the whole party in a safe scouting rhythm.'
+  }
+];
+
 export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
   tileSize: 64,
   tilesheet: {
@@ -617,6 +682,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'expedition-gate',
     'route-invitation-altar',
     'technique-dojo',
+    'tactic-scroll-stand',
     'affinity-dais',
     'market-board',
     'trade-post',
@@ -1061,6 +1127,65 @@ export function resolveSpiritTechniqueMastery(
     focusScore,
     message: `${spirit.name} refines ${move.label} at the Mochirii Technique Dojo: ${masteryLevel} mastery, ${masteryXp} XP. No-injury wuxia practice only.`,
     source: 'spirit-technique'
+  };
+}
+
+export function resolveSpiritBattleTactic(
+  spiritId: string,
+  moveId: string,
+  tacticId = '',
+  currentMasteryXp = 0,
+  bond = 1
+): SpiritBattleTacticResult {
+  const spirit = getMochiSpirit(spiritId);
+  const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
+  const fallbackTactic = SPIRIT_BATTLE_TACTICS[0];
+  const tactic =
+    SPIRIT_BATTLE_TACTICS.find((entry) => entry.id === tacticId) ||
+    SPIRIT_BATTLE_TACTICS.find((entry) => entry.recommendedMoveId === move?.id) ||
+    SPIRIT_BATTLE_TACTICS.find((entry) => move && entry.favoredAffinities.includes(move.affinity)) ||
+    SPIRIT_BATTLE_TACTICS.find((entry) => spirit && entry.preferredRoles.includes(spirit.battle.role)) ||
+    fallbackTactic;
+
+  if (!spirit || !move) {
+    return {
+      ok: false,
+      tacticId: tactic.id,
+      tacticName: tactic.name,
+      stance: tactic.stance,
+      spiritId,
+      moveId,
+      focusScore: 0,
+      masteryXp: Math.max(0, Math.min(30, Math.floor(currentMasteryXp))),
+      awardedXp: 0,
+      bondDelta: 0,
+      message: 'Battle tactic planning could not start because the spirit or move is not in the Mochirii registry.',
+      source: 'battle-tactic-scroll'
+    };
+  }
+
+  const boundedBond = Math.max(1, Math.min(5, Math.floor(bond)));
+  const boundedCurrentXp = Math.max(0, Math.min(30, Math.floor(currentMasteryXp)));
+  const roleMatch = tactic.preferredRoles.includes(spirit.battle.role);
+  const affinityMatch = tactic.favoredAffinities.includes(move.affinity);
+  const moveMatch = tactic.recommendedMoveId === move.id;
+  const focusScore = spirit.battle.baseFocus + move.power + boundedBond + (roleMatch ? 2 : 0) + (affinityMatch ? 3 : 0) - move.focusCost;
+  const awardedXp = tactic.masteryXp + (roleMatch ? 1 : 0) + (affinityMatch ? 1 : 0) + (moveMatch ? 1 : 0);
+  const masteryXp = Math.min(30, boundedCurrentXp + awardedXp);
+
+  return {
+    ok: true,
+    tacticId: tactic.id,
+    tacticName: tactic.name,
+    stance: tactic.stance,
+    spiritId: spirit.id,
+    moveId: move.id,
+    focusScore,
+    masteryXp,
+    awardedXp,
+    bondDelta: tactic.bondDelta,
+    message: `${spirit.name} studies ${tactic.name} with ${move.label}: ${tactic.stance} stance, ${focusScore} focus, ${masteryXp} tactic XP. ${tactic.lesson} No-injury Mochirii battle planning only; no real value.`,
+    source: 'battle-tactic-scroll'
   };
 }
 

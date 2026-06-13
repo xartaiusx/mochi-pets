@@ -101,6 +101,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'tactic-scroll-stand',
+            image: '/spritesheets/tactic-scroll-stand.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'affinity-dais',
             image: '/spritesheets/affinity-dais.png',
             ...SPIRIT_SHEET
