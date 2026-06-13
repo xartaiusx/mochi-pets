@@ -20,6 +20,7 @@ Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated 
 - Habitat grove: spirit invitation grove with jade stepping stones, tea glow, silk lanterns, young bamboo, and spirit motes.
 - Journal pavilion: Mochirii spirit journal pavilion with lacquer reading stand, open silk-paper field journal, jade page weights, and small lanterns.
 - Technique dojo: Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, and warm lanterns.
+- Affinity dais: Mochirii affinity trial dais with jade mirror disc, silk affinity ribbons, lacquer base, and warm lantern reflection.
 - Party banner: Mochi Spirit party formation banner with three jade spirit medallions, lacquer frame, silk tassels, and lantern glow.
 - Market board: fixed-price test market board with parchment tags and jade pins.
 - Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.

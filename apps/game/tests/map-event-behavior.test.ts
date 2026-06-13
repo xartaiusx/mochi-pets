@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  AffinityDais,
   CanaryShrine,
   CareShrine,
   GuildSealChest,
@@ -409,6 +410,50 @@ describe('Mochi town event behavior', () => {
       }
     });
     expect(player.texts.at(-1)).toContain('Technique mastery is no-injury alpha progression');
+    expect(player.texts.at(-1)).toContain('no real value');
+  });
+
+  it('records no-injury affinity trial battle proof at the Jade Mirror dais', async () => {
+    const player = createFakePlayer();
+
+    await runAction(AffinityDais(), player);
+    expect(player.texts.at(-1)).toContain('Attune with a Mochi Spirit before entering');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(CareShrine(), player);
+    await runAction(CareShrine(), player);
+    await runAction(TechniqueDojo(), player);
+    await runAction(AffinityDais(), player);
+
+    expect(player.variables.get('mochiSocial.battle.lastAffinityTrial')).toBe('jade-mirror-trial');
+    expect(player.variables.get('mochiSocial.battle.affinityTrialWins')).toBe(1);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.lastAffinityTrialMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp')).toBe(11);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(4);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('sprout');
+    expect(player.notifications.at(-1)?.message).toBe('Affinity trial cleared');
+    expect(player.saves.at(-1)?.options.source).toBe('affinity-dais');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        affinity: {
+          spiritId: 'lirabao',
+          moveId: 'lantern-pulse',
+          trialId: 'jade-mirror-trial',
+          trialName: 'Jade Mirror Trial',
+          affinityAdvantage: true,
+          focusScore: 15,
+          trialScore: 14,
+          victory: true,
+          wins: 1,
+          masteryXp: 11,
+          proof: true,
+          message: 'Lirabao clears the Jade Mirror Trial with Lantern Pulse; affinity harmonized, mastery 11 XP.'
+        },
+        spirit: { id: 'lirabao', bond: 4, growth: 'sprout' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('no-injury alpha battle practice');
     expect(player.texts.at(-1)).toContain('no real value');
   });
 

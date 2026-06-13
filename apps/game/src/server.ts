@@ -37,6 +37,20 @@ const alphaPromptMs = 2600;
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   charmListed?: boolean;
+  affinity?: {
+    affinityAdvantage: boolean;
+    focusScore: number;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
+    trialId: string;
+    trialName: string;
+    trialScore: number;
+    victory: boolean;
+    wins: number;
+  };
   capture?: {
     message?: string;
     roster: string[];
@@ -100,6 +114,7 @@ type SpiritGrowthStage = 'seed' | 'sprout' | 'glow';
 type SpiritTechniqueMasteryLevel = 'novice' | 'practiced' | 'adept';
 
 type SpiritBattleMove = {
+  affinity: string;
   id: string;
   label: string;
   power: number;
@@ -136,6 +151,18 @@ type SpiritSparOpponent = {
   preferredRoles: readonly ('guardian' | 'trickster' | 'scout')[];
   rewardXp: number;
   bondDelta: number;
+};
+
+type SpiritAffinityTrial = {
+  id: string;
+  name: string;
+  title: string;
+  affinity: string;
+  baseFocus: number;
+  favoredAffinities: readonly string[];
+  rewardXp: number;
+  bondDelta: number;
+  lesson: string;
 };
 
 type MochiSpirit = {
@@ -209,8 +236,8 @@ const spirits = [
       role: 'guardian',
       baseFocus: 4,
       moves: [
-        { id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 },
-        { id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 }
+        { affinity: 'blossom', id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 },
+        { affinity: 'sky-jade', id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 }
       ]
     },
     raisingNeeds: [
@@ -245,8 +272,8 @@ const spirits = [
       role: 'trickster',
       baseFocus: 5,
       moves: [
-        { id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 },
-        { id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 }
+        { affinity: 'citrus-gold', id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 },
+        { affinity: 'blossom', id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 }
       ]
     },
     raisingNeeds: [
@@ -280,8 +307,8 @@ const spirits = [
       role: 'scout',
       baseFocus: 6,
       moves: [
-        { id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 },
-        { id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 }
+        { affinity: 'sky-jade', id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 },
+        { affinity: 'citrus-gold', id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 }
       ]
     },
     raisingNeeds: [
@@ -312,6 +339,31 @@ const sparLadder = [
     bondDelta: 1
   }
 ] as const satisfies readonly SpiritSparOpponent[];
+
+const affinityTrials: readonly SpiritAffinityTrial[] = [
+  {
+    id: 'jade-mirror-trial',
+    name: 'Jade Mirror Trial',
+    title: 'Court Affinity Reflection',
+    affinity: 'jade-mirror',
+    baseFocus: 14,
+    favoredAffinities: ['blossom', 'sky-jade'],
+    rewardXp: 4,
+    bondDelta: 1,
+    lesson: 'The jade mirror favors calm, sky-born, and blossom-hearted rhythms. Study safely, then return with steadier focus.'
+  },
+  {
+    id: 'silk-cinder-trial',
+    name: 'Silk Cinder Trial',
+    title: 'Market Spark Reflection',
+    affinity: 'silk-cinder',
+    baseFocus: 18,
+    favoredAffinities: ['citrus-gold', 'blossom'],
+    rewardXp: 6,
+    bondDelta: 1,
+    lesson: 'The silk-cinder reflection rewards bright feints and warm resolve without harm, damage, or real-value settlement.'
+  }
+];
 
 const quests = [
   {
@@ -548,6 +600,62 @@ function resolveSpiritTechniqueMastery(spiritId: string, moveId: string, current
     awardedXp,
     focusScore,
     message: `${spirit.name} refines ${move.label} at the Mochirii Technique Dojo: ${masteryLevel} mastery, ${masteryXp} XP. No-injury wuxia practice only.`
+  };
+}
+
+function resolveSpiritAffinityTrial(
+  spiritId: string,
+  moveId: string,
+  trialId: string = affinityTrials[0].id,
+  bond = 1,
+  techniqueMasteryXp = 0
+) {
+  const spirit = spirits.find((entry) => entry.id === spiritId);
+  const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
+  const trial: SpiritAffinityTrial = affinityTrials.find((entry) => entry.id === trialId) || affinityTrials[0];
+  if (!spirit || !move) {
+    return {
+      ok: false,
+      spiritId,
+      moveId,
+      trialId: trial.id,
+      trialName: trial.name,
+      affinityAdvantage: false,
+      focusScore: 0,
+      trialScore: trial.baseFocus,
+      victory: false,
+      masteryXp: Math.max(0, Math.min(30, Math.floor(techniqueMasteryXp))),
+      bondDelta: 0,
+      message: 'Affinity trial could not start because the spirit or move is not in the Mochirii registry.',
+      source: 'battle-affinity-trial'
+    };
+  }
+
+  const boundedBond = Math.max(1, Math.min(5, Math.floor(bond)));
+  const boundedMasteryXp = Math.max(0, Math.min(30, Math.floor(techniqueMasteryXp)));
+  const affinityAdvantage = trial.favoredAffinities.includes(move.affinity);
+  const masteryBonus = Math.floor(boundedMasteryXp / 7);
+  const focusScore = spirit.battle.baseFocus + move.power + boundedBond + masteryBonus + (affinityAdvantage ? 3 : 0) - move.focusCost;
+  const trialScore = trial.baseFocus;
+  const victory = focusScore >= trialScore;
+  const masteryXp = Math.min(30, boundedMasteryXp + (victory ? trial.rewardXp : Math.max(1, Math.floor(trial.rewardXp / 2))));
+
+  return {
+    ok: true,
+    spiritId: spirit.id,
+    moveId: move.id,
+    trialId: trial.id,
+    trialName: trial.name,
+    affinityAdvantage,
+    focusScore,
+    trialScore,
+    victory,
+    masteryXp,
+    bondDelta: victory ? trial.bondDelta : 0,
+    message: victory
+      ? `${spirit.name} clears the ${trial.name} with ${move.label}; affinity ${affinityAdvantage ? 'harmonized' : 'studied'}, mastery ${masteryXp} XP.`
+      : `${spirit.name} studies the ${trial.name} with ${move.label}; ${trial.lesson}`,
+    source: 'battle-affinity-trial'
   };
 }
 
@@ -915,6 +1023,68 @@ function techniqueDojo(): EventDefinition {
   };
 }
 
+function affinityDais(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('affinity-dais');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const activeSpirit = activeSpiritId(actingPlayer);
+      if (!activeSpirit) {
+        showAlphaPrompt(actingPlayer, 'Attune with a Mochi Spirit before entering the Jade Mirror affinity trial.');
+        return;
+      }
+
+      const spirit = spirits.find((entry) => entry.id === activeSpirit);
+      const move = spirit?.battle.moves[0];
+      if (!spirit || !move) {
+        showAlphaPrompt(actingPlayer, 'The affinity dais cannot find a registered Mochirii spirit move for this alpha save.');
+        return;
+      }
+
+      const trial = affinityTrials[0];
+      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const winsKey = 'mochiSocial.battle.affinityTrialWins';
+      const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
+      const currentTechniqueXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
+      const currentWins = Number(actingPlayer.getVariable<number>(winsKey) || 0);
+      const affinity = resolveSpiritAffinityTrial(activeSpirit, move.id, trial.id, currentBond, currentTechniqueXp);
+      const nextWins = currentWins + (affinity.victory ? 1 : 0);
+      const nextBond = affinity.victory ? Math.min(5, currentBond + affinity.bondDelta) : currentBond;
+      const nextGrowth = growthStageFromBond(nextBond);
+
+      actingPlayer.setVariable('mochiSocial.battle.lastAffinityTrial', affinity.trialId);
+      actingPlayer.setVariable('mochiSocial.battle.affinityTrialWins', nextWins);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastAffinityTrialMove`, move.id);
+      actingPlayer.setVariable(xpKey, affinity.masteryXp);
+      actingPlayer.setVariable(bondKey, nextBond);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.showNotification(affinity.victory ? 'Affinity trial cleared' : 'Affinity trial studied', { time: 1800, icon: 'affinity-dais' });
+      emitAlphaHudState(actingPlayer, {
+        affinity: {
+          spiritId: activeSpirit,
+          moveId: move.id,
+          trialId: affinity.trialId,
+          trialName: affinity.trialName,
+          affinityAdvantage: affinity.affinityAdvantage,
+          focusScore: affinity.focusScore,
+          trialScore: affinity.trialScore,
+          victory: affinity.victory,
+          wins: nextWins,
+          masteryXp: affinity.masteryXp,
+          proof: true,
+          message: affinity.message
+        },
+        spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit affinity trial' }, { reason: 'auto', source: 'affinity-dais' });
+      showAlphaPrompt(actingPlayer, `${affinity.message} Affinity trials are no-injury alpha battle practice with no real value.`);
+    }
+  };
+}
+
 function trainingRing(): EventDefinition {
   return {
     onInit() {
@@ -1152,6 +1322,12 @@ const mainServerModule = defineModule({
           x: 896,
           y: 704,
           event: techniqueDojo()
+        },
+        {
+          id: 'affinity-dais',
+          x: 1408,
+          y: 704,
+          event: affinityDais()
         },
         {
           id: 'spirit-lirabao',

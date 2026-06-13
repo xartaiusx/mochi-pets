@@ -235,6 +235,8 @@ function addStaticRequirements() {
     'statusMood',
     'data-alpha-local-action="spirit.inspect"',
     'lastInspectedSpiritId',
+    'data-alpha-action="battle.affinity_trial"',
+    'affinityProof',
     'chain.withdraw_request',
     'mochiSocial.alphaState',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
@@ -266,7 +268,9 @@ function addStaticRequirements() {
     'observerMovement',
     'guild-seal-chest',
     'technique-dojo',
+    'affinity-dais',
     'techniqueMastery',
+    'affinityTrial',
     'Jade Lantern Court'
   ]);
   requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
@@ -299,6 +303,7 @@ function addStaticRequirements() {
     'guild-seal-chest',
     'care-shrine',
     'technique-dojo',
+    'affinity-dais',
     'market-board',
     'trade-post',
     'canary-shrine',
@@ -313,6 +318,7 @@ function addStaticRequirements() {
     'spirit-care',
     'bond 5/5',
     'technique-dojo',
+    'affinity-dais',
     'market-board',
     'trade-post',
     'no-real-value Enjin Canary certificate request',

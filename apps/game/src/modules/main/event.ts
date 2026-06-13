@@ -4,7 +4,9 @@ import {
   ALPHA_ITEMS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_AFFINITY_TRIALS,
   growthStageFromBond,
+  resolveSpiritAffinityTrial,
   resolveSpiritCapture,
   resolveSpiritJournal,
   resolveSpiritParty,
@@ -18,6 +20,20 @@ import {
 const ALPHA_PROMPT_MS = 2600;
 
 type AlphaHudStatePatch = {
+  affinity?: {
+    affinityAdvantage: boolean;
+    focusScore: number;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
+    trialId: string;
+    trialName: string;
+    trialScore: number;
+    victory: boolean;
+    wins: number;
+  };
   canaryRequested?: boolean;
   charmListed?: boolean;
   capture?: {
@@ -385,6 +401,68 @@ export function TechniqueDojo(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochi Spirit technique practice' }, { reason: 'auto', source: 'technique-dojo' });
       showAlphaPrompt(player, `${technique.message} Technique mastery is no-injury alpha progression with no real value.`);
+    }
+  };
+}
+
+export function AffinityDais(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('affinity-dais');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const activeSpirit = activeSpiritId(player);
+      if (!activeSpirit) {
+        showAlphaPrompt(player, 'Attune with a Mochi Spirit before entering the Jade Mirror affinity trial.');
+        return;
+      }
+
+      const spirit = MOCHI_SPIRITS.find((entry) => entry.id === activeSpirit);
+      const move = spirit?.battle.moves[0];
+      if (!spirit || !move) {
+        showAlphaPrompt(player, 'The affinity dais cannot find a registered Mochirii spirit move for this alpha save.');
+        return;
+      }
+
+      const trial = SPIRIT_AFFINITY_TRIALS[0];
+      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const winsKey = 'mochiSocial.battle.affinityTrialWins';
+      const currentBond = Number(player.getVariable<number>(bondKey) || 1);
+      const currentTechniqueXp = Number(player.getVariable<number>(xpKey) || 0);
+      const currentWins = Number(player.getVariable<number>(winsKey) || 0);
+      const affinity = resolveSpiritAffinityTrial(activeSpirit, move.id, trial.id, currentBond, currentTechniqueXp);
+      const nextWins = currentWins + (affinity.victory ? 1 : 0);
+      const nextBond = affinity.victory ? Math.min(5, currentBond + affinity.bondDelta) : currentBond;
+      const nextGrowth = growthStageFromBond(nextBond);
+
+      player.setVariable('mochiSocial.battle.lastAffinityTrial', affinity.trialId);
+      player.setVariable('mochiSocial.battle.affinityTrialWins', nextWins);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.lastAffinityTrialMove`, move.id);
+      player.setVariable(xpKey, affinity.masteryXp);
+      player.setVariable(bondKey, nextBond);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      player.showNotification(affinity.victory ? 'Affinity trial cleared' : 'Affinity trial studied', { time: 1800, icon: 'affinity-dais' });
+      emitAlphaHudState(player, {
+        affinity: {
+          spiritId: activeSpirit,
+          moveId: move.id,
+          trialId: affinity.trialId,
+          trialName: affinity.trialName,
+          affinityAdvantage: affinity.affinityAdvantage,
+          focusScore: affinity.focusScore,
+          trialScore: affinity.trialScore,
+          victory: affinity.victory,
+          wins: nextWins,
+          masteryXp: affinity.masteryXp,
+          proof: true,
+          message: affinity.message
+        },
+        spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth }
+      });
+      await player.save('auto', { title: 'Mochi Spirit affinity trial' }, { reason: 'auto', source: 'affinity-dais' });
+      showAlphaPrompt(player, `${affinity.message} Affinity trials are no-injury alpha battle practice with no real value.`);
     }
   };
 }

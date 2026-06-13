@@ -2,8 +2,10 @@ import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_AFFINITY_TRIALS,
   growthStageFromBond,
   resolveSpiritAttunement,
+  resolveSpiritAffinityTrial,
   resolveSpiritCapture,
   resolveSpiritJournal,
   resolveSpiritParty,
@@ -44,6 +46,12 @@ interface AlphaHudState {
   techniqueMasteryXp: number;
   techniqueMasteryLevel: string;
   techniqueFocusScore: number;
+  affinityProof: boolean;
+  affinityTrialWins: number;
+  lastAffinityTrialId?: string;
+  affinityAdvantage: boolean;
+  affinityFocusScore: number;
+  affinityTrialScore: number;
   activePartyId?: string;
   partyIds: string[];
   supportSpiritIds: string[];
@@ -62,6 +70,20 @@ interface AlphaHudState {
 }
 
 export interface AlphaWorldStatePatch {
+  affinity?: {
+    affinityAdvantage: boolean;
+    focusScore: number;
+    masteryXp: number;
+    message?: string;
+    moveId: string;
+    proof: boolean;
+    spiritId: string;
+    trialId: string;
+    trialName: string;
+    trialScore: number;
+    victory: boolean;
+    wins: number;
+  };
   canaryRequested?: boolean;
   charmListed?: boolean;
   capture?: {
@@ -161,6 +183,11 @@ function defaultAlphaState(): AlphaHudState {
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
     techniqueFocusScore: 0,
+    affinityProof: false,
+    affinityTrialWins: 0,
+    affinityAdvantage: false,
+    affinityFocusScore: 0,
+    affinityTrialScore: 0,
     partyIds: [],
     supportSpiritIds: [],
     sparLadderXp: 0,
@@ -278,6 +305,7 @@ function createHud() {
       <strong data-spirit-label>Spirit: none</strong>
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
+      <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
@@ -292,6 +320,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
+      <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
       <button type="button" data-alpha-action="spirit.raise" aria-label="Raise and groom the active Mochi Spirit">Raise</button>
@@ -324,6 +353,7 @@ function createHud() {
   const spiritLabel = hud.querySelector('[data-spirit-label]');
   const journalLabel = hud.querySelector('[data-journal-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
+  const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
@@ -352,6 +382,11 @@ function createHud() {
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
+    }
+    if (affinityLabel) {
+      affinityLabel.textContent = state.affinityProof
+        ? `Affinity: ${state.affinityTrialWins} win${state.affinityTrialWins === 1 ? '' : 's'}, ${state.affinityAdvantage ? 'harmonized' : 'studied'}`
+        : 'Affinity: trial not started';
     }
     if (partyLabel) {
       partyLabel.textContent = state.partyIds.length
@@ -658,6 +693,19 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.technique.message || `Technique mastery ${state.techniqueMasteryLevel} ${state.techniqueMasteryXp} XP.`);
   }
 
+  if (patch.affinity) {
+    state.affinityProof = patch.affinity.proof || state.affinityProof;
+    state.lastAffinityTrialId = patch.affinity.trialId || state.lastAffinityTrialId;
+    state.affinityAdvantage = Boolean(patch.affinity.affinityAdvantage);
+    state.affinityFocusScore = Math.max(state.affinityFocusScore, Number(patch.affinity.focusScore) || 0);
+    state.affinityTrialScore = Math.max(state.affinityTrialScore, Number(patch.affinity.trialScore) || 0);
+    state.affinityTrialWins = Math.max(state.affinityTrialWins, Number(patch.affinity.wins) || 0);
+    state.techniqueMasteryXp = Math.max(state.techniqueMasteryXp, Number(patch.affinity.masteryXp) || 0);
+    state.techniqueMoveId = patch.affinity.moveId || state.techniqueMoveId;
+    state.spiritId = patch.affinity.spiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.affinity.message || `Affinity trial ${patch.affinity.victory ? 'cleared' : 'studied'}.`);
+  }
+
   if (patch.charmListed) {
     state.charmListed = true;
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
@@ -755,6 +803,17 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       moveId: spirit.battle.moves[0].id,
       currentMasteryXp: state.techniqueMasteryXp,
       bond: state.bond || 1
+    };
+  }
+
+  if (type === 'battle.affinity_trial') {
+    const spirit = MOCHI_SPIRITS.find((entry) => entry.id === state.spiritId) || MOCHI_SPIRITS[0];
+    return {
+      spiritId: spirit.id,
+      moveId: state.techniqueMoveId || spirit.battle.moves[0].id,
+      trialId: SPIRIT_AFFINITY_TRIALS[0].id,
+      bond: state.bond || 1,
+      techniqueMasteryXp: state.techniqueMasteryXp || 0
     };
   }
 
@@ -929,6 +988,37 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.techniqueMasteryLevel = result.masteryLevel;
       state.techniqueFocusScore = result.focusScore;
       state.spiritId = result.spiritId;
+      if (!state.attunedSpiritIds.includes(result.spiritId)) {
+        state.attunedSpiritIds.push(result.spiritId);
+      }
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.affinity_trial') {
+    const spirit = MOCHI_SPIRITS.find((entry) => entry.id === String(payload.spiritId || state.spiritId)) || MOCHI_SPIRITS[0];
+    const moveId = String(payload.moveId || state.techniqueMoveId || spirit.battle.moves[0].id);
+    const result = resolveSpiritAffinityTrial(
+      spirit.id,
+      moveId,
+      String(payload.trialId || SPIRIT_AFFINITY_TRIALS[0].id),
+      Number(payload.bond || state.bond || 1),
+      Number(payload.techniqueMasteryXp || state.techniqueMasteryXp || 0)
+    );
+    if (result.ok) {
+      state.affinityProof = true;
+      state.lastAffinityTrialId = result.trialId;
+      state.affinityAdvantage = result.affinityAdvantage;
+      state.affinityFocusScore = result.focusScore;
+      state.affinityTrialScore = result.trialScore;
+      state.techniqueMasteryXp = result.masteryXp;
+      state.techniqueMoveId = result.moveId;
+      state.spiritId = result.spiritId;
+      if (result.victory) {
+        state.affinityTrialWins += 1;
+        state.bond = Math.min(5, Math.max(state.bond, 1) + result.bondDelta);
+        state.growth = growthStageFromBond(state.bond);
+      }
       if (!state.attunedSpiritIds.includes(result.spiritId)) {
         state.attunedSpiritIds.push(result.spiritId);
       }

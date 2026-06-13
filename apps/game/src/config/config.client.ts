@@ -91,6 +91,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'affinity-dais',
+            image: '/spritesheets/affinity-dais.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
             ...SPIRIT_SHEET

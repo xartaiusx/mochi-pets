@@ -154,6 +154,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.journal"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.technique"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.affinity_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.set"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.train"]', { timeout: timeoutMs });
@@ -180,6 +181,7 @@ async function exerciseAlphaHud(page) {
       const status = document.querySelector('[data-status-label]')?.textContent || '';
       const journal = document.querySelector('[data-journal-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
+      const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
@@ -195,6 +197,8 @@ async function exerciseAlphaHud(page) {
         && journal.includes('1/3')
         && technique.includes('Technique:')
         && technique.includes('XP')
+        && affinity.includes('Affinity:')
+        && !affinity.includes('not started')
         && party.includes('Party:')
         && !party.includes('not formed')
         && training.includes('Training:')
@@ -213,6 +217,11 @@ async function exerciseAlphaHud(page) {
         && state.techniqueMoveId === 'lantern-pulse'
         && state.techniqueMasteryXp >= 1
         && ['novice', 'practiced', 'adept'].includes(state.techniqueMasteryLevel)
+        && state.affinityProof === true
+        && state.lastAffinityTrialId === 'jade-mirror-trial'
+        && state.affinityAdvantage === true
+        && state.affinityFocusScore >= 1
+        && state.affinityTrialScore === 14
         && Array.isArray(state.attunedSpiritIds)
         && state.attunedSpiritIds.includes('lirabao')
         && Array.isArray(state.partyIds)
@@ -244,6 +253,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('accepts the Lantern Invite')
         && chat.includes('Mochirii spirit journal')
         && chat.includes('Mochirii Technique Dojo')
+        && chat.includes('Jade Mirror Trial')
         && chat.includes('Mochirii party')
         && chat.includes('spar ladder')
         && chat.includes('guild spar')
@@ -266,6 +276,7 @@ async function exerciseAlphaHud(page) {
       spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
       journal: document.querySelector('[data-journal-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
+      affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
@@ -288,6 +299,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.techniqueProof === true, 'HUD technique action must record technique proof.');
   assert(snapshot.state.techniqueMoveId === 'lantern-pulse', 'HUD technique action must record the practiced move.');
   assert(snapshot.state.techniqueMasteryXp >= 1, 'HUD technique action must record mastery XP.');
+  assert(snapshot.affinity.includes('Affinity:'), 'HUD affinity label must show trial state.');
+  assert(snapshot.state.affinityProof === true, 'HUD affinity action must record affinity trial proof.');
+  assert(snapshot.state.lastAffinityTrialId === 'jade-mirror-trial', 'HUD affinity action must record the Jade Mirror trial.');
+  assert(snapshot.state.affinityAdvantage === true, 'HUD affinity action must record move affinity advantage.');
+  assert(snapshot.state.affinityFocusScore >= 1, 'HUD affinity action must record a focus score.');
+  assert(snapshot.state.affinityTrialScore === 14, 'HUD affinity action must record the Jade Mirror trial score.');
   assert(snapshot.party.includes('Party:'), 'HUD party label must show party state.');
   assert(Array.isArray(snapshot.state.partyIds) && snapshot.state.partyIds.includes('lirabao'), 'HUD party action must form a Mochi Spirit party with Lirabao.');
   assert(snapshot.training.includes('Training:'), 'HUD training label must show training state.');
@@ -313,6 +330,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('accepts the Lantern Invite')), 'HUD chat state must record the attunement action.');
   assert(chat.some((line) => String(line).includes('Mochirii spirit journal')), 'HUD chat state must record the spirit journal action.');
   assert(chat.some((line) => String(line).includes('Mochirii Technique Dojo')), 'HUD chat state must record the spirit technique action.');
+  assert(chat.some((line) => String(line).includes('Jade Mirror Trial')), 'HUD chat state must record the affinity trial action.');
   assert(chat.some((line) => String(line).includes('Mochirii party')), 'HUD chat state must record the party formation action.');
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
   assert(chat.some((line) => String(line).includes('guild spar')), 'HUD chat state must record the training battle action.');

@@ -152,6 +152,34 @@ export interface SpiritTechniqueMasteryResult {
   source: string;
 }
 
+export interface SpiritAffinityTrial {
+  id: string;
+  name: string;
+  title: string;
+  affinity: string;
+  baseFocus: number;
+  favoredAffinities: readonly string[];
+  rewardXp: number;
+  bondDelta: number;
+  lesson: string;
+}
+
+export interface SpiritAffinityTrialResult {
+  ok: boolean;
+  spiritId: string;
+  moveId: string;
+  trialId: string;
+  trialName: string;
+  affinityAdvantage: boolean;
+  focusScore: number;
+  trialScore: number;
+  victory: boolean;
+  masteryXp: number;
+  bondDelta: number;
+  message: string;
+  source: string;
+}
+
 export interface SpiritSparLadderResult {
   ok: boolean;
   opponentId: string;
@@ -472,6 +500,31 @@ export const SPIRIT_SPAR_LADDER = [
   }
 ] as const satisfies readonly SpiritSparOpponent[];
 
+export const SPIRIT_AFFINITY_TRIALS: readonly SpiritAffinityTrial[] = [
+  {
+    id: 'jade-mirror-trial',
+    name: 'Jade Mirror Trial',
+    title: 'Court Affinity Reflection',
+    affinity: 'jade-mirror',
+    baseFocus: 14,
+    favoredAffinities: ['blossom', 'sky-jade'],
+    rewardXp: 4,
+    bondDelta: 1,
+    lesson: 'Reflects calm and sky-born techniques into a readable no-injury trial rhythm.'
+  },
+  {
+    id: 'silk-cinder-trial',
+    name: 'Silk Cinder Trial',
+    title: 'Market Spark Reflection',
+    affinity: 'silk-cinder',
+    baseFocus: 18,
+    favoredAffinities: ['citrus-gold', 'blossom'],
+    rewardXp: 6,
+    bondDelta: 1,
+    lesson: 'Rewards bright feints and generous timing without damage, wagers, or real value.'
+  }
+];
+
 export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
   tileSize: 64,
   tilesheet: {
@@ -490,6 +543,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'party-banner',
     'journal-pavilion',
     'technique-dojo',
+    'affinity-dais',
     'market-board',
     'trade-post',
     'training-ring',
@@ -794,6 +848,62 @@ export function resolveSpiritTechniqueMastery(
     focusScore,
     message: `${spirit.name} refines ${move.label} at the Mochirii Technique Dojo: ${masteryLevel} mastery, ${masteryXp} XP. No-injury wuxia practice only.`,
     source: 'spirit-technique'
+  };
+}
+
+export function resolveSpiritAffinityTrial(
+  spiritId: string,
+  moveId: string,
+  trialId: string = SPIRIT_AFFINITY_TRIALS[0].id,
+  bond = 1,
+  techniqueMasteryXp = 0
+): SpiritAffinityTrialResult {
+  const spirit = getMochiSpirit(spiritId);
+  const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
+  const trial = SPIRIT_AFFINITY_TRIALS.find((entry) => entry.id === trialId) || SPIRIT_AFFINITY_TRIALS[0];
+  if (!spirit || !move) {
+    return {
+      ok: false,
+      spiritId,
+      moveId,
+      trialId: trial.id,
+      trialName: trial.name,
+      affinityAdvantage: false,
+      focusScore: 0,
+      trialScore: trial.baseFocus,
+      victory: false,
+      masteryXp: Math.max(0, Math.floor(techniqueMasteryXp)),
+      bondDelta: 0,
+      message: 'Affinity trial could not start because the spirit or move is not in the Mochirii registry.',
+      source: 'battle-affinity-trial'
+    };
+  }
+
+  const boundedBond = Math.max(1, Math.min(5, Math.floor(bond)));
+  const boundedMasteryXp = Math.max(0, Math.min(30, Math.floor(techniqueMasteryXp)));
+  const affinityAdvantage = trial.favoredAffinities.includes(move.affinity);
+  const masteryBonus = Math.floor(boundedMasteryXp / 7);
+  const focusScore = spirit.battle.baseFocus + move.power + boundedBond + masteryBonus + (affinityAdvantage ? 3 : 0) - move.focusCost;
+  const trialScore = trial.baseFocus;
+  const victory = focusScore >= trialScore;
+  const masteryXp = Math.min(30, boundedMasteryXp + (victory ? trial.rewardXp : Math.max(1, Math.floor(trial.rewardXp / 2))));
+
+  return {
+    ok: true,
+    spiritId: spirit.id,
+    moveId: move.id,
+    trialId: trial.id,
+    trialName: trial.name,
+    affinityAdvantage,
+    focusScore,
+    trialScore,
+    victory,
+    masteryXp,
+    bondDelta: victory ? trial.bondDelta : 0,
+    message: victory
+      ? `${spirit.name} clears the ${trial.name} with ${move.label}; affinity ${affinityAdvantage ? 'harmonized' : 'studied'}, mastery ${masteryXp} XP.`
+      : `${spirit.name} studies the ${trial.name} with ${move.label}; ${trial.lesson}`,
+    source: 'battle-affinity-trial'
   };
 }
 

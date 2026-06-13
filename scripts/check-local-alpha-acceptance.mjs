@@ -59,6 +59,7 @@ async function run() {
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
   assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
   assert(manifest.body.gameplay?.techniqueMastery === true, 'Manifest must expose Mochi Spirit technique mastery.');
+  assert(manifest.body.gameplay?.affinityTrials === true, 'Manifest must expose Mochi Spirit affinity trials.');
   assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
@@ -71,6 +72,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
   assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
   assert(alphaStatus.body.gameplay?.techniqueMastery === true, 'Alpha status must expose Mochi Spirit technique mastery.');
+  assert(alphaStatus.body.gameplay?.affinityTrials === true, 'Alpha status must expose Mochi Spirit affinity trials.');
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
   assert(alphaStatus.body.gameplay?.roleplayQuests === true, 'Alpha status must expose roleplay quests.');
@@ -156,6 +158,11 @@ async function run() {
       requestId: `${runId}-technique`,
       type: 'spirit.technique',
       payload: { spiritId: 'lirabao', moveId: 'lantern-pulse', currentMasteryXp: 0, bond: 3, noInjury: true }
+    },
+    {
+      requestId: `${runId}-affinity`,
+      type: 'battle.affinity_trial',
+      payload: { spiritId: 'lirabao', moveId: 'lantern-pulse', trialId: 'jade-mirror-trial', bond: 3, techniqueMasteryXp: 7, noInjury: true }
     },
     {
       requestId: `${runId}-spar`,

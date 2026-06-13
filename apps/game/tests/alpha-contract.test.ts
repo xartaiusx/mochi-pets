@@ -8,6 +8,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritAffinityTrial,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
@@ -23,6 +24,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -56,6 +58,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
@@ -116,6 +119,24 @@ describe('alpha contract', () => {
     });
     expect(technique.message).toContain('Mochirii Technique Dojo');
     expect(resolveSpiritTechniqueMastery('lirabao', 'missing-technique').ok).toBe(false);
+
+    const affinity = resolveSpiritAffinityTrial('lirabao', 'lantern-pulse', 'jade-mirror-trial', 3, 7);
+    expect(affinity).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      moveId: 'lantern-pulse',
+      trialId: 'jade-mirror-trial',
+      trialName: 'Jade Mirror Trial',
+      affinityAdvantage: true,
+      focusScore: 15,
+      trialScore: 14,
+      victory: true,
+      masteryXp: 11,
+      bondDelta: 1,
+      source: 'battle-affinity-trial'
+    });
+    expect(affinity.message).toContain('Jade Mirror Trial');
+    expect(resolveSpiritAffinityTrial('lirabao', 'missing-move').ok).toBe(false);
 
     const party = resolveSpiritParty(['lirabao', 'jintari', 'aozhen'], 'jintari');
     expect(party).toMatchObject({
