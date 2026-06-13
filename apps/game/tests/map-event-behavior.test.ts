@@ -561,6 +561,51 @@ describe('Mochi town event behavior', () => {
     });
   });
 
+  it('records Jade Cloudbell route mastery after the first circuit proof is complete', async () => {
+    const player = createFakePlayer();
+
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+    await runAction(ExpeditionGate(), player);
+    await runAction(ExpeditionGate(), player);
+    await runAction(ExpeditionGate(), player);
+
+    expect(player.variables.get('mochiSocial.world.routeMasteryProof')).toBeUndefined();
+    expect(player.texts.at(-1)).toContain('Jade Cloudbell Circuit needs');
+
+    await runAction(JournalPavilion(), player);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiSocial.guild.rankTrialProof', true);
+    player.variables.set('mochiSocial.guild.rankTrial', 'jade-court-initiate');
+    await runAction(ExpeditionGate(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('cloudbell-route-knot');
+    expect(player.variables.get('mochiSocial.world.routeMasteryProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.world.routeMastery')).toBe('jade-cloudbell-circuit');
+    expect(player.variables.get('mochiSocial.world.routeMasteryTitle')).toBe('Jade Cloudbell Circuit');
+    expect(player.variables.get('mochiSocial.world.routeMasteryScore')).toBe(21);
+    expect(player.variables.get('mochiSocial.world.routeMasteryKnotClaimed')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Route circuit mastered');
+    expect(player.saves.at(-1)?.options.source).toBe('expedition-gate');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        routeMastery: {
+          masteryId: 'jade-cloudbell-circuit',
+          title: 'Jade Cloudbell Circuit',
+          score: 21,
+          rewardItemId: 'cloudbell-route-knot',
+          proof: true,
+          message: 'Jade Cloudbell Circuit mastered: all first-circuit Mochirii routes, spirits, journal records, quest postings, and Jade Court rank proof are complete.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('no-real-value field progression');
+  });
+
   it('records no-injury technique mastery at the Mochirii dojo', async () => {
     const player = createFakePlayer();
 

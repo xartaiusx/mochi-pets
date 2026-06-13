@@ -56,6 +56,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
+  assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
@@ -74,6 +75,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
+  assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
@@ -184,6 +186,20 @@ async function run() {
       requestId: `${runId}-cloudbell-route-invite`,
       type: 'spirit.route_invite',
       payload: { routeId: 'cloudbell-reed-bank', offeredItemId: 'lantern-harmony-tea', harmonyScore: 4, roster: ['lirabao', 'jintari'], discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'] }
+    },
+    {
+      requestId: `${runId}-route-mastery`,
+      type: 'world.route_mastery',
+      payload: {
+        masteryId: 'jade-cloudbell-circuit',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        journalDiscoveredCount: 3,
+        completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        guildRankProof: true,
+        rankTrialId: 'jade-court-initiate',
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-technique`,

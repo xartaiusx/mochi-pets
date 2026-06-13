@@ -31,6 +31,7 @@ if (alphaStatus.market?.fixedPrice !== true || alphaStatus.market?.auctions !== 
 
 if (
   alphaStatus.gameplay?.spiritAttunement !== true ||
+  alphaStatus.gameplay?.routeMastery !== true ||
   alphaStatus.gameplay?.trainingBattles !== true ||
   alphaStatus.gameplay?.raisingCare !== true ||
   alphaStatus.gameplay?.roleplayQuests !== true ||

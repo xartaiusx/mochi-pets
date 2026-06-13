@@ -41,6 +41,9 @@ assert(browserPresence.data?.hudAction?.state?.expeditionProof === true, 'HUD ac
 assert(browserPresence.data?.hudAction?.state?.lastExpeditionRouteId === 'cloudbell-reed-bank', 'HUD action proof must include the second field expedition route');
 assert(browserPresence.data?.hudAction?.state?.routeInviteProof === true, 'HUD action proof must include the route spirit invitation loop');
 assert(browserPresence.data?.hudAction?.state?.lastRouteInviteSpiritId === 'aozhen', 'HUD action proof must include Aozhen as the route-invited spirit');
+assert(browserPresence.data?.hudAction?.state?.routeMasteryProof === true, 'HUD action proof must include route mastery proof');
+assert(browserPresence.data?.hudAction?.state?.routeMasteryId === 'jade-cloudbell-circuit', 'HUD action proof must include the Jade Cloudbell Circuit id');
+assert(browserPresence.data?.hudAction?.state?.routeMasteryKnotClaimed === true, 'HUD action proof must include the route mastery knot proof');
 assert(browserPresence.data?.hudAction?.state?.techniqueProof === true, 'HUD action proof must include the technique dojo loop');
 assert(browserPresence.data?.hudAction?.state?.techniqueMasteryXp >= 1, 'HUD action proof must include technique mastery XP');
 assert(browserPresence.data?.hudAction?.state?.tacticProof === true, 'HUD action proof must include the battle tactic scroll loop');
@@ -211,6 +214,7 @@ const report = {
       spiritJournal: browserPresence.data?.hudAction?.state?.journalProof === true && browserPresence.data?.hudAction?.state?.journalDiscoveredCount === 3,
       fieldExpedition: browserPresence.data?.hudAction?.state?.expeditionProof === true,
       routeInvitation: browserPresence.data?.hudAction?.state?.routeInviteProof === true,
+      routeMastery: browserPresence.data?.hudAction?.state?.routeMasteryProof === true,
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
       battleTactic: browserPresence.data?.hudAction?.state?.tacticProof === true,
       guildRank: browserPresence.data?.hudAction?.state?.guildRankProof === true,

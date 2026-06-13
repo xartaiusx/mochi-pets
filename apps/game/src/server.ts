@@ -57,6 +57,14 @@ type AlphaHudStatePatch = {
     roster: string[];
     spiritId: string;
   };
+  routeMastery?: {
+    masteryId: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -290,6 +298,27 @@ type SpiritExpeditionRoute = {
   routeNote: string;
 };
 
+type SpiritRouteMastery = {
+  id: string;
+  title: string;
+  requiredRouteIds: readonly string[];
+  requiredSpiritCount: number;
+  requiredJournalCount: number;
+  requiredQuestIds: readonly string[];
+  requiredRankTrialId: string;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritRouteMasteryProgress = {
+  discoveredRoutes: readonly string[];
+  roster: readonly string[];
+  journalDiscoveredCount: number;
+  completedQuestIds: readonly string[];
+  guildRankProof: boolean;
+  rankTrialId?: string;
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -330,6 +359,11 @@ const alphaItems = {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
     description: 'A no-real-value route-scouting proof for the first Mochirii field expedition.'
+  },
+  routeKnot: {
+    id: 'cloudbell-route-knot',
+    name: 'Cloudbell Route Knot',
+    description: 'A no-real-value field mastery proof for completing the first Mochirii route circuit.'
   },
   rankSeal: {
     id: 'jade-court-rank-seal',
@@ -608,6 +642,20 @@ const guildRankTrials: readonly GuildRankTrial[] = [
   }
 ];
 
+const routeMasteries: readonly SpiritRouteMastery[] = [
+  {
+    id: 'jade-cloudbell-circuit',
+    title: 'Jade Cloudbell Circuit',
+    requiredRouteIds: expeditionRoutes.map((route) => route.id),
+    requiredSpiritCount: spirits.length,
+    requiredJournalCount: spirits.length,
+    requiredQuestIds: quests.map((quest) => quest.id),
+    requiredRankTrialId: guildRankTrials[0].id,
+    rewardItemId: alphaItems.routeKnot.id,
+    summary: 'A no-real-value field mastery proof for wayfarers who complete the first Mochirii route circuit with a full spirit roster.'
+  }
+];
+
 const spiritGrowthRites: readonly SpiritGrowthRite[] = [
   {
     id: 'moonwell-bloom-rite',
@@ -733,6 +781,62 @@ function resolveSpiritExpedition(
     discoveredRoutes: discovered,
     message: `${activeSpirit.name} scouts the ${route.name} and records ${encounterSpirit?.name || route.encounterSpiritId} signs. Bring ${route.recommendedItemId} for the next invitation. ${route.routeNote}`,
     source: 'world-expedition'
+  };
+}
+
+function resolveSpiritRouteMastery(progress: SpiritRouteMasteryProgress, masteryId: string = routeMasteries[0].id) {
+  const mastery = routeMasteries.find((entry) => entry.id === masteryId) || routeMasteries[0];
+  const discoveredRoutes = new Set(progress.discoveredRoutes.filter(Boolean));
+  const roster = new Set(progress.roster.filter((spiritId) => Boolean(getSpirit(spiritId))));
+  const completedQuestIds = new Set(progress.completedQuestIds.filter(Boolean));
+  const missing: string[] = [];
+
+  for (const routeId of mastery.requiredRouteIds) {
+    if (!discoveredRoutes.has(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  if (roster.size < mastery.requiredSpiritCount) {
+    missing.push(`spirits:${roster.size}/${mastery.requiredSpiritCount}`);
+  }
+
+  if (Math.max(0, Math.floor(progress.journalDiscoveredCount)) < mastery.requiredJournalCount) {
+    missing.push(`journal:${Math.max(0, Math.floor(progress.journalDiscoveredCount))}/${mastery.requiredJournalCount}`);
+  }
+
+  for (const questId of mastery.requiredQuestIds) {
+    if (!completedQuestIds.has(questId)) {
+      missing.push(`quest:${questId}`);
+    }
+  }
+
+  if (!progress.guildRankProof || progress.rankTrialId !== mastery.requiredRankTrialId) {
+    missing.push(`rank:${mastery.requiredRankTrialId}`);
+  }
+
+  const score =
+    Math.min(discoveredRoutes.size, mastery.requiredRouteIds.length) * 3 +
+    Math.min(roster.size, mastery.requiredSpiritCount) * 2 +
+    Math.min(Math.max(0, Math.floor(progress.journalDiscoveredCount)), mastery.requiredJournalCount) +
+    Math.min(completedQuestIds.size, mastery.requiredQuestIds.length) +
+    (progress.guildRankProof && progress.rankTrialId === mastery.requiredRankTrialId ? 3 : 0);
+  const requiredScore = mastery.requiredRouteIds.length * 3 + mastery.requiredSpiritCount * 2 + mastery.requiredJournalCount + mastery.requiredQuestIds.length + 3;
+  const mastered = missing.length === 0 && score >= requiredScore;
+
+  return {
+    ok: true,
+    mastered,
+    masteryId: mastery.id,
+    title: mastery.title,
+    score,
+    requiredScore,
+    missing,
+    rewardItemId: mastery.rewardItemId,
+    message: mastered
+      ? `${mastery.title} mastered: all first-circuit Mochirii routes, spirits, journal records, quest postings, and Jade Court rank proof are complete.`
+      : `${mastery.title} needs ${missing.join(', ')} before field mastery can be recorded.`,
+    source: 'world-route-mastery'
   };
 }
 
@@ -1530,10 +1634,51 @@ function expeditionGate(): EventDefinition {
         return;
       }
 
-      const routeCount = Number(actingPlayer.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
-      const route = expeditionRoutes[routeCount % expeditionRoutes.length] || expeditionRoutes[0];
       const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
       const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const allRoutesDiscovered = expeditionRoutes.every((route) => discoveredRoutes.includes(route.id));
+
+      if (allRoutesDiscovered) {
+        const mastery = resolveSpiritRouteMastery({
+          discoveredRoutes,
+          roster,
+          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+          completedQuestIds: completedQuestIds(actingPlayer),
+          guildRankProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.guild.rankTrialProof')),
+          rankTrialId: actingPlayer.getVariable<string>('mochiSocial.guild.rankTrial')
+        });
+
+        if (!mastery.mastered) {
+          showAlphaPrompt(actingPlayer, mastery.message);
+          return;
+        }
+
+        actingPlayer.setVariable('mochiSocial.world.routeMasteryProof', true);
+        actingPlayer.setVariable('mochiSocial.world.routeMastery', mastery.masteryId);
+        actingPlayer.setVariable('mochiSocial.world.routeMasteryTitle', mastery.title);
+        actingPlayer.setVariable('mochiSocial.world.routeMasteryScore', mastery.score);
+        if (!actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryKnotClaimed')) {
+          actingPlayer.addItem(alphaItems.routeKnot, 1);
+          actingPlayer.setVariable('mochiSocial.world.routeMasteryKnotClaimed', true);
+        }
+        actingPlayer.showNotification('Route circuit mastered', { time: 1800, icon: 'expedition-gate' });
+        emitAlphaHudState(actingPlayer, {
+          routeMastery: {
+            masteryId: mastery.masteryId,
+            title: mastery.title,
+            score: mastery.score,
+            rewardItemId: mastery.rewardItemId,
+            proof: true,
+            message: mastery.message
+          }
+        });
+        await actingPlayer.save('auto', { title: 'Mochirii route circuit mastered' }, { reason: 'auto', source: 'expedition-gate' });
+        showAlphaPrompt(actingPlayer, `${mastery.message} This is no-real-value field progression for Alpha Preview testing.`);
+        return;
+      }
+
+      const routeCount = Number(actingPlayer.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const route = expeditionRoutes[routeCount % expeditionRoutes.length] || expeditionRoutes[0];
       const bond = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
       const harmonyScore = bond + Math.max(1, roster.length) + partyIds(actingPlayer).length;
       const expedition = resolveSpiritExpedition(route.id, roster, activeSpirit, harmonyScore, discoveredRoutes);

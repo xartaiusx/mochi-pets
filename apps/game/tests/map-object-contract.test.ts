@@ -130,6 +130,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Mochirii spirit journal updated');
     expect(alphaContentSource).toContain('Moonbridge Bamboo Trail');
     expect(alphaContentSource).toContain('Cloudbell Reed Bank');
+    expect(alphaContentSource).toContain('Jade Cloudbell Circuit');
+    expect(alphaContentSource).toContain('cloudbell-route-knot');
+    expect(alphaContentSource).toContain('world-route-mastery');
     expect(alphaContentSource).toContain('spirit-route-invite');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
     expect(alphaContentSource).toContain('Goldleaf Opening Form');
@@ -146,6 +149,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Mochirii spirit journal updated');
     expect(runtimeServerSource).toContain('Moonbridge Bamboo Trail');
     expect(runtimeServerSource).toContain('Cloudbell Reed Bank');
+    expect(runtimeServerSource).toContain('Jade Cloudbell Circuit');
+    expect(runtimeServerSource).toContain('cloudbell-route-knot');
+    expect(runtimeServerSource).toContain('world-route-mastery');
     expect(runtimeServerSource).toContain('spirit-route-invite');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
     expect(runtimeServerSource).toContain('Goldleaf Opening Form');

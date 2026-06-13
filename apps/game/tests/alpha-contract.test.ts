@@ -5,6 +5,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_ROUTE_MASTERIES,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -13,6 +14,7 @@ import {
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritRouteInvitation,
+  resolveSpiritRouteMastery,
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
@@ -36,6 +38,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -71,6 +74,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -194,6 +198,34 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       source: 'spirit-route-invite'
     });
+
+    expect(SPIRIT_ROUTE_MASTERIES.map((mastery) => mastery.id)).toEqual(['jade-cloudbell-circuit']);
+    const routeMastery = resolveSpiritRouteMastery({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      guildRankProof: true,
+      rankTrialId: 'jade-court-initiate'
+    });
+    expect(routeMastery).toMatchObject({
+      ok: true,
+      mastered: true,
+      masteryId: 'jade-cloudbell-circuit',
+      title: 'Jade Cloudbell Circuit',
+      score: 21,
+      requiredScore: 21,
+      rewardItemId: 'cloudbell-route-knot',
+      source: 'world-route-mastery'
+    });
+    expect(routeMastery.message).toContain('first-circuit Mochirii routes');
+    expect(resolveSpiritRouteMastery({
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      roster: ['lirabao', 'jintari'],
+      journalDiscoveredCount: 2,
+      completedQuestIds: ['first-lantern-vow'],
+      guildRankProof: false
+    }).mastered).toBe(false);
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
     expect(technique).toMatchObject({

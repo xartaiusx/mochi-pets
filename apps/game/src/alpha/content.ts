@@ -212,6 +212,40 @@ export interface SpiritExpeditionResult {
   source: string;
 }
 
+export interface SpiritRouteMastery {
+  id: string;
+  title: string;
+  requiredRouteIds: readonly string[];
+  requiredSpiritCount: number;
+  requiredJournalCount: number;
+  requiredQuestIds: readonly string[];
+  requiredRankTrialId: string;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRouteMasteryProgress {
+  discoveredRoutes: readonly string[];
+  roster: readonly string[];
+  journalDiscoveredCount: number;
+  completedQuestIds: readonly string[];
+  guildRankProof: boolean;
+  rankTrialId?: string;
+}
+
+export interface SpiritRouteMasteryResult {
+  ok: boolean;
+  mastered: boolean;
+  masteryId: string;
+  title: string;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritRouteInvitationResult {
   ok: boolean;
   alreadyRostered: boolean;
@@ -610,6 +644,11 @@ export const ALPHA_ITEMS = {
     name: 'Moonbridge Field Ribbon',
     description: 'A no-real-value route-scouting proof for the first Mochirii field expedition.'
   },
+  routeKnot: {
+    id: 'cloudbell-route-knot',
+    name: 'Cloudbell Route Knot',
+    description: 'A no-real-value field mastery proof for completing the first Mochirii route circuit.'
+  },
   rankSeal: {
     id: 'jade-court-rank-seal',
     name: 'Jade Court Rank Seal',
@@ -783,6 +822,20 @@ export const SPIRIT_EXPEDITION_ROUTES: readonly SpiritExpeditionRoute[] = [
     recommendedItemId: ALPHA_ITEMS.harmonyTea.id,
     rewardItemId: ALPHA_ITEMS.trailRibbon.id,
     routeNote: 'A quiet reed bank under guild bells where Aozhen listens for careful wayfarers.'
+  }
+];
+
+export const SPIRIT_ROUTE_MASTERIES: readonly SpiritRouteMastery[] = [
+  {
+    id: 'jade-cloudbell-circuit',
+    title: 'Jade Cloudbell Circuit',
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredSpiritCount: MOCHI_SPIRITS.length,
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredQuestIds: MOCHI_SPIRIT_QUESTS.map((quest) => quest.id),
+    requiredRankTrialId: GUILD_RANK_TRIALS[0].id,
+    rewardItemId: ALPHA_ITEMS.routeKnot.id,
+    summary: 'A no-real-value field mastery proof for wayfarers who complete the first Mochirii route circuit with a full spirit roster.'
   }
 ];
 
@@ -1053,6 +1106,65 @@ export function resolveSpiritExpedition(
     discoveredRoutes: discovered,
     message: `${activeSpirit.name} scouts the ${route.name} and records ${encounterSpirit?.name || route.encounterSpiritId} signs. Bring ${route.recommendedItemId} for the next invitation. ${route.routeNote}`,
     source: 'world-expedition'
+  };
+}
+
+export function resolveSpiritRouteMastery(
+  progress: SpiritRouteMasteryProgress,
+  masteryId: string = SPIRIT_ROUTE_MASTERIES[0].id
+): SpiritRouteMasteryResult {
+  const mastery = SPIRIT_ROUTE_MASTERIES.find((entry) => entry.id === masteryId) || SPIRIT_ROUTE_MASTERIES[0];
+  const discoveredRoutes = new Set(progress.discoveredRoutes.filter(Boolean));
+  const roster = new Set(progress.roster.filter((spiritId) => Boolean(getMochiSpirit(spiritId))));
+  const completedQuestIds = new Set(progress.completedQuestIds.filter(Boolean));
+  const missing: string[] = [];
+
+  for (const routeId of mastery.requiredRouteIds) {
+    if (!discoveredRoutes.has(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  if (roster.size < mastery.requiredSpiritCount) {
+    missing.push(`spirits:${roster.size}/${mastery.requiredSpiritCount}`);
+  }
+
+  if (Math.max(0, Math.floor(progress.journalDiscoveredCount)) < mastery.requiredJournalCount) {
+    missing.push(`journal:${Math.max(0, Math.floor(progress.journalDiscoveredCount))}/${mastery.requiredJournalCount}`);
+  }
+
+  for (const questId of mastery.requiredQuestIds) {
+    if (!completedQuestIds.has(questId)) {
+      missing.push(`quest:${questId}`);
+    }
+  }
+
+  if (!progress.guildRankProof || progress.rankTrialId !== mastery.requiredRankTrialId) {
+    missing.push(`rank:${mastery.requiredRankTrialId}`);
+  }
+
+  const score =
+    Math.min(discoveredRoutes.size, mastery.requiredRouteIds.length) * 3 +
+    Math.min(roster.size, mastery.requiredSpiritCount) * 2 +
+    Math.min(Math.max(0, Math.floor(progress.journalDiscoveredCount)), mastery.requiredJournalCount) +
+    Math.min(completedQuestIds.size, mastery.requiredQuestIds.length) +
+    (progress.guildRankProof && progress.rankTrialId === mastery.requiredRankTrialId ? 3 : 0);
+  const requiredScore = mastery.requiredRouteIds.length * 3 + mastery.requiredSpiritCount * 2 + mastery.requiredJournalCount + mastery.requiredQuestIds.length + 3;
+  const mastered = missing.length === 0 && score >= requiredScore;
+
+  return {
+    ok: true,
+    mastered,
+    masteryId: mastery.id,
+    title: mastery.title,
+    score,
+    requiredScore,
+    missing,
+    rewardItemId: mastery.rewardItemId,
+    message: mastered
+      ? `${mastery.title} mastered: all first-circuit Mochirii routes, spirits, journal records, quest postings, and Jade Court rank proof are complete.`
+      : `${mastery.title} needs ${missing.join(', ')} before field mastery can be recorded.`,
+    source: 'world-route-mastery'
   };
 }
 

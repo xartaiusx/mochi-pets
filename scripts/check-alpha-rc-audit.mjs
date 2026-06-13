@@ -239,6 +239,8 @@ function addStaticRequirements() {
     'expeditionProof',
     'data-alpha-action="spirit.route_invite"',
     'routeInviteProof',
+    'data-alpha-action="world.route_mastery"',
+    'routeMasteryProof',
     'data-alpha-action="battle.tactic_scroll"',
     'tacticProof',
     'data-alpha-action="guild.rank_trial"',

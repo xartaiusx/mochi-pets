@@ -19,6 +19,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritRouteMastery,
   resolveSpiritRouteInvitation,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
@@ -48,6 +49,14 @@ type AlphaHudStatePatch = {
     routeName: string;
     roster: string[];
     spiritId: string;
+  };
+  routeMastery?: {
+    masteryId: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
   };
   affinity?: {
     affinityAdvantage: boolean;
@@ -459,9 +468,50 @@ export function ExpeditionGate(): EventDefinition {
       }
 
       const routeCount = Number(player.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
-      const route = SPIRIT_EXPEDITION_ROUTES[routeCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
       const discoveredRoutesRaw = player.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
       const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const allRoutesDiscovered = SPIRIT_EXPEDITION_ROUTES.every((route) => discoveredRoutes.includes(route.id));
+
+      if (allRoutesDiscovered) {
+        const mastery = resolveSpiritRouteMastery({
+          discoveredRoutes,
+          roster,
+          journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+          completedQuestIds: completedQuestIds(player),
+          guildRankProof: Boolean(player.getVariable<boolean>('mochiSocial.guild.rankTrialProof')),
+          rankTrialId: player.getVariable<string>('mochiSocial.guild.rankTrial')
+        });
+
+        if (!mastery.mastered) {
+          showAlphaPrompt(player, mastery.message);
+          return;
+        }
+
+        player.setVariable('mochiSocial.world.routeMasteryProof', true);
+        player.setVariable('mochiSocial.world.routeMastery', mastery.masteryId);
+        player.setVariable('mochiSocial.world.routeMasteryTitle', mastery.title);
+        player.setVariable('mochiSocial.world.routeMasteryScore', mastery.score);
+        if (!player.getVariable<boolean>('mochiSocial.world.routeMasteryKnotClaimed')) {
+          player.addItem(ALPHA_ITEMS.routeKnot, 1);
+          player.setVariable('mochiSocial.world.routeMasteryKnotClaimed', true);
+        }
+        player.showNotification('Route circuit mastered', { time: 1800, icon: 'expedition-gate' });
+        emitAlphaHudState(player, {
+          routeMastery: {
+            masteryId: mastery.masteryId,
+            title: mastery.title,
+            score: mastery.score,
+            rewardItemId: mastery.rewardItemId,
+            proof: true,
+            message: mastery.message
+          }
+        });
+        await player.save('auto', { title: 'Mochirii route circuit mastered' }, { reason: 'auto', source: 'expedition-gate' });
+        showAlphaPrompt(player, `${mastery.message} This is no-real-value field progression for Alpha Preview testing.`);
+        return;
+      }
+
+      const route = SPIRIT_EXPEDITION_ROUTES[routeCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
       const bond = Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
       const harmonyScore = bond + Math.max(1, roster.length) + partyIds(player).length;
       const expedition = resolveSpiritExpedition(route.id, roster, activeSpirit, harmonyScore, discoveredRoutes);

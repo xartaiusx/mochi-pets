@@ -7,8 +7,10 @@ import {
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_ROUTE_MASTERIES,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
+  resolveSpiritRouteMastery,
   techniqueMasteryLevelFromXp,
   selectMochiSpiritQuest,
   resolveSpiritAttunement,
@@ -71,6 +73,11 @@ interface AlphaHudState {
   routeInviteProof: boolean;
   lastRouteInviteRouteId?: string;
   lastRouteInviteSpiritId?: string;
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  routeMasteryTitle: string;
+  routeMasteryScore: number;
+  routeMasteryKnotClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -129,6 +136,14 @@ export interface AlphaWorldStatePatch {
     routeName: string;
     roster: string[];
     spiritId: string;
+  };
+  routeMastery?: {
+    masteryId: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
   };
   affinity?: {
     affinityAdvantage: boolean;
@@ -283,6 +298,10 @@ function defaultAlphaState(): AlphaHudState {
     discoveredRouteIds: [],
     routeRibbonClaimed: false,
     routeInviteProof: false,
+    routeMasteryProof: false,
+    routeMasteryTitle: 'Unmastered',
+    routeMasteryScore: 0,
+    routeMasteryKnotClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -417,6 +436,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
       <span class="mochi-hud__hint" data-route-invite-label>Route Invite: pending</span>
+      <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
@@ -436,6 +456,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
+      <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="battle.tactic_scroll" aria-label="Study a no-injury Mochirii tactic scroll">Tactic</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
@@ -475,6 +496,7 @@ function createHud() {
   const journalLabel = hud.querySelector('[data-journal-label]');
   const expeditionLabel = hud.querySelector('[data-expedition-label]');
   const routeInviteLabel = hud.querySelector('[data-route-invite-label]');
+  const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
@@ -519,6 +541,11 @@ function createHud() {
       routeInviteLabel.textContent = state.routeInviteProof
         ? `Route Invite: ${state.lastRouteInviteSpiritId || 'recorded'}`
         : 'Route Invite: pending';
+    }
+    if (routeMasteryLabel) {
+      routeMasteryLabel.textContent = state.routeMasteryProof
+        ? `Route Mastery: ${state.routeMasteryTitle}, score ${state.routeMasteryScore}`
+        : 'Route Mastery: pending';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -862,6 +889,15 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.routeInvite.message || `Route invitation recorded for ${patch.routeInvite.routeName}.`);
   }
 
+  if (patch.routeMastery) {
+    state.routeMasteryProof = patch.routeMastery.proof || state.routeMasteryProof;
+    state.routeMasteryId = patch.routeMastery.masteryId || state.routeMasteryId;
+    state.routeMasteryTitle = patch.routeMastery.title || state.routeMasteryTitle;
+    state.routeMasteryScore = Math.max(state.routeMasteryScore, Number(patch.routeMastery.score) || 0);
+    state.routeMasteryKnotClaimed = state.routeMasteryKnotClaimed || patch.routeMastery.rewardItemId === 'cloudbell-route-knot';
+    appendUniqueAlphaChat(state, patch.routeMastery.message || `${state.routeMasteryTitle} field mastery recorded.`);
+  }
+
   if (patch.technique) {
     state.techniqueProof = patch.technique.proof || state.techniqueProof;
     state.techniqueMoveId = patch.technique.moveId || state.techniqueMoveId;
@@ -1055,6 +1091,18 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       harmonyScore: (state.bond || 1) + Math.max(1, roster.length) + state.partyIds.length + state.expeditionCount,
       roster,
       discoveredRoutes: state.discoveredRouteIds
+    };
+  }
+
+  if (type === 'world.route_mastery') {
+    return {
+      masteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+      discoveredRoutes: state.discoveredRouteIds,
+      roster: state.attunedSpiritIds,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      completedQuestIds: state.completedQuestIds,
+      guildRankProof: state.guildRankProof,
+      rankTrialId: state.guildRankId
     };
   }
 
@@ -1336,6 +1384,28 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       }
       state.bond = Math.max(state.bond, result.bond);
       state.growth = result.growth;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'world.route_mastery') {
+    const result = resolveSpiritRouteMastery(
+      {
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
+        guildRankProof: Boolean(payload.guildRankProof ?? state.guildRankProof),
+        rankTrialId: String(payload.rankTrialId || state.guildRankId || '')
+      },
+      String(payload.masteryId || SPIRIT_ROUTE_MASTERIES[0].id)
+    );
+    if (result.mastered) {
+      state.routeMasteryProof = true;
+      state.routeMasteryId = result.masteryId;
+      state.routeMasteryTitle = result.title;
+      state.routeMasteryScore = result.score;
+      state.routeMasteryKnotClaimed = result.rewardItemId === 'cloudbell-route-knot';
     }
     state.chat.push(result.message);
   }
