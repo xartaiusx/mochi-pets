@@ -117,7 +117,7 @@ describe('Enjin Canary orchestration helpers', () => {
       enjinTransactionUuid: 'tx-1',
       enjinListingId: 'listing-1',
       extrinsicHash: '0xabc',
-      itemId: 'momo-canary-certificate',
+      itemId: 'lirabao-canary-certificate',
       tokenId: '7',
       amount: 1
     });
@@ -166,7 +166,7 @@ describe('Enjin Canary orchestration helpers', () => {
       playerId: 'player-1',
       tokenId: '7',
       amount: 1,
-      itemId: 'momo-canary-certificate'
+      itemId: 'lirabao-canary-certificate'
     }, readyConfig(), fetchImpl as typeof fetch);
 
     expect(seenQueries).toHaveLength(3);
@@ -195,7 +195,7 @@ describe('Enjin Canary orchestration helpers', () => {
       playerId: 'player-1',
       tokenId: '7',
       amount: 1,
-      itemId: 'momo-canary-certificate'
+      itemId: 'lirabao-canary-certificate'
     }, readyConfig(), fetchImpl as typeof fetch);
     const finality = await pollEnjinTransaction('tx-cold-hot', readyConfig(), fetchImpl as typeof fetch);
 
@@ -222,7 +222,7 @@ describe('Enjin Canary orchestration helpers', () => {
       tokenId: '7',
       amount: 1,
       price: '1000000000000000000',
-      itemId: 'momo-canary-certificate'
+      itemId: 'lirabao-canary-certificate'
     }, readyConfig(), fetchImpl as typeof fetch);
     const listingBody = seenBodies.find((body) => body.query.includes('createListing:'));
 

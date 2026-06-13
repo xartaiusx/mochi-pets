@@ -25,11 +25,11 @@ const checks = [
     expectedEvidence: 'Rendered dialog says the closed alpha town is no-real-value and Canary-only after holding the Action key briefly.'
   },
   {
-    id: 'token-chest',
-    label: 'Token chest prompt and save feedback',
-    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK',
-    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK),
-    expectedEvidence: 'Rendered prompt/notification confirms Mochi Token pickup and server save feedback after holding the Action key briefly.'
+    id: 'guild-seal-chest',
+    label: 'Guild seal chest prompt and save feedback',
+    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK',
+    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK),
+    expectedEvidence: 'Rendered prompt/notification confirms Mochirii Guild Seal pickup and server save feedback after holding the Action key briefly.'
   },
   {
     id: 'care-shrine',
@@ -65,7 +65,7 @@ if (pendingChecks.length === 0) {
 const report = {
   ok: failures.length === 0 && pendingChecks.length === 0,
   checkedAt: new Date().toISOString(),
-  scope: 'No-secret Alpha RC manual prompt review gate. This records operator confirmation for rendered NPC, chest, and habitat/care prompts; it does not contain credentials or hosted-provider proof.',
+  scope: 'No-secret Alpha RC manual prompt review gate. This records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts; it does not contain credentials or hosted-provider proof.',
   git: gitState,
   review: {
     status: pendingChecks.length === 0 ? 'completed' : 'pending-human-review',
@@ -220,7 +220,7 @@ function renderMarkdown(summary) {
 
 Generated: ${summary.checkedAt}
 
-This file is intentionally no-secret. It records the Alpha RC operator/human review for rendered in-canvas NPC, chest, and habitat/care prompts.
+This file is intentionally no-secret. It records the Alpha RC operator/human review for rendered in-canvas NPC, guild seal chest, and habitat/care prompts.
 
 Input note: focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 
@@ -250,7 +250,7 @@ $env:MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER="<operator name>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER="<browser and version>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_URL="<local game /play URL>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK="true"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK="true"
 npm run alpha:manual-prompt-review
 \`\`\`

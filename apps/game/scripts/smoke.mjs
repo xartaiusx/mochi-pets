@@ -29,6 +29,16 @@ if (alphaStatus.market?.fixedPrice !== true || alphaStatus.market?.auctions !== 
   throw new Error('Alpha status does not expose fixed-price/no-auction market scope.');
 }
 
+if (
+  alphaStatus.gameplay?.spiritAttunement !== true ||
+  alphaStatus.gameplay?.trainingBattles !== true ||
+  alphaStatus.gameplay?.raisingCare !== true ||
+  alphaStatus.gameplay?.roleplayQuests !== true ||
+  alphaStatus.gameplay?.copiedUpstreamContent !== false
+) {
+  throw new Error('Alpha status does not expose the Mochirii-native creature loop scope.');
+}
+
 if (alphaStatus.chainRuntime?.network !== 'CANARY' || !['configured', 'configured-preview-stub'].includes(alphaStatus.chainRuntime?.mode)) {
   throw new Error('Alpha status does not expose the Enjin Canary runtime mode.');
 }

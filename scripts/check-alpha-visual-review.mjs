@@ -33,11 +33,11 @@ assert(String(visualSnapshot.data?.dom?.presence || '').includes('Nearby:'), 'vi
 assert(Array.isArray(browserPresence.data?.tabs) && browserPresence.data.tabs.length === 2, 'browser presence must include two tabs');
 assert(browserPresence.data?.tabs?.every((tab) => String(tab.presence || '').includes('Nearby: 2 testers')), 'browser presence tabs must show Nearby: 2 testers');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
-assert(browserPresence.data?.hudAction?.state?.petId === 'momo', 'HUD action proof must include the Momo care loop');
+assert(browserPresence.data?.hudAction?.state?.spiritId === 'lirabao', 'HUD action proof must include the Lirabao care loop');
 assert(browserPresence.data?.hudAction?.state?.profileViewed === true, 'HUD action proof must include profile view');
-assert(browserPresence.data?.hudAction?.state?.friendProof === true, 'HUD action proof must include local friend proof');
+assert(browserPresence.data?.hudAction?.state?.guildBuddyProof === true, 'HUD action proof must include local guild buddy proof');
 assert(browserPresence.data?.hudAction?.state?.statusMood === 'cozy', 'HUD action proof must include local status/mood proof');
-assert(browserPresence.data?.hudAction?.state?.lastInspectedPetId === 'momo', 'HUD action proof must include pet inspection');
+assert(browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'lirabao', 'HUD action proof must include spirit inspection');
 assert(browserPresence.data?.hudAction?.state?.charmListed === true, 'HUD action proof must include fixed market listing');
 assert(browserPresence.data?.hudAction?.state?.tradeProof === true, 'HUD action proof must include direct trade proof');
 assert(browserPresence.data?.hudAction?.state?.canaryRequested === true, 'HUD action proof must include Canary certificate request');
@@ -54,39 +54,40 @@ for (const [label, item] of Object.entries(screenshotEvidence)) {
   assert(item.sha256 === item.reportedSha256, `${label} screenshot hash must match visual snapshot report`);
 }
 
-const mapObjects = ['welcome-npc', 'token-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine'];
+const mapObjects = ['welcome-npc', 'guild-seal-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine'];
 for (const id of mapObjects) {
   assert(mapServerSource.includes(`id: '${id}'`), `map server placement missing ${id}`);
 }
 
 for (const snippet of [
-  "this.setGraphic('friend')",
+  "this.setGraphic('sifu-narao')",
   "this.setGraphic('chest')",
   "this.setGraphic('market-board')",
   "this.setGraphic('trade-post')",
   "this.setGraphic('canary-shrine')",
-  "source: 'token-chest'",
+  "source: 'guild-seal-chest'",
   "source: 'market-board'",
   "source: 'trade-post'",
   "source: 'canary-shrine'"
 ]) {
   assert(mapEventSource.includes(snippet), `map event source missing snippet: ${snippet}`);
 }
-assert((alphaContentSource.match(/habitat:\s*'Lantern Garden'/g) || []).length === 3, 'three Mochi Spirits must share the Lantern Garden habitat');
+assert(alphaContentSource.includes("jadeLanternCourt: 'Jade Lantern Court'"), 'Jade Lantern Court habitat constant must be present');
+assert((alphaContentSource.match(/habitat:\s*SPIRIT_HABITATS\.jadeLanternCourt/g) || []).length === 3, 'three Mochi Spirits must share the Jade Lantern Court habitat');
 
 const expectedAssetLedgerEntries = [
   'mochi-tiles.png',
-  'mochi.png',
-  'friend.png',
+  'wayfarer.png',
+  'sifu-narao.png',
   'chest.png',
-  'spirit-momo.png',
-  'spirit-yuzu.png',
-  'spirit-sora.png',
+  'spirit-lirabao.png',
+  'spirit-jintari.png',
+  'spirit-aozhen.png',
   'market-board.png',
   'trade-post.png',
   'canary-shrine.png',
   'hd-source-export.md',
-  'no Kenney files are copied'
+  'project-authored/generated-for-project'
 ];
 
 for (const entry of expectedAssetLedgerEntries) {
@@ -100,7 +101,7 @@ const visualChecklist = {
   },
   interactableRecognition: {
     status: mapObjects.every((id) => mapServerSource.includes(`id: '${id}'`)) ? 'machine-supported' : 'blocked',
-    records: 'NPC, chest, care shrine, market board, trade post, and Canary shrine are present in the stable map-object contract.'
+    records: 'Sifu Narao, guild seal chest, care shrine, market board, trade post, and Canary shrine are present in the stable map-object contract.'
   },
   hudContrast: {
     status: Boolean(visualSnapshot.data?.dom?.hud) ? 'machine-supported' : 'blocked',
@@ -116,7 +117,7 @@ const visualChecklist = {
   },
   assetLedgerCoverage: {
     status: expectedAssetLedgerEntries.every((entry) => assetLedgerSource.includes(entry)) ? 'machine-supported' : 'blocked',
-    records: 'Asset ledger covers runtime PNGs, HD source-export intent, and Kenney reference-only boundaries.'
+    records: 'Asset ledger covers runtime PNGs, source masters, HD export intent, and project-authored generation status.'
   }
 };
 
@@ -131,7 +132,7 @@ const report = {
     browserPresence: summarizeReport(browserPresence),
     screenshots: screenshotEvidence,
     mapObjects,
-    habitat: 'Lantern Garden'
+    habitat: 'Jade Lantern Court'
   },
   machineReview: {
     firstScreenRenderable: failures.length === 0,
@@ -140,11 +141,11 @@ const report = {
     twoTabPresence: browserPresence.data?.tabs?.length === 2,
     observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true,
     hudActionLoop: {
-      petCare: browserPresence.data?.hudAction?.state?.petId === 'momo',
+      spiritCare: browserPresence.data?.hudAction?.state?.spiritId === 'lirabao',
       profileView: browserPresence.data?.hudAction?.state?.profileViewed === true,
-      friendProof: browserPresence.data?.hudAction?.state?.friendProof === true,
+      guildBuddyProof: browserPresence.data?.hudAction?.state?.guildBuddyProof === true,
       statusMood: browserPresence.data?.hudAction?.state?.statusMood === 'cozy',
-      petInspect: browserPresence.data?.hudAction?.state?.lastInspectedPetId === 'momo',
+      spiritInspect: browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'lirabao',
       fixedMarket: browserPresence.data?.hudAction?.state?.charmListed === true,
       directTrade: browserPresence.data?.hudAction?.state?.tradeProof === true,
       canaryRequest: browserPresence.data?.hudAction?.state?.canaryRequested === true
@@ -159,7 +160,7 @@ const report = {
       'Open the local playable game in a browser.',
       'Focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms.',
       'Interact with the welcome NPC and confirm the rendered prompt/dialog is coherent.',
-      'Interact with the token chest and confirm the rendered prompt/save feedback is coherent.',
+      'Interact with the guild seal chest and confirm the rendered prompt/save feedback is coherent.',
       'Interact with the habitat/care loop and confirm the rendered prompt/status feedback is coherent.',
       'Run npm run alpha:manual-prompt-review with the explicit prompt confirmation env vars set.',
       'Record browser, date, URL, report hashes, and any issues in the PR or release checklist.'
@@ -318,7 +319,7 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - Canvas PNG: ${summary.evidence.screenshots.canvas.path || 'missing'} (${summary.evidence.screenshots.canvas.width}x${summary.evidence.screenshots.canvas.height})
 - Two-tab presence: ${summary.machineReview.twoTabPresence ? 'yes' : 'no'}
 - Observer movement: ${summary.machineReview.observerMovement ? 'yes' : 'no'}
-- HUD action loop: pet care ${summary.machineReview.hudActionLoop.petCare ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, friend proof ${summary.machineReview.hudActionLoop.friendProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, pet inspect ${summary.machineReview.hudActionLoop.petInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
+- HUD action loop: spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
 

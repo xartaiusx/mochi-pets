@@ -25,6 +25,14 @@ export const ALPHA_FEATURES = {
     auctions: false,
     cashout: false
   },
+  gameplay: {
+    spiritAttunement: true,
+    trainingBattles: true,
+    raisingCare: true,
+    roleplayQuests: true,
+    spiritJournal: true,
+    copiedUpstreamContent: false
+  },
   ugc: 'curated'
 } as const;
 
@@ -48,8 +56,13 @@ export const SERVER_ENV_CONTRACT = [
 export const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
-  'pet.befriend',
-  'pet.care',
+  'spirit.attune',
+  'spirit.bond',
+  'spirit.care',
+  'spirit.train',
+  'spirit.raise',
+  'quest.accept',
+  'quest.progress',
   'market.fixed_list',
   'trade.direct_offer',
   'chain.withdraw_request',

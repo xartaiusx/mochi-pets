@@ -16,6 +16,7 @@
     "dev:game": "npm run prepare-assets && npm --workspace @mochi-social/game run dev",
     "build": "npm run prepare-assets && npm --workspace @mochi-social/game run build",
     "start": "npm --workspace @mochi-social/game run start",
+    "clean-room-scan": "node scripts/check-clean-room-literals.mjs",
     "secret-scan": "node scripts/check-secrets.mjs",
     "alpha:readiness": "node scripts/check-alpha-readiness.mjs",
     "alpha:local-acceptance": "node scripts/check-local-alpha-acceptance.mjs",

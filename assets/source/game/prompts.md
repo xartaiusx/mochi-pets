@@ -1,30 +1,24 @@
 # Mochi Social Source Art Prompts
 
-These notes document the original project-authored prompt basis for the Alpha Preview visual upgrade. Runtime assets are exported by `apps/game/scripts/generate-assets.mjs`.
+These notes document the project-authored prompt basis for the Mochirii High-Fidelity Wuxia art lane. Runtime assets are exported by `apps/game/scripts/generate-assets.mjs`; per-asset source cards live in `assets/source/game/hd/`.
 
 ## Master Prompt
 
 ```text
-High-fidelity source intent for a crisp Cozy Wushu 2D RPG asset for Mochi Social, exported as a small readable pixel-kit runtime asset, top-down 2D RPG clarity, Kenney-informed compact silhouette clarity, dusk lantern lighting, jade green and red timber palette, warm gold rim light, soft contact shadow, clear silhouette at gameplay zoom, no text, no logos, no real-world brands, alpha preview no-real-value game asset.
+Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated finish, soft lantern lighting, jade, lacquer, silk, paper, and gold materials, transparent background for sprites or cohesive world-art background for tiles, clear gameplay silhouette, no baked-in text, no logos, no third-party visual reference dependency, no production value implication, alpha no-real-value game asset.
 ```
-
-## Kenney Reference Basis
-
-The current refresh uses Kenney's official free asset catalog as a readability reference, especially Tiny Town, RPG-tagged packs, UI Pack, and Input Prompts. No Kenney files are copied, traced, downloaded into runtime, vendored, or required at runtime. The source analysis lives in `docs/kenney-reference-analysis.md`.
-
-## HD Source Export Basis
-
-The active pass uses `assets/source/game/hd-source-export.md`: design each asset with a high-detail source intent, then export down into crisp 32px/96x192 runtime PNGs with clean value groups, fewer noisy textures, strong outlines, and obvious interaction cues.
 
 ## Runtime Asset Set
 
-- Town tilesheet: cozy hidden Wushu guild town tiles with crisp kit clarity, calmer grass, stronger path/water/wall separation, readable landmark zones, lanterns, bridge, shrine stone, market/trade landmarks, and soft shadows.
-- Player avatar: friendly guild tester in warm Wushu travel robes, chunky readable walk/idle frames, no brand marks.
-- Welcome NPC: jade-robed local guild friend, warm posture, readable small silhouette and stronger robe contrast.
-- Momo Mochi Spirit: blush companion spirit, gentle temperament, soft glow, rounded silhouette.
-- Yuzu Mochi Spirit: gold companion spirit, bright temperament, citrus glow, distinct ears and outline.
-- Sora Mochi Spirit: sky-blue companion spirit, curious temperament, airy glow, distinct crest.
-- Chest: lacquered alpha reward chest with stronger bevel, gold trim, contact shadow, no real-money cue.
-- Market board: fixed-price test market board with parchment shapes, lantern glow, no readable text.
-- Trade post: direct-trade preview post with jade cloth, exchange tokens as abstract shapes, no real-value cue.
-- Canary shrine: Canary preview shrine with jade/gold crystal, stronger crystal silhouette, soft glow, no production/mainnet value cue.
+- Town tilesheet: Jade Lantern Court guild town tiles with readable path, water, wall, garden, habitat, market, trade, and Canary zones.
+- Wayfarer: Mochirii Wayfarer in layered silk travel robes with jade sash.
+- Sifu Narao: calm guild mentor in jade and ivory robes.
+- Lirabao: blush-cloud Mochi Spirit with jade forehead mark and gentle temperament.
+- Jintari: goldleaf Mochi Spirit with lucky cord tail and bright guild-market affinity.
+- Aozhen: sky-jade Mochi Spirit with mist crest and scout/journal affinity.
+- Guild seal chest: lacquered chest with jade clasp and gold cord.
+- Market board: fixed-price test market board with parchment tags and jade pins.
+- Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.
+- Canary shrine: no-real-value Canary preview shrine with violet lacquer base and gold crystal.
+
+Each source card records role, prompt, dimensions, tool, generated date, and project-authored/generated-for-project status.

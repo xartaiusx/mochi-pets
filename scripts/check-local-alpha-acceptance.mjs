@@ -53,11 +53,18 @@ async function run() {
   assert(manifest.body.chain?.network === 'CANARY', 'Manifest must keep Canary network.');
   assert(manifest.body.market?.fixedPrice === true, 'Manifest must keep fixed-price market enabled.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
+  assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
+  assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
   assert(alphaStatus.body.alpha?.stopPoint === 'alpha-rc-ready', 'Alpha status must expose the RC stop point.');
   assert(alphaStatus.body.market?.fixedPrice === true, 'Alpha status must keep fixed-price enabled.');
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
+  assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
+  assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
+  assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
+  assert(alphaStatus.body.gameplay?.roleplayQuests === true, 'Alpha status must expose roleplay quests.');
+  assert(alphaStatus.body.gameplay?.copiedUpstreamContent === false, 'Alpha status must reject copied upstream content.');
   assert(alphaStatus.body.chain?.network === 'CANARY', 'Alpha status must stay Canary-only.');
   assert(alphaStatus.body.edgeFunctions?.action === 'mochi-social-alpha-action', 'Alpha status must expose the Mochirii action function name.');
   assert(alphaStatus.body.chainRuntime?.network === 'CANARY', 'Alpha status must expose Enjin Canary runtime details.');
@@ -116,29 +123,54 @@ async function run() {
       payload: { emote: 'wave' }
     },
     {
-      requestId: `${runId}-befriend`,
-      type: 'pet.befriend',
-      payload: { spiritId: 'momo', source: 'acceptance-script' }
+      requestId: `${runId}-attune`,
+      type: 'spirit.attune',
+      payload: { spiritId: 'lirabao', offeredItemId: 'mochirii-guild-seal', source: 'acceptance-script' }
+    },
+    {
+      requestId: `${runId}-bond`,
+      type: 'spirit.bond',
+      payload: { spiritId: 'lirabao', source: 'acceptance-script' }
     },
     {
       requestId: `${runId}-care`,
-      type: 'pet.care',
-      payload: { petId: 'momo', careType: 'snack', bondDelta: 1 }
+      type: 'spirit.care',
+      payload: { spiritId: 'lirabao', careType: 'jade-tea', bondDelta: 1 }
+    },
+    {
+      requestId: `${runId}-train`,
+      type: 'spirit.train',
+      payload: { spiritId: 'lirabao', moveId: 'lantern-pulse', bond: 3, round: 1, noInjury: true }
+    },
+    {
+      requestId: `${runId}-raise`,
+      type: 'spirit.raise',
+      payload: { spiritId: 'lirabao', needId: 'jade-brush-groom', currentBond: 3 }
+    },
+    {
+      requestId: `${runId}-quest-accept`,
+      type: 'quest.accept',
+      payload: { questId: 'first-lantern-vow' }
+    },
+    {
+      requestId: `${runId}-quest-progress`,
+      type: 'quest.progress',
+      payload: { questId: 'first-lantern-vow', stepId: 'attune-spirit' }
     },
     {
       requestId: `${runId}-market`,
       type: 'market.fixed_list',
-      payload: { itemId: 'lantern-charm', quantity: 1, currency: 'petals', price: 5, noRealValue: true }
+      payload: { itemId: 'jade-thread-charm', quantity: 1, currency: 'guild-seals', price: 5, noRealValue: true }
     },
     {
       requestId: `${runId}-trade`,
       type: 'trade.direct_offer',
-      payload: { targetPlayerId: 'local-acceptance-peer', offered: ['lantern-charm'], requested: ['petals:5'] }
+      payload: { targetPlayerId: 'local-acceptance-peer', offered: ['jade-thread-charm'], requested: ['guild-seals:5'] }
     },
     {
       requestId: `${runId}-canary`,
       type: 'chain.withdraw_request',
-      payload: { assetId: 'momo-canary-certificate', chainNetwork: 'CANARY', noRealValue: true }
+      payload: { assetId: 'lirabao-canary-certificate', chainNetwork: 'CANARY', noRealValue: true }
     }
   ];
 

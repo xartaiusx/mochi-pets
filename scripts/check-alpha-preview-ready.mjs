@@ -84,10 +84,10 @@ function addManualPromptRequirement() {
   if (prompt.data?.ok !== true) failures.push('manual prompt review report is not ok');
   if (prompt.data?.review?.status !== 'completed') failures.push('manual prompt review is not completed');
   const completed = Array.isArray(prompt.data?.completedChecks) ? prompt.data.completedChecks : [];
-  const missing = ['welcome-npc', 'token-chest', 'care-shrine'].filter((id) => !completed.includes(id));
+  const missing = ['welcome-npc', 'guild-seal-chest', 'care-shrine'].filter((id) => !completed.includes(id));
   if (missing.length) failures.push(`manual prompt review missing completed checks: ${missing.join(', ')}`);
 
-  add('preview.manual-prompt-review', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Rendered NPC, chest, and habitat/care prompt review is complete for current HEAD.', {
+  add('preview.manual-prompt-review', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Rendered NPC, guild seal chest, and habitat/care prompt review is complete for current HEAD.', {
     path: 'reports/alpha-manual-prompt-review.json',
     status: prompt.data?.review?.status,
     completedChecks: completed

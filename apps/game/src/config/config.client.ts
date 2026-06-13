@@ -3,6 +3,19 @@ import { provideTiledMap } from '@rpgjs/tiledmap/client';
 import { applyAlphaWorldState, type AlphaWorldStatePatch } from '../integration/browser-bridge';
 import { provideMain } from '../modules/main';
 
+const SPIRIT_SHEET = {
+  ...Presets.RMSpritesheet(3, 4),
+  width: 384,
+  height: 768,
+  rectWidth: 128,
+  rectHeight: 192,
+  spriteRealSize: {
+    width: 64,
+    height: 96
+  },
+  scale: 0.5
+};
+
 export default {
   providers: [
     provideTiledMap({
@@ -28,49 +41,49 @@ export default {
       {
         spritesheets: [
           {
-            id: 'mochi',
-            image: '/spritesheets/mochi.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'wayfarer',
+            image: '/spritesheets/wayfarer.png',
+            ...SPIRIT_SHEET
           },
           {
-            id: 'friend',
-            image: '/spritesheets/friend.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'sifu-narao',
+            image: '/spritesheets/sifu-narao.png',
+            ...SPIRIT_SHEET
           },
           {
             id: 'chest',
             image: '/spritesheets/chest.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           },
           {
-            id: 'spirit-momo',
-            image: '/spritesheets/spirit-momo.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'spirit-lirabao',
+            image: '/spritesheets/spirit-lirabao.png',
+            ...SPIRIT_SHEET
           },
           {
-            id: 'spirit-yuzu',
-            image: '/spritesheets/spirit-yuzu.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'spirit-jintari',
+            image: '/spritesheets/spirit-jintari.png',
+            ...SPIRIT_SHEET
           },
           {
-            id: 'spirit-sora',
-            image: '/spritesheets/spirit-sora.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'spirit-aozhen',
+            image: '/spritesheets/spirit-aozhen.png',
+            ...SPIRIT_SHEET
           },
           {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           },
           {
             id: 'trade-post',
             image: '/spritesheets/trade-post.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           },
           {
             id: 'canary-shrine',
             image: '/spritesheets/canary-shrine.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           }
         ]
       }

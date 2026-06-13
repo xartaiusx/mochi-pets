@@ -36,6 +36,14 @@ const ALPHA_FEATURES = {
     auctions: false,
     cashout: false
   },
+  gameplay: {
+    spiritAttunement: true,
+    trainingBattles: true,
+    raisingCare: true,
+    roleplayQuests: true,
+    spiritJournal: true,
+    copiedUpstreamContent: false
+  },
   ugc: 'curated'
 } as const;
 
@@ -49,8 +57,13 @@ const ALPHA_EDGE_FUNCTIONS = {
 const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
-  'pet.befriend',
-  'pet.care',
+  'spirit.attune',
+  'spirit.bond',
+  'spirit.care',
+  'spirit.train',
+  'spirit.raise',
+  'quest.accept',
+  'quest.progress',
   'market.fixed_list',
   'trade.direct_offer',
   'chain.withdraw_request',
@@ -165,6 +178,7 @@ app.get('/integration/alpha/status', (_req, res) => {
     economy: ALPHA_FEATURES.economy,
     chain: ALPHA_FEATURES.chain,
     market: ALPHA_FEATURES.market,
+    gameplay: ALPHA_FEATURES.gameplay,
     ugc: ALPHA_FEATURES.ugc,
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
     enjinCanaryConfigured: enjinRuntime.configured,
@@ -403,7 +417,7 @@ async function buildEnjinOperatorUpdateAction(envelope: ValidEnjinOperatorEnvelo
   const baseInput = {
     requestId: envelope.requestId,
     playerId: envelope.playerId,
-    itemId: envelope.itemId || 'momo-canary-certificate'
+    itemId: envelope.itemId || 'lirabao-canary-certificate'
   };
 
   if (envelope.operation === 'poll-transaction') {

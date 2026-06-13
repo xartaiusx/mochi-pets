@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const trackedFiles = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
   .split(/\r?\n/)
@@ -42,6 +42,7 @@ for (const file of trackedFiles) {
   }
 
   if (ignoredFilePatterns.some((pattern) => pattern.test(normalized))) continue;
+  if (!existsSync(file)) continue;
 
   const text = readFileSync(file, 'utf8');
   for (const { label, pattern } of secretPatterns) {

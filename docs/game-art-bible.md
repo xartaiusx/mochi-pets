@@ -1,71 +1,63 @@
 # Mochi Social Game Art Bible
 
-This art bible defines the shipped game look for the Alpha Preview visual upgrade. It keeps the game aligned with the polished Mochirii tester gate while preserving RPGJS readability, local verification, and the no-real-value alpha boundary.
+This art bible defines the active Mochirii-native look for the Alpha Preview visual lane. It preserves the playable RPGJS town, multiplayer presence, no-real-value Enjin Canary posture, and website integration contract while moving the game identity toward smooth illustrated wuxia fantasy.
 
 ## Source Basis
 
-- Kenney free assets / reference survey: `docs/kenney-reference-analysis.md`
-- Kenney Tiny Town, RPG tag, UI Pack, Input Prompts, and support/license pages: https://kenney.nl/assets
-- RPGJS tileset guidance: https://docs.rpgjs.dev/guide/create-tileset
+- RPGJS reference repo and v5 package contract: https://github.com/RSamaium/RPG-JS
 - Tiled map and layer guidance: https://doc.mapeditor.org/en/stable/manual/layers/
-- Game Accessibility Guidelines: https://gameaccessibilityguidelines.com/full-list/
+- Sharp image pipeline: https://sharp.pixelplumbing.com/
 - WCAG 2.2 quick reference: https://www.w3.org/WAI/WCAG22/quickref/
-- Enjin network/finality arguments: https://docs.enjin.io/api-reference/important-arguments
-- Enjin Fuel Tanks: https://docs.enjin.io/guides/platform/managing-users/using-fuel-tanks
+- Game Accessibility Guidelines: https://gameaccessibilityguidelines.com/full-list/
+- GitHub licensing overview: https://docs.github.com/articles/licensing-a-repository
+- CC0 legalcode for intentionally public-domain assets: https://creativecommons.org/publicdomain/zero/1.0/legalcode.en
 
 ## Visual Target
 
-- Style: HD Source Export + Crisp Pixel Kit. Cozy Wushu mood remains the theme, but runtime art should use crisp silhouettes, clean value groups, controlled pixel clusters, and clear interaction cues rather than dense painterly noise.
-- Mood: dusk lantern arrival, hidden guild town, warm hospitality, soft magic, gentle social play.
-- Palette: jade greens, red timber, warm lantern gold, muted stone, bamboo shadow, soft sky blue, blush/pomelo/sky spirit accents.
-- Lighting: painted dusk gradients, warm rim highlights, soft contact shadows, lantern glow, readable black/brown outlines.
-- Materials: carved timber, lacquered chests, parchment, jade stone, bamboo, water, paper lanterns, polished path stones. Each material needs one or two readable pixel cues at runtime scale, not full texture realism.
-- Camera: current top-down / three-quarter 2D RPG readability. Do not use literal photorealism for tiny runtime sprites.
-- Reference posture: use Kenney as a readability benchmark for compact silhouettes, tile clarity, and approachable game-kit cohesion; do not copy, trace, vendor, download, or depend on Kenney files.
+- Style: Mochirii High-Fidelity Wuxia. Smooth illustrated 2D, soft lighting, painterly jade, lacquer, gold, silk, and paper materials.
+- Mood: Jade Lantern Court, hidden guild hospitality, gentle spirit bonding, quiet social play, and warm alpha-tester welcome.
+- Palette: jade greens, cinnabar lacquer, warm gold, parchment ivory, silk blush, sky-jade blue, violet Canary accents, and deep ink shadows.
+- Camera: readable top-down / three-quarter 2D RPG presentation for RPGJS. The art should look modern and polished while staying legible at gameplay zoom.
+- Prohibited direction: no third-party visual reference dependency, no nostalgic low-resolution styling, no baked-in text, no real-world logos, no paid-pack imitation, and no production or real-value chain symbolism.
 
 ## Runtime Art Rules
 
-- Keep current alpha scale unless a later plan explicitly changes map/camera/collision: 32px tiles, 96x192 event spritesheets, 25x18 town map.
-- Preserve runtime filenames and paths so RPGJS, tests, `/play`, and `/embed` resolve assets identically.
-- Treat `assets/source/game/hd-source-export.md` as the source-art brief. Runtime assets still export from `apps/game/scripts/generate-assets.mjs` until a later plan approves a different art toolchain.
-- Use transparent backgrounds for event spritesheets and opaque tile backgrounds for the tilesheet.
-- Use strong silhouettes and contact shadows for interactive objects: NPC, pet, chest, market board, trade post, and Canary shrine.
-- Prefer Kenney-like icon clarity over dense rendering: simple shapes, strong outlines, bevel highlights, and clear object function at small size.
-- Prioritize town readability first: calmer grass, clearer path edges, distinct blocked zones, and obvious landmark framing around NPC, chest, habitat, market, trade, and Canary objects.
-- Avoid text baked into sprites. Use shapes, icons, glow, and landmarks instead.
-- Avoid logos, real brands, third-party references, paid-pack style imitation, and visual promises of real-money value.
-- Enjin-related visuals must read as Canary preview magic or certificate testing, never as production settlement or real value.
+- Runtime town tiles use 64x64 logical tiles. `apps/game/src/tiled/mochi-tiles.png` is 512x192 with 8 columns and 3 rows.
+- Runtime event spritesheets use 3x4 frames. Each spritesheet is 384x768 with 128x192 frames.
+- Source masters live under `assets/source/game/hd/` and are exported down through `apps/game/scripts/generate-assets.mjs` using Sharp.
+- Preserve Tiled layer names, map dimensions, public routes, bridge messages, and no-real-value labels unless tests and docs change in the same scoped task.
+- Use transparent backgrounds for event spritesheets and opaque tilesheet backgrounds.
+- Use clear silhouettes, soft contact shadows, material highlights, and object-specific shape language for Sifu Narao, the guild seal chest, spirit habitats, market board, trade post, and Canary shrine.
+- Enjin-related visuals must read as Canary preview staging only: configured preview stub, no real value, no settlement implication before `FINALIZED`.
 
-## Asset Families
+## Canonical Asset Families
 
-- Town tiles: grass, path, water, timber wall, flower garden, sign, market/trade facade, Canary tile, lantern, habitat bed, bridge, shrine stone, bamboo, shadow, chest marker, care shrine, path edge, market/trade landmark tiles.
-- Characters: warm Wushu tester avatar and green/jade welcome NPC, each with readable idle/walk frame variants.
-- Mochi Spirits: Momo blush/gentle, Yuzu gold/bright, Sora blue/curious. Each needs distinct color and silhouette at small size.
-- Props: chest, market board, trade post, Canary shrine. Each needs a ground shadow and one clear interaction affordance.
-- HUD: warm glass, jade/timber accents, readable text over art, no overlap with movement or prompts.
+- Wayfarer: Mochirii Wayfarer player avatar in layered silk travel robes.
+- Sifu Narao: welcome mentor and care-shrine guide with jade/ivory guild styling.
+- Mochi Spirits: Lirabao, Jintari, and Aozhen. Each has profile, affinity, temperament, habitat, bond, growth, journal, care action, guild relation, and optional Canary certificate eligibility in code.
+- Guild objects: Mochirii Guild Seal chest, Jade Thread Charm market board, direct trade post, and Canary shrine.
+- Town: Jade Lantern Court with readable path/water/wall zones, guild garden, spirit habitat cues, lanterns, bridge, market/trade landmarks, and Canary staging area.
+- HUD: warm glass panels, jade/timber accents, readable text over art, visible focus states, and non-color-only status labels.
 
 ## Prompt Template
 
-Use this template for any generated source art or prompt-recorded handoff:
-
 ```text
-High-fidelity source intent for a crisp Cozy Wushu 2D RPG asset for Mochi Social, exported as a small readable pixel-kit runtime asset, top-down 2D RPG clarity, dusk lantern lighting, jade green and red timber palette, warm gold rim light, soft contact shadow, strong silhouette at gameplay zoom, no text, no logos, no real-world brands, no people unless requested, alpha preview no-real-value game asset.
+Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated finish, soft lantern lighting, jade, lacquer, silk, paper, and gold materials, transparent background for sprites or cohesive world-art background for tiles, clear gameplay silhouette, no baked-in text, no logos, no third-party visual reference dependency, no production value implication, alpha no-real-value game asset.
 ```
 
-Append the specific asset role, color identity, animation frame needs, and runtime dimensions. Record the final prompt in `docs/asset-ledger.md` or an asset source note before commit.
+Append the specific asset role, color identity, animation frame needs, source-master dimensions, runtime dimensions, and care/market/trade/Canary constraints. Record the prompt in the source card under `assets/source/game/hd/` and summarize the asset in `docs/asset-ledger.md`.
 
 ## Accessibility Gates
 
-- Important HUD text sits on semi-opaque backing and remains readable over the map.
-- Interactive objects use shape and contrast, not color alone.
-- Walkable paths, blocked areas, and interactable objects are distinguishable in the first screen without reading debug labels.
-- Small labels, badges, and buttons preserve visible focus states and pointer/keyboard affordance.
-- Avoid flickering, high-frequency texture noise, and over-detailed sprites that blur at runtime scale.
-- Verify first-screen layout at desktop and common laptop widths before any hosted review.
+- HUD text sits on semi-opaque backing and remains readable over the map.
+- Interactive objects use shape, contrast, and placement, not color alone.
+- Walkable paths, blocked areas, and interactable objects are distinguishable in first-screen review without debug labels.
+- Buttons, inputs, and focus states remain keyboard-usable.
+- Avoid flickering, noisy texture density, and fine detail that blurs at runtime scale.
 
 ## Done
 
-- Runtime assets preserve filenames, dimensions, and gameplay contracts.
-- First screen reads as a cohesive Cozy Wushu town, not a debug map.
-- NPC, pets, chest, market board, trade post, and Canary shrine are visually recognizable at gameplay zoom.
-- `docs/asset-ledger.md` records every changed art asset, source, license, dimensions, role, and prompt/source note.
+- Runtime PNGs match the 64px tile and 128x192 frame contracts.
+- First screen reads as Jade Lantern Court, not a debug map.
+- Sifu Narao, guild seal chest, Mochi Spirits, market board, trade post, and Canary shrine are visually recognizable at gameplay zoom.
+- `docs/asset-ledger.md` records every runtime asset, dimensions, source card, generation status, and license.

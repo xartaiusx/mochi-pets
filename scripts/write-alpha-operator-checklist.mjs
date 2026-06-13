@@ -135,7 +135,7 @@ function readManualPromptSummary() {
       present: false,
       ok: false,
       status: 'missing-report',
-      pendingChecks: ['welcome-npc', 'token-chest', 'care-shrine'],
+      pendingChecks: ['welcome-npc', 'guild-seal-chest', 'care-shrine'],
       message: 'Run npm run alpha:manual-prompt-review to generate the prompt review gate report.'
     };
   }
@@ -161,7 +161,7 @@ function readManualPromptSummary() {
       present: true,
       ok: false,
       status: 'parse-failed',
-      pendingChecks: ['welcome-npc', 'token-chest', 'care-shrine'],
+      pendingChecks: ['welcome-npc', 'guild-seal-chest', 'care-shrine'],
       message: 'Manual prompt review report exists but could not be parsed.'
     };
   }
@@ -357,7 +357,7 @@ Pending prompt checks:
 
 ${manualPromptPending}
 
-Complete this gate only after a local browser review confirms the welcome NPC dialog, token chest prompt/save feedback, and habitat care-loop prompt are rendered coherently. Focus the game canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+Complete this gate only after a local browser review confirms the welcome NPC dialog, guild seal chest prompt/save feedback, and habitat care-loop prompt are rendered coherently. Focus the game canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 
 ## Local No-Cost Gate
 

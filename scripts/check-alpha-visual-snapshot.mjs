@@ -76,7 +76,7 @@ async function run() {
       hud: Boolean(document.querySelector('#mochi-social-hud')),
       canvas: Boolean(document.querySelector('canvas')),
       presence: document.querySelector('[data-presence-label]')?.textContent?.trim() || '',
-      pet: document.querySelector('[data-pet-label]')?.textContent?.trim() || '',
+      spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
       feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || '')
     }));

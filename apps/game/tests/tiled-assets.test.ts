@@ -2,16 +2,16 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const runtimeAssets = [
-  { path: 'src/tiled/mochi-tiles.png', width: 256, height: 96 },
-  { path: 'public/spritesheets/mochi.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/friend.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/chest.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/spirit-momo.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/spirit-yuzu.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/spirit-sora.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/market-board.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/trade-post.png', width: 96, height: 192 },
-  { path: 'public/spritesheets/canary-shrine.png', width: 96, height: 192 }
+  { path: 'src/tiled/mochi-tiles.png', width: 512, height: 192 },
+  { path: 'public/spritesheets/wayfarer.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/sifu-narao.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/chest.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/spirit-lirabao.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/spirit-jintari.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/spirit-aozhen.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/market-board.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/trade-post.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/canary-shrine.png', width: 384, height: 768 }
 ] as const;
 
 function readPngSize(path: string) {
@@ -39,11 +39,11 @@ describe('runtime asset paths', () => {
     const tileset = readFileSync('src/tiled/mochi-tiles.tsx', 'utf8');
 
     expect(tileset).toContain('source="mochi-tiles.png"');
-    expect(tileset).toContain('tilewidth="32"');
-    expect(tileset).toContain('tileheight="32"');
+    expect(tileset).toContain('tilewidth="64"');
+    expect(tileset).toContain('tileheight="64"');
     expect(tileset).toContain('tilecount="24"');
     expect(tileset).toContain('columns="8"');
-    expect(tileset).toContain('width="256" height="96"');
+    expect(tileset).toContain('width="512" height="192"');
   });
 
   it('uses absolute sprite URLs so /play and /embed resolve assets identically', () => {

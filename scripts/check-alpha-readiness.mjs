@@ -81,7 +81,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
-    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'momo-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'data-profile-label', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-friend-label', 'data-alpha-local-action="friend.add"', 'friendProof', 'data-status-label', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="pet.inspect"', 'lastInspectedPetId', 'configured-preview-stub']
+    includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'lirabao-canary-certificate', 'chain.withdraw_request', 'data-presence-label', 'data-profile-label', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-guild-label', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-status-label', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
@@ -93,7 +93,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'configured-preview-stub']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'spirit.attune', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'configured-preview-stub']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -109,11 +109,11 @@ const checks = [
   },
   {
     file: 'apps/game/tests/map-object-contract.test.ts',
-    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'token-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Lantern Garden', '25 * 18']
+    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'guild-seal-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Jade Lantern Court', '25 * 18']
   },
   {
     file: 'apps/game/tests/map-event-behavior.test.ts',
-    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochi Token', 'pet-care', 'bond 5/5', 'market-board', 'trade-post', 'no-real-value Enjin Canary certificate request', 'Wallet Daemon services']
+    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochirii Guild Seal', 'spirit-care', 'bond 5/5', 'market-board', 'trade-post', 'no-real-value Enjin Canary certificate request', 'Wallet Daemon services']
   },
   {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
@@ -125,7 +125,7 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
-    includes: ['chain.withdraw_request', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'canvasMovement.changedAfterFirstTabMove=true', 'momo-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'configured-preview-stub']
+    includes: ['chain.withdraw_request', 'spirit.attune', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'canvasMovement.changedAfterFirstTabMove=true', 'lirabao-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'configured-preview-stub']
   },
   {
     file: 'scripts/check-alpha-load-smoke.mjs',
@@ -133,7 +133,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
-    includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="pet.care"', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="friend.add"', 'friendProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="pet.inspect"', 'lastInspectedPetId', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowRight', 'ArrowDown', 'canvas']
+    includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.care"', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'chain.withdraw_request', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowLeft', 'ArrowDown', 'canvas']
   },
   {
     file: 'scripts/check-alpha-visual-snapshot.mjs',
@@ -165,7 +165,7 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-manual-prompt-review.mjs',
-    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED']
+    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED']
   },
   {
     file: 'scripts/check-wallet-daemon-local.mjs',
@@ -173,7 +173,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
-    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'token-chest', 'Lantern Garden']
+    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'Jade Lantern Court']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',

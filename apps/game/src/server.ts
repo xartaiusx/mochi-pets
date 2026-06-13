@@ -16,42 +16,109 @@ import type { SaveSlot, SaveSlotEntries, SaveSlotList, SaveSlotMeta } from '@rpg
 
 const saveDir = process.env.RPG_SAVE_DIR ?? '.local/saves';
 const spawn = {
-  x: 384,
-  y: 288
+  x: 768,
+  y: 576
 };
 
-const tokenItem = {
-  id: 'mochi-token',
-  name: 'Mochi Token',
-  description: 'A tiny proof that you visited the first Mochi Social town.'
-};
+const spawnOffsets = [
+  { x: 0, y: 0 },
+  { x: 64, y: 0 },
+  { x: 0, y: 64 },
+  { x: 64, y: 64 },
+  { x: -64, y: 0 },
+  { x: 0, y: -64 }
+] as const;
 
-const alphaItems = {
-  charm: {
-    id: 'lantern-charm',
-    name: 'Lantern Charm',
-    description: 'A no-real-value alpha market item for fixed-price and trade testing.'
-  },
-  certificate: {
-    id: 'momo-canary-certificate',
-    name: 'Momo Canary Certificate',
-    description: 'A no-real-value Canary certificate request for the managed hot/cold Enjin alpha path.'
-  }
-};
+const playerSpawnSlots = new Map<string, number>();
+let nextSpawnSlot = 0;
 
 const alphaPromptMs = 2600;
 
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   charmListed?: boolean;
-  pet?: {
+  spirit?: {
     bond: number;
     growth: string;
     id: string;
   };
-  tokenClaimed?: boolean;
+  sealClaimed?: boolean;
   tradeProof?: boolean;
 };
+
+type SpiritGrowthStage = 'seed' | 'sprout' | 'glow';
+
+type MochiSpirit = {
+  id: string;
+  name: string;
+  title: string;
+  sprite: string;
+  affinity: string;
+  habitat: 'Jade Lantern Court';
+  temperament: string;
+  guildRelation: string;
+  certificateEligible: boolean;
+};
+
+const alphaItems = {
+  guildSeal: {
+    id: 'mochirii-guild-seal',
+    name: 'Mochirii Guild Seal',
+    description: 'A no-real-value proof that you visited the first Mochirii guild court.'
+  },
+  charm: {
+    id: 'jade-thread-charm',
+    name: 'Jade Thread Charm',
+    description: 'A no-real-value alpha market item for fixed-price and trade testing.'
+  },
+  certificate: {
+    id: 'lirabao-canary-certificate',
+    name: 'Lirabao Canary Certificate',
+    description: 'A no-real-value Canary certificate request for the managed hot/cold Enjin alpha path.'
+  }
+} as const;
+
+const spirits = [
+  {
+    id: 'lirabao',
+    name: 'Lirabao',
+    title: 'Blush-Cloud Mochi Spirit',
+    sprite: 'spirit-lirabao',
+    affinity: 'blossom',
+    habitat: 'Jade Lantern Court',
+    temperament: 'gentle',
+    guildRelation: 'first-bond guide',
+    certificateEligible: true
+  },
+  {
+    id: 'jintari',
+    name: 'Jintari',
+    title: 'Goldleaf Mochi Spirit',
+    sprite: 'spirit-jintari',
+    affinity: 'citrus-gold',
+    habitat: 'Jade Lantern Court',
+    temperament: 'bright',
+    guildRelation: 'market-luck scout',
+    certificateEligible: false
+  },
+  {
+    id: 'aozhen',
+    name: 'Aozhen',
+    title: 'Sky-Jade Mochi Spirit',
+    sprite: 'spirit-aozhen',
+    affinity: 'sky-jade',
+    habitat: 'Jade Lantern Court',
+    temperament: 'curious',
+    guildRelation: 'wind-message watcher',
+    certificateEligible: false
+  }
+] as const satisfies readonly MochiSpirit[];
+
+function growthStageFromBond(bond: number): SpiritGrowthStage {
+  if (bond >= 5) return 'glow';
+  if (bond >= 3) return 'sprout';
+  return 'seed';
+}
 
 function showAlphaPrompt(actingPlayer: RpgPlayer, message: string) {
   if (typeof actingPlayer.gui !== 'function' || typeof actingPlayer.removeGui !== 'function') {
@@ -86,18 +153,12 @@ function emitAlphaHudState(actingPlayer: RpgPlayer, patch: AlphaHudStatePatch) {
   }
 }
 
-const spirits = [
-  { id: 'momo', name: 'Momo', graphic: 'spirit-momo', eligible: true },
-  { id: 'yuzu', name: 'Yuzu', graphic: 'spirit-yuzu', eligible: false },
-  { id: 'sora', name: 'Sora', graphic: 'spirit-sora', eligible: false }
-];
-
 const player: RpgPlayerHooks = {
   async onConnected(connectedPlayer: RpgPlayer) {
     connectedPlayer.name = getGuestName(connectedPlayer);
-    connectedPlayer.setGraphic('mochi');
+    connectedPlayer.setGraphic('wayfarer');
     connectedPlayer.setVariable('mochiSocial.connectedAt', new Date().toISOString());
-    await connectedPlayer.changeMap('mochi-town', spawn);
+    await connectedPlayer.changeMap('mochi-town', getSpawn(connectedPlayer));
     await connectedPlayer.load('auto', { reason: 'load', source: 'connect' }, { changeMap: false }).catch(() => null);
   },
 
@@ -110,58 +171,67 @@ const player: RpgPlayerHooks = {
 
 function getGuestName(connectedPlayer: RpgPlayer) {
   const id = String(connectedPlayer.id ?? 'guest').slice(-4).toUpperCase();
-  return `Mochi ${id}`;
+  return `Wayfarer ${id}`;
+}
+
+function getSpawn(connectedPlayer: RpgPlayer) {
+  const id = String(connectedPlayer.id ?? 'guest');
+  if (!playerSpawnSlots.has(id)) {
+    playerSpawnSlots.set(id, nextSpawnSlot);
+    nextSpawnSlot += 1;
+  }
+
+  const offset = spawnOffsets[playerSpawnSlots.get(id)! % spawnOffsets.length];
+  return {
+    x: spawn.x + offset.x,
+    y: spawn.y + offset.y
+  };
 }
 
 function welcomeNpc(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('friend');
+      this.setGraphic('sifu-narao');
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      actingPlayer.showNotification('Social spark found', { time: 1800, icon: 'friend' });
+      actingPlayer.showNotification('Guild spark found', { time: 1800, icon: 'sifu-narao' });
       showAlphaPrompt(
         actingPlayer,
-        'Welcome to Mochi Social. This closed alpha town is no-real-value and Canary-only, but it is ready for cozy pet testing with friends.'
+        'Welcome to Mochi Social. This closed alpha guild court is no-real-value and Canary-only, but it is ready for Mochirii spirit testing with friends.'
       );
     }
   };
 }
 
-function adoptedPets(actingPlayer: RpgPlayer): string[] {
-  const pets = actingPlayer.getVariable<string[]>('mochiSocial.alpha.pets');
-  return Array.isArray(pets) ? pets : [];
+function bondedSpirits(actingPlayer: RpgPlayer): string[] {
+  const spirits = actingPlayer.getVariable<string[]>('mochiSocial.spirits.bonded');
+  return Array.isArray(spirits) ? spirits : [];
 }
 
-function growthStage(bond: number) {
-  if (bond >= 5) return 'glow';
-  if (bond >= 3) return 'sprout';
-  return 'seed';
-}
-
-function spiritEvent(spirit: (typeof spirits)[number]): EventDefinition {
+function spiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
-      this.setGraphic(spirit.graphic);
+      this.setGraphic(spirit.sprite);
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      const pets = adoptedPets(actingPlayer);
-      if (pets.includes(spirit.id)) {
-        showAlphaPrompt(actingPlayer, `${spirit.name} bounces close by. Your bond is already started.`);
+      const spirits = bondedSpirits(actingPlayer);
+      if (spirits.includes(spirit.id)) {
+        showAlphaPrompt(actingPlayer, `${spirit.name} drifts close by. Your Mochi Spirit bond is already started.`);
         return;
       }
 
-      pets.push(spirit.id);
-      actingPlayer.setVariable('mochiSocial.alpha.pets', pets);
-      actingPlayer.setVariable('mochiSocial.alpha.activePet', spirit.id);
-      actingPlayer.setVariable(`mochiSocial.alpha.pet.${spirit.id}.bond`, 1);
-      actingPlayer.setVariable(`mochiSocial.alpha.pet.${spirit.id}.growth`, 'seed');
-      actingPlayer.showNotification(`${spirit.name} befriended`, { time: 1800, icon: spirit.graphic });
-      emitAlphaHudState(actingPlayer, { pet: { id: spirit.id, bond: 1, growth: 'seed' } });
-      await actingPlayer.save('auto', { title: 'Mochi Spirit befriended' }, { reason: 'auto', source: 'pet-befriend' });
-      showAlphaPrompt(actingPlayer, `${spirit.name} joined your alpha companion list. Care at the garden shrine to grow your bond.`);
+      spirits.push(spirit.id);
+      actingPlayer.setVariable('mochiSocial.spirits.bonded', spirits);
+      actingPlayer.setVariable('mochiSocial.spirits.active', spirit.id);
+      actingPlayer.setVariable(`mochiSocial.spirit.${spirit.id}.bond`, 1);
+      actingPlayer.setVariable(`mochiSocial.spirit.${spirit.id}.growth`, 'seed');
+      actingPlayer.setVariable(`mochiSocial.spirit.${spirit.id}.journalUnlocked`, true);
+      actingPlayer.showNotification(`${spirit.name} bonded`, { time: 1800, icon: spirit.sprite });
+      emitAlphaHudState(actingPlayer, { spirit: { id: spirit.id, bond: 1, growth: 'seed' } });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit bonded' }, { reason: 'auto', source: 'spirit-bond' });
+      showAlphaPrompt(actingPlayer, `${spirit.name} joined your Mochirii spirit journal. Offer care at the court shrine to grow your bond.`);
     }
   };
 }
@@ -169,25 +239,25 @@ function spiritEvent(spirit: (typeof spirits)[number]): EventDefinition {
 function careShrine(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('friend');
+      this.setGraphic('sifu-narao');
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      const activePet = actingPlayer.getVariable<string>('mochiSocial.alpha.activePet') || adoptedPets(actingPlayer)[0];
-      if (!activePet) {
-        showAlphaPrompt(actingPlayer, 'The garden shrine warms gently. Befriend a Mochi Spirit first, then return to care for it.');
+      const activeSpirit = actingPlayer.getVariable<string>('mochiSocial.spirits.active') || bondedSpirits(actingPlayer)[0];
+      if (!activeSpirit) {
+        showAlphaPrompt(actingPlayer, 'The Jade Lantern Court shrine warms gently. Bond with a Mochi Spirit first, then return to care for it.');
         return;
       }
 
-      const bondKey = `mochiSocial.alpha.pet.${activePet}.bond`;
+      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
       const nextBond = Math.min(5, currentBond + 1);
-      const nextGrowth = growthStage(nextBond);
+      const nextGrowth = growthStageFromBond(nextBond);
       actingPlayer.setVariable(bondKey, nextBond);
-      actingPlayer.setVariable(`mochiSocial.alpha.pet.${activePet}.growth`, nextGrowth);
-      actingPlayer.showNotification(`Bond ${nextBond}/5`, { time: 1800, icon: 'friend' });
-      emitAlphaHudState(actingPlayer, { pet: { id: activePet, bond: nextBond, growth: nextGrowth } });
-      await actingPlayer.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'pet-care' });
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.showNotification(`Spirit bond ${nextBond}/5`, { time: 1800, icon: 'sifu-narao' });
+      emitAlphaHudState(actingPlayer, { spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth } });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'spirit-care' });
       showAlphaPrompt(actingPlayer, `Care complete. Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
     }
   };
@@ -206,11 +276,11 @@ function marketBoard(): EventDefinition {
         actingPlayer.showNotification('Fixed listing proof', { time: 1800, icon: 'market-board' });
         emitAlphaHudState(actingPlayer, { charmListed: true });
         await actingPlayer.save('auto', { title: 'Alpha market proof' }, { reason: 'auto', source: 'market-board' });
-        showAlphaPrompt(actingPlayer, 'You listed a Lantern Charm for test soft currency. This proves fixed-price market flow without real value.');
+        showAlphaPrompt(actingPlayer, 'You listed a Jade Thread Charm for test soft currency. This proves fixed-price market flow without real value.');
         return;
       }
 
-      showAlphaPrompt(actingPlayer, 'Your Lantern Charm listing proof is already recorded for this alpha save.');
+      showAlphaPrompt(actingPlayer, 'Your Jade Thread Charm listing proof is already recorded for this alpha save.');
     }
   };
 }
@@ -238,8 +308,8 @@ function canaryShrine(): EventDefinition {
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      if (!adoptedPets(actingPlayer).includes('momo')) {
-        showAlphaPrompt(actingPlayer, 'The Canary shrine responds to Momo certificates first. Befriend Momo before staging this proof.');
+      if (!bondedSpirits(actingPlayer).includes('lirabao')) {
+        showAlphaPrompt(actingPlayer, 'The Canary shrine responds to Lirabao certificates first. Bond with Lirabao before staging this proof.');
         return;
       }
 
@@ -258,24 +328,24 @@ function canaryShrine(): EventDefinition {
   };
 }
 
-function tokenChest(): EventDefinition {
+function guildSealChest(): EventDefinition {
   return {
     onInit() {
       this.setGraphic('chest');
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      if (actingPlayer.getVariable<boolean>('mochiSocial.tokenClaimed')) {
-        showAlphaPrompt(actingPlayer, 'The chest is empty. Your Mochi Token is already tucked away.');
+      if (actingPlayer.getVariable<boolean>('mochiSocial.guildSealClaimed')) {
+        showAlphaPrompt(actingPlayer, 'The chest is empty. Your Mochirii Guild Seal is already tucked away.');
         return;
       }
 
-      actingPlayer.addItem(tokenItem, 1);
-      actingPlayer.setVariable('mochiSocial.tokenClaimed', true);
-      actingPlayer.showNotification('Mochi Token added', { time: 1800, icon: 'chest' });
-      emitAlphaHudState(actingPlayer, { tokenClaimed: true });
-      await actingPlayer.save('auto', { title: 'Mochi Social first token' }, { reason: 'auto', source: 'token-chest' });
-      showAlphaPrompt(actingPlayer, 'You found a Mochi Token. The server saved this little milestone.');
+      actingPlayer.addItem(alphaItems.guildSeal, 1);
+      actingPlayer.setVariable('mochiSocial.guildSealClaimed', true);
+      actingPlayer.showNotification('Guild Seal added', { time: 1800, icon: 'chest' });
+      emitAlphaHudState(actingPlayer, { sealClaimed: true });
+      await actingPlayer.save('auto', { title: 'Mochirii first guild seal' }, { reason: 'auto', source: 'guild-seal-chest' });
+      showAlphaPrompt(actingPlayer, 'You found a Mochirii Guild Seal. The server saved this little milestone.');
     }
   };
 }
@@ -288,56 +358,56 @@ const mainServerModule = defineModule({
       events: [
         {
           id: 'welcome-npc',
-          x: 448,
-          y: 256,
+          x: 896,
+          y: 512,
           event: welcomeNpc()
         },
         {
-          id: 'token-chest',
-          x: 320,
-          y: 352,
-          event: tokenChest()
+          id: 'guild-seal-chest',
+          x: 640,
+          y: 704,
+          event: guildSealChest()
         },
         {
-          id: 'spirit-momo',
-          x: 192,
-          y: 160,
+          id: 'spirit-lirabao',
+          x: 384,
+          y: 320,
           event: spiritEvent(spirits[0])
         },
         {
-          id: 'spirit-yuzu',
-          x: 256,
-          y: 160,
+          id: 'spirit-jintari',
+          x: 512,
+          y: 320,
           event: spiritEvent(spirits[1])
         },
         {
-          id: 'spirit-sora',
-          x: 320,
-          y: 160,
+          id: 'spirit-aozhen',
+          x: 640,
+          y: 320,
           event: spiritEvent(spirits[2])
         },
         {
           id: 'care-shrine',
-          x: 384,
-          y: 160,
+          x: 768,
+          y: 320,
           event: careShrine()
         },
         {
           id: 'market-board',
-          x: 576,
-          y: 352,
+          x: 1152,
+          y: 704,
           event: marketBoard()
         },
         {
           id: 'trade-post',
-          x: 640,
-          y: 352,
+          x: 1280,
+          y: 704,
           event: tradePost()
         },
         {
           id: 'canary-shrine',
-          x: 704,
-          y: 160,
+          x: 1408,
+          y: 320,
           event: canaryShrine()
         }
       ]

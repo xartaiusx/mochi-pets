@@ -8,15 +8,15 @@ const mapSource = readFileSync('src/tiled/mochi-town.tmx', 'utf8');
 const alphaContentSource = readFileSync('src/alpha/content.ts', 'utf8');
 
 const expectedPlacements = {
-  'welcome-npc': { x: 448, y: 256 },
-  'token-chest': { x: 320, y: 352 },
-  'spirit-momo': { x: 192, y: 160 },
-  'spirit-yuzu': { x: 256, y: 160 },
-  'spirit-sora': { x: 320, y: 160 },
-  'care-shrine': { x: 384, y: 160 },
-  'market-board': { x: 576, y: 352 },
-  'trade-post': { x: 640, y: 352 },
-  'canary-shrine': { x: 704, y: 160 }
+  'welcome-npc': { x: 896, y: 512 },
+  'guild-seal-chest': { x: 640, y: 704 },
+  'spirit-lirabao': { x: 384, y: 320 },
+  'spirit-jintari': { x: 512, y: 320 },
+  'spirit-aozhen': { x: 640, y: 320 },
+  'care-shrine': { x: 768, y: 320 },
+  'market-board': { x: 1152, y: 704 },
+  'trade-post': { x: 1280, y: 704 },
+  'canary-shrine': { x: 1408, y: 320 }
 } as const;
 
 function eventPlacements(source: string) {
@@ -52,24 +52,24 @@ describe('Mochi town map object contract', () => {
 
   it('keeps required map-object graphics, prompts, and save sources wired', () => {
     const requiredSnippets = [
-      "this.setGraphic('friend')",
+      "this.setGraphic('sifu-narao')",
       "this.setGraphic('chest')",
       "this.setGraphic('market-board')",
       "this.setGraphic('trade-post')",
       "this.setGraphic('canary-shrine')",
       'Welcome to Mochi Social',
-      'Mochi Token added',
-      'Befriend a Mochi Spirit first',
+      'Guild Seal added',
+      'Bond with a Mochi Spirit first',
       'Care complete',
       'test soft currency',
       'Direct trade proof recorded',
       'no-real-value Enjin Canary certificate request',
-      "source: 'pet-befriend'",
-      "source: 'pet-care'",
+      "source: 'spirit-bond'",
+      "source: 'spirit-care'",
       "source: 'market-board'",
       "source: 'trade-post'",
       "source: 'canary-shrine'",
-      "source: 'token-chest'"
+      "source: 'guild-seal-chest'"
     ];
 
     for (const snippet of requiredSnippets) {
@@ -79,7 +79,8 @@ describe('Mochi town map object contract', () => {
   });
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {
-    expect(alphaContentSource.match(/habitat:\s*'Lantern Garden'/g)).toHaveLength(3);
+    expect(alphaContentSource).toContain("jadeLanternCourt: 'Jade Lantern Court'");
+    expect(alphaContentSource.match(/habitat:\s*SPIRIT_HABITATS\.jadeLanternCourt/g)).toHaveLength(3);
 
     const cells = collisionCells();
     expect(cells).toHaveLength(25 * 18);

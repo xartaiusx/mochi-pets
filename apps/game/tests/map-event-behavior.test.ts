@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CanaryShrine,
   CareShrine,
+  GuildSealChest,
   MarketBoard,
   SPIRITS,
   SpiritEvent,
-  TokenChest,
   TradePost,
   WelcomeNpc
 } from '../src/modules/main/event';
@@ -71,14 +71,14 @@ describe('Mochi town event behavior', () => {
     vi.useRealTimers();
   });
 
-  it('keeps the Welcome NPC dialog rendered as a friend and scoped to alpha', async () => {
+  it('keeps the Welcome NPC dialog rendered as Sifu Narao and scoped to alpha', async () => {
     const { context, player } = await runAction(WelcomeNpc());
 
-    expect(context.graphic).toBe('friend');
+    expect(context.graphic).toBe('sifu-narao');
     expect(player.texts.at(-1)).toContain('Welcome to Mochi Social');
     expect(player.texts.at(-1)).toContain('no-real-value');
     expect(player.texts.at(-1)).toContain('Canary-only');
-    expect(player.notifications.at(-1)?.message).toBe('Social spark found');
+    expect(player.notifications.at(-1)?.message).toBe('Guild spark found');
   });
 
   it('opens alpha prompts without blocking movement and auto-closes by dialog id', async () => {
@@ -129,53 +129,53 @@ describe('Mochi town event behavior', () => {
     ]);
   });
 
-  it('lets the token chest grant exactly one Mochi Token and records save source', async () => {
-    const event = TokenChest();
+  it('lets the guild seal chest grant exactly one Mochirii Guild Seal and records save source', async () => {
+    const event = GuildSealChest();
     const player = createFakePlayer();
 
     await runAction(event, player);
     await event.onAction?.call(createEventContext() as never, player as never);
 
     expect(player.items).toHaveLength(1);
-    expect(player.items[0].item.id).toBe('mochi-token');
-    expect(player.variables.get('mochiSocial.tokenClaimed')).toBe(true);
-    expect(player.notifications[0].message).toBe('Mochi Token added');
+    expect(player.items[0].item.id).toBe('mochirii-guild-seal');
+    expect(player.variables.get('mochiSocial.guildSealClaimed')).toBe(true);
+    expect(player.notifications[0].message).toBe('Guild Seal added');
     expect(player.emitted[0]).toEqual({
       type: 'mochi-social-alpha-state',
-      value: { tokenClaimed: true }
+      value: { sealClaimed: true }
     });
-    expect(player.saves[0].options.source).toBe('token-chest');
+    expect(player.saves[0].options.source).toBe('guild-seal-chest');
     expect(player.texts[0]).toContain('server saved');
     expect(player.texts[1]).toContain('already tucked away');
   });
 
-  it('supports Momo befriend and care growth through seed, sprout, and glow', async () => {
+  it('supports Lirabao bonding and care growth through seed, sprout, and glow', async () => {
     const player = createFakePlayer();
     await runAction(CareShrine(), player);
-    expect(player.texts.at(-1)).toContain('Befriend a Mochi Spirit first');
+    expect(player.texts.at(-1)).toContain('Bond with a Mochi Spirit first');
 
     await runAction(SpiritEvent(SPIRITS[0]), player);
-    expect(player.variables.get('mochiSocial.alpha.pets')).toEqual(['momo']);
-    expect(player.variables.get('mochiSocial.alpha.activePet')).toBe('momo');
-    expect(player.variables.get('mochiSocial.alpha.pet.momo.bond')).toBe(1);
-    expect(player.variables.get('mochiSocial.alpha.pet.momo.growth')).toBe('seed');
-    expect(player.saves.at(-1)?.options.source).toBe('pet-befriend');
+    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao']);
+    expect(player.variables.get('mochiSocial.spirits.active')).toBe('lirabao');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(1);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('seed');
+    expect(player.saves.at(-1)?.options.source).toBe('spirit-bond');
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
-      value: { pet: { id: 'momo', bond: 1, growth: 'seed' } }
+      value: { spirit: { id: 'lirabao', bond: 1, growth: 'seed' } }
     });
-    expect(player.texts.at(-1)).toContain('Care at the garden shrine');
+    expect(player.texts.at(-1)).toContain('Mochirii spirit journal');
 
     for (let i = 0; i < 4; i += 1) {
       await runAction(CareShrine(), player);
     }
 
-    expect(player.variables.get('mochiSocial.alpha.pet.momo.bond')).toBe(5);
-    expect(player.variables.get('mochiSocial.alpha.pet.momo.growth')).toBe('glow');
-    expect(player.saves.filter((save) => save.options.source === 'pet-care')).toHaveLength(4);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(5);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('glow');
+    expect(player.saves.filter((save) => save.options.source === 'spirit-care')).toHaveLength(4);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
-      value: { pet: { id: 'momo', bond: 5, growth: 'glow' } }
+      value: { spirit: { id: 'lirabao', bond: 5, growth: 'glow' } }
     });
     expect(player.texts.at(-1)).toContain('Care complete');
     expect(player.texts.at(-1)).toContain('bond 5/5');
@@ -185,7 +185,7 @@ describe('Mochi town event behavior', () => {
     const player = createFakePlayer();
 
     await runAction(MarketBoard(), player);
-    expect(player.items.at(-1)?.item.id).toBe('lantern-charm');
+    expect(player.items.at(-1)?.item.id).toBe('jade-thread-charm');
     expect(player.variables.get('mochiSocial.alpha.charmListed')).toBe(true);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
@@ -204,11 +204,11 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value');
 
     await runAction(CanaryShrine(), player);
-    expect(player.texts.at(-1)).toContain('Befriend Momo');
+    expect(player.texts.at(-1)).toContain('Bond with Lirabao');
 
     await runAction(SpiritEvent(SPIRITS[0]), player);
     await runAction(CanaryShrine(), player);
-    expect(player.items.at(-1)?.item.id).toBe('momo-canary-certificate');
+    expect(player.items.at(-1)?.item.id).toBe('lirabao-canary-certificate');
     expect(player.variables.get('mochiSocial.alpha.canaryCertificateRequested')).toBe(true);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',

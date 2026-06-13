@@ -2,7 +2,7 @@
 
 ## Objective
 
-Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate. The alpha is a 2D RPGJS cozy social pet vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification.
+Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate. The alpha is a 2D RPGJS Mochi Spirits social vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification.
 
 There are two stop points:
 
@@ -14,7 +14,7 @@ Stop at Alpha RC Ready for the full goal. Do not deploy production, do not use E
 Recommended slash goal:
 
 ```text
-/goal Execute docs/goals/mochi-social-alpha-rc.md. Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate: a 2D RPGJS cozy social pet vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification. Stop at Alpha RC Ready, not production/mainnet.
+/goal Execute docs/goals/mochi-social-alpha-rc.md. Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate: a 2D RPGJS Mochi Spirits social vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification. Stop at Alpha RC Ready, not production/mainnet.
 ```
 
 ## Source Basis
@@ -39,7 +39,7 @@ Recommended slash goal:
    - Keep RPGJS 2D.
    - Add one cozy town plus one visible habitat area.
    - Add three original Mochi Spirit companions.
-   - Implement discover-and-befriend, care, bond/growth, profile/status HUD, inspect pet, local chat UI, emotes/status actions, fixed market board, direct trade proof, and Enjin Canary certificate request proof.
+   - Implement attunement, care, no-injury training battles, raising, roleplay quest progress, bond/growth, profile/status HUD, inspect spirit, local chat UI, emotes/status actions, fixed market board, direct trade proof, and Enjin Canary certificate request proof.
    - Store local fallback alpha events as no-real-value audit lines when Supabase Edge is not configured.
 
 3. Game backend integrations.
@@ -65,7 +65,7 @@ Recommended slash goal:
    - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions; then complete the manual NPC/chest/habitat map-object prompt check.
    - Run `npm run alpha:visual-snapshot` to capture ignored local first-screen page/canvas PNGs for visual review.
    - Run `npm run alpha:visual-review` to tie screenshot hashes, two-tab presence, HUD action proof, map-object IDs, and habitat coverage into ignored local review artifacts while preserving rendered NPC/chest/habitat prompt interaction as a manual gate.
-   - Run `npm run alpha:manual-prompt-review` after a local operator/browser review confirms the rendered welcome NPC, token chest, and habitat/care prompts. The command writes a pending report until explicit prompt-confirmation env vars are set.
+   - Run `npm run alpha:manual-prompt-review` after a local operator/browser review confirms the rendered welcome NPC, guild seal chest, and habitat/care prompts. The command writes a pending report until explicit prompt-confirmation env vars are set.
    - Run `npm run alpha:wallet-daemon-check` to verify only local Wallet Daemon binary metadata, hash, and help output without importing wallets, printing seeds, starting signers, contacting Enjin, funding Fuel Tanks, or submitting chain transactions.
    - Run the private Enjin operator route smoke with `npm run alpha:enjin-operator-smoke`.
    - Run site checks, app lint/build, Supabase function type checks, and static secret scans.
@@ -114,7 +114,7 @@ For the next development pass, optimize for [`docs/alpha-preview-ready.md`](alph
 ## Acceptance Criteria
 
 - Two browser tabs show player presence.
-- A tester can befriend one Mochi Spirit, care for it, increase bond, unlock a growth state, and see status in the HUD.
+- A tester can attune one Mochi Spirit, care for it, train in a no-injury guild spar, complete one raising action, progress one roleplay quest, increase bond, unlock a growth state, and see status in the HUD.
 - A tester can use local chat/emote UI and see actions recorded locally or through Supabase Edge.
 - A tester can create a no-real-value fixed market listing proof and a direct trade proof for eligible alpha assets.
 - A tester can request an Enjin Canary certificate path for one eligible rare asset; when Enjin env is missing, the runtime must explain it is a configured preview stub.

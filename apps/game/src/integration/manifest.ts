@@ -25,6 +25,7 @@ export interface GameManifest {
   economy: typeof ALPHA_FEATURES.economy;
   chain: typeof ALPHA_FEATURES.chain;
   market: typeof ALPHA_FEATURES.market;
+  gameplay: typeof ALPHA_FEATURES.gameplay;
   ugc: typeof ALPHA_FEATURES.ugc;
 }
 

@@ -38,6 +38,13 @@ describe('game manifest', () => {
         fixedPrice: true,
         directTrade: true,
         auctions: false
+      },
+      gameplay: {
+        spiritAttunement: true,
+        trainingBattles: true,
+        raisingCare: true,
+        roleplayQuests: true,
+        copiedUpstreamContent: false
       }
     });
   });

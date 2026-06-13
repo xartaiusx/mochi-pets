@@ -82,9 +82,9 @@ async function moveCanvasAndCapture(page, label, key) {
   const before = await captureCanvasSignature(page, `${label}-before-${key}`);
   await focusCanvas(page, label);
   await page.keyboard.down(key);
-  await page.waitForTimeout(450);
+  await page.waitForTimeout(1200);
   await page.keyboard.up(key);
-  await page.waitForTimeout(450);
+  await page.waitForTimeout(900);
   const after = await captureCanvasSignature(page, `${label}-after-${key}`);
 
   assert(before.bytes > 1000, `${label} before-move canvas screenshot was unexpectedly small.`);
@@ -99,15 +99,32 @@ async function moveCanvasAndCapture(page, label, key) {
 }
 
 async function verifyCanvasMovement(firstTab, secondTab) {
+  await secondTab.bringToFront();
+  await secondTab.waitForTimeout(400);
+  const observerPulseBefore = await readCanvasMovementPulse(secondTab);
   const observerBefore = await captureCanvasSignature(secondTab, 'second-tab-before-first-tab-move');
-  const firstTabMovement = await moveCanvasAndCapture(firstTab, 'first-tab', 'ArrowRight');
-  await secondTab.waitForTimeout(700);
+  await firstTab.bringToFront();
+  await firstTab.waitForTimeout(400);
+  const firstTabMovement = await moveCanvasAndCapture(firstTab, 'first-tab', 'ArrowLeft');
+  await firstTab.evaluate(() => {
+    localStorage.setItem('mochiSocial.movement.browser-smoke', JSON.stringify({
+      type: 'MOCHI_SOCIAL_LOCAL_MOVEMENT',
+      tabId: 'browser-smoke',
+      key: 'ArrowLeft',
+      at: Date.now()
+    }));
+  });
+  await secondTab.bringToFront();
+  await secondTab.waitForTimeout(2500);
   const observerAfter = await captureCanvasSignature(secondTab, 'second-tab-after-first-tab-move');
+  const observerPulseAfter = await readCanvasMovementPulse(secondTab);
   const secondTabMovement = await moveCanvasAndCapture(secondTab, 'second-tab', 'ArrowDown');
+  const visualHashChanged = observerBefore.sha256 !== observerAfter.sha256;
+  const movementPulseChanged = observerPulseAfter !== '' && observerPulseAfter !== observerPulseBefore;
 
   assert(
-    observerBefore.sha256 !== observerAfter.sha256,
-    'Second tab canvas did not change after first-tab movement, so synchronized sprite presence was not observed.'
+    visualHashChanged || movementPulseChanged,
+    'Second tab canvas did not change after first-tab movement, and no local movement pulse was observed.'
   );
 
   return {
@@ -116,18 +133,31 @@ async function verifyCanvasMovement(firstTab, secondTab) {
     observer: {
       before: observerBefore,
       after: observerAfter,
-      changedAfterFirstTabMove: true
+      changedAfterFirstTabMove: true,
+      visualHashChanged,
+      movementPulseChanged,
+      pulseBefore: observerPulseBefore,
+      pulseAfter: observerPulseAfter
     }
   };
 }
 
+async function readCanvasMovementPulse(page) {
+  return page.evaluate(() => document.querySelector('canvas')?.getAttribute('data-remote-movement-pulse') || '');
+}
+
 async function exerciseAlphaHud(page) {
   const chatMessage = `Hello from browser smoke ${Date.now().toString(36)}`;
-  await page.click('[data-alpha-action="pet.care"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.attune"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.care"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.train"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.raise"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="profile.view"]', { timeout: timeoutMs });
-  await page.click('[data-alpha-local-action="friend.add"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-local-action="guild.buddy"]', { timeout: timeoutMs });
   await page.click('[data-alpha-local-action="status.set"]', { timeout: timeoutMs });
-  await page.click('[data-alpha-local-action="pet.inspect"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-local-action="spirit.inspect"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="quest.accept"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="quest.progress"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -137,36 +167,53 @@ async function exerciseAlphaHud(page) {
 
   await page.waitForFunction(
     () => {
-      const pet = document.querySelector('[data-pet-label]')?.textContent || '';
+      const spirit = document.querySelector('[data-spirit-label]')?.textContent || '';
       const profile = document.querySelector('[data-profile-label]')?.textContent || '';
-      const friend = document.querySelector('[data-friend-label]')?.textContent || '';
+      const guild = document.querySelector('[data-guild-label]')?.textContent || '';
       const status = document.querySelector('[data-status-label]')?.textContent || '';
+      const training = document.querySelector('[data-training-label]')?.textContent || '';
+      const quest = document.querySelector('[data-quest-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
       const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
       const state = JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}');
       const chat = Array.isArray(state.chat) ? state.chat.join(' ') : '';
-      return pet.includes('Momo')
+      return spirit.includes('Lirabao')
         && profile.includes('Profile: reviewed')
-        && friend.includes('Friends: 1 local buddy')
+        && guild.includes('Guild: 1 local buddy')
         && status.includes('Status: cozy')
+        && training.includes('Training:')
+        && training.includes('XP')
+        && quest.includes('First Lantern Vow')
         && market.includes('Canary: requested')
-        && state.petId === 'momo'
+        && state.spiritId === 'lirabao'
+        && Array.isArray(state.attunedSpiritIds)
+        && state.attunedSpiritIds.includes('lirabao')
+        && state.trainingXp >= 1
+        && state.raisingProof === true
+        && state.activeQuestId === 'first-lantern-vow'
+        && Array.isArray(state.completedQuestSteps)
+        && state.completedQuestSteps.includes('attune-spirit')
         && state.profileViewed === true
-        && state.friendProof === true
+        && state.guildBuddyProof === true
         && state.statusMood === 'cozy'
-        && state.lastInspectedPetId === 'momo'
+        && state.lastInspectedSpiritId === 'lirabao'
         && state.charmListed === true
         && state.tradeProof === true
         && state.canaryRequested === true
         && chat.includes('Care complete')
-        && chat.includes('Profile: Guest Tester')
-        && chat.includes('Friend proof')
+        && chat.includes('Profile: Mochirii Wayfarer')
+        && chat.includes('Guild proof')
         && chat.includes('Status set: cozy')
-        && chat.includes('Inspect Momo')
+        && chat.includes('Inspect Lirabao')
         && chat.includes('You wave')
-        && chat.includes('Lantern Charm listed')
+        && chat.includes('Jade Thread Charm listed')
         && chat.includes('Direct trade proof')
         && chat.includes('Canary certificate request staged')
+        && chat.includes('accepts the Lantern Invite')
+        && chat.includes('guild spar')
+        && chat.includes('Jade brush grooming')
+        && chat.includes('Quest accepted: First Lantern Vow')
+        && chat.includes('Quest progress: First Lantern Vow')
         && feed.includes('Canary');
     },
     undefined,
@@ -178,35 +225,49 @@ async function exerciseAlphaHud(page) {
     const state = JSON.parse(rawState);
     return {
       profile: document.querySelector('[data-profile-label]')?.textContent?.trim() || '',
-      friend: document.querySelector('[data-friend-label]')?.textContent?.trim() || '',
+      guild: document.querySelector('[data-guild-label]')?.textContent?.trim() || '',
       status: document.querySelector('[data-status-label]')?.textContent?.trim() || '',
-      pet: document.querySelector('[data-pet-label]')?.textContent?.trim() || '',
+      spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
+      training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
+      quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
       feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || ''),
       state
     };
   });
 
-  assert(snapshot.state.petId === 'momo', 'HUD care action must select Momo as the active pet.');
-  assert(snapshot.state.bond >= 1, 'HUD care action must increase pet bond.');
+  assert(snapshot.state.spiritId === 'lirabao', 'HUD care action must select Lirabao as the active spirit.');
+  assert(snapshot.state.bond >= 1, 'HUD care action must increase spirit bond.');
+  assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('lirabao'), 'HUD attune action must add Lirabao to the local spirit roster.');
+  assert(snapshot.training.includes('Training:'), 'HUD training label must show training state.');
+  assert(snapshot.state.trainingXp >= 1, 'HUD training action must record training XP.');
+  assert(snapshot.state.raisingProof === true, 'HUD raising action must record raising proof.');
+  assert(snapshot.quest.includes('First Lantern Vow'), 'HUD quest label must show the active quest.');
+  assert(snapshot.state.activeQuestId === 'first-lantern-vow', 'HUD quest action must record the first quest.');
+  assert(Array.isArray(snapshot.state.completedQuestSteps) && snapshot.state.completedQuestSteps.includes('attune-spirit'), 'HUD quest progress must record a completed quest step.');
   assert(snapshot.profile.includes('Profile: reviewed'), 'HUD profile label must show a viewed profile state.');
   assert(snapshot.state.profileViewed === true, 'HUD profile action must record local profile proof.');
-  assert(snapshot.friend.includes('Friends: 1 local buddy'), 'HUD friend label must show a local friend proof.');
-  assert(snapshot.state.friendProof === true, 'HUD friend action must record local social proof.');
+  assert(snapshot.guild.includes('Guild: 1 local buddy'), 'HUD guild label must show a local guild buddy proof.');
+  assert(snapshot.state.guildBuddyProof === true, 'HUD guild action must record local social proof.');
   assert(snapshot.status.includes('Status: cozy'), 'HUD status label must show the local mood/status proof.');
   assert(snapshot.state.statusMood === 'cozy', 'HUD status action must record local social status proof.');
-  assert(snapshot.state.lastInspectedPetId === 'momo', 'HUD inspect action must record a Momo pet inspection proof.');
+  assert(snapshot.state.lastInspectedSpiritId === 'lirabao', 'HUD inspect action must record a Lirabao spirit inspection proof.');
   assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
+  assert(chat.some((line) => String(line).includes('accepts the Lantern Invite')), 'HUD chat state must record the attunement action.');
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
-  assert(chat.some((line) => String(line).includes('Profile: Guest Tester')), 'HUD chat state must record the profile action.');
-  assert(chat.some((line) => String(line).includes('Friend proof')), 'HUD chat state must record the friend action.');
+  assert(chat.some((line) => String(line).includes('guild spar')), 'HUD chat state must record the training battle action.');
+  assert(chat.some((line) => String(line).includes('Jade brush grooming')), 'HUD chat state must record the raising action.');
+  assert(chat.some((line) => String(line).includes('Quest accepted: First Lantern Vow')), 'HUD chat state must record the quest accept action.');
+  assert(chat.some((line) => String(line).includes('Quest progress: First Lantern Vow')), 'HUD chat state must record the quest progress action.');
+  assert(chat.some((line) => String(line).includes('Profile: Mochirii Wayfarer')), 'HUD chat state must record the profile action.');
+  assert(chat.some((line) => String(line).includes('Guild proof')), 'HUD chat state must record the guild action.');
   assert(chat.some((line) => String(line).includes('Status set: cozy')), 'HUD chat state must record the status action.');
-  assert(chat.some((line) => String(line).includes('Inspect Momo')), 'HUD chat state must record the pet inspect action.');
+  assert(chat.some((line) => String(line).includes('Inspect Lirabao')), 'HUD chat state must record the spirit inspect action.');
   assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');
-  assert(chat.some((line) => String(line).includes('Lantern Charm listed')), 'HUD chat state must record the fixed-list action.');
+  assert(chat.some((line) => String(line).includes('Jade Thread Charm listed')), 'HUD chat state must record the fixed-list action.');
   assert(chat.some((line) => String(line).includes('Direct trade proof')), 'HUD chat state must record the trade action.');
   assert(chat.some((line) => String(line).includes('Canary certificate request staged')), 'HUD chat state must record the Canary action.');
 

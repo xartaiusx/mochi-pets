@@ -98,9 +98,9 @@ function addStaticRequirements() {
     'canCreditHotInventory',
     "state === 'FINALIZED'"
   ]);
-  requireFileIncludes('game.local-acceptance', 'Local acceptance covers pet, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
-    'pet.befriend',
-    'pet.care',
+  requireFileIncludes('game.local-acceptance', 'Local acceptance covers spirit, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
+    'spirit.bond',
+    'spirit.care',
     'market.fixed_list',
     'trade.direct_offer',
     'chain.withdraw_request',
@@ -226,22 +226,22 @@ function addStaticRequirements() {
   requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, movement signatures, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
     'Nearby: 2 testers',
     'data-presence-label',
-    'data-alpha-action="pet.care"',
+    'data-alpha-action="spirit.care"',
     'data-alpha-local-action="profile.view"',
     'profileViewed',
-    'data-alpha-local-action="friend.add"',
-    'friendProof',
+    'data-alpha-local-action="guild.buddy"',
+    'guildBuddyProof',
     'data-alpha-local-action="status.set"',
     'statusMood',
-    'data-alpha-local-action="pet.inspect"',
-    'lastInspectedPetId',
+    'data-alpha-local-action="spirit.inspect"',
+    'lastInspectedSpiritId',
     'chain.withdraw_request',
     'mochiSocial.alphaState',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'reports/alpha-browser-presence.json',
     'canvasMovement',
     'changedAfterFirstTabMove',
-    'ArrowRight',
+    'ArrowLeft',
     'ArrowDown',
     'createHash',
     'canvas'
@@ -264,15 +264,15 @@ function addStaticRequirements() {
     'manualPromptGate',
     'pending-human-review',
     'observerMovement',
-    'token-chest',
-    'Lantern Garden'
+    'guild-seal-chest',
+    'Jade Lantern Court'
   ]);
-  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
+  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
     'alpha-manual-prompt-review.json',
     'alpha-manual-prompt-review.md',
     'pending-human-review',
     'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER',
@@ -294,20 +294,20 @@ function addStaticRequirements() {
     'Mochi town map object contract',
     'runtimeEventPlacements',
     'welcome-npc',
-    'token-chest',
+    'guild-seal-chest',
     'care-shrine',
     'market-board',
     'trade-post',
     'canary-shrine',
     'no-real-value Enjin Canary certificate request',
-    'Lantern Garden',
+    'Jade Lantern Court',
     '25 * 18'
   ]);
   requireFileIncludes('game.map-event-behavior', 'Map event behavior test executes NPC, chest, care, market, trade, and Canary event handlers with save/item/dialog assertions.', 'apps/game/tests/map-event-behavior.test.ts', [
     'Mochi town event behavior',
     'Welcome NPC dialog',
-    'Mochi Token',
-    'pet-care',
+    'Mochirii Guild Seal',
+    'spirit-care',
     'bond 5/5',
     'market-board',
     'trade-post',
@@ -404,10 +404,10 @@ function addSiteRequirements() {
     'mochi-social-alpha-admin',
     'submit-mochi-social-feedback'
   ]);
-  requireSiteFileIncludes('site.schema', 'Mochirii migration owns allowlist, terms, pets, inventory, trades, market, feedback, chat, and chain ledger tables.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
+  requireSiteFileIncludes('site.schema', 'Mochirii migration owns allowlist, terms, spirits, inventory, trades, market, feedback, chat, and chain ledger tables.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
     'mochi_social_alpha_testers',
     'mochi_social_terms_acknowledgements',
-    'mochi_social_pets',
+    'mochi_social_spirits',
     'mochi_social_inventory',
     'mochi_social_market_listings',
     'mochi_social_trades',
@@ -939,7 +939,7 @@ function addManualPromptReviewRequirements() {
     failures.push('hosted manual prompt review requires explicit hosted approval flag');
   }
   const checks = Array.isArray(report.checks) ? report.checks : [];
-  for (const id of ['welcome-npc', 'token-chest', 'care-shrine']) {
+  for (const id of ['welcome-npc', 'guild-seal-chest', 'care-shrine']) {
     const check = checks.find((entry) => entry.id === id);
     if (!check?.ok) failures.push(`manual prompt review missing confirmation for ${id}`);
   }

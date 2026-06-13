@@ -133,7 +133,7 @@ Manual gates:
 - `npm run alpha:browser-presence` passes with two-tab canvas movement signatures and observer-side canvas change evidence, then an operator confirms NPC, chest, and habitat/care prompts look correct in the town. Focus the canvas, stand adjacent to the object, hold the relevant facing direction toward it, and press Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 - `npm run alpha:visual-snapshot` passes and the ignored `reports/alpha-visual-page.png` / `reports/alpha-visual-canvas.png` screenshots are reviewed for first-screen town/HUD composition.
 - `npm run alpha:visual-review` passes and writes `reports/alpha-visual-review.json` / `.md`, tying screenshot hashes, HUD/presence evidence, HUD action proof, map-object IDs, and habitat coverage to the current local HEAD while keeping rendered NPC/chest/habitat prompts as a pending human review gate.
-- `npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` / `.md` and stays pending until an operator records explicit local confirmation for the welcome NPC, token chest, and habitat/care prompts.
+- `npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` / `.md` and stays pending until an operator records explicit local confirmation for the welcome NPC, guild seal chest, and habitat/care prompts.
 - `npm run alpha:wallet-daemon-check` passes and writes `reports/wallet-daemon-local.json` / `.md` with local binary path, SHA256, and `--help` command evidence only. It is not proof that a signer is running or that Enjin Platform is connected.
 - `npm run alpha:local-suite` passes on localhost and writes `reports/alpha-local-suite.json` with the bundled endpoint, acceptance, load, browser, and operator smoke evidence.
 - File-backed saves remain durable under overlapping autosave and event-save writes: per-player writes are serialized and written through a temporary file before rename, and the local suite plus built-server smoke are the pre-deploy guards for this behavior.
@@ -161,11 +161,11 @@ Manual gates:
 Tell testers:
 
 - This is a closed alpha preview for allowlisted 18+ testers only.
-- Assets, pets, currency, trades, listings, and Enjin Canary operations have no real value.
+- Assets, Mochi Spirits, currency, trades, listings, and Enjin Canary operations have no real value.
 - Do not buy, sell, cash out, or represent alpha assets as production assets.
 - Use a desktop browser.
 - Sign in through Mochirii, open `/games/mochi-social`, accept the alpha terms, and wait for the iframe to load.
-- Try the town loop: move, meet one Mochi Spirit, care for it, view the profile status, add the local friend proof, set the social status, inspect the HUD, send one local chat message, use one emote, create one test market listing, create one direct trade proof, and request the Canary certificate proof.
+- Try the town loop: move, meet one Mochi Spirit, care for it, view the profile status, add the local guild buddy proof, set the social status, inspect the HUD, send one local chat message, use one emote, create one test market listing, create one direct trade proof, and request the Canary certificate proof.
 - Report bugs through the Mochirii feedback form. Do not send secrets, wallet seed phrases, or personal payment details in feedback.
 
 ## Rollback
