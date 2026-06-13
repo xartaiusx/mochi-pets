@@ -8,6 +8,7 @@ import {
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
+  SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -16,6 +17,7 @@ import {
   resolveSpiritCapture,
   resolveSpiritExpedition,
   resolveSpiritJournal,
+  resolveSpiritMentorChallenge,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritBattleRound,
@@ -60,6 +62,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
     expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
@@ -106,6 +109,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('party.harmony_form');
     expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -620,6 +624,50 @@ describe('alpha contract', () => {
     ]);
     expect(battleRound.message).toContain('No-injury victory recorded with no real value');
     expect(resolveSpiritBattleRound({ partyIds: [] }).ok).toBe(false);
+
+    expect(SPIRIT_MENTOR_CHALLENGES.map((challenge) => challenge.id)).toEqual(['silk-banner-mentor-drill']);
+    const mentor = resolveSpiritMentorChallenge({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: 32,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      techniqueMasteryXp: 17,
+      tacticMasteryXp: 14,
+      raisingCareStreak: 1,
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(mentor).toMatchObject({
+      ok: true,
+      cleared: true,
+      challengeId: 'silk-banner-mentor-drill',
+      challengeName: 'Silk Banner Mentor Drill',
+      mentorName: 'Sifu Narao',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      score: 28,
+      requiredScore: 28,
+      rewardItemId: 'silk-banner-mentor-seal',
+      source: 'battle-mentor-challenge'
+    });
+    expect(mentor.message).toContain('no-injury mentor-ready');
+    expect(resolveSpiritMentorChallenge({
+      partyIds: ['lirabao'],
+      teamSparMatchProof: false,
+      teamSparMatchScore: 0,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      techniqueMasteryXp: 0,
+      tacticMasteryXp: 0,
+      raisingCareStreak: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
 
     const battle = resolveSpiritTrainingBattle('lirabao', 'lantern-pulse', 5, 1);
     expect(battle.ok).toBe(true);

@@ -10,6 +10,7 @@ import {
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
+  SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -31,6 +32,7 @@ import {
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
+  resolveSpiritMentorChallenge,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
@@ -136,6 +138,11 @@ interface AlphaHudState {
   teamSparMatchName: string;
   teamSparMatchScore: number;
   teamMatchRibbonClaimed: boolean;
+  mentorChallengeProof: boolean;
+  mentorChallengeId?: string;
+  mentorChallengeName: string;
+  mentorChallengeScore: number;
+  mentorSealClaimed: boolean;
   sparLadderXp: number;
   sparLadderWins: number;
   lastSparOpponentId?: string;
@@ -320,6 +327,18 @@ export interface AlphaWorldStatePatch {
     score: number;
     title: string;
   };
+  mentorChallenge?: {
+    challengeId: string;
+    challengeName: string;
+    mentorName: string;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -451,6 +470,10 @@ function defaultAlphaState(): AlphaHudState {
     teamSparMatchName: 'Unmatched',
     teamSparMatchScore: 0,
     teamMatchRibbonClaimed: false,
+    mentorChallengeProof: false,
+    mentorChallengeName: 'Unchallenged',
+    mentorChallengeScore: 0,
+    mentorSealClaimed: false,
     sparLadderXp: 0,
     sparLadderWins: 0,
     battleRoundProof: false,
@@ -588,6 +611,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
       <span class="mochi-hud__hint" data-harmony-trial-label>Concord: pending</span>
       <span class="mochi-hud__hint" data-team-match-label>Team Match: pending</span>
+      <span class="mochi-hud__hint" data-mentor-label>Mentor: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-battle-round-label>Battle Round: pending</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
@@ -603,6 +627,7 @@ function createHud() {
       <button type="button" data-alpha-action="party.harmony_form" aria-label="Record the no-real-value three-spirit harmony form">Harmony</button>
       <button type="button" data-alpha-action="battle.harmony_trial" aria-label="Clear the no-injury social harmony battle trial">Concord</button>
       <button type="button" data-alpha-action="battle.team_spar_match" aria-label="Clear the no-injury full-party team spar match">Match</button>
+      <button type="button" data-alpha-action="battle.mentor_challenge" aria-label="Clear the no-injury Mochirii mentor challenge">Mentor</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
@@ -659,6 +684,7 @@ function createHud() {
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
   const harmonyTrialLabel = hud.querySelector('[data-harmony-trial-label]');
   const teamMatchLabel = hud.querySelector('[data-team-match-label]');
+  const mentorLabel = hud.querySelector('[data-mentor-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const battleRoundLabel = hud.querySelector('[data-battle-round-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
@@ -748,6 +774,11 @@ function createHud() {
       teamMatchLabel.textContent = state.teamSparMatchProof
         ? `Team Match: ${state.teamSparMatchName}, score ${state.teamSparMatchScore}`
         : 'Team Match: pending';
+    }
+    if (mentorLabel) {
+      mentorLabel.textContent = state.mentorChallengeProof
+        ? `Mentor: ${state.mentorChallengeName}, score ${state.mentorChallengeScore}`
+        : 'Mentor: pending';
     }
     if (trainingLabel) {
       trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? `care streak ${state.raisingCareStreak}` : 'needs care'}`;
@@ -1226,6 +1257,17 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.teamSparMatch.partyIds.map(String)]));
     state.supportSpiritIds = state.partyIds.slice(1);
     appendUniqueAlphaChat(state, patch.teamSparMatch.message || `${state.teamSparMatchName} recorded as no-real-value team match proof.`);
+  }
+
+  if (patch.mentorChallenge) {
+    state.mentorChallengeProof = patch.mentorChallenge.proof || state.mentorChallengeProof;
+    state.mentorChallengeId = patch.mentorChallenge.challengeId || state.mentorChallengeId;
+    state.mentorChallengeName = patch.mentorChallenge.challengeName || state.mentorChallengeName;
+    state.mentorChallengeScore = Math.max(state.mentorChallengeScore, Number(patch.mentorChallenge.score) || 0);
+    state.mentorSealClaimed = state.mentorSealClaimed || patch.mentorChallenge.rewardItemId === 'silk-banner-mentor-seal';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.mentorChallenge.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    appendUniqueAlphaChat(state, patch.mentorChallenge.message || `${state.mentorChallengeName} recorded as no-real-value mentor challenge proof.`);
   }
 
   if (patch.training) {
@@ -1998,6 +2040,39 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.teamSparMatchName = result.matchName;
       state.teamSparMatchScore = result.score;
       state.teamMatchRibbonClaimed = result.rewardItemId === 'jade-mirror-match-ribbon';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.mentor_challenge') {
+    const result = resolveSpiritMentorChallenge(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
+        teamSparMatchId: String(payload.teamSparMatchId || state.teamSparMatchId || ''),
+        teamSparMatchScore: Number(payload.teamSparMatchScore ?? state.teamSparMatchScore ?? 0),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        techniqueMasteryXp: Number(payload.techniqueMasteryXp ?? state.techniqueMasteryXp ?? 0),
+        tacticMasteryXp: Number(payload.tacticMasteryXp ?? state.tacticMasteryXp ?? 0),
+        raisingCareStreak: Number(payload.raisingCareStreak ?? state.raisingCareStreak ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof)
+      },
+      String(payload.challengeId || SPIRIT_MENTOR_CHALLENGES[0].id)
+    );
+    if (result.cleared) {
+      state.mentorChallengeProof = true;
+      state.mentorChallengeId = result.challengeId;
+      state.mentorChallengeName = result.challengeName;
+      state.mentorChallengeScore = result.score;
+      state.mentorSealClaimed = result.rewardItemId === 'silk-banner-mentor-seal';
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0];

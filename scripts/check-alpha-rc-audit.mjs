@@ -256,6 +256,9 @@ function addStaticRequirements() {
     'harmonyTrialProof',
     'data-alpha-action="battle.team_spar_match"',
     'teamSparMatchProof',
+    'data-alpha-action="battle.mentor_challenge"',
+    'mentorChallengeProof',
+    'silk-banner-mentor-drill',
     'data-alpha-action="battle.tactic_scroll"',
     'tacticProof',
     'data-alpha-action="guild.rank_trial"',
@@ -311,6 +314,8 @@ function addStaticRequirements() {
     'guildRank',
     'growthRite',
     'affinityTrial',
+    'mentorChallenge',
+    'mentorChallengeProof',
     'Jade Lantern Court'
   ]);
   requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [

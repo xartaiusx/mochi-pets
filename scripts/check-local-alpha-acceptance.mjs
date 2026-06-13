@@ -63,6 +63,7 @@ async function run() {
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
   assert(manifest.body.gameplay?.teamSparMatches === true, 'Manifest must expose Mochi Spirit team spar matches.');
+  assert(manifest.body.gameplay?.mentorChallenges === true, 'Manifest must expose Mochi Spirit mentor challenges.');
   assert(manifest.body.gameplay?.battleRoundTranscripts === true, 'Manifest must expose Mochi Spirit battle round transcripts.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
@@ -88,6 +89,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
   assert(alphaStatus.body.gameplay?.teamSparMatches === true, 'Alpha status must expose Mochi Spirit team spar matches.');
+  assert(alphaStatus.body.gameplay?.mentorChallenges === true, 'Alpha status must expose Mochi Spirit mentor challenges.');
   assert(alphaStatus.body.gameplay?.battleRoundTranscripts === true, 'Alpha status must expose Mochi Spirit battle round transcripts.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
@@ -329,6 +331,26 @@ async function run() {
         trainingXp: 3,
         sparLadderWins: 1,
         chatLines: ['Local acceptance team spar match proof.'],
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-mentor-challenge`,
+      type: 'battle.mentor_challenge',
+      payload: {
+        challengeId: 'silk-banner-mentor-drill',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        teamSparMatchProof: true,
+        teamSparMatchId: 'jade-mirror-team-match',
+        teamSparMatchScore: 32,
+        battleRoundProof: true,
+        battleRoundId: 'jade-echo-apprentice-round-1',
+        battleRoundVictory: true,
+        techniqueMasteryXp: 17,
+        tacticMasteryXp: 14,
+        raisingCareStreak: 1,
+        profileViewed: true,
+        guildBuddyProof: true,
         noRealValue: true
       }
     },

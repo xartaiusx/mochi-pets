@@ -121,6 +121,18 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  mentorChallenge?: {
+    challengeId: string;
+    challengeName: string;
+    mentorName: string;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -518,6 +530,37 @@ type SpiritTeamSparMatchProgress = {
   chatLines: readonly string[];
 };
 
+type SpiritMentorChallenge = {
+  id: string;
+  name: string;
+  title: string;
+  mentorName: string;
+  requiredSpiritIds: readonly string[];
+  requiredTeamMatchId: string;
+  requiredTechniqueXp: number;
+  requiredTacticXp: number;
+  requiredCareStreak: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritMentorChallengeProgress = {
+  partyIds: readonly string[];
+  teamSparMatchProof: boolean;
+  teamSparMatchId?: string;
+  teamSparMatchScore: number;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore: number;
+  battleRoundOpponentScore: number;
+  techniqueMasteryXp: number;
+  tacticMasteryXp: number;
+  raisingCareStreak: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -598,6 +641,11 @@ const alphaItems = {
     id: 'jade-mirror-match-ribbon',
     name: 'Jade Mirror Match Ribbon',
     description: 'A no-real-value full-party spar match proof for closed-alpha Mochirii progression.'
+  },
+  mentorSeal: {
+    id: 'silk-banner-mentor-seal',
+    name: 'Silk Banner Mentor Seal',
+    description: 'A no-real-value mentor challenge proof for closed-alpha Mochirii battle readiness.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -968,6 +1016,23 @@ const teamSparMatches: readonly SpiritTeamSparMatch[] = [
     requiredScore: 30,
     rewardItemId: alphaItems.teamMatchRibbon.id,
     summary: 'A no-injury full-party battle match for testers who have proven route mastery, growth, harmony, concord, tactics, quests, and local social coordination.'
+  }
+];
+
+const mentorChallenges: readonly SpiritMentorChallenge[] = [
+  {
+    id: 'silk-banner-mentor-drill',
+    name: 'Silk Banner Mentor Drill',
+    title: 'First Mentor Readiness Challenge',
+    mentorName: 'Sifu Narao',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredTeamMatchId: teamSparMatches[0].id,
+    requiredTechniqueXp: 7,
+    requiredTacticXp: 7,
+    requiredCareStreak: 1,
+    requiredScore: 28,
+    rewardItemId: alphaItems.mentorSeal.id,
+    summary: 'A no-injury mentor challenge proving the first Mochirii party can blend care, tactics, technique, team sparring, and local social coordination.'
   }
 ];
 
@@ -1536,6 +1601,87 @@ function resolveSpiritTeamSparMatch(progress: SpiritTeamSparMatchProgress, match
       ? `${match.name} cleared: ${partyNames} complete a no-injury full-party spar match against ${match.opponentName} with route, growth, tactic, quest, concord, and chat proof.`
       : `${match.name} needs ${missing.join(', ')} before the full-party spar match can be recorded.`,
     source: 'battle-team-spar-match'
+  };
+}
+
+function resolveSpiritMentorChallenge(
+  progress: SpiritMentorChallengeProgress,
+  challengeId: string = mentorChallenges[0].id
+) {
+  const challenge = mentorChallenges.find((entry) => entry.id === challengeId) || mentorChallenges[0];
+  const requiredSpiritIds = new Set(challenge.requiredSpiritIds);
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of challenge.requiredSpiritIds) {
+    if (!party.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const teamMatchReady = progress.teamSparMatchProof && progress.teamSparMatchId === challenge.requiredTeamMatchId;
+  if (!teamMatchReady) {
+    missing.push(`team-match:${challenge.requiredTeamMatchId}`);
+  }
+
+  const battleRoundReady = progress.battleRoundProof && progress.battleRoundVictory && progress.battleRoundFocusScore >= progress.battleRoundOpponentScore;
+  if (!battleRoundReady) {
+    missing.push('battle-round');
+  }
+
+  const techniqueXp = Math.max(0, Math.floor(progress.techniqueMasteryXp || 0));
+  if (techniqueXp < challenge.requiredTechniqueXp) {
+    missing.push(`technique-xp:${techniqueXp}/${challenge.requiredTechniqueXp}`);
+  }
+
+  const tacticXp = Math.max(0, Math.floor(progress.tacticMasteryXp || 0));
+  if (tacticXp < challenge.requiredTacticXp) {
+    missing.push(`tactic-xp:${tacticXp}/${challenge.requiredTacticXp}`);
+  }
+
+  const careStreak = Math.max(0, Math.floor(progress.raisingCareStreak || 0));
+  if (careStreak < challenge.requiredCareStreak) {
+    missing.push(`care-streak:${careStreak}/${challenge.requiredCareStreak}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const score =
+    Math.min(party.length, challenge.requiredSpiritIds.length) * 3 +
+    (teamMatchReady ? 6 : 0) +
+    (battleRoundReady ? 4 : 0) +
+    Math.min(4, Math.floor(techniqueXp / 5)) +
+    Math.min(4, Math.floor(tacticXp / 5)) +
+    Math.min(3, careStreak * 2) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0);
+  const cleared = missing.length === 0 && score >= challenge.requiredScore;
+  const partyNames = party.map((spiritId) => getSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    challengeId: challenge.id,
+    challengeName: challenge.name,
+    title: challenge.title,
+    mentorName: challenge.mentorName,
+    partyIds: party,
+    score,
+    requiredScore: challenge.requiredScore,
+    missing,
+    rewardItemId: challenge.rewardItemId,
+    message: cleared
+      ? `${challenge.name} cleared: ${challenge.mentorName} records ${partyNames} as no-injury mentor-ready with care, tactics, technique, team sparring, and social proof.`
+      : `${challenge.name} needs ${missing.join(', ')} before mentor readiness can be recorded.`,
+    source: 'battle-mentor-challenge'
   };
 }
 
@@ -2203,6 +2349,22 @@ function trainingXpTotal(actingPlayer: RpgPlayer, party: readonly string[]) {
   }, 0);
 }
 
+function techniqueMasteryXpTotal(actingPlayer: RpgPlayer, party: readonly string[]) {
+  return party.reduce((total, spiritId) => {
+    const spirit = getSpirit(spiritId);
+    const moveXp = spirit?.battle.moves.reduce((moveTotal, move) => {
+      return moveTotal + Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.technique.${move.id}.xp`) || 0);
+    }, 0) || 0;
+    return total + moveXp;
+  }, 0);
+}
+
+function careStreakTotal(actingPlayer: RpgPlayer, party: readonly string[]) {
+  return party.reduce((total, spiritId) => {
+    return Math.max(total, Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.careStreak`) || 0));
+  }, 0);
+}
+
 function growthMap(actingPlayer: RpgPlayer, party: readonly string[]) {
   return Object.fromEntries(
     party.map((spiritId) => [spiritId, actingPlayer.getVariable<string>(`mochiSocial.spirit.${spiritId}.growth`) || 'seed'])
@@ -2824,6 +2986,7 @@ function tacticScrollStand(): EventDefinition {
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.focusScore`, tactic.focusScore);
       actingPlayer.setVariable('mochiSocial.battle.lastTacticScroll', tactic.tacticId);
       actingPlayer.setVariable('mochiSocial.battle.tacticScrollProof', true);
+      actingPlayer.setVariable('mochiSocial.battle.tacticMasteryXp', tactic.masteryXp);
       actingPlayer.setVariable(bondKey, nextBond);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
       actingPlayer.showNotification('Tactic scroll studied', { time: 1800, icon: 'tactic-scroll-stand' });
@@ -3089,9 +3252,54 @@ function trainingRing(): EventDefinition {
             proof: true,
             message: match.message
           };
-          notification = 'Team match cleared';
-          saveTitle = 'Mochi Spirit team match';
-          prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} The Jade Mirror Match Ribbon is no-real-value closed-alpha battle proof.`;
+          const mentor = resolveSpiritMentorChallenge(
+            {
+              partyIds: match.partyIds,
+              teamSparMatchProof: true,
+              teamSparMatchId: match.matchId,
+              teamSparMatchScore: match.score,
+              battleRoundProof: battleRound.victory,
+              battleRoundVictory: battleRound.victory,
+              battleRoundFocusScore: battleRound.focusScore,
+              battleRoundOpponentScore: battleRound.opponentScore,
+              techniqueMasteryXp: techniqueMasteryXpTotal(actingPlayer, match.partyIds),
+              tacticMasteryXp: Number(actingPlayer.getVariable<number>('mochiSocial.battle.tacticMasteryXp') || 0),
+              raisingCareStreak: careStreakTotal(actingPlayer, match.partyIds),
+              profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
+              guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof'))
+            },
+            mentorChallenges[0].id
+          );
+
+          if (mentor.cleared) {
+            actingPlayer.setVariable('mochiSocial.battle.mentorChallengeProof', true);
+            actingPlayer.setVariable('mochiSocial.battle.mentorChallenge', mentor.challengeId);
+            actingPlayer.setVariable('mochiSocial.battle.mentorChallengeName', mentor.challengeName);
+            actingPlayer.setVariable('mochiSocial.battle.mentorChallengeScore', mentor.score);
+            if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.mentorSealClaimed')) {
+              actingPlayer.addItem(alphaItems.mentorSeal, 1);
+              actingPlayer.setVariable('mochiSocial.battle.mentorSealClaimed', true);
+            }
+            patch.mentorChallenge = {
+              challengeId: mentor.challengeId,
+              challengeName: mentor.challengeName,
+              mentorName: mentor.mentorName,
+              title: mentor.title,
+              partyIds: mentor.partyIds,
+              score: mentor.score,
+              requiredScore: mentor.requiredScore,
+              rewardItemId: mentor.rewardItemId,
+              proof: true,
+              message: mentor.message
+            };
+            notification = 'Mentor challenge cleared';
+            saveTitle = 'Mochi Spirit mentor challenge';
+            prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} The Silk Banner Mentor Seal is no-real-value closed-alpha battle readiness proof.`;
+          } else {
+            notification = 'Team match cleared';
+            saveTitle = 'Mochi Spirit team match';
+            prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} The Jade Mirror Match Ribbon is no-real-value closed-alpha battle proof.`;
+          }
         }
       }
 

@@ -185,6 +185,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="party.harmony_form"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.harmony_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.team_spar_match"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.mentor_challenge"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -213,6 +214,7 @@ async function exerciseAlphaHud(page) {
       const harmony = document.querySelector('[data-harmony-label]')?.textContent || '';
       const concord = document.querySelector('[data-harmony-trial-label]')?.textContent || '';
       const teamMatch = document.querySelector('[data-team-match-label]')?.textContent || '';
+      const mentor = document.querySelector('[data-mentor-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
       const battleRound = document.querySelector('[data-battle-round-label]')?.textContent || '';
       const growth = document.querySelector('[data-growth-label]')?.textContent || '';
@@ -246,6 +248,7 @@ async function exerciseAlphaHud(page) {
         && harmony.includes('Triune Jade Harmony')
         && concord.includes('Jade Echo Concord Trial')
         && teamMatch.includes('Jade Mirror Team Match')
+        && mentor.includes('Silk Banner Mentor Drill')
         && training.includes('Training:')
         && training.includes('XP')
         && training.includes('ladder')
@@ -302,6 +305,11 @@ async function exerciseAlphaHud(page) {
         && state.teamSparMatchName === 'Jade Mirror Team Match'
         && state.teamSparMatchScore >= 30
         && state.teamMatchRibbonClaimed === true
+        && state.mentorChallengeProof === true
+        && state.mentorChallengeId === 'silk-banner-mentor-drill'
+        && state.mentorChallengeName === 'Silk Banner Mentor Drill'
+        && state.mentorChallengeScore >= 28
+        && state.mentorSealClaimed === true
         && state.techniqueProof === true
         && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
@@ -376,6 +384,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Triune Jade Harmony formed')
         && chat.includes('Jade Echo Concord Trial cleared')
         && chat.includes('Jade Mirror Team Match cleared')
+        && chat.includes('Silk Banner Mentor Drill cleared')
         && chat.includes('Quest chain complete')
         && feed.includes('Canary');
       },
@@ -394,6 +403,7 @@ async function exerciseAlphaHud(page) {
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent || '',
+      mentor: document.querySelector('[data-mentor-label]')?.textContent || '',
       battleRound: document.querySelector('[data-battle-round-label]')?.textContent || '',
       quest: document.querySelector('[data-quest-label]')?.textContent || '',
       state: JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}')
@@ -424,6 +434,7 @@ async function exerciseAlphaHud(page) {
       harmony: document.querySelector('[data-harmony-label]')?.textContent?.trim() || '',
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent?.trim() || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent?.trim() || '',
+      mentor: document.querySelector('[data-mentor-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
       battleRound: document.querySelector('[data-battle-round-label]')?.textContent?.trim() || '',
       growth: document.querySelector('[data-growth-label]')?.textContent?.trim() || '',
@@ -492,6 +503,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.teamSparMatchName === 'Jade Mirror Team Match', 'HUD team match action must record the match name.');
   assert(snapshot.state.teamSparMatchScore >= 30, 'HUD team match action must record a passing match score.');
   assert(snapshot.state.teamMatchRibbonClaimed === true, 'HUD team match action must mark the no-real-value match ribbon proof.');
+  assert(snapshot.mentor.includes('Silk Banner Mentor Drill'), 'HUD mentor label must show the cleared mentor challenge.');
+  assert(snapshot.state.mentorChallengeProof === true, 'HUD mentor action must record mentor challenge proof.');
+  assert(snapshot.state.mentorChallengeId === 'silk-banner-mentor-drill', 'HUD mentor action must record the Silk Banner Mentor Drill id.');
+  assert(snapshot.state.mentorChallengeName === 'Silk Banner Mentor Drill', 'HUD mentor action must record the mentor challenge name.');
+  assert(snapshot.state.mentorChallengeScore >= 28, 'HUD mentor action must record a passing mentor challenge score.');
+  assert(snapshot.state.mentorSealClaimed === true, 'HUD mentor action must mark the no-real-value mentor seal proof.');
   assert(snapshot.technique.includes('Technique:'), 'HUD technique label must show mastery state.');
   assert(snapshot.state.techniqueProof === true, 'HUD technique action must record technique proof.');
   assert(snapshot.state.techniqueMoveId === 'goldleaf-feint', 'HUD technique action must record the practiced route-spirit move.');
@@ -563,6 +580,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');
   assert(chat.some((line) => String(line).includes('Jade Echo Concord Trial cleared')), 'HUD chat state must record the harmony trial action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Team Match cleared')), 'HUD chat state must record the team spar match action.');
+  assert(chat.some((line) => String(line).includes('Silk Banner Mentor Drill cleared')), 'HUD chat state must record the mentor challenge action.');
   assert(chat.some((line) => String(line).includes('Quest chain complete')), 'HUD chat state must record the completed quest chain.');
   assert(chat.some((line) => String(line).includes('Inspect Aozhen')), 'HUD chat state must record the spirit inspect action.');
   assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');

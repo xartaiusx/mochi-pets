@@ -484,6 +484,53 @@ export interface SpiritTeamSparMatchResult {
   source: string;
 }
 
+export interface SpiritMentorChallenge {
+  id: string;
+  name: string;
+  title: string;
+  mentorName: string;
+  requiredSpiritIds: readonly string[];
+  requiredTeamMatchId: string;
+  requiredTechniqueXp: number;
+  requiredTacticXp: number;
+  requiredCareStreak: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritMentorChallengeProgress {
+  partyIds: readonly string[];
+  teamSparMatchProof: boolean;
+  teamSparMatchId?: string;
+  teamSparMatchScore: number;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore: number;
+  battleRoundOpponentScore: number;
+  techniqueMasteryXp: number;
+  tacticMasteryXp: number;
+  raisingCareStreak: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+}
+
+export interface SpiritMentorChallengeResult {
+  ok: boolean;
+  cleared: boolean;
+  challengeId: string;
+  challengeName: string;
+  title: string;
+  mentorName: string;
+  partyIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritSparOpponent {
   id: string;
   name: string;
@@ -932,6 +979,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Mirror Match Ribbon',
     description: 'A no-real-value full-party spar match proof for closed-alpha Mochirii progression.'
   },
+  mentorSeal: {
+    id: 'silk-banner-mentor-seal',
+    name: 'Silk Banner Mentor Seal',
+    description: 'A no-real-value mentor challenge proof for closed-alpha Mochirii battle readiness.'
+  },
   habitatTassel: {
     id: 'jade-court-habitat-tassel',
     name: 'Jade Court Habitat Tassel',
@@ -1191,6 +1243,23 @@ export const SPIRIT_TEAM_SPAR_MATCHES: readonly SpiritTeamSparMatch[] = [
     requiredScore: 30,
     rewardItemId: ALPHA_ITEMS.teamMatchRibbon.id,
     summary: 'A no-injury full-party battle match for testers who have proven route mastery, growth, harmony, concord, tactics, quests, and local social coordination.'
+  }
+];
+
+export const SPIRIT_MENTOR_CHALLENGES: readonly SpiritMentorChallenge[] = [
+  {
+    id: 'silk-banner-mentor-drill',
+    name: 'Silk Banner Mentor Drill',
+    title: 'First Mentor Readiness Challenge',
+    mentorName: 'Sifu Narao',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredTeamMatchId: SPIRIT_TEAM_SPAR_MATCHES[0].id,
+    requiredTechniqueXp: 7,
+    requiredTacticXp: 7,
+    requiredCareStreak: 1,
+    requiredScore: 28,
+    rewardItemId: ALPHA_ITEMS.mentorSeal.id,
+    summary: 'A no-injury mentor challenge proving the first Mochirii party can blend care, tactics, technique, team sparring, and local social coordination.'
   }
 ];
 
@@ -1935,6 +2004,87 @@ export function resolveSpiritTeamSparMatch(
       ? `${match.name} cleared: ${partyNames} complete a no-injury full-party spar match against ${match.opponentName} with route, growth, tactic, quest, concord, and chat proof.`
       : `${match.name} needs ${missing.join(', ')} before the full-party spar match can be recorded.`,
     source: 'battle-team-spar-match'
+  };
+}
+
+export function resolveSpiritMentorChallenge(
+  progress: SpiritMentorChallengeProgress,
+  challengeId: string = SPIRIT_MENTOR_CHALLENGES[0].id
+): SpiritMentorChallengeResult {
+  const challenge = SPIRIT_MENTOR_CHALLENGES.find((entry) => entry.id === challengeId) || SPIRIT_MENTOR_CHALLENGES[0];
+  const requiredSpiritIds = new Set(challenge.requiredSpiritIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of challenge.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const teamMatchReady = progress.teamSparMatchProof && progress.teamSparMatchId === challenge.requiredTeamMatchId;
+  if (!teamMatchReady) {
+    missing.push(`team-match:${challenge.requiredTeamMatchId}`);
+  }
+
+  const battleRoundReady = progress.battleRoundProof && progress.battleRoundVictory && progress.battleRoundFocusScore >= progress.battleRoundOpponentScore;
+  if (!battleRoundReady) {
+    missing.push('battle-round');
+  }
+
+  const techniqueXp = Math.max(0, Math.floor(progress.techniqueMasteryXp || 0));
+  if (techniqueXp < challenge.requiredTechniqueXp) {
+    missing.push(`technique-xp:${techniqueXp}/${challenge.requiredTechniqueXp}`);
+  }
+
+  const tacticXp = Math.max(0, Math.floor(progress.tacticMasteryXp || 0));
+  if (tacticXp < challenge.requiredTacticXp) {
+    missing.push(`tactic-xp:${tacticXp}/${challenge.requiredTacticXp}`);
+  }
+
+  const careStreak = Math.max(0, Math.floor(progress.raisingCareStreak || 0));
+  if (careStreak < challenge.requiredCareStreak) {
+    missing.push(`care-streak:${careStreak}/${challenge.requiredCareStreak}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const score =
+    Math.min(partyIds.length, challenge.requiredSpiritIds.length) * 3 +
+    (teamMatchReady ? 6 : 0) +
+    (battleRoundReady ? 4 : 0) +
+    Math.min(4, Math.floor(techniqueXp / 5)) +
+    Math.min(4, Math.floor(tacticXp / 5)) +
+    Math.min(3, careStreak * 2) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0);
+  const cleared = missing.length === 0 && score >= challenge.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    challengeId: challenge.id,
+    challengeName: challenge.name,
+    title: challenge.title,
+    mentorName: challenge.mentorName,
+    partyIds,
+    score,
+    requiredScore: challenge.requiredScore,
+    missing,
+    rewardItemId: challenge.rewardItemId,
+    message: cleared
+      ? `${challenge.name} cleared: ${challenge.mentorName} records ${partyNames} as no-injury mentor-ready with care, tactics, technique, team sparring, and social proof.`
+      : `${challenge.name} needs ${missing.join(', ')} before mentor readiness can be recorded.`,
+    source: 'battle-mentor-challenge'
   };
 }
 

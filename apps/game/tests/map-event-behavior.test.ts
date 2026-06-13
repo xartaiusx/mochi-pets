@@ -551,6 +551,63 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha battle proof');
   });
 
+  it('records the Silk Banner mentor drill from the training ring after full party readiness proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'lirabao');
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
+    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 17);
+    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.tacticMasteryXp', 14);
+    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
+    player.variables.set('mochiSocial.social.profileViewed', true);
+    player.variables.set('mochiSocial.social.guildBuddyProof', true);
+    player.variables.set('mochiSocial.social.chatLines', ['Ready for the mentor drill.']);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+
+    await runAction(TrainingRing(), player);
+
+    expect(player.variables.get('mochiSocial.battle.teamSparMatchProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.mentorChallengeProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.mentorChallenge')).toBe('silk-banner-mentor-drill');
+    expect(player.variables.get('mochiSocial.battle.mentorChallengeName')).toBe('Silk Banner Mentor Drill');
+    expect(player.variables.get('mochiSocial.battle.mentorChallengeScore')).toBe(28);
+    expect(player.variables.get('mochiSocial.battle.mentorSealClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('silk-banner-mentor-seal');
+    expect(player.notifications.at(-1)?.message).toBe('Mentor challenge cleared');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit mentor challenge' });
+    expect(player.saves.at(-1)?.options.source).toBe('training-ring');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        mentorChallenge: {
+          challengeId: 'silk-banner-mentor-drill',
+          challengeName: 'Silk Banner Mentor Drill',
+          mentorName: 'Sifu Narao',
+          title: 'First Mentor Readiness Challenge',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          score: 28,
+          requiredScore: 28,
+          rewardItemId: 'silk-banner-mentor-seal',
+          proof: true,
+          message: 'Silk Banner Mentor Drill cleared: Sifu Narao records Lirabao, Jintari, Aozhen as no-injury mentor-ready with care, tactics, technique, team sparring, and social proof.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Silk Banner Mentor Drill cleared');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha battle readiness proof');
+  });
+
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
     const player = createFakePlayer();
 

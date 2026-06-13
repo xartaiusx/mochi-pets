@@ -163,6 +163,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Mirror Team Match');
     expect(alphaContentSource).toContain('jade-mirror-match-ribbon');
     expect(alphaContentSource).toContain('battle-team-spar-match');
+    expect(alphaContentSource).toContain('Silk Banner Mentor Drill');
+    expect(alphaContentSource).toContain('silk-banner-mentor-seal');
+    expect(alphaContentSource).toContain('battle-mentor-challenge');
     expect(runtimeServerSource).toContain('First Lantern Vow');
     expect(runtimeServerSource).toContain('Silk Market Kindness');
     expect(runtimeServerSource).toContain('Skybell Spar');
@@ -198,6 +201,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Mirror Team Match');
     expect(runtimeServerSource).toContain('jade-mirror-match-ribbon');
     expect(runtimeServerSource).toContain('battle-team-spar-match');
+    expect(runtimeServerSource).toContain('Silk Banner Mentor Drill');
+    expect(runtimeServerSource).toContain('silk-banner-mentor-seal');
+    expect(runtimeServerSource).toContain('battle-mentor-challenge');
   });
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {

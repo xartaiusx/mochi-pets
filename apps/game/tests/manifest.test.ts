@@ -50,6 +50,7 @@ describe('game manifest', () => {
         partyHarmony: true,
         harmonyTrials: true,
         teamSparMatches: true,
+        mentorChallenges: true,
         battleRoundTranscripts: true,
         fieldExpeditions: true,
         sparringLadder: true,
