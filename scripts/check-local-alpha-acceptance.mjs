@@ -55,6 +55,7 @@ async function run() {
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
   assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
+  assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
@@ -69,6 +70,7 @@ async function run() {
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
   assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
+  assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
@@ -160,6 +162,11 @@ async function run() {
       requestId: `${runId}-expedition`,
       type: 'world.expedition',
       payload: { routeId: 'moonbridge-bamboo-trail', roster: ['lirabao'], activeSpiritId: 'lirabao', harmonyScore: 2, discoveredRoutes: [] }
+    },
+    {
+      requestId: `${runId}-route-invite`,
+      type: 'spirit.route_invite',
+      payload: { routeId: 'moonbridge-bamboo-trail', offeredItemId: 'jade-thread-charm', harmonyScore: 3, roster: ['lirabao'], discoveredRoutes: ['moonbridge-bamboo-trail'] }
     },
     {
       requestId: `${runId}-technique`,

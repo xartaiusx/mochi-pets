@@ -9,6 +9,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritRouteInvitation,
   resolveSpiritAffinityTrial,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
@@ -26,6 +27,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -56,6 +58,7 @@ describe('alpha contract', () => {
   it('validates alpha action envelopes', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -124,6 +127,32 @@ describe('alpha contract', () => {
     expect(expedition.message).toContain('Jintari signs');
     expect(resolveSpiritExpedition('moonbridge-bamboo-trail', [], undefined, 2, []).ok).toBe(false);
     expect(resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao'], 'lirabao', 2, []).ok).toBe(false);
+
+    const routeInvitation = resolveSpiritRouteInvitation(
+      'moonbridge-bamboo-trail',
+      'jade-thread-charm',
+      3,
+      ['lirabao'],
+      ['moonbridge-bamboo-trail']
+    );
+    expect(routeInvitation).toMatchObject({
+      ok: true,
+      alreadyRostered: false,
+      routeId: 'moonbridge-bamboo-trail',
+      routeName: 'Moonbridge Bamboo Trail',
+      spiritId: 'jintari',
+      requiredItemId: 'jade-thread-charm',
+      harmonyRequired: 3,
+      harmonyScore: 3,
+      roster: ['lirabao', 'jintari'],
+      bond: 1,
+      growth: 'seed',
+      source: 'spirit-route-invite'
+    });
+    expect(routeInvitation.message).toContain('joins your Mochirii roster by consent');
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 3, ['lirabao'], []).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'lantern-harmony-tea', 3, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 2, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
     expect(technique).toMatchObject({

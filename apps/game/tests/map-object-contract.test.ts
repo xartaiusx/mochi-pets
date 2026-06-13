@@ -12,6 +12,7 @@ const expectedPlacements = {
   'guild-seal-chest': { x: 640, y: 704 },
   'journal-pavilion': { x: 768, y: 704 },
   'expedition-gate': { x: 256, y: 704 },
+  'route-invitation-altar': { x: 384, y: 704 },
   'technique-dojo': { x: 896, y: 704 },
   'affinity-dais': { x: 1408, y: 704 },
   'spirit-lirabao': { x: 384, y: 320 },
@@ -64,6 +65,7 @@ describe('Mochi town map object contract', () => {
       "this.setGraphic('chest')",
       "this.setGraphic('journal-pavilion')",
       "this.setGraphic('expedition-gate')",
+      "this.setGraphic('route-invitation-altar')",
       "this.setGraphic('technique-dojo')",
       "this.setGraphic('affinity-dais')",
       "this.setGraphic('habitat-grove')",
@@ -79,6 +81,7 @@ describe('Mochi town map object contract', () => {
       'Care complete',
       'Journal updated',
       'Route scouted',
+      'Route spirit invited',
       'Technique refined',
       'Affinity trial',
       'spirit invitation',
@@ -91,6 +94,7 @@ describe('Mochi town map object contract', () => {
       "source: 'spirit-care'",
       "source: 'journal-pavilion'",
       "source: 'expedition-gate'",
+      "source: 'route-invitation-altar'",
       "source: 'technique-dojo'",
       "source: 'affinity-dais'",
       "source: 'habitat-grove'",
@@ -111,12 +115,14 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('First Lantern Vow');
     expect(alphaContentSource).toContain('Mochirii spirit journal updated');
     expect(alphaContentSource).toContain('Moonbridge Bamboo Trail');
+    expect(alphaContentSource).toContain('spirit-route-invite');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
     expect(alphaContentSource).toContain('Jade Mirror Trial');
     expect(alphaContentSource).toContain('Jade Echo Apprentice');
     expect(runtimeServerSource).toContain('First Lantern Vow');
     expect(runtimeServerSource).toContain('Mochirii spirit journal updated');
     expect(runtimeServerSource).toContain('Moonbridge Bamboo Trail');
+    expect(runtimeServerSource).toContain('spirit-route-invite');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
     expect(runtimeServerSource).toContain('Jade Mirror Trial');
     expect(runtimeServerSource).toContain('Jade Echo Apprentice');

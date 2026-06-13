@@ -114,6 +114,23 @@ export interface SpiritExpeditionResult {
   source: string;
 }
 
+export interface SpiritRouteInvitationResult {
+  ok: boolean;
+  alreadyRostered: boolean;
+  routeId: string;
+  routeName: string;
+  spiritId: string;
+  offeredItemId: string;
+  requiredItemId: string;
+  harmonyRequired: number;
+  harmonyScore: number;
+  roster: string[];
+  bond: number;
+  growth: SpiritGrowthStage;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -598,6 +615,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'party-banner',
     'journal-pavilion',
     'expedition-gate',
+    'route-invitation-altar',
     'technique-dojo',
     'affinity-dais',
     'market-board',
@@ -759,6 +777,84 @@ export function resolveSpiritExpedition(
     discoveredRoutes: discovered,
     message: `${activeSpirit.name} scouts the ${route.name} and records ${encounterSpirit?.name || route.encounterSpiritId} signs. Bring ${route.recommendedItemId} for the next invitation. ${route.routeNote}`,
     source: 'world-expedition'
+  };
+}
+
+export function resolveSpiritRouteInvitation(
+  routeId: string = SPIRIT_EXPEDITION_ROUTES[0].id,
+  offeredItemId = '',
+  harmonyScore = 1,
+  roster: readonly string[] = [],
+  discoveredRoutes: readonly string[] = []
+): SpiritRouteInvitationResult {
+  const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === routeId) || SPIRIT_EXPEDITION_ROUTES[0];
+  const spirit = getMochiSpirit(route.encounterSpiritId);
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getMochiSpirit(spiritId)));
+  const discovered = Array.from(new Set(discoveredRoutes.filter(Boolean)));
+  const boundedHarmony = Math.max(0, Math.floor(harmonyScore));
+  const requiredHarmony = Math.max(route.requiredHarmony, spirit?.capture.harmonyRequired || route.requiredHarmony);
+  const requiredItemId = route.recommendedItemId;
+  const base = {
+    routeId: route.id,
+    routeName: route.name,
+    spiritId: spirit?.id || route.encounterSpiritId,
+    offeredItemId,
+    requiredItemId,
+    harmonyRequired: requiredHarmony,
+    harmonyScore: boundedHarmony,
+    roster: knownRoster,
+    bond: 0,
+    growth: 'seed' as SpiritGrowthStage,
+    source: 'spirit-route-invite'
+  };
+
+  if (!spirit) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `The ${route.name} has no registered Mochirii encounter spirit yet.`
+    };
+  }
+
+  if (!discovered.includes(route.id)) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `Scout the ${route.name} before offering a Mochirii field invitation.`
+    };
+  }
+
+  if (knownRoster.includes(spirit.id)) {
+    return {
+      ...base,
+      ok: true,
+      alreadyRostered: true,
+      bond: 1,
+      roster: knownRoster,
+      message: `${spirit.name} already trusts your Mochirii roster and answers the ${route.name} field invitation calmly.`
+    };
+  }
+
+  const lureOk = offeredItemId === requiredItemId && offeredItemId === spirit.capture.lureItemId;
+  const harmonyOk = boundedHarmony >= requiredHarmony;
+  if (!lureOk || !harmonyOk) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `${route.name} invitation needs ${requiredItemId} and harmony ${requiredHarmony} before ${spirit.name} will join.`
+    };
+  }
+
+  return {
+    ...base,
+    ok: true,
+    alreadyRostered: false,
+    bond: 1,
+    roster: [...knownRoster, spirit.id],
+    message: `${spirit.name} accepts the ${spirit.capture.invitationLabel} at ${route.name} and joins your Mochirii roster by consent.`
   };
 }
 

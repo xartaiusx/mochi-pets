@@ -31,16 +31,17 @@ This contract tells Codex how to upgrade Mochi Social art without breaking RPGJS
 7. habitat grove
 8. journal pavilion
 9. expedition gate
-10. technique dojo
-11. affinity dais
-12. party banner
-13. market board
-14. trade post
-15. training ring
-16. quest board
-17. Canary shrine
-18. town tilesheet and map polish
-19. HUD and action icons
+10. route invitation altar
+11. technique dojo
+12. affinity dais
+13. party banner
+14. market board
+15. trade post
+16. training ring
+17. quest board
+18. Canary shrine
+19. town tilesheet and map polish
+20. HUD and action icons
 
 Each asset gets a source card, runtime export, ledger update, screenshot review, and tests before the next substantial visual pass.
 

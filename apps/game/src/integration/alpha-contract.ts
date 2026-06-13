@@ -28,6 +28,7 @@ export const ALPHA_FEATURES = {
   gameplay: {
     spiritCapture: true,
     spiritAttunement: true,
+    routeInvitations: true,
     partyFormation: true,
     fieldExpeditions: true,
     affinityTrials: true,
@@ -63,6 +64,7 @@ export const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
   'spirit.capture',
+  'spirit.route_invite',
   'spirit.attune',
   'spirit.bond',
   'spirit.care',

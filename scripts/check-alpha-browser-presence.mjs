@@ -154,6 +154,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.journal"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.expedition"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.route_invite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.technique"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.affinity_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.set"]', { timeout: timeoutMs });
@@ -182,6 +183,7 @@ async function exerciseAlphaHud(page) {
       const status = document.querySelector('[data-status-label]')?.textContent || '';
       const journal = document.querySelector('[data-journal-label]')?.textContent || '';
       const expedition = document.querySelector('[data-expedition-label]')?.textContent || '';
+      const routeInvite = document.querySelector('[data-route-invite-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
@@ -191,7 +193,7 @@ async function exerciseAlphaHud(page) {
       const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
       const state = JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}');
       const chat = Array.isArray(state.chat) ? state.chat.join(' ') : '';
-      return spirit.includes('Lirabao')
+      return spirit.includes('Jintari')
         && profile.includes('Profile: reviewed')
         && guild.includes('Guild: 1 local buddy')
         && status.includes('Status: cozy')
@@ -199,6 +201,8 @@ async function exerciseAlphaHud(page) {
         && journal.includes('1/3')
         && expedition.includes('Route:')
         && !expedition.includes('not scouted')
+        && routeInvite.includes('Route Invite:')
+        && routeInvite.includes('jintari')
         && technique.includes('Technique:')
         && technique.includes('XP')
         && affinity.includes('Affinity:')
@@ -210,9 +214,9 @@ async function exerciseAlphaHud(page) {
         && training.includes('ladder')
         && quest.includes('First Lantern Vow')
         && market.includes('Canary: requested')
-        && state.spiritId === 'lirabao'
+        && state.spiritId === 'jintari'
         && state.captureProof === true
-        && state.lastCaptureSpiritId === 'lirabao'
+        && state.lastCaptureSpiritId === 'jintari'
         && state.journalProof === true
         && state.journalDiscoveredCount >= 1
         && state.journalTotal === 3
@@ -223,19 +227,24 @@ async function exerciseAlphaHud(page) {
         && Array.isArray(state.discoveredRouteIds)
         && state.discoveredRouteIds.includes('moonbridge-bamboo-trail')
         && state.expeditionCount >= 1
+        && state.routeInviteProof === true
+        && state.lastRouteInviteRouteId === 'moonbridge-bamboo-trail'
+        && state.lastRouteInviteSpiritId === 'jintari'
         && state.techniqueProof === true
-        && state.techniqueMoveId === 'lantern-pulse'
+        && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
         && ['novice', 'practiced', 'adept'].includes(state.techniqueMasteryLevel)
         && state.affinityProof === true
-        && state.lastAffinityTrialId === 'jade-mirror-trial'
+        && state.lastAffinityTrialId === 'silk-cinder-trial'
         && state.affinityAdvantage === true
         && state.affinityFocusScore >= 1
-        && state.affinityTrialScore === 14
+        && state.affinityTrialScore === 18
         && Array.isArray(state.attunedSpiritIds)
         && state.attunedSpiritIds.includes('lirabao')
+        && state.attunedSpiritIds.includes('jintari')
         && Array.isArray(state.partyIds)
         && state.partyIds.includes('lirabao')
+        && state.partyIds.includes('jintari')
         && state.sparLadderXp >= 1
         && state.lastSparOpponentId === 'jade-echo-apprentice'
         && state.trainingXp >= 1
@@ -246,7 +255,7 @@ async function exerciseAlphaHud(page) {
         && state.profileViewed === true
         && state.guildBuddyProof === true
         && state.statusMood === 'cozy'
-        && state.lastInspectedSpiritId === 'lirabao'
+        && state.lastInspectedSpiritId === 'jintari'
         && state.charmListed === true
         && state.tradeProof === true
         && state.canaryRequested === true
@@ -254,7 +263,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Profile: Mochirii Wayfarer')
         && chat.includes('Guild proof')
         && chat.includes('Status set: cozy')
-        && chat.includes('Inspect Lirabao')
+        && chat.includes('Inspect Jintari')
         && chat.includes('You wave')
         && chat.includes('Jade Thread Charm listed')
         && chat.includes('Direct trade proof')
@@ -263,12 +272,13 @@ async function exerciseAlphaHud(page) {
         && chat.includes('accepts the Lantern Invite')
         && chat.includes('Mochirii spirit journal')
         && chat.includes('Moonbridge Bamboo Trail')
+        && chat.includes('Goldleaf Ribbon Invitation')
         && chat.includes('Mochirii Technique Dojo')
-        && chat.includes('Jade Mirror Trial')
+        && chat.includes('Silk Cinder Trial')
         && chat.includes('Mochirii party')
         && chat.includes('spar ladder')
         && chat.includes('guild spar')
-        && chat.includes('Jade brush grooming')
+        && chat.includes('Share mooncake')
         && chat.includes('Quest accepted: First Lantern Vow')
         && chat.includes('Quest progress: First Lantern Vow')
         && feed.includes('Canary');
@@ -287,6 +297,7 @@ async function exerciseAlphaHud(page) {
       spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
       journal: document.querySelector('[data-journal-label]')?.textContent?.trim() || '',
       expedition: document.querySelector('[data-expedition-label]')?.textContent?.trim() || '',
+      routeInvite: document.querySelector('[data-route-invite-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
@@ -298,11 +309,12 @@ async function exerciseAlphaHud(page) {
     };
   });
 
-  assert(snapshot.state.spiritId === 'lirabao', 'HUD care action must select Lirabao as the active spirit.');
+  assert(snapshot.state.spiritId === 'jintari', 'HUD route invitation must select Jintari as the active spirit.');
   assert(snapshot.state.captureProof === true, 'HUD invite action must record spirit capture proof.');
-  assert(snapshot.state.lastCaptureSpiritId === 'lirabao', 'HUD invite action must record Lirabao as the invited spirit.');
+  assert(snapshot.state.lastCaptureSpiritId === 'jintari', 'HUD route invitation must record Jintari as the invited spirit.');
   assert(snapshot.state.bond >= 1, 'HUD care action must increase spirit bond.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('lirabao'), 'HUD attune action must add Lirabao to the local spirit roster.');
+  assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('jintari'), 'HUD route invitation must add Jintari to the local spirit roster.');
   assert(snapshot.journal.includes('Journal:'), 'HUD journal label must show collection state.');
   assert(snapshot.state.journalProof === true, 'HUD journal action must record journal proof.');
   assert(snapshot.state.journalDiscoveredCount >= 1, 'HUD journal action must record at least one discovered spirit.');
@@ -313,18 +325,22 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.lastExpeditionEncounterId === 'jintari', 'HUD expedition action must record Jintari route signs.');
   assert(Array.isArray(snapshot.state.discoveredRouteIds) && snapshot.state.discoveredRouteIds.includes('moonbridge-bamboo-trail'), 'HUD expedition action must record discovered route ids.');
   assert(snapshot.state.expeditionCount >= 1, 'HUD expedition action must increment expedition count.');
+  assert(snapshot.routeInvite.includes('Route Invite:'), 'HUD route invitation label must show route invitation state.');
+  assert(snapshot.state.routeInviteProof === true, 'HUD route invitation action must record route invitation proof.');
+  assert(snapshot.state.lastRouteInviteRouteId === 'moonbridge-bamboo-trail', 'HUD route invitation must record the Moonbridge route.');
+  assert(snapshot.state.lastRouteInviteSpiritId === 'jintari', 'HUD route invitation must record Jintari as the route spirit.');
   assert(snapshot.technique.includes('Technique:'), 'HUD technique label must show mastery state.');
   assert(snapshot.state.techniqueProof === true, 'HUD technique action must record technique proof.');
-  assert(snapshot.state.techniqueMoveId === 'lantern-pulse', 'HUD technique action must record the practiced move.');
+  assert(snapshot.state.techniqueMoveId === 'goldleaf-feint', 'HUD technique action must record the practiced route-spirit move.');
   assert(snapshot.state.techniqueMasteryXp >= 1, 'HUD technique action must record mastery XP.');
   assert(snapshot.affinity.includes('Affinity:'), 'HUD affinity label must show trial state.');
   assert(snapshot.state.affinityProof === true, 'HUD affinity action must record affinity trial proof.');
-  assert(snapshot.state.lastAffinityTrialId === 'jade-mirror-trial', 'HUD affinity action must record the Jade Mirror trial.');
+  assert(snapshot.state.lastAffinityTrialId === 'silk-cinder-trial', 'HUD affinity action must record the Silk Cinder trial.');
   assert(snapshot.state.affinityAdvantage === true, 'HUD affinity action must record move affinity advantage.');
   assert(snapshot.state.affinityFocusScore >= 1, 'HUD affinity action must record a focus score.');
-  assert(snapshot.state.affinityTrialScore === 14, 'HUD affinity action must record the Jade Mirror trial score.');
+  assert(snapshot.state.affinityTrialScore === 18, 'HUD affinity action must record the Silk Cinder trial score.');
   assert(snapshot.party.includes('Party:'), 'HUD party label must show party state.');
-  assert(Array.isArray(snapshot.state.partyIds) && snapshot.state.partyIds.includes('lirabao'), 'HUD party action must form a Mochi Spirit party with Lirabao.');
+  assert(Array.isArray(snapshot.state.partyIds) && snapshot.state.partyIds.includes('jintari') && snapshot.state.partyIds.includes('lirabao'), 'HUD party action must form a Mochi Spirit party with Jintari and Lirabao.');
   assert(snapshot.training.includes('Training:'), 'HUD training label must show training state.');
   assert(snapshot.state.trainingXp >= 1, 'HUD training action must record training XP.');
   assert(snapshot.state.sparLadderXp >= 1, 'HUD spar ladder action must record ladder XP.');
@@ -339,7 +355,7 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.guildBuddyProof === true, 'HUD guild action must record local social proof.');
   assert(snapshot.status.includes('Status: cozy'), 'HUD status label must show the local mood/status proof.');
   assert(snapshot.state.statusMood === 'cozy', 'HUD status action must record local social status proof.');
-  assert(snapshot.state.lastInspectedSpiritId === 'lirabao', 'HUD inspect action must record a Lirabao spirit inspection proof.');
+  assert(snapshot.state.lastInspectedSpiritId === 'jintari', 'HUD inspect action must record a Jintari spirit inspection proof.');
   assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
@@ -348,19 +364,20 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('accepts the Lantern Invite')), 'HUD chat state must record the attunement action.');
   assert(chat.some((line) => String(line).includes('Mochirii spirit journal')), 'HUD chat state must record the spirit journal action.');
   assert(chat.some((line) => String(line).includes('Moonbridge Bamboo Trail')), 'HUD chat state must record the field expedition action.');
+  assert(chat.some((line) => String(line).includes('Goldleaf Ribbon Invitation')), 'HUD chat state must record the route invitation action.');
   assert(chat.some((line) => String(line).includes('Mochirii Technique Dojo')), 'HUD chat state must record the spirit technique action.');
-  assert(chat.some((line) => String(line).includes('Jade Mirror Trial')), 'HUD chat state must record the affinity trial action.');
+  assert(chat.some((line) => String(line).includes('Silk Cinder Trial')), 'HUD chat state must record the affinity trial action.');
   assert(chat.some((line) => String(line).includes('Mochirii party')), 'HUD chat state must record the party formation action.');
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
   assert(chat.some((line) => String(line).includes('guild spar')), 'HUD chat state must record the training battle action.');
   assert(chat.some((line) => String(line).includes('spar ladder')), 'HUD chat state must record the spar ladder action.');
-  assert(chat.some((line) => String(line).includes('Jade brush grooming')), 'HUD chat state must record the raising action.');
+  assert(chat.some((line) => String(line).includes('Share mooncake')), 'HUD chat state must record the raising action.');
   assert(chat.some((line) => String(line).includes('Quest accepted: First Lantern Vow')), 'HUD chat state must record the quest accept action.');
   assert(chat.some((line) => String(line).includes('Quest progress: First Lantern Vow')), 'HUD chat state must record the quest progress action.');
   assert(chat.some((line) => String(line).includes('Profile: Mochirii Wayfarer')), 'HUD chat state must record the profile action.');
   assert(chat.some((line) => String(line).includes('Guild proof')), 'HUD chat state must record the guild action.');
   assert(chat.some((line) => String(line).includes('Status set: cozy')), 'HUD chat state must record the status action.');
-  assert(chat.some((line) => String(line).includes('Inspect Lirabao')), 'HUD chat state must record the spirit inspect action.');
+  assert(chat.some((line) => String(line).includes('Inspect Jintari')), 'HUD chat state must record the spirit inspect action.');
   assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');
   assert(chat.some((line) => String(line).includes('Jade Thread Charm listed')), 'HUD chat state must record the fixed-list action.');
   assert(chat.some((line) => String(line).includes('Direct trade proof')), 'HUD chat state must record the trade action.');

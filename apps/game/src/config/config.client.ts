@@ -91,6 +91,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'route-invitation-altar',
+            image: '/spritesheets/route-invitation-altar.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'technique-dojo',
             image: '/spritesheets/technique-dojo.png',
             ...SPIRIT_SHEET

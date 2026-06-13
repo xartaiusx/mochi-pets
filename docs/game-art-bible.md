@@ -27,15 +27,15 @@ This art bible defines the active Mochirii-native look for the Alpha Preview vis
 - Source masters live under `assets/source/game/hd/` and are exported down through `apps/game/scripts/generate-assets.mjs` using Sharp.
 - Preserve Tiled layer names, map dimensions, public routes, bridge messages, and no-real-value labels unless tests and docs change in the same scoped task.
 - Use transparent backgrounds for event spritesheets and opaque tilesheet backgrounds.
-- Use clear silhouettes, soft contact shadows, material highlights, and object-specific shape language for Sifu Narao, the guild seal chest, spirit habitat grove, journal pavilion, expedition gate, technique dojo, affinity dais, party banner, training ring, quest board, market board, trade post, and Canary shrine.
+- Use clear silhouettes, soft contact shadows, material highlights, and object-specific shape language for Sifu Narao, the guild seal chest, spirit habitat grove, journal pavilion, expedition gate, route invitation altar, technique dojo, affinity dais, party banner, training ring, quest board, market board, trade post, and Canary shrine.
 - Enjin-related visuals must read as Canary preview staging only: configured preview stub, no real value, no settlement implication before `FINALIZED`.
 
 ## Canonical Asset Families
 
 - Wayfarer: Mochirii Wayfarer player avatar in layered silk travel robes.
 - Sifu Narao: welcome mentor and care-shrine guide with jade/ivory guild styling.
-- Mochi Spirits: Lirabao, Jintari, and Aozhen. Each has profile, affinity, temperament, habitat, capture/invitation profile, field route signs, bond, growth, journal, care action, technique mastery, affinity trial eligibility, guild relation, and optional Canary certificate eligibility in code.
-- Guild objects: Mochirii Guild Seal chest, spirit invitation habitat grove, Mochi Spirit field journal pavilion, Moonbridge expedition gate, technique mastery dojo, affinity trial dais, party formation banner, no-injury spirit training ring, First Lantern Vow quest board, Jade Thread Charm market board, direct trade post, and Canary shrine.
+- Mochi Spirits: Lirabao, Jintari, and Aozhen. Each has profile, affinity, temperament, habitat, capture/invitation profile, field route signs, route invitation eligibility, bond, growth, journal, care action, technique mastery, affinity trial eligibility, guild relation, and optional Canary certificate eligibility in code.
+- Guild objects: Mochirii Guild Seal chest, spirit invitation habitat grove, Mochi Spirit field journal pavilion, Moonbridge expedition gate, route invitation altar, technique mastery dojo, affinity trial dais, party formation banner, no-injury spirit training ring, First Lantern Vow quest board, Jade Thread Charm market board, direct trade post, and Canary shrine.
 - Town: Jade Lantern Court with readable path/water/wall zones, guild garden, spirit habitat cues, lanterns, bridge, market/trade landmarks, and Canary staging area.
 - HUD: warm glass panels, jade/timber accents, readable text over art, visible focus states, and non-color-only status labels.
 
@@ -59,5 +59,5 @@ Append the specific asset role, color identity, animation frame needs, source-ma
 
 - Runtime PNGs match the 64px tile and 128x192 frame contracts.
 - First screen reads as Jade Lantern Court, not a debug map.
-- Sifu Narao, guild seal chest, Mochi Spirits, habitat grove, journal pavilion, expedition gate, technique dojo, affinity dais, party banner, training ring, quest board, market board, trade post, and Canary shrine are visually recognizable at gameplay zoom.
+- Sifu Narao, guild seal chest, Mochi Spirits, habitat grove, journal pavilion, expedition gate, route invitation altar, technique dojo, affinity dais, party banner, training ring, quest board, market board, trade post, and Canary shrine are visually recognizable at gameplay zoom.
 - `docs/asset-ledger.md` records every runtime asset, dimensions, source card, generation status, and license.

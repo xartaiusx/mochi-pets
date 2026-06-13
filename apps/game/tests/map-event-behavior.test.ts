@@ -10,6 +10,7 @@ import {
   MarketBoard,
   PartyBanner,
   QuestBoard,
+  RouteInvitationAltar,
   SPIRITS,
   SpiritEvent,
   TechniqueDojo,
@@ -415,6 +416,52 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('field encounter proof');
     expect(player.texts.at(-1)).toContain('no-real-value alpha');
+  });
+
+  it('invites a route spirit only after Moonbridge scouting proof', async () => {
+    const player = createFakePlayer();
+
+    await runAction(RouteInvitationAltar(), player);
+    expect(player.texts.at(-1)).toContain('Scout the Moonbridge Bamboo Trail before offering');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(ExpeditionGate(), player);
+    await runAction(RouteInvitationAltar(), player);
+
+    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiSocial.spirits.active')).toBe('jintari');
+    expect(player.variables.get('mochiSocial.spirit.jintari.bond')).toBe(1);
+    expect(player.variables.get('mochiSocial.spirit.jintari.growth')).toBe('seed');
+    expect(player.variables.get('mochiSocial.spirit.jintari.journalUnlocked')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirit.jintari.captureEncounter')).toBe('moonbridge-bamboo-trail-route-invitation');
+    expect(player.variables.get('mochiSocial.spirit.jintari.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiSocial.world.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiSocial.world.lastRouteInvitationSpirit')).toBe('jintari');
+    expect(player.variables.get('mochiSocial.world.routeInvitationProof')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Route spirit invited');
+    expect(player.saves.at(-1)?.options.source).toBe('route-invitation-altar');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        routeInvite: {
+          routeId: 'moonbridge-bamboo-trail',
+          routeName: 'Moonbridge Bamboo Trail',
+          spiritId: 'jintari',
+          roster: ['lirabao', 'jintari'],
+          alreadyRostered: false,
+          proof: true,
+          message: 'Jintari accepts the Goldleaf Ribbon Invitation at Moonbridge Bamboo Trail and joins your Mochirii roster by consent.'
+        },
+        capture: {
+          spiritId: 'jintari',
+          roster: ['lirabao', 'jintari'],
+          message: 'Jintari accepts the Goldleaf Ribbon Invitation at Moonbridge Bamboo Trail and joins your Mochirii roster by consent.'
+        },
+        spirit: { id: 'jintari', bond: 1, growth: 'seed' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('consent-based');
+    expect(player.texts.at(-1)).toContain('no-real-value alpha capture progress');
   });
 
   it('records no-injury technique mastery at the Mochirii dojo', async () => {

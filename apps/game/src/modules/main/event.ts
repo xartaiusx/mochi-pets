@@ -13,6 +13,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritRouteInvitation,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle,
@@ -32,6 +33,15 @@ type AlphaHudStatePatch = {
     rewardItemId: string;
     routeId: string;
     routeName: string;
+  };
+  routeInvite?: {
+    alreadyRostered: boolean;
+    message?: string;
+    proof: boolean;
+    routeId: string;
+    routeName: string;
+    roster: string[];
+    spiritId: string;
   };
   affinity?: {
     affinityAdvantage: boolean;
@@ -421,6 +431,67 @@ export function ExpeditionGate(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochirii field route scouted' }, { reason: 'auto', source: 'expedition-gate' });
       showAlphaPrompt(player, `${expedition.message} Route scouting is a no-real-value alpha field encounter proof; invitations still happen through habitat and consent.`);
+    }
+  };
+}
+
+export function RouteInvitationAltar(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('route-invitation-altar');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const roster = bondedSpirits(player);
+      const discoveredRoutesRaw = player.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const routeId = player.getVariable<string>('mochiSocial.world.lastExpeditionRoute') || discoveredRoutes[0] || SPIRIT_EXPEDITION_ROUTES[0].id;
+      const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === routeId) || SPIRIT_EXPEDITION_ROUTES[0];
+      const activeSpirit = activeSpiritId(player);
+      const bond = activeSpirit ? Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 1;
+      const expeditionCount = Number(player.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const harmonyScore = bond + Math.max(1, roster.length) + partyIds(player).length + expeditionCount;
+      const invitation = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes);
+
+      if (!invitation.ok) {
+        showAlphaPrompt(player, invitation.message);
+        return;
+      }
+
+      player.setVariable('mochiSocial.spirits.bonded', invitation.roster);
+      player.setVariable('mochiSocial.spirits.active', invitation.spiritId);
+      player.setVariable(`mochiSocial.spirit.${invitation.spiritId}.bond`, Math.max(1, invitation.bond));
+      player.setVariable(`mochiSocial.spirit.${invitation.spiritId}.growth`, invitation.growth);
+      player.setVariable(`mochiSocial.spirit.${invitation.spiritId}.journalUnlocked`, true);
+      player.setVariable(`mochiSocial.spirit.${invitation.spiritId}.captureEncounter`, `${invitation.routeId}-route-invitation`);
+      player.setVariable(`mochiSocial.spirit.${invitation.spiritId}.lastRouteInvitation`, invitation.routeId);
+      player.setVariable('mochiSocial.world.lastRouteInvitation', invitation.routeId);
+      player.setVariable('mochiSocial.world.lastRouteInvitationSpirit', invitation.spiritId);
+      player.setVariable('mochiSocial.world.routeInvitationProof', true);
+
+      player.showNotification('Route spirit invited', { time: 1800, icon: 'route-invitation-altar' });
+      emitAlphaHudState(player, {
+        routeInvite: {
+          routeId: invitation.routeId,
+          routeName: invitation.routeName,
+          spiritId: invitation.spiritId,
+          roster: invitation.roster,
+          alreadyRostered: invitation.alreadyRostered,
+          proof: true,
+          message: invitation.message
+        },
+        capture: {
+          spiritId: invitation.spiritId,
+          roster: invitation.roster,
+          message: invitation.message
+        },
+        spirit: { id: invitation.spiritId, bond: Math.max(1, invitation.bond), growth: invitation.growth }
+      });
+      await player.save('auto', { title: 'Mochirii route spirit invited' }, { reason: 'auto', source: 'route-invitation-altar' });
+      showAlphaPrompt(
+        player,
+        `${invitation.message} Route invitations are Mochirii-original, consent-based, no-real-value alpha capture progress.`
+      );
     }
   };
 }

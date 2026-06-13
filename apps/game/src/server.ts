@@ -48,6 +48,15 @@ type AlphaHudStatePatch = {
     routeId: string;
     routeName: string;
   };
+  routeInvite?: {
+    alreadyRostered: boolean;
+    message?: string;
+    proof: boolean;
+    routeId: string;
+    routeName: string;
+    roster: string[];
+    spiritId: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -539,6 +548,84 @@ function resolveSpiritExpedition(
     discoveredRoutes: discovered,
     message: `${activeSpirit.name} scouts the ${route.name} and records ${encounterSpirit?.name || route.encounterSpiritId} signs. Bring ${route.recommendedItemId} for the next invitation. ${route.routeNote}`,
     source: 'world-expedition'
+  };
+}
+
+function resolveSpiritRouteInvitation(
+  routeId: string = expeditionRoutes[0].id,
+  offeredItemId = '',
+  harmonyScore = 1,
+  roster: readonly string[] = [],
+  discoveredRoutes: readonly string[] = []
+) {
+  const route = expeditionRoutes.find((entry) => entry.id === routeId) || expeditionRoutes[0];
+  const spirit = getSpirit(route.encounterSpiritId);
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getSpirit(spiritId)));
+  const discovered = Array.from(new Set(discoveredRoutes.filter(Boolean)));
+  const boundedHarmony = Math.max(0, Math.floor(harmonyScore));
+  const requiredHarmony = Math.max(route.requiredHarmony, spirit?.capture.harmonyRequired || route.requiredHarmony);
+  const requiredItemId = route.recommendedItemId;
+  const base = {
+    routeId: route.id,
+    routeName: route.name,
+    spiritId: spirit?.id || route.encounterSpiritId,
+    offeredItemId,
+    requiredItemId,
+    harmonyRequired: requiredHarmony,
+    harmonyScore: boundedHarmony,
+    roster: knownRoster,
+    bond: 0,
+    growth: 'seed' as SpiritGrowthStage,
+    source: 'spirit-route-invite'
+  };
+
+  if (!spirit) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `The ${route.name} has no registered Mochirii encounter spirit yet.`
+    };
+  }
+
+  if (!discovered.includes(route.id)) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `Scout the ${route.name} before offering a Mochirii field invitation.`
+    };
+  }
+
+  if (knownRoster.includes(spirit.id)) {
+    return {
+      ...base,
+      ok: true,
+      alreadyRostered: true,
+      bond: 1,
+      roster: knownRoster,
+      message: `${spirit.name} already trusts your Mochirii roster and answers the ${route.name} field invitation calmly.`
+    };
+  }
+
+  const lureOk = offeredItemId === requiredItemId && offeredItemId === spirit.capture.lureItemId;
+  const harmonyOk = boundedHarmony >= requiredHarmony;
+  if (!lureOk || !harmonyOk) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `${route.name} invitation needs ${requiredItemId} and harmony ${requiredHarmony} before ${spirit.name} will join.`
+    };
+  }
+
+  return {
+    ...base,
+    ok: true,
+    alreadyRostered: false,
+    bond: 1,
+    roster: [...knownRoster, spirit.id],
+    message: `${spirit.name} accepts the ${spirit.capture.invitationLabel} at ${route.name} and joins your Mochirii roster by consent.`
   };
 }
 
@@ -1147,6 +1234,67 @@ function expeditionGate(): EventDefinition {
   };
 }
 
+function routeInvitationAltar(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('route-invitation-altar');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const roster = bondedSpirits(actingPlayer);
+      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const routeId = actingPlayer.getVariable<string>('mochiSocial.world.lastExpeditionRoute') || discoveredRoutes[0] || expeditionRoutes[0].id;
+      const route = expeditionRoutes.find((entry) => entry.id === routeId) || expeditionRoutes[0];
+      const activeSpirit = activeSpiritId(actingPlayer);
+      const bond = activeSpirit ? Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 1;
+      const expeditionCount = Number(actingPlayer.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const harmonyScore = bond + Math.max(1, roster.length) + partyIds(actingPlayer).length + expeditionCount;
+      const invitation = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes);
+
+      if (!invitation.ok) {
+        showAlphaPrompt(actingPlayer, invitation.message);
+        return;
+      }
+
+      actingPlayer.setVariable('mochiSocial.spirits.bonded', invitation.roster);
+      actingPlayer.setVariable('mochiSocial.spirits.active', invitation.spiritId);
+      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.bond`, Math.max(1, invitation.bond));
+      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.growth`, invitation.growth);
+      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.journalUnlocked`, true);
+      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.captureEncounter`, `${invitation.routeId}-route-invitation`);
+      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.lastRouteInvitation`, invitation.routeId);
+      actingPlayer.setVariable('mochiSocial.world.lastRouteInvitation', invitation.routeId);
+      actingPlayer.setVariable('mochiSocial.world.lastRouteInvitationSpirit', invitation.spiritId);
+      actingPlayer.setVariable('mochiSocial.world.routeInvitationProof', true);
+
+      actingPlayer.showNotification('Route spirit invited', { time: 1800, icon: 'route-invitation-altar' });
+      emitAlphaHudState(actingPlayer, {
+        routeInvite: {
+          routeId: invitation.routeId,
+          routeName: invitation.routeName,
+          spiritId: invitation.spiritId,
+          roster: invitation.roster,
+          alreadyRostered: invitation.alreadyRostered,
+          proof: true,
+          message: invitation.message
+        },
+        capture: {
+          spiritId: invitation.spiritId,
+          roster: invitation.roster,
+          message: invitation.message
+        },
+        spirit: { id: invitation.spiritId, bond: Math.max(1, invitation.bond), growth: invitation.growth }
+      });
+      await actingPlayer.save('auto', { title: 'Mochirii route spirit invited' }, { reason: 'auto', source: 'route-invitation-altar' });
+      showAlphaPrompt(
+        actingPlayer,
+        `${invitation.message} Route invitations are Mochirii-original, consent-based, no-real-value alpha capture progress.`
+      );
+    }
+  };
+}
+
 function techniqueDojo(): EventDefinition {
   return {
     onInit() {
@@ -1497,6 +1645,12 @@ const mainServerModule = defineModule({
           x: 256,
           y: 704,
           event: expeditionGate()
+        },
+        {
+          id: 'route-invitation-altar',
+          x: 384,
+          y: 704,
+          event: routeInvitationAltar()
         },
         {
           id: 'technique-dojo',

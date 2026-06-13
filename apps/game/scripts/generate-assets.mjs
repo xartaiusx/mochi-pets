@@ -86,6 +86,13 @@ const spriteSpecs = [
     palette: { wood: '#5f4c45', moon: '#d6e7cf', bamboo: '#86b66f', jade: '#8ed0b1', ribbon: '#d85f4d', accent: '#f2c65f', light: '#fff0b6' }
   },
   {
+    id: 'route-invitation-altar',
+    role: 'Mochirii route spirit invitation altar',
+    prompt: 'Mochirii route spirit invitation altar with jade offering bowl, silk route ribbons, lacquer crescent stand, gold harmony seals, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'altar',
+    palette: { wood: '#62483e', bowl: '#8ed0b1', ribbon: '#d85f4d', seal: '#f2c65f', paper: '#f4e7bd', light: '#fff0b6', shadow: '#21352f' }
+  },
+  {
     id: 'technique-dojo',
     role: 'Mochi Spirit technique mastery dojo',
     prompt: 'Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, warm lanterns, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -245,6 +252,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'party') return partyFrame(spec, row, col, bob);
   if (spec.kind === 'journal') return journalFrame(spec, row, col, bob);
   if (spec.kind === 'gate') return expeditionGateFrame(spec, row, col, bob);
+  if (spec.kind === 'altar') return routeInvitationAltarFrame(spec, row, col, bob);
   if (spec.kind === 'dojo') return techniqueDojoFrame(spec, row, col, bob);
   if (spec.kind === 'dais') return affinityDaisFrame(spec, row, col, bob);
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
@@ -456,6 +464,40 @@ function expeditionGateFrame(spec, _row, col, _bob) {
     <path d="M88 221 H168" stroke="#221f1e" stroke-width="17" stroke-linecap="round"/>
     <path d="M94 221 H162" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round"/>
     <path d="M110 208 L128 191 L146 208" stroke="#fff8d4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  `;
+}
+
+function routeInvitationAltarFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.5 : 0.3;
+  return `
+    <ellipse cx="128" cy="318" rx="82" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="198" rx="102" ry="98" fill="${spec.palette.light}" opacity="${glow}"/>
+    <path d="M55 250 L201 250 L214 304 L42 304 Z" fill="#221f1e"/>
+    <path d="M68 255 L188 255 L199 292 L57 292 Z" fill="${spec.palette.wood}"/>
+    <ellipse cx="128" cy="250" rx="61" ry="30" fill="#221f1e"/>
+    <ellipse cx="128" cy="242" rx="50" ry="24" fill="${spec.palette.bowl}"/>
+    <ellipse cx="128" cy="235" rx="31" ry="13" fill="${spec.palette.light}" opacity="0.62"/>
+    <path d="M70 206 C95 190 161 190 186 206" stroke="${spec.palette.ribbon}" stroke-width="13" stroke-linecap="round" fill="none"/>
+    <path d="M78 223 C103 211 153 211 178 223" stroke="${spec.palette.paper}" stroke-width="9" stroke-linecap="round" opacity="0.72" fill="none"/>
+    <path d="M63 143 V264 M193 143 V264" stroke="#221f1e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M68 151 V254 M188 151 V254" stroke="${spec.palette.shadow}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M58 139 C90 166 166 166 198 139" stroke="#221f1e" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M68 141 C97 159 159 159 188 141" stroke="${spec.palette.wood}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M101 157 C105 119 118 98 128 98 C138 98 151 119 155 157" stroke="#221f1e" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M111 157 C114 128 122 113 128 113 C134 113 142 128 145 157" stroke="${spec.palette.seal}" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="128" cy="121" r="18" fill="#221f1e"/>
+    <circle cx="128" cy="121" r="12" fill="${spec.palette.seal}"/>
+    <path d="M122 121 H134 M128 115 V127" stroke="#fff7d4" stroke-width="5" stroke-linecap="round"/>
+    <rect x="88" y="170" width="80" height="43" rx="11" fill="#221f1e"/>
+    <rect x="98" y="178" width="60" height="28" rx="8" fill="${spec.palette.paper}"/>
+    <path d="M107 189 H150 M110 199 H145" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.64"/>
+    <circle cx="74" cy="204" r="13" fill="#221f1e"/>
+    <circle cx="74" cy="204" r="8" fill="${spec.palette.seal}"/>
+    <circle cx="182" cy="204" r="13" fill="#221f1e"/>
+    <circle cx="182" cy="204" r="8" fill="${spec.palette.seal}"/>
+    <path d="M83 267 C108 282 148 282 173 267" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M77 152 C92 174 75 201 58 219" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" opacity="0.78" fill="none"/>
+    <path d="M179 152 C164 174 181 201 198 219" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" opacity="0.78" fill="none"/>
   `;
 }
 
