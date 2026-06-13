@@ -641,6 +641,8 @@ export interface SpiritRaisingResult {
   needId: string;
   bond: number;
   growth: SpiritGrowthStage;
+  careStreak: number;
+  nextNeedId?: string;
   message: string;
 }
 
@@ -2378,27 +2380,41 @@ export function resolveSpiritAffinityTrial(
   };
 }
 
-export function resolveSpiritRaisingAction(spiritId: string, needId: string, currentBond = 1): SpiritRaisingResult {
+export function selectSpiritRaisingNeed(spiritId: string, careStreak = 0): SpiritRaisingNeed | undefined {
+  const spirit = getMochiSpirit(spiritId);
+  if (!spirit?.raisingNeeds.length) return undefined;
+
+  const index = Math.max(0, Math.floor(careStreak)) % spirit.raisingNeeds.length;
+  return spirit.raisingNeeds[index];
+}
+
+export function resolveSpiritRaisingAction(spiritId: string, needId: string, currentBond = 1, careStreak = 0): SpiritRaisingResult {
   const spirit = getMochiSpirit(spiritId);
   const need = spirit?.raisingNeeds.find((candidate) => candidate.id === needId);
+  const boundedCareStreak = Math.max(0, Math.floor(careStreak));
   if (!spirit || !need) {
     return {
       ok: false,
       spiritId,
       needId,
       bond: Math.max(0, Math.min(5, Math.floor(currentBond))),
-      growth: growthStageFromBond(currentBond),
+      growth: growthStageFromBond(Math.max(0, Math.min(5, Math.floor(currentBond)))),
+      careStreak: boundedCareStreak,
       message: 'Raising action is not available for this Mochi Spirit.'
     };
   }
 
   const bond = Math.max(0, Math.min(5, Math.floor(currentBond) + need.bondDelta));
+  const nextCareStreak = boundedCareStreak + 1;
+  const nextNeed = selectSpiritRaisingNeed(spiritId, nextCareStreak);
   return {
     ok: true,
     spiritId,
     needId,
     bond,
     growth: growthStageFromBond(bond),
-    message: `${need.label} complete for ${spirit.name}. ${need.growthHint}`
+    careStreak: nextCareStreak,
+    nextNeedId: nextNeed?.id,
+    message: `${need.label} complete for ${spirit.name}. ${need.growthHint} Care streak ${nextCareStreak}.`
   };
 }

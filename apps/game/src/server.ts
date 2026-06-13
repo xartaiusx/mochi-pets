@@ -167,8 +167,10 @@ type AlphaHudStatePatch = {
     nextQuestId?: string;
   };
   raising?: {
+    careStreak?: number;
     message?: string;
     needId: string;
+    nextNeedId?: string;
     proof: boolean;
   };
   sealClaimed?: boolean;
@@ -1965,25 +1967,39 @@ function resolveSpiritAffinityTrial(
   };
 }
 
-function resolveSpiritRaisingAction(spiritId: string, needId: string, currentBond = 1) {
+function selectSpiritRaisingNeed(spiritId: string, careStreak = 0) {
+  const spirit = spirits.find((entry) => entry.id === spiritId);
+  if (!spirit?.raisingNeeds.length) return undefined;
+
+  const index = Math.max(0, Math.floor(careStreak)) % spirit.raisingNeeds.length;
+  return spirit.raisingNeeds[index];
+}
+
+function resolveSpiritRaisingAction(spiritId: string, needId: string, currentBond = 1, careStreak = 0) {
   const spirit = spirits.find((entry) => entry.id === spiritId);
   const need = spirit?.raisingNeeds.find((candidate) => candidate.id === needId);
   const boundedBond = Math.max(0, Math.min(5, Math.floor(currentBond)));
+  const boundedCareStreak = Math.max(0, Math.floor(careStreak));
   if (!spirit || !need) {
     return {
       ok: false,
       bond: boundedBond,
       growth: growthStageFromBond(boundedBond),
+      careStreak: boundedCareStreak,
       message: 'Raising action is not available for this Mochi Spirit.'
     };
   }
 
   const bond = Math.max(0, Math.min(5, boundedBond + need.bondDelta));
+  const nextCareStreak = boundedCareStreak + 1;
+  const nextNeed = selectSpiritRaisingNeed(spiritId, nextCareStreak);
   return {
     ok: true,
     bond,
     growth: growthStageFromBond(bond),
-    message: `${need.label} complete for ${spirit.name}. ${need.growthHint}`
+    careStreak: nextCareStreak,
+    nextNeedId: nextNeed?.id,
+    message: `${need.label} complete for ${spirit.name}. ${need.growthHint} Care streak ${nextCareStreak}.`
   };
 }
 
@@ -2172,11 +2188,12 @@ function careShrine(): EventDefinition {
         return;
       }
 
-      const spirit = spirits.find((entry) => entry.id === activeSpirit);
-      const need = spirit?.raisingNeeds[0];
+      const careStreakKey = `mochiSocial.spirit.${activeSpirit}.careStreak`;
+      const currentCareStreak = Number(actingPlayer.getVariable<number>(careStreakKey) || 0);
+      const need = selectSpiritRaisingNeed(activeSpirit, currentCareStreak);
       const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
-      const raising = need ? resolveSpiritRaisingAction(activeSpirit, need.id, currentBond) : null;
+      const raising = need ? resolveSpiritRaisingAction(activeSpirit, need.id, currentBond, currentCareStreak) : null;
       const nextBond = raising?.ok ? raising.bond : Math.min(5, currentBond + 1);
       const nextGrowth = growthStageFromBond(nextBond);
       actingPlayer.setVariable(bondKey, nextBond);
@@ -2184,12 +2201,16 @@ function careShrine(): EventDefinition {
       if (need) {
         actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.raisingProof`, true);
         actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastCareNeed`, need.id);
+        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.nextCareNeed`, raising?.nextNeedId || need.id);
+        actingPlayer.setVariable(careStreakKey, raising?.careStreak || currentCareStreak);
       }
       actingPlayer.showNotification(`Spirit bond ${nextBond}/5`, { time: 1800, icon: 'sifu-narao' });
       emitAlphaHudState(actingPlayer, {
         raising: need
           ? {
+              careStreak: raising?.careStreak,
               needId: need.id,
+              nextNeedId: raising?.nextNeedId,
               proof: true,
               message: raising?.message
             }

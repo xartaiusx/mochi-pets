@@ -184,14 +184,19 @@ describe('Mochi town event behavior', () => {
 
     expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(5);
     expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('glow');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.careStreak')).toBe(4);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.lastCareNeed')).toBe('mooncake-share');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.nextCareNeed')).toBe('jade-brush-groom');
     expect(player.saves.filter((save) => save.options.source === 'spirit-care')).toHaveLength(4);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
       value: {
         raising: {
-          needId: 'jade-brush-groom',
+          careStreak: 4,
+          needId: 'mooncake-share',
+          nextNeedId: 'jade-brush-groom',
           proof: true,
-          message: 'Jade brush grooming complete for Lirabao. Smooths the spirit aura after training.'
+          message: 'Share mooncake complete for Lirabao. Restores focus for social play. Care streak 4.'
         },
         spirit: { id: 'lirabao', bond: 5, growth: 'glow' }
       }

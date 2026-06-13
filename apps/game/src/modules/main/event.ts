@@ -30,6 +30,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRouteMastery,
   resolveSpiritRouteInvitation,
+  selectSpiritRaisingNeed,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueMastery,
@@ -172,8 +173,10 @@ type AlphaHudStatePatch = {
     nextQuestId?: string;
   };
   raising?: {
+    careStreak?: number;
     message?: string;
     needId: string;
+    nextNeedId?: string;
     proof: boolean;
   };
   sealClaimed?: boolean;
@@ -384,11 +387,12 @@ export function CareShrine(): EventDefinition {
         return;
       }
 
-      const spirit = MOCHI_SPIRITS.find((entry) => entry.id === activeSpirit);
-      const need = spirit?.raisingNeeds[0];
+      const careStreakKey = `mochiSocial.spirit.${activeSpirit}.careStreak`;
+      const currentCareStreak = Number(player.getVariable<number>(careStreakKey) || 0);
+      const need = selectSpiritRaisingNeed(activeSpirit, currentCareStreak);
       const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
       const currentBond = Number(player.getVariable<number>(bondKey) || 1);
-      const raising = need ? resolveSpiritRaisingAction(activeSpirit, need.id, currentBond) : null;
+      const raising = need ? resolveSpiritRaisingAction(activeSpirit, need.id, currentBond, currentCareStreak) : null;
       const nextBond = raising?.ok ? raising.bond : Math.min(5, currentBond + 1);
       const nextGrowth = growthStageFromBond(nextBond);
       player.setVariable(bondKey, nextBond);
@@ -396,12 +400,16 @@ export function CareShrine(): EventDefinition {
       if (need) {
         player.setVariable(`mochiSocial.spirit.${activeSpirit}.raisingProof`, true);
         player.setVariable(`mochiSocial.spirit.${activeSpirit}.lastCareNeed`, need.id);
+        player.setVariable(`mochiSocial.spirit.${activeSpirit}.nextCareNeed`, raising?.nextNeedId || need.id);
+        player.setVariable(careStreakKey, raising?.careStreak || currentCareStreak);
       }
       player.showNotification(`Spirit bond ${nextBond}/5`, { time: 1800, icon: 'sifu-narao' });
       emitAlphaHudState(player, {
         raising: need
           ? {
+              careStreak: raising?.careStreak,
               needId: need.id,
+              nextNeedId: raising?.nextNeedId,
               proof: true,
               message: raising?.message
             }

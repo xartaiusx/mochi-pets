@@ -18,6 +18,7 @@ import {
   resolveSpiritRouteMastery,
   techniqueMasteryLevelFromXp,
   selectMochiSpiritQuest,
+  selectSpiritRaisingNeed,
   resolveSpiritAttunement,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
@@ -140,6 +141,9 @@ interface AlphaHudState {
   trainingXp: number;
   trainingVictories: number;
   raisingProof: boolean;
+  raisingCareStreak: number;
+  lastRaisingNeedId?: string;
+  nextRaisingNeedId?: string;
   activeQuestId?: string;
   completedQuestSteps: string[];
   completedQuestIds: string[];
@@ -322,8 +326,10 @@ export interface AlphaWorldStatePatch {
     nextQuestId?: string;
   };
   raising?: {
+    careStreak?: number;
     message?: string;
     needId: string;
+    nextNeedId?: string;
     proof: boolean;
   };
   sealClaimed?: boolean;
@@ -432,6 +438,7 @@ function defaultAlphaState(): AlphaHudState {
     trainingXp: 0,
     trainingVictories: 0,
     raisingProof: false,
+    raisingCareStreak: 0,
     completedQuestSteps: [],
     completedQuestIds: [],
     questStepsById: {},
@@ -717,7 +724,7 @@ function createHud() {
         : 'Team Match: pending';
     }
     if (trainingLabel) {
-      trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? 'raised' : 'needs care'}`;
+      trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? `care streak ${state.raisingCareStreak}` : 'needs care'}`;
     }
     if (growthLabel) {
       growthLabel.textContent = state.growthRiteProof
@@ -1188,6 +1195,9 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
 
   if (patch.raising) {
     state.raisingProof = patch.raising.proof || state.raisingProof;
+    state.raisingCareStreak = Math.max(state.raisingCareStreak, Number(patch.raising.careStreak) || 0);
+    state.lastRaisingNeedId = patch.raising.needId || state.lastRaisingNeedId;
+    state.nextRaisingNeedId = patch.raising.nextNeedId || state.nextRaisingNeedId;
     appendUniqueAlphaChat(state, patch.raising.message || `Raising care recorded: ${patch.raising.needId}.`);
   }
 
@@ -1449,10 +1459,12 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
 
   if (type === 'spirit.raise') {
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
+    const need = selectSpiritRaisingNeed(spirit.id, state.raisingCareStreak) || spirit.raisingNeeds[0];
     return {
       spiritId: spirit.id,
-      needId: spirit.raisingNeeds[0].id,
-      currentBond: state.bond || 1
+      needId: need.id,
+      currentBond: state.bond || 1,
+      careStreak: state.raisingCareStreak
     };
   }
 
@@ -1974,14 +1986,19 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   if (type === 'spirit.raise') {
     const spiritId = String(payload.spiritId || state.spiritId || 'lirabao');
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
-    const needId = String(payload.needId || spirit.raisingNeeds[0].id);
-    const result = resolveSpiritRaisingAction(spirit.id, needId, Number(payload.currentBond || state.bond || 1));
+    const careStreak = Number(payload.careStreak ?? state.raisingCareStreak ?? 0);
+    const need = selectSpiritRaisingNeed(spirit.id, careStreak) || spirit.raisingNeeds[0];
+    const needId = String(payload.needId || need.id);
+    const result = resolveSpiritRaisingAction(spirit.id, needId, Number(payload.currentBond || state.bond || 1), careStreak);
     state.spiritId = spirit.id;
     if (!state.attunedSpiritIds.includes(spirit.id)) {
       state.attunedSpiritIds.push(spirit.id);
     }
     if (result.ok) {
       state.raisingProof = true;
+      state.raisingCareStreak = Math.max(state.raisingCareStreak, result.careStreak);
+      state.lastRaisingNeedId = result.needId;
+      state.nextRaisingNeedId = result.nextNeedId;
       state.bond = Math.max(state.bond, result.bond);
       state.growth = result.growth;
     }

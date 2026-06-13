@@ -30,6 +30,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritResearchFolio,
   resolveSpiritTeamSparMatch,
+  selectSpiritRaisingNeed,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
@@ -599,7 +600,18 @@ describe('alpha contract', () => {
       ok: true,
       spiritId: 'lirabao',
       needId: 'jade-brush-groom',
-      growth: 'sprout'
+      growth: 'sprout',
+      careStreak: 1,
+      nextNeedId: 'mooncake-share'
+    });
+    expect(selectSpiritRaisingNeed('lirabao', 0)?.id).toBe('jade-brush-groom');
+    expect(selectSpiritRaisingNeed('lirabao', 1)?.id).toBe('mooncake-share');
+    expect(resolveSpiritRaisingAction('lirabao', 'mooncake-share', raising.bond, raising.careStreak)).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      needId: 'mooncake-share',
+      careStreak: 2,
+      nextNeedId: 'jade-brush-groom'
     });
 
     expect(MOCHI_SPIRIT_QUESTS.map((quest) => quest.id)).toEqual([
