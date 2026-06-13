@@ -267,11 +267,11 @@ ${failures}
 ## Next Actions
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
+Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${summaryReport.git.branch || '<game-branch>'} to ${summaryReport.git.upstream || '<game-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Mochirii branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
+Push C:\\Users\\xtyty\\Documents\\Mochirii branch ${summaryReport.siteGit.branch || '<site-branch>'} to ${summaryReport.siteGit.upstream || '<site-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 \`\`\`text

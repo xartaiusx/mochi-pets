@@ -17,8 +17,8 @@ const generatedAt = new Date().toISOString();
 const gitState = readGitState();
 const siteGitState = readGitStateAt(siteRepoPath);
 const prState = {
-  game: readPr('xartaiusx/mochi-social', '1', gitState.localHead),
-  site: readPr('Mochirii-Wushu/Mochirii', '258', siteGitState.localHead)
+  game: readPr('xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || gitState.branch, gitState.localHead),
+  site: readPr('Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || siteGitState.branch, siteGitState.localHead)
 };
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
@@ -149,11 +149,16 @@ function readExternalGateSummary() {
   };
 }
 
-function readPr(repo, number, localHead) {
-  const fixture = readPrFixture(repo, number, localHead);
+function readPr(repo, selector, localHead) {
+  const normalizedSelector = sanitize(selector || '');
+  const fixture = readPrFixture(repo, normalizedSelector, localHead);
   if (fixture) return fixture;
 
-  const result = spawnSync('gh', ['pr', 'view', number, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title'], {
+  const explicitNumber = /^\d+$/.test(normalizedSelector);
+  const args = explicitNumber
+    ? ['pr', 'view', normalizedSelector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title']
+    : ['pr', 'list', '--repo', repo, '--head', normalizedSelector, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title'];
+  const result = spawnSync('gh', args, {
     cwd: root,
     encoding: 'utf8',
     shell: false
@@ -161,30 +166,58 @@ function readPr(repo, number, localHead) {
   if (result.status !== 0) {
     return {
       repo,
-      number,
+      selector: normalizedSelector,
       ok: false,
       message: sanitize(result.stderr || result.error?.message || 'GitHub PR state could not be read.')
     };
   }
 
   try {
-    const data = JSON.parse(result.stdout);
+    const parsed = JSON.parse(result.stdout);
+    const data = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (!data) {
+      return {
+        repo,
+        selector: normalizedSelector,
+        ok: false,
+        message: explicitNumber ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for branch ${normalizedSelector}.`
+      };
+    }
+    if (Array.isArray(parsed) && parsed.length > 1) {
+      return {
+        repo,
+        selector: normalizedSelector,
+        ok: false,
+        message: `Multiple open GitHub PRs were found for branch ${normalizedSelector}. Set an explicit PR number.`
+      };
+    }
     const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
     const failingChecks = checks
       .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
       .map((check) => sanitize(check.name || check.context))
       .filter(Boolean);
     const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+    const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+    const failures = [
+      data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
+      data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+      localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
+      ...failingChecks.map((check) => `failing check ${check}`)
+    ].filter(Boolean);
     return {
       repo,
-      number,
-      ok: (data.mergeStateStatus === 'CLEAN' || data.isDraft === true) && failingChecks.length === 0,
+      selector: normalizedSelector,
+      number: data.number || (explicitNumber ? normalizedSelector : null),
+      ok: failures.length === 0,
+      gateFailures: failures,
       url: sanitize(data.url),
       title: sanitize(data.title),
+      state: sanitize(data.state),
+      headRefName: sanitize(data.headRefName),
       isDraft: data.isDraft === true,
       headRefOid: sanitize(data.headRefOid),
       localHead: sanitize(localHead),
-      localHeadMatchesPrHead: Boolean(localHead && data.headRefOid && localHead === data.headRefOid),
+      localHeadMatchesPrHead,
       mergeStateStatus: sanitize(data.mergeStateStatus),
       checkNames,
       failingChecks
@@ -192,31 +225,31 @@ function readPr(repo, number, localHead) {
   } catch {
     return {
       repo,
-      number,
+      selector: normalizedSelector,
       ok: false,
       message: 'GitHub PR JSON could not be parsed.'
     };
   }
 }
 
-function readPrFixture(repo, number, localHead) {
+function readPrFixture(repo, selector, localHead) {
   if (!prStateFixturePath) return null;
   const fixture = readJson(resolve(prStateFixturePath));
   if (!fixture.ok) {
     return {
       repo,
-      number,
+      selector,
       ok: false,
       message: `PR fixture could not be read: ${fixture.message}`
     };
   }
 
-  const key = `${repo}#${number}`;
-  const data = fixture.data?.[key] || fixture.data?.[repo]?.[number] || null;
+  const key = `${repo}#${selector}`;
+  const data = fixture.data?.[key] || fixture.data?.[repo]?.[selector] || null;
   if (!data) {
     return {
       repo,
-      number,
+      selector,
       ok: false,
       message: `PR fixture missing ${key}`
     };
@@ -228,16 +261,27 @@ function readPrFixture(repo, number, localHead) {
     .map((check) => sanitize(check.name || check.context))
     .filter(Boolean);
   const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const failures = [
+    data.state === 'OPEN' || !data.state ? '' : `PR state is ${data.state}`,
+    data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
+    ...failingChecks.map((check) => `failing check ${check}`)
+  ].filter(Boolean);
   return {
     repo,
-    number,
-    ok: (data.mergeStateStatus === 'CLEAN' || data.isDraft === true) && failingChecks.length === 0,
+    selector,
+    number: data.number || (/^\d+$/.test(selector) ? selector : null),
+    ok: failures.length === 0,
+    gateFailures: failures,
     url: sanitize(data.url),
     title: sanitize(data.title),
+    state: sanitize(data.state || 'OPEN'),
+    headRefName: sanitize(data.headRefName),
     isDraft: data.isDraft === true,
     headRefOid: sanitize(data.headRefOid),
     localHead: sanitize(localHead),
-    localHeadMatchesPrHead: Boolean(localHead && data.headRefOid && localHead === data.headRefOid),
+    localHeadMatchesPrHead,
     mergeStateStatus: sanitize(data.mergeStateStatus),
     checkNames,
     failingChecks
@@ -677,11 +721,12 @@ function formatPrState(prState) {
 
 function formatPr(label, pr) {
   if (!pr) return `- ${label}: not recorded.`;
-  if (!pr.ok) {
-    return `- ${label}: ${pr.repo}#${pr.number} not verified (${pr.message || 'unknown'}).`;
+  if (!pr.url) {
+    return `- ${label}: ${pr.repo}#${pr.number || pr.selector || 'unknown'} not verified (${pr.message || 'unknown'}).`;
   }
   const localMatch = pr.localHeadMatchesPrHead ? 'local HEAD matches PR head' : 'local HEAD does not match PR head';
   const checks = Array.isArray(pr.checkNames) && pr.checkNames.length ? pr.checkNames.join(', ') : 'none';
   const draft = pr.isDraft ? 'draft' : 'ready';
-  return `- ${label}: ${pr.url} ${draft} ${pr.mergeStateStatus} remote=${pr.headRefOid || 'unknown'} ${localMatch}; checks=${checks}`;
+  const gate = pr.ok ? 'verified' : `not verified: ${(pr.gateFailures || [pr.message || 'unknown']).join('; ')}`;
+  return `- ${label}: ${pr.url} ${draft} state=${pr.state || 'unknown'} ${pr.mergeStateStatus} remote=${pr.headRefOid || 'unknown'} ${localMatch}; checks=${checks}; ${gate}`;
 }

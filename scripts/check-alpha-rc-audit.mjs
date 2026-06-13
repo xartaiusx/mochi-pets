@@ -1052,8 +1052,8 @@ function syncExternalGateSnapshotFailures(syncReport) {
 }
 
 function addPrRequirements() {
-  checkPr('github.game-pr', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social');
-  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', '258');
+  checkPr('github.game-pr', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
+  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
 }
 
 function addLocalBranchRequirements() {
@@ -1181,30 +1181,74 @@ function requireTextIncludes(id, description, file, snippets, label) {
     { file: label, missing });
 }
 
-function checkPr(id, repo, pr, requiredCheckName) {
-  const result = command(resolveGh(), ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
-  if (!result.ok) {
-    add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, pr, stderr: sanitize(result.stderr) });
+function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
+  const localState = localRepoPath ? readPrLocalGitState(localRepoPath) : null;
+  const selector = String(pr || '').trim();
+  const query = selector || localState?.branch || '';
+  if (!query) {
+    add(id, 'unverified', 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
     return;
   }
-  const data = parseJson(result.stdout);
+
+  const result = selector
+    ? command(resolveGh(), ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
+    : command(resolveGh(), ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
+  if (!result.ok) {
+    add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, selector: query, stderr: sanitize(result.stderr) });
+    return;
+  }
+  const parsed = parseJson(result.stdout);
+  const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
-    add(id, 'unverified', 'GitHub PR JSON could not be parsed.', { repo, pr });
+    add(id, 'fail', selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, { repo, selector: query, localState });
+    return;
+  }
+  if (Array.isArray(parsed) && parsed.length > 1) {
+    add(id, 'fail', `Multiple open GitHub PRs were found for current branch ${query}; set ${id === 'github.game-pr' ? 'MOCHI_SOCIAL_GAME_PR_NUMBER' : 'MOCHI_SOCIAL_SITE_PR_NUMBER'} to choose one.`, {
+      repo,
+      selector: query,
+      prNumbers: parsed.map((entry) => entry.number).filter(Boolean)
+    });
     return;
   }
   const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
   const failing = checks.filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()));
   const required = requiredCheckName ? checks.find((check) => check.name === requiredCheckName || check.context === requiredCheckName) : true;
+  const localHead = localState?.localHead || '';
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const failures = [
+    data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
+    data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    localHead && data.headRefOid && !localHeadMatchesPrHead ? 'PR head does not match current local HEAD' : '',
+    required ? '' : `missing required check ${requiredCheckName}`,
+    ...failing.map((check) => `failing check ${check.name || check.context || 'unknown'}`)
+  ].filter(Boolean);
   const mergeableOrDraft = data.mergeStateStatus === 'CLEAN' || data.isDraft === true;
-  const ok = mergeableOrDraft && failing.length === 0 && Boolean(required);
-  add(id, ok ? 'pass' : 'fail', ok ? `${repo}#${pr} has green checks${data.isDraft === true ? ' and remains draft' : ''}.` : `${repo}#${pr} is not clean or draft-green, has failing checks, or is missing required checks.`, {
+  const ok = data.state === 'OPEN' && mergeableOrDraft && failing.length === 0 && Boolean(required) && !failures.length;
+  add(id, ok ? 'pass' : 'fail', ok ? `${repo}#${data.number || query} is open, matches local HEAD, and has green checks${data.isDraft === true ? ' while draft' : ''}.` : failures.join('; '), {
     url: data.url,
+    number: data.number,
+    state: data.state,
+    headRefName: data.headRefName,
     headRefOid: data.headRefOid,
+    localBranch: localState?.branch,
+    localHead,
+    localHeadMatchesPrHead,
     isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checks: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)
   });
+}
+
+function readPrLocalGitState(cwd) {
+  const branch = commandAt(cwd, 'git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const head = commandAt(cwd, 'git', ['rev-parse', 'HEAD']);
+  return {
+    branch: branch.ok ? firstLine(branch.stdout) : '',
+    localHead: head.ok ? firstLine(head.stdout) : '',
+    errors: [branch, head].filter((result) => !result.ok).map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
 }
 
 function add(id, status, message, evidence = {}) {

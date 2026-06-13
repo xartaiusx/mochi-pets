@@ -95,8 +95,8 @@ try {
 }
 
 async function run() {
-  checkGitHubPr('game PR', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social', root);
-  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', '258', undefined, siteRepoPath);
+  checkGitHubPr('game PR', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
+  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
   checkSupabasePreviewSecrets();
   checkFly();
   await checkLiveGameContract();
@@ -105,15 +105,38 @@ async function run() {
 }
 
 function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
-  const result = command('gh', ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
-  if (!result.ok) {
-    add('fail', name, 'GitHub PR state could not be read.', { stderr: result.stderr });
+  const localState = localRepoPath ? readLocalGitState(localRepoPath) : null;
+  const selector = String(pr || '').trim();
+  const query = selector || localState?.branch || '';
+  if (!query) {
+    add('fail', name, 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
     return;
   }
 
-  const data = parseJson(result.stdout);
+  const result = selector
+    ? command('gh', ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
+    : command('gh', ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
+  if (!result.ok) {
+    add('fail', name, 'GitHub PR state could not be read.', { repo, selector: query, stderr: result.stderr });
+    return;
+  }
+
+  const parsed = parseJson(result.stdout);
+  const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
-    add('fail', name, 'GitHub PR JSON could not be parsed.');
+    add('fail', name, selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, {
+      repo,
+      selector: query,
+      localState
+    });
+    return;
+  }
+  if (Array.isArray(parsed) && parsed.length > 1) {
+    add('fail', name, `Multiple open GitHub PRs were found for current branch ${query}; choose one with MOCHI_SOCIAL_${name === 'game PR' ? 'GAME' : 'SITE'}_PR_NUMBER.`, {
+      repo,
+      selector: query,
+      prNumbers: parsed.map((entry) => entry.number).filter(Boolean)
+    });
     return;
   }
 
@@ -124,17 +147,27 @@ function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   });
   const required = requiredCheckName ? checks.find((check) => check.name === requiredCheckName || check.context === requiredCheckName) : null;
   const missingRequired = requiredCheckName && !required;
+  const stateOpen = data.state === 'OPEN';
   const mergeableOrDraft = data.mergeStateStatus === 'CLEAN' || data.isDraft === true;
-  const status = mergeableOrDraft && failing.length === 0 && !missingRequired ? 'pass' : 'fail';
-  const localHead = localRepoPath ? readLocalHead(localRepoPath) : null;
+  const localHead = localState?.localHead || null;
   const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
-  const passMessage = localHead && !localHeadMatchesPrHead
-    ? 'Remote PR head has green checks; local branch sync must still prove the current checkout.'
-    : `Remote PR head has green checks${data.isDraft === true ? ' and is draft' : ''}.`;
-  add(status, name, status === 'pass' ? passMessage : 'PR is not clean or draft-green, has failing checks, or is missing a required check.', {
+  const headMismatch = Boolean(localHead && data.headRefOid && !localHeadMatchesPrHead);
+  const failures = [
+    stateOpen ? '' : `PR state is ${data.state || 'unknown'}`,
+    mergeableOrDraft ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    headMismatch ? 'PR head does not match current local HEAD' : '',
+    missingRequired ? `missing required check ${requiredCheckName}` : '',
+    ...failing.map((check) => `failing check ${check.name || check.context || 'unknown'}`)
+  ].filter(Boolean);
+  const status = failures.length === 0 ? 'pass' : 'fail';
+  add(status, name, status === 'pass' ? `Open PR head matches local HEAD with green checks${data.isDraft === true ? ' and is draft' : ''}.` : failures.join('; '), {
     url: data.url,
+    number: data.number,
+    state: data.state,
+    headRefName: data.headRefName,
     headRefOid: data.headRefOid,
     localHead,
+    localBranch: localState?.branch || null,
     localHeadMatchesPrHead,
     isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
@@ -143,9 +176,14 @@ function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   });
 }
 
-function readLocalHead(cwd) {
+function readLocalGitState(cwd) {
+  const branch = command('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd });
   const head = command('git', ['rev-parse', 'HEAD'], { cwd });
-  return head.ok ? firstLine(head.stdout) : null;
+  return {
+    branch: branch.ok ? firstLine(branch.stdout) : '',
+    localHead: head.ok ? firstLine(head.stdout) : '',
+    errors: [branch, head].filter((result) => !result.ok).map((result) => sanitizeMultiline(result.stderr || result.error || 'git command failed'))
+  };
 }
 
 function checkSupabasePreviewSecrets() {

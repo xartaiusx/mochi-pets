@@ -514,7 +514,7 @@ function buildProviderActionQueue() {
   const queue = [];
   const failures = new Set(externalGateSummary.failures || []);
   const hasExternalFailure = (needle) => [...failures].some((failure) => failure.includes(needle));
-  const branch = gitState.branch || 'codex/mochi-social-alpha-rc';
+  const branch = gitState.branch || 'codex/mochi-social-fullscale-alpha-preview';
   const upstream = gitState.upstream || `origin/${branch}`;
 
   if ((gitState.ahead || 0) > 0 || gitState.dirty.length > 0) {

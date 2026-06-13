@@ -23,6 +23,8 @@ try {
       MOCHI_SOCIAL_SYNC_APPROVAL: markdownPath,
       MOCHI_SOCIAL_SYNC_APPROVAL_JSON: reportPath,
       MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE: prFixturePath,
+      MOCHI_SOCIAL_GAME_PR_NUMBER: '1',
+      MOCHI_SOCIAL_SITE_PR_NUMBER: '258',
     },
   });
 
@@ -65,7 +67,10 @@ function writePreviewEnvFixture() {
 function writePrFixture() {
   writeFileSync(prFixturePath, `${JSON.stringify({
     'xartaiusx/mochi-social#1': {
+      number: 1,
       url: 'https://github.com/xartaiusx/mochi-social/pull/1',
+      state: 'OPEN',
+      headRefName: 'codex/mochi-social-alpha-rc',
       headRefOid: '1111111111111111111111111111111111111111',
       mergeStateStatus: 'CLEAN',
       isDraft: true,
@@ -75,7 +80,10 @@ function writePrFixture() {
       ],
     },
     'Mochirii-Wushu/Mochirii#258': {
+      number: 258,
       url: 'https://github.com/Mochirii-Wushu/Mochirii/pull/258',
+      state: 'OPEN',
+      headRefName: 'codex/mochi-social-alpha-rc',
       headRefOid: '2222222222222222222222222222222222222222',
       mergeStateStatus: 'CLEAN',
       isDraft: true,

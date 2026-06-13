@@ -15,7 +15,7 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 
 ## Starting Point
 
-- Game repo PR: `xartaiusx/mochi-social`, branch `codex/mochi-social-alpha-rc`.
+- Game repo PR: `xartaiusx/mochi-social`, branch `codex/mochi-social-fullscale-alpha-preview`.
 - Website repo PR: `Mochirii-Wushu/Mochirii`, branch `codex/mochi-social-alpha-rc`.
 - Game runtime target: Fly app `mochi-social-game`.
 - Website preview target: Mochirii Vercel preview route `/games/mochi-social`.

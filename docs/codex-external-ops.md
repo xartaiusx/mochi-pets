@@ -81,7 +81,7 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 
 | Surface | Owner | Value |
 | --- | --- | --- |
-| Game branch | `xartaiusx/mochi-social` | `codex/mochi-social-alpha-rc` |
+| Game branch | `xartaiusx/mochi-social` | `codex/mochi-social-fullscale-alpha-preview` |
 | Site branch | `Mochirii-Wushu/Mochirii` | `codex/mochi-social-alpha-rc` |
 | Game host | Fly | `mochi-social-game`, region `sjc` |
 | Game saves | Fly volume | `mochi_social_data` mounted at `/data` |
