@@ -614,6 +614,61 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value alpha lore');
   });
 
+  it('records the Jade Court Research Folio from the journal pavilion after field and battle proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'aozhen');
+    player.variables.set('mochiSocial.spirit.aozhen.bond', 3);
+    player.variables.set('mochiSocial.spirit.aozhen.growth', 'sprout');
+    player.variables.set('mochiSocial.world.discoveredRoutes', ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
+    player.variables.set('mochiSocial.spirits.habitatBondProof', true);
+    player.variables.set('mochiSocial.spirits.habitatBond', 'jade-court-habitat-bond');
+    player.variables.set('mochiSocial.spirit.aozhen.technique.lastMove', 'skybell-guard');
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
+    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
+
+    await runAction(JournalPavilion(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('jade-court-research-folio');
+    expect(player.variables.get('mochiSocial.spirits.journalCount')).toBe(3);
+    expect(player.variables.get('mochiSocial.spirits.researchProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.researchFolio')).toBe('jade-court-research-folio');
+    expect(player.variables.get('mochiSocial.spirits.researchFolioName')).toBe('Jade Court Research Folio');
+    expect(player.variables.get('mochiSocial.spirits.researchScore')).toBe(20);
+    expect(player.variables.get('mochiSocial.spirits.researchFolioClaimed')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Journal updated');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit research folio recorded' });
+    expect(player.saves.at(-1)?.options.source).toBe('journal-pavilion');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        journal: {
+          activeSpiritId: 'aozhen',
+          discoveredCount: 3,
+          totalCount: 3,
+          proof: true,
+          message: 'Mochirii spirit journal updated: 3/3 records. Aozhen is sprout growth, rare rarity, scout role.'
+        },
+        research: {
+          folioId: 'jade-court-research-folio',
+          folioName: 'Jade Court Research Folio',
+          title: 'First Mochirii Field Guide',
+          habitat: 'Jade Lantern Court',
+          activeSpiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+          score: 20,
+          rewardItemId: 'jade-court-research-folio',
+          proof: true,
+          message: 'Jade Court Research Folio recorded: Aozhen anchors a full first-court research folio with roster, routes, journal, habitat, technique, tactic, affinity, and training proof.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Court Research Folio recorded');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha field-guide proof');
+  });
+
   it('records Moonbridge field expedition scouting as no-real-value route proof', async () => {
     const player = createFakePlayer();
 

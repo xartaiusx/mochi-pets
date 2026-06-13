@@ -47,6 +47,9 @@ assert(browserPresence.data?.hudAction?.state?.routeMasteryKnotClaimed === true,
 assert(browserPresence.data?.hudAction?.state?.habitatBondProof === true, 'HUD action proof must include the shared habitat bond proof');
 assert(browserPresence.data?.hudAction?.state?.habitatBondId === 'jade-court-habitat-bond', 'HUD action proof must include the Jade Court Habitat Bond id');
 assert(browserPresence.data?.hudAction?.state?.habitatTasselClaimed === true, 'HUD action proof must include the no-real-value habitat tassel proof');
+assert(browserPresence.data?.hudAction?.state?.researchProof === true, 'HUD action proof must include the spirit research folio proof');
+assert(browserPresence.data?.hudAction?.state?.researchFolioId === 'jade-court-research-folio', 'HUD action proof must include the Jade Court Research Folio id');
+assert(browserPresence.data?.hudAction?.state?.researchFolioClaimed === true, 'HUD action proof must include the no-real-value research folio proof');
 assert(browserPresence.data?.hudAction?.state?.harmonyFormProof === true, 'HUD action proof must include party harmony proof');
 assert(browserPresence.data?.hudAction?.state?.harmonyFormId === 'triune-jade-harmony', 'HUD action proof must include the Triune Jade Harmony id');
 assert(browserPresence.data?.hudAction?.state?.harmonySashClaimed === true, 'HUD action proof must include the no-real-value harmony sash proof');
@@ -136,6 +139,8 @@ for (const snippet of [
 assert(alphaContentSource.includes("jadeLanternCourt: 'Jade Lantern Court'"), 'Jade Lantern Court habitat constant must be present');
 assert(alphaContentSource.includes('Jade Court Habitat Bond'), 'Jade Court Habitat Bond content must be present');
 assert(alphaContentSource.includes('spirit-habitat-bond'), 'spirit habitat bond source id must be present');
+assert(alphaContentSource.includes('Jade Court Research Folio'), 'Jade Court Research Folio content must be present');
+assert(alphaContentSource.includes('spirit-research-folio'), 'spirit research folio source id must be present');
 assert(alphaContentSource.includes('Triune Jade Harmony'), 'Triune Jade Harmony content must be present');
 assert(alphaContentSource.includes('party-harmony-form'), 'party harmony source id must be present');
 assert(alphaContentSource.includes('Jade Echo Concord Trial'), 'Jade Echo Concord Trial content must be present');
@@ -236,6 +241,7 @@ const report = {
       routeInvitation: browserPresence.data?.hudAction?.state?.routeInviteProof === true,
       routeMastery: browserPresence.data?.hudAction?.state?.routeMasteryProof === true,
       habitatBond: browserPresence.data?.hudAction?.state?.habitatBondProof === true,
+      spiritResearch: browserPresence.data?.hudAction?.state?.researchProof === true,
       partyHarmony: browserPresence.data?.hudAction?.state?.harmonyFormProof === true,
       harmonyTrial: browserPresence.data?.hudAction?.state?.harmonyTrialProof === true,
       teamSparMatch: browserPresence.data?.hudAction?.state?.teamSparMatchProof === true,
@@ -424,7 +430,7 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - Canvas PNG: ${summary.evidence.screenshots.canvas.path || 'missing'} (${summary.evidence.screenshots.canvas.width}x${summary.evidence.screenshots.canvas.height})
 - Two-tab presence: ${summary.machineReview.twoTabPresence ? 'yes' : 'no'}
 - Observer movement: ${summary.machineReview.observerMovement ? 'yes' : 'no'}
-- HUD action loop: spirit capture ${summary.machineReview.hudActionLoop.spiritCapture ? 'yes' : 'no'}, spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, spirit journal ${summary.machineReview.hudActionLoop.spiritJournal ? 'yes' : 'no'}, field expedition ${summary.machineReview.hudActionLoop.fieldExpedition ? 'yes' : 'no'}, route invitation ${summary.machineReview.hudActionLoop.routeInvitation ? 'yes' : 'no'}, route mastery ${summary.machineReview.hudActionLoop.routeMastery ? 'yes' : 'no'}, habitat bond ${summary.machineReview.hudActionLoop.habitatBond ? 'yes' : 'no'}, technique mastery ${summary.machineReview.hudActionLoop.techniqueMastery ? 'yes' : 'no'}, battle tactic ${summary.machineReview.hudActionLoop.battleTactic ? 'yes' : 'no'}, guild rank ${summary.machineReview.hudActionLoop.guildRank ? 'yes' : 'no'}, growth rite ${summary.machineReview.hudActionLoop.growthRite ? 'yes' : 'no'}, affinity trial ${summary.machineReview.hudActionLoop.affinityTrial ? 'yes' : 'no'}, party formation ${summary.machineReview.hudActionLoop.partyFormation ? 'yes' : 'no'}, spar ladder ${summary.machineReview.hudActionLoop.sparLadder ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
+- HUD action loop: spirit capture ${summary.machineReview.hudActionLoop.spiritCapture ? 'yes' : 'no'}, spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, spirit journal ${summary.machineReview.hudActionLoop.spiritJournal ? 'yes' : 'no'}, field expedition ${summary.machineReview.hudActionLoop.fieldExpedition ? 'yes' : 'no'}, route invitation ${summary.machineReview.hudActionLoop.routeInvitation ? 'yes' : 'no'}, route mastery ${summary.machineReview.hudActionLoop.routeMastery ? 'yes' : 'no'}, habitat bond ${summary.machineReview.hudActionLoop.habitatBond ? 'yes' : 'no'}, spirit research ${summary.machineReview.hudActionLoop.spiritResearch ? 'yes' : 'no'}, technique mastery ${summary.machineReview.hudActionLoop.techniqueMastery ? 'yes' : 'no'}, battle tactic ${summary.machineReview.hudActionLoop.battleTactic ? 'yes' : 'no'}, guild rank ${summary.machineReview.hudActionLoop.guildRank ? 'yes' : 'no'}, growth rite ${summary.machineReview.hudActionLoop.growthRite ? 'yes' : 'no'}, affinity trial ${summary.machineReview.hudActionLoop.affinityTrial ? 'yes' : 'no'}, party formation ${summary.machineReview.hudActionLoop.partyFormation ? 'yes' : 'no'}, spar ladder ${summary.machineReview.hudActionLoop.sparLadder ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
 

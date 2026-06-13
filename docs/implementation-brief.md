@@ -8,9 +8,9 @@ Mochi Social starts as a small multiplayer social RPG that can stand alone on Fl
 - Guest-first multiplayer with visible second-player presence through RPGJS MMORPG mode.
 - One NPC dialog for social flavor.
 - One guild seal chest that grants a Mochirii Guild Seal, stores a player variable, and triggers a save slot.
-- Three Mochi Spirits: Lirabao, Jintari, and Aozhen, with capture/invitation, attunement, 3/3 journal records, Moonbridge and Cloudbell field route scouting, route spirit invitations, Jade Cloudbell route mastery, Jade Court Habitat Bond, technique mastery, battle tactic scroll planning, guild rank trial proof, Moonwell growth rite proof, affinity trials, party formation, Triune Jade Harmony, Jade Echo Concord social battle proof, Jade Mirror Team Match proof, spar ladder practice, bond/care/growth, training battle, raising, and a three-posting roleplay quest chain.
+- Three Mochi Spirits: Lirabao, Jintari, and Aozhen, with capture/invitation, attunement, 3/3 journal records, Moonbridge and Cloudbell field route scouting, route spirit invitations, Jade Cloudbell route mastery, Jade Court Habitat Bond, Jade Court Research Folio, technique mastery, battle tactic scroll planning, guild rank trial proof, Moonwell growth rite proof, affinity trials, party formation, Triune Jade Harmony, Jade Echo Concord social battle proof, Jade Mirror Team Match proof, spar ladder practice, bond/care/growth, training battle, raising, and a three-posting roleplay quest chain.
 - One habitat grove for invitation and Jade Court Habitat Bond proof, one journal pavilion, one expedition gate, one route invitation altar, one technique dojo, one tactic scroll stand, one affinity dais, one party banner for formation and harmony proof, one no-injury training ring, one quest board, one guild rank bell, and one growth moonwell that turn Mochi Spirit progression into in-world saved alpha actions.
-- A compact HUD showing title, connection/auth mode, guild seal state, active spirit state, party harmony/concord/team-match proof, market/trade proof, and Canary preview status.
+- A compact HUD showing title, connection/auth mode, guild seal state, active spirit state, Jade Court Research Folio progress, party harmony/concord/team-match proof, market/trade proof, and Canary preview status.
 
 ## Agent Priorities
 

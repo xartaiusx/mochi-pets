@@ -33,6 +33,7 @@ if (
   alphaStatus.gameplay?.spiritAttunement !== true ||
   alphaStatus.gameplay?.routeMastery !== true ||
   alphaStatus.gameplay?.habitatBonds !== true ||
+  alphaStatus.gameplay?.spiritResearch !== true ||
   alphaStatus.gameplay?.partyHarmony !== true ||
   alphaStatus.gameplay?.harmonyTrials !== true ||
   alphaStatus.gameplay?.teamSparMatches !== true ||

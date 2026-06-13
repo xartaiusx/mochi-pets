@@ -304,6 +304,51 @@ export interface SpiritHabitatBondResult {
   source: string;
 }
 
+export interface SpiritResearchFolio {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredRouteIds: readonly string[];
+  requiredJournalCount: number;
+  requiredHabitatBondId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritResearchFolioProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  discoveredRoutes: readonly string[];
+  journalDiscoveredCount: number;
+  habitatBondProof: boolean;
+  habitatBondId?: string;
+  techniqueProof: boolean;
+  tacticProof: boolean;
+  affinityProof: boolean;
+  trainingXp: number;
+}
+
+export interface SpiritResearchFolioResult {
+  ok: boolean;
+  recorded: boolean;
+  folioId: string;
+  folioName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  roster: string[];
+  discoveredRoutes: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -816,6 +861,11 @@ export const ALPHA_ITEMS = {
     name: 'Cloudbell Route Knot',
     description: 'A no-real-value field mastery proof for completing the first Mochirii route circuit.'
   },
+  researchFolio: {
+    id: 'jade-court-research-folio',
+    name: 'Jade Court Research Folio',
+    description: 'A no-real-value field-guide proof for closed-alpha Mochirii spirit research.'
+  },
   rankSeal: {
     id: 'jade-court-rank-seal',
     name: 'Jade Court Rank Seal',
@@ -1037,6 +1087,22 @@ export const SPIRIT_HABITAT_BONDS: readonly SpiritHabitatBond[] = [
     requiredScore: 15,
     rewardItemId: ALPHA_ITEMS.habitatTassel.id,
     summary: 'A no-real-value habitat trust proof for testers who invite every first-court Mochi Spirit, record the journal, care for a companion, and show local guild presence.'
+  }
+];
+
+export const SPIRIT_RESEARCH_FOLIOS: readonly SpiritResearchFolio[] = [
+  {
+    id: 'jade-court-research-folio',
+    name: 'Jade Court Research Folio',
+    title: 'First Mochirii Field Guide',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredHabitatBondId: SPIRIT_HABITAT_BONDS[0].id,
+    requiredScore: 18,
+    rewardItemId: ALPHA_ITEMS.researchFolio.id,
+    summary: 'A no-real-value research folio for testers who connect first-court species, routes, journal notes, habitat trust, and safe battle practice.'
   }
 ];
 
@@ -1490,6 +1556,92 @@ export function resolveSpiritHabitatBond(
       ? `${bond.name} recorded: ${activeName} and the first-court roster settle into ${bond.habitat} with journal, care, guild, status, and profile proof.`
       : `${bond.name} needs ${missing.join(', ')} before the shared habitat bond can be recorded.`,
     source: 'spirit-habitat-bond'
+  };
+}
+
+export function resolveSpiritResearchFolio(
+  progress: SpiritResearchFolioProgress,
+  folioId: string = SPIRIT_RESEARCH_FOLIOS[0].id
+): SpiritResearchFolioResult {
+  const folio = SPIRIT_RESEARCH_FOLIOS.find((entry) => entry.id === folioId) || SPIRIT_RESEARCH_FOLIOS[0];
+  const requiredSpiritIds = new Set(folio.requiredSpiritIds);
+  const requiredRouteIds = new Set(folio.requiredRouteIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const discoveredRoutes = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const missing: string[] = [];
+
+  for (const spiritId of folio.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const routeId of folio.requiredRouteIds) {
+    if (!discoveredRoutes.includes(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < folio.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${folio.requiredJournalCount}`);
+  }
+
+  const habitatReady = progress.habitatBondProof && progress.habitatBondId === folio.requiredHabitatBondId;
+  if (!habitatReady) {
+    missing.push(`habitat:${folio.requiredHabitatBondId}`);
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (!progress.techniqueProof) {
+    missing.push('technique');
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.affinityProof) {
+    missing.push('affinity');
+  }
+
+  if (trainingXp < 1) {
+    missing.push('training');
+  }
+
+  const score =
+    Math.min(roster.length, folio.requiredSpiritIds.length) * 2 +
+    Math.min(discoveredRoutes.length, folio.requiredRouteIds.length) * 2 +
+    Math.min(journalCount, folio.requiredJournalCount) +
+    (habitatReady ? 3 : 0) +
+    (progress.techniqueProof ? 1 : 0) +
+    (progress.tacticProof ? 1 : 0) +
+    (progress.affinityProof ? 1 : 0) +
+    Math.min(trainingXp, 1);
+  const recorded = missing.length === 0 && score >= folio.requiredScore;
+  const activeName = getMochiSpirit(activeSpiritId || '')?.name || 'your Mochi Spirit';
+
+  return {
+    ok: true,
+    recorded,
+    folioId: folio.id,
+    folioName: folio.name,
+    title: folio.title,
+    habitat: folio.habitat,
+    activeSpiritId,
+    roster,
+    discoveredRoutes,
+    score,
+    requiredScore: folio.requiredScore,
+    missing,
+    rewardItemId: folio.rewardItemId,
+    message: recorded
+      ? `${folio.name} recorded: ${activeName} anchors a full first-court research folio with roster, routes, journal, habitat, technique, tactic, affinity, and training proof.`
+      : `${folio.name} needs ${missing.join(', ')} before the first Mochirii field guide can be recorded.`,
+    source: 'spirit-research-folio'
   };
 }
 

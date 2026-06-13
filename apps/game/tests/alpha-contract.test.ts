@@ -8,6 +8,7 @@ import {
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
+  SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
   growthStageFromBond,
@@ -27,6 +28,7 @@ import {
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
+  resolveSpiritResearchFolio,
   resolveSpiritTeamSparMatch,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
@@ -48,6 +50,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -88,6 +91,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -281,6 +285,47 @@ describe('alpha contract', () => {
       guildBuddyProof: true,
       statusMood: 'cozy'
     }).bonded).toBe(false);
+
+    expect(SPIRIT_RESEARCH_FOLIOS.map((folio) => folio.id)).toEqual(['jade-court-research-folio']);
+    const research = resolveSpiritResearchFolio({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      techniqueProof: true,
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 3
+    });
+    expect(research).toMatchObject({
+      ok: true,
+      recorded: true,
+      folioId: 'jade-court-research-folio',
+      folioName: 'Jade Court Research Folio',
+      title: 'First Mochirii Field Guide',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      score: 20,
+      requiredScore: 18,
+      rewardItemId: 'jade-court-research-folio',
+      source: 'spirit-research-folio'
+    });
+    expect(research.message).toContain('roster, routes, journal, habitat, technique, tactic, affinity, and training proof');
+    expect(resolveSpiritResearchFolio({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      habitatBondProof: false,
+      techniqueProof: true,
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 3
+    }).recorded).toBe(false);
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

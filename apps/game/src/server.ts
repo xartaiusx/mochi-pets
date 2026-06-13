@@ -77,6 +77,19 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  research?: {
+    activeSpiritId?: string;
+    discoveredRoutes: string[];
+    folioId: string;
+    folioName: string;
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    title: string;
+  };
   harmonyForm?: {
     formId: string;
     message?: string;
@@ -386,6 +399,33 @@ type SpiritHabitatBondProgress = {
   statusMood?: string;
 };
 
+type SpiritResearchFolio = {
+  id: string;
+  name: string;
+  title: string;
+  habitat: 'Jade Lantern Court';
+  requiredSpiritIds: readonly string[];
+  requiredRouteIds: readonly string[];
+  requiredJournalCount: number;
+  requiredHabitatBondId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritResearchFolioProgress = {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  discoveredRoutes: readonly string[];
+  journalDiscoveredCount: number;
+  habitatBondProof: boolean;
+  habitatBondId?: string;
+  techniqueProof: boolean;
+  tacticProof: boolean;
+  affinityProof: boolean;
+  trainingXp: number;
+};
+
 type SpiritHarmonyForm = {
   id: string;
   name: string;
@@ -511,6 +551,11 @@ const alphaItems = {
     id: 'cloudbell-route-knot',
     name: 'Cloudbell Route Knot',
     description: 'A no-real-value field mastery proof for completing the first Mochirii route circuit.'
+  },
+  researchFolio: {
+    id: 'jade-court-research-folio',
+    name: 'Jade Court Research Folio',
+    description: 'A no-real-value field-guide proof for closed-alpha Mochirii spirit research.'
   },
   habitatTassel: {
     id: 'jade-court-habitat-tassel',
@@ -837,6 +882,22 @@ const habitatBonds: readonly SpiritHabitatBond[] = [
   }
 ];
 
+const researchFolios: readonly SpiritResearchFolio[] = [
+  {
+    id: 'jade-court-research-folio',
+    name: 'Jade Court Research Folio',
+    title: 'First Mochirii Field Guide',
+    habitat: 'Jade Lantern Court',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredRouteIds: expeditionRoutes.map((route) => route.id),
+    requiredJournalCount: spirits.length,
+    requiredHabitatBondId: habitatBonds[0].id,
+    requiredScore: 18,
+    rewardItemId: alphaItems.researchFolio.id,
+    summary: 'A no-real-value research folio for testers who connect first-court species, routes, journal notes, habitat trust, and safe battle practice.'
+  }
+];
+
 const spiritGrowthRites: readonly SpiritGrowthRite[] = [
   {
     id: 'moonwell-bloom-rite',
@@ -1139,6 +1200,89 @@ function resolveSpiritHabitatBond(progress: SpiritHabitatBondProgress, bondId: s
       ? `${bond.name} recorded: ${activeName} and the first-court roster settle into ${bond.habitat} with journal, care, guild, status, and profile proof.`
       : `${bond.name} needs ${missing.join(', ')} before the shared habitat bond can be recorded.`,
     source: 'spirit-habitat-bond'
+  };
+}
+
+function resolveSpiritResearchFolio(progress: SpiritResearchFolioProgress, folioId: string = researchFolios[0].id) {
+  const folio = researchFolios.find((entry) => entry.id === folioId) || researchFolios[0];
+  const requiredSpiritIds = new Set(folio.requiredSpiritIds);
+  const requiredRouteIds = new Set(folio.requiredRouteIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const discoveredRoutes = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const missing: string[] = [];
+
+  for (const spiritId of folio.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const routeId of folio.requiredRouteIds) {
+    if (!discoveredRoutes.includes(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < folio.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${folio.requiredJournalCount}`);
+  }
+
+  const habitatReady = progress.habitatBondProof && progress.habitatBondId === folio.requiredHabitatBondId;
+  if (!habitatReady) {
+    missing.push(`habitat:${folio.requiredHabitatBondId}`);
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (!progress.techniqueProof) {
+    missing.push('technique');
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.affinityProof) {
+    missing.push('affinity');
+  }
+
+  if (trainingXp < 1) {
+    missing.push('training');
+  }
+
+  const score =
+    Math.min(roster.length, folio.requiredSpiritIds.length) * 2 +
+    Math.min(discoveredRoutes.length, folio.requiredRouteIds.length) * 2 +
+    Math.min(journalCount, folio.requiredJournalCount) +
+    (habitatReady ? 3 : 0) +
+    (progress.techniqueProof ? 1 : 0) +
+    (progress.tacticProof ? 1 : 0) +
+    (progress.affinityProof ? 1 : 0) +
+    Math.min(trainingXp, 1);
+  const recorded = missing.length === 0 && score >= folio.requiredScore;
+  const activeName = getSpirit(activeSpiritId || '')?.name || 'your Mochi Spirit';
+
+  return {
+    ok: true,
+    recorded,
+    folioId: folio.id,
+    folioName: folio.name,
+    title: folio.title,
+    habitat: folio.habitat,
+    activeSpiritId,
+    roster,
+    discoveredRoutes,
+    score,
+    requiredScore: folio.requiredScore,
+    missing,
+    rewardItemId: folio.rewardItemId,
+    message: recorded
+      ? `${folio.name} recorded: ${activeName} anchors a full first-court research folio with roster, routes, journal, habitat, technique, tactic, affinity, and training proof.`
+      : `${folio.name} needs ${missing.join(', ')} before the first Mochirii field guide can be recorded.`,
+    source: 'spirit-research-folio'
   };
 }
 
@@ -2248,8 +2392,25 @@ function journalPavilion(): EventDefinition {
       actingPlayer.setVariable('mochiSocial.spirits.journalViewed', true);
       actingPlayer.setVariable('mochiSocial.spirits.journalDiscovered', journal.records.filter((record) => record.discovered).map((record) => record.spiritId));
       actingPlayer.setVariable('mochiSocial.spirits.journalCount', journal.discoveredCount);
-      actingPlayer.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });
-      emitAlphaHudState(actingPlayer, {
+      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const activeSpirit = journal.activeSpiritId || activeSpiritId(actingPlayer) || roster[0];
+      const research = resolveSpiritResearchFolio(
+        {
+          roster,
+          activeSpiritId: activeSpirit,
+          discoveredRoutes,
+          journalDiscoveredCount: journal.discoveredCount,
+          habitatBondProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.habitatBondProof')),
+          habitatBondId: actingPlayer.getVariable<string>('mochiSocial.spirits.habitatBond'),
+          techniqueProof: roster.some((spiritId) => Boolean(actingPlayer.getVariable<string>(`mochiSocial.spirit.${spiritId}.technique.lastMove`))),
+          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+          affinityProof: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+          trainingXp: trainingXpTotal(actingPlayer, roster)
+        },
+        researchFolios[0].id
+      );
+      const patch: AlphaHudStatePatch = {
         journal: {
           activeSpiritId: journal.activeSpiritId,
           discoveredCount: journal.discoveredCount,
@@ -2257,9 +2418,40 @@ function journalPavilion(): EventDefinition {
           proof: true,
           message: journal.message
         }
-      });
-      await actingPlayer.save('auto', { title: 'Mochi Spirit journal reviewed' }, { reason: 'auto', source: 'journal-pavilion' });
-      showAlphaPrompt(actingPlayer, `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`);
+      };
+      let prompt = `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`;
+      let saveTitle = 'Mochi Spirit journal reviewed';
+
+      if (research.recorded) {
+        actingPlayer.setVariable('mochiSocial.spirits.researchProof', true);
+        actingPlayer.setVariable('mochiSocial.spirits.researchFolio', research.folioId);
+        actingPlayer.setVariable('mochiSocial.spirits.researchFolioName', research.folioName);
+        actingPlayer.setVariable('mochiSocial.spirits.researchScore', research.score);
+        if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.researchFolioClaimed')) {
+          actingPlayer.addItem(alphaItems.researchFolio, 1);
+          actingPlayer.setVariable('mochiSocial.spirits.researchFolioClaimed', true);
+        }
+        patch.research = {
+          folioId: research.folioId,
+          folioName: research.folioName,
+          title: research.title,
+          habitat: research.habitat,
+          activeSpiritId: research.activeSpiritId,
+          roster: research.roster,
+          discoveredRoutes: research.discoveredRoutes,
+          score: research.score,
+          rewardItemId: research.rewardItemId,
+          proof: true,
+          message: research.message
+        };
+        prompt = `${journal.message} ${research.message} The Jade Court Research Folio is no-real-value closed-alpha field-guide proof.`;
+        saveTitle = 'Mochi Spirit research folio recorded';
+      }
+
+      actingPlayer.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });
+      emitAlphaHudState(actingPlayer, patch);
+      await actingPlayer.save('auto', { title: saveTitle }, { reason: 'auto', source: 'journal-pavilion' });
+      showAlphaPrompt(actingPlayer, prompt);
     }
   };
 }

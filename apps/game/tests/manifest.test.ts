@@ -45,6 +45,7 @@ describe('game manifest', () => {
         routeInvitations: true,
         routeMastery: true,
         habitatBonds: true,
+        spiritResearch: true,
         partyFormation: true,
         partyHarmony: true,
         harmonyTrials: true,

@@ -58,6 +58,7 @@ async function run() {
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
   assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
   assert(manifest.body.gameplay?.habitatBonds === true, 'Manifest must expose Mochi Spirit habitat bonds.');
+  assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -81,6 +82,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
   assert(alphaStatus.body.gameplay?.habitatBonds === true, 'Alpha status must expose Mochi Spirit habitat bonds.');
+  assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -223,6 +225,24 @@ async function run() {
         profileViewed: true,
         guildBuddyProof: true,
         statusMood: 'cozy',
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-research`,
+      type: 'spirit.research',
+      payload: {
+        folioId: 'jade-court-research-folio',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        journalDiscoveredCount: 3,
+        habitatBondProof: true,
+        habitatBondId: 'jade-court-habitat-bond',
+        techniqueProof: true,
+        tacticProof: true,
+        affinityProof: true,
+        trainingXp: 3,
         noRealValue: true
       }
     },

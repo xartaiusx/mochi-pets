@@ -11,6 +11,7 @@ import {
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
+  SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_TEAM_SPAR_MATCHES,
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
@@ -26,6 +27,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritResearchFolio,
   resolveSpiritRouteMastery,
   resolveSpiritRouteInvitation,
   resolveSpiritSparLadder,
@@ -70,6 +72,19 @@ type AlphaHudStatePatch = {
     activeSpiritId?: string;
     bondId: string;
     bondName: string;
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    title: string;
+  };
+  research?: {
+    activeSpiritId?: string;
+    discoveredRoutes: string[];
+    folioId: string;
+    folioName: string;
     habitat: string;
     message?: string;
     proof: boolean;
@@ -589,8 +604,25 @@ export function JournalPavilion(): EventDefinition {
       player.setVariable('mochiSocial.spirits.journalViewed', true);
       player.setVariable('mochiSocial.spirits.journalDiscovered', journal.records.filter((record) => record.discovered).map((record) => record.spiritId));
       player.setVariable('mochiSocial.spirits.journalCount', journal.discoveredCount);
-      player.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });
-      emitAlphaHudState(player, {
+      const discoveredRoutesRaw = player.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const activeSpirit = journal.activeSpiritId || activeSpiritId(player) || roster[0];
+      const research = resolveSpiritResearchFolio(
+        {
+          roster,
+          activeSpiritId: activeSpirit,
+          discoveredRoutes,
+          journalDiscoveredCount: journal.discoveredCount,
+          habitatBondProof: Boolean(player.getVariable<boolean>('mochiSocial.spirits.habitatBondProof')),
+          habitatBondId: player.getVariable<string>('mochiSocial.spirits.habitatBond'),
+          techniqueProof: roster.some((spiritId) => Boolean(player.getVariable<string>(`mochiSocial.spirit.${spiritId}.technique.lastMove`))),
+          tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+          affinityProof: Number(player.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+          trainingXp: trainingXpTotal(player, roster)
+        },
+        SPIRIT_RESEARCH_FOLIOS[0].id
+      );
+      const patch: AlphaHudStatePatch = {
         journal: {
           activeSpiritId: journal.activeSpiritId,
           discoveredCount: journal.discoveredCount,
@@ -598,9 +630,40 @@ export function JournalPavilion(): EventDefinition {
           proof: true,
           message: journal.message
         }
-      });
-      await player.save('auto', { title: 'Mochi Spirit journal reviewed' }, { reason: 'auto', source: 'journal-pavilion' });
-      showAlphaPrompt(player, `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`);
+      };
+      let prompt = `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`;
+      let saveTitle = 'Mochi Spirit journal reviewed';
+
+      if (research.recorded) {
+        player.setVariable('mochiSocial.spirits.researchProof', true);
+        player.setVariable('mochiSocial.spirits.researchFolio', research.folioId);
+        player.setVariable('mochiSocial.spirits.researchFolioName', research.folioName);
+        player.setVariable('mochiSocial.spirits.researchScore', research.score);
+        if (!player.getVariable<boolean>('mochiSocial.spirits.researchFolioClaimed')) {
+          player.addItem(ALPHA_ITEMS.researchFolio, 1);
+          player.setVariable('mochiSocial.spirits.researchFolioClaimed', true);
+        }
+        patch.research = {
+          folioId: research.folioId,
+          folioName: research.folioName,
+          title: research.title,
+          habitat: research.habitat,
+          activeSpiritId: research.activeSpiritId,
+          roster: research.roster,
+          discoveredRoutes: research.discoveredRoutes,
+          score: research.score,
+          rewardItemId: research.rewardItemId,
+          proof: true,
+          message: research.message
+        };
+        prompt = `${journal.message} ${research.message} The Jade Court Research Folio is no-real-value closed-alpha field-guide proof.`;
+        saveTitle = 'Mochi Spirit research folio recorded';
+      }
+
+      player.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });
+      emitAlphaHudState(player, patch);
+      await player.save('auto', { title: saveTitle }, { reason: 'auto', source: 'journal-pavilion' });
+      showAlphaPrompt(player, prompt);
     }
   };
 }
