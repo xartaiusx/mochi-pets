@@ -127,6 +127,44 @@ export interface GuildRankTrialResult {
   source: string;
 }
 
+export interface SpiritGrowthRite {
+  id: string;
+  name: string;
+  formTitle: string;
+  requiredGrowth: SpiritGrowthStage;
+  requiredBond: number;
+  requiredTrainingXp: number;
+  requiredRankTrialId: string;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritGrowthRiteProgress {
+  spiritId?: string;
+  bond: number;
+  growth: SpiritGrowthStage | string;
+  trainingXp: number;
+  raisingProof: boolean;
+  rankTrialProof: boolean;
+  rankTrialId?: string;
+}
+
+export interface SpiritGrowthRiteResult {
+  ok: boolean;
+  passed: boolean;
+  riteId: string;
+  riteName: string;
+  spiritId: string;
+  spiritName: string;
+  formTitle: string;
+  bond: number;
+  growth: SpiritGrowthStage;
+  trainingXp: number;
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritExpeditionRoute {
   id: string;
   name: string;
@@ -555,6 +593,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Rank Seal',
     description: 'A no-real-value guild rank proof for closed-alpha Mochirii progression.'
   },
+  growthSigil: {
+    id: 'moonwell-bloom-sigil',
+    name: 'Moonwell Bloom Sigil',
+    description: 'A no-real-value Mochi Spirit growth rite proof for closed-alpha progression.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -604,6 +647,20 @@ export const GUILD_RANK_TRIALS: readonly GuildRankTrial[] = [
     requiredScore: 9,
     rewardItemId: ALPHA_ITEMS.rankSeal.id,
     summary: 'A first guild rank proof for wayfarers who can bond, scout, plan tactics, and practice safely with friends.'
+  }
+];
+
+export const SPIRIT_GROWTH_RITES: readonly SpiritGrowthRite[] = [
+  {
+    id: 'moonwell-bloom-rite',
+    name: 'Moonwell Bloom Rite',
+    formTitle: 'Moonwell Bloom Form',
+    requiredGrowth: 'glow',
+    requiredBond: 5,
+    requiredTrainingXp: 3,
+    requiredRankTrialId: GUILD_RANK_TRIALS[0].id,
+    rewardItemId: ALPHA_ITEMS.growthSigil.id,
+    summary: 'A first Mochirii growth rite for bonded spirits that have trained, received care, and earned Jade Court standing.'
   }
 ];
 
@@ -743,6 +800,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'training-ring',
     'quest-board',
     'guild-rank-bell',
+    'growth-moonwell',
     'canary-shrine'
   ].map((id) => ({
     path: `public/spritesheets/${id}.png`,
@@ -1283,6 +1341,46 @@ export function resolveGuildRankTrial(
       ? `${activeName} presents the ${trial.title}: score ${score}/${trial.requiredScore}. ${trial.rankTitle} recorded as no-real-value Mochirii guild progress.`
       : `${trial.title} needs ${trial.requiredSpiritCount} spirits, ${trial.requiredQuestStepCount} quest step, tactic proof, and score ${trial.requiredScore}. Current score ${score}; keep bonding, scouting, and practicing safely.`,
     source: 'guild-rank-trial'
+  };
+}
+
+export function resolveSpiritGrowthRite(
+  progress: SpiritGrowthRiteProgress,
+  riteId: string = SPIRIT_GROWTH_RITES[0].id
+): SpiritGrowthRiteResult {
+  const rite = SPIRIT_GROWTH_RITES.find((entry) => entry.id === riteId) || SPIRIT_GROWTH_RITES[0];
+  const spirit = getMochiSpirit(progress.spiritId || '');
+  const spiritId = spirit?.id || String(progress.spiritId || '');
+  const bond = Math.max(0, Math.min(5, Math.floor(progress.bond || 0)));
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  const growth = ['seed', 'sprout', 'glow'].includes(String(progress.growth))
+    ? (progress.growth as SpiritGrowthStage)
+    : growthStageFromBond(bond);
+  const rankMatches = Boolean(progress.rankTrialProof) && progress.rankTrialId === rite.requiredRankTrialId;
+  const passed = Boolean(spirit) &&
+    bond >= rite.requiredBond &&
+    growth === rite.requiredGrowth &&
+    trainingXp >= rite.requiredTrainingXp &&
+    progress.raisingProof &&
+    rankMatches;
+  const spiritName = spirit?.name || 'your Mochi Spirit';
+
+  return {
+    ok: passed,
+    passed,
+    riteId: rite.id,
+    riteName: rite.name,
+    spiritId,
+    spiritName,
+    formTitle: rite.formTitle,
+    bond,
+    growth,
+    trainingXp,
+    rewardItemId: rite.rewardItemId,
+    message: passed
+      ? `${spiritName} completes the ${rite.name} and opens ${rite.formTitle}. This is no-real-value Mochirii growth proof for closed-alpha testing.`
+      : `${rite.name} needs ${rite.requiredGrowth} growth, bond ${rite.requiredBond}/5, ${rite.requiredTrainingXp} training XP, raising care, and Jade Court rank proof before a spirit can bloom.`,
+    source: 'spirit-growth-rite'
   };
 }
 

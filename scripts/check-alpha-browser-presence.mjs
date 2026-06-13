@@ -170,6 +170,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="quest.accept"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="quest.progress"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.rank_trial"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.growth_rite"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -192,6 +193,7 @@ async function exerciseAlphaHud(page) {
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
+      const growth = document.querySelector('[data-growth-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
       const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
@@ -219,6 +221,7 @@ async function exerciseAlphaHud(page) {
         && training.includes('Training:')
         && training.includes('XP')
         && training.includes('ladder')
+        && growth.includes('Moonwell Bloom Form')
         && quest.includes('First Lantern Vow')
         && market.includes('Canary: requested')
         && state.spiritId === 'jintari'
@@ -273,6 +276,10 @@ async function exerciseAlphaHud(page) {
         && state.guildRankTitle === 'Jade Court Initiate'
         && state.guildRankScore >= 9
         && state.guildRankSealClaimed === true
+        && state.growthRiteProof === true
+        && state.growthRiteId === 'moonwell-bloom-rite'
+        && state.growthForm === 'Moonwell Bloom Form'
+        && state.growthSigilClaimed === true
         && state.statusMood === 'cozy'
         && state.lastInspectedSpiritId === 'jintari'
         && state.charmListed === true
@@ -302,6 +309,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Quest accepted: First Lantern Vow')
         && chat.includes('Quest progress: First Lantern Vow')
         && chat.includes('Jade Court Initiate')
+        && chat.includes('Moonwell Bloom Rite')
         && feed.includes('Canary');
     },
     undefined,
@@ -325,6 +333,7 @@ async function exerciseAlphaHud(page) {
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
+      growth: document.querySelector('[data-growth-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
       feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || ''),
@@ -377,6 +386,11 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.sparLadderXp >= 1, 'HUD spar ladder action must record ladder XP.');
   assert(snapshot.state.lastSparOpponentId === 'jade-echo-apprentice', 'HUD spar ladder action must record the first spar opponent.');
   assert(snapshot.state.raisingProof === true, 'HUD raising action must record raising proof.');
+  assert(snapshot.growth.includes('Moonwell Bloom Form'), 'HUD growth label must show the growth rite form.');
+  assert(snapshot.state.growthRiteProof === true, 'HUD growth rite action must record growth proof.');
+  assert(snapshot.state.growthRiteId === 'moonwell-bloom-rite', 'HUD growth rite action must record the Moonwell rite id.');
+  assert(snapshot.state.growthForm === 'Moonwell Bloom Form', 'HUD growth rite action must record the Moonwell growth form.');
+  assert(snapshot.state.growthSigilClaimed === true, 'HUD growth rite action must mark the no-real-value growth sigil proof.');
   assert(snapshot.quest.includes('First Lantern Vow'), 'HUD quest label must show the active quest.');
   assert(snapshot.state.activeQuestId === 'first-lantern-vow', 'HUD quest action must record the first quest.');
   assert(Array.isArray(snapshot.state.completedQuestSteps) && snapshot.state.completedQuestSteps.includes('attune-spirit'), 'HUD quest progress must record a completed quest step.');
@@ -413,6 +427,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Quest accepted: First Lantern Vow')), 'HUD chat state must record the quest accept action.');
   assert(chat.some((line) => String(line).includes('Quest progress: First Lantern Vow')), 'HUD chat state must record the quest progress action.');
   assert(chat.some((line) => String(line).includes('Jade Court Initiate')), 'HUD chat state must record the guild rank trial action.');
+  assert(chat.some((line) => String(line).includes('Moonwell Bloom Rite')), 'HUD chat state must record the growth rite action.');
   assert(chat.some((line) => String(line).includes('Profile: Mochirii Wayfarer')), 'HUD chat state must record the profile action.');
   assert(chat.some((line) => String(line).includes('Guild proof')), 'HUD chat state must record the guild action.');
   assert(chat.some((line) => String(line).includes('Status set: cozy')), 'HUD chat state must record the status action.');

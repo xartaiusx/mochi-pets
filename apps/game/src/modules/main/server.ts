@@ -1,6 +1,6 @@
 import { defineModule } from '@rpgjs/common';
 import type { RpgServer } from '@rpgjs/server';
-import { AffinityDais, CanaryShrine, CareShrine, ExpeditionGate, GuildRankBell, GuildSealChest, HabitatGrove, JournalPavilion, MarketBoard, PartyBanner, QuestBoard, RouteInvitationAltar, SPIRITS, SpiritEvent, TacticScrollStand, TechniqueDojo, TradePost, TrainingRing, WelcomeNpc } from './event';
+import { AffinityDais, CanaryShrine, CareShrine, ExpeditionGate, GrowthMoonwell, GuildRankBell, GuildSealChest, HabitatGrove, JournalPavilion, MarketBoard, PartyBanner, QuestBoard, RouteInvitationAltar, SPIRITS, SpiritEvent, TacticScrollStand, TechniqueDojo, TradePost, TrainingRing, WelcomeNpc } from './event';
 import { player } from './player';
 
 export default defineModule<RpgServer>({
@@ -110,6 +110,12 @@ export default defineModule<RpgServer>({
           x: 1280,
           y: 512,
           event: GuildRankBell()
+        },
+        {
+          id: 'growth-moonwell',
+          x: 1408,
+          y: 512,
+          event: GrowthMoonwell()
         },
         {
           id: 'market-board',

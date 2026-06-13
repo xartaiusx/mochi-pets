@@ -4,6 +4,7 @@ import {
   CanaryShrine,
   CareShrine,
   ExpeditionGate,
+  GrowthMoonwell,
   GuildRankBell,
   GuildSealChest,
   HabitatGrove,
@@ -585,6 +586,49 @@ describe('Mochi town event behavior', () => {
       }
     });
     expect(player.texts.at(-1)).toContain('closed-alpha, no-real-value progression');
+  });
+
+  it('records a Mochi Spirit growth rite after care, training, and rank proof', async () => {
+    const player = createFakePlayer();
+
+    await runAction(GrowthMoonwell(), player);
+    expect(player.texts.at(-1)).toContain('Attune with a Mochi Spirit');
+
+    await runAction(SpiritEvent(SPIRITS[1]), player);
+    await runAction(GrowthMoonwell(), player);
+    expect(player.texts.at(-1)).toContain('Moonwell Bloom Rite needs');
+
+    player.variables.set('mochiSocial.spirit.jintari.bond', 5);
+    player.variables.set('mochiSocial.spirit.jintari.growth', 'glow');
+    player.variables.set('mochiSocial.spirit.jintari.trainingXp', 3);
+    player.variables.set('mochiSocial.spirit.jintari.raisingProof', true);
+    player.variables.set('mochiSocial.guild.rankTrialProof', true);
+    player.variables.set('mochiSocial.guild.rankTrial', 'jade-court-initiate');
+    await runAction(GrowthMoonwell(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('moonwell-bloom-sigil');
+    expect(player.variables.get('mochiSocial.spirit.jintari.growthRiteProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirit.jintari.growthRite')).toBe('moonwell-bloom-rite');
+    expect(player.variables.get('mochiSocial.spirit.jintari.growthForm')).toBe('Moonwell Bloom Form');
+    expect(player.variables.get('mochiSocial.spirit.jintari.growthSigilClaimed')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Growth rite opened');
+    expect(player.saves.at(-1)?.options.source).toBe('growth-moonwell');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        growthRite: {
+          riteId: 'moonwell-bloom-rite',
+          riteName: 'Moonwell Bloom Rite',
+          spiritId: 'jintari',
+          formTitle: 'Moonwell Bloom Form',
+          rewardItemId: 'moonwell-bloom-sigil',
+          proof: true,
+          message: 'Jintari completes the Moonwell Bloom Rite and opens Moonwell Bloom Form. This is no-real-value Mochirii growth proof for closed-alpha testing.'
+        },
+        spirit: { id: 'jintari', bond: 5, growth: 'glow' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('closed-alpha, no-real-value spirit progression');
   });
 
   it('records no-injury affinity trial battle proof at the Jade Mirror dais', async () => {

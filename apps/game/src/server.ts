@@ -141,6 +141,15 @@ type AlphaHudStatePatch = {
     trialId: string;
     trialTitle: string;
   };
+  growthRite?: {
+    formTitle: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    riteId: string;
+    riteName: string;
+    spiritId: string;
+  };
   training?: {
     message?: string;
     victories: number;
@@ -244,6 +253,28 @@ type GuildRankTrialProgress = {
   guildBuddyProof?: boolean;
 };
 
+type SpiritGrowthRite = {
+  id: string;
+  name: string;
+  formTitle: string;
+  requiredGrowth: SpiritGrowthStage;
+  requiredBond: number;
+  requiredTrainingXp: number;
+  requiredRankTrialId: string;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritGrowthRiteProgress = {
+  spiritId?: string;
+  bond: number;
+  growth: SpiritGrowthStage | string;
+  trainingXp: number;
+  raisingProof: boolean;
+  rankTrialProof: boolean;
+  rankTrialId?: string;
+};
+
 type SpiritExpeditionRoute = {
   id: string;
   name: string;
@@ -301,6 +332,11 @@ const alphaItems = {
     id: 'jade-court-rank-seal',
     name: 'Jade Court Rank Seal',
     description: 'A no-real-value guild rank proof for closed-alpha Mochirii progression.'
+  },
+  growthSigil: {
+    id: 'moonwell-bloom-sigil',
+    name: 'Moonwell Bloom Sigil',
+    description: 'A no-real-value Mochi Spirit growth rite proof for closed-alpha progression.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -547,6 +583,20 @@ const guildRankTrials: readonly GuildRankTrial[] = [
     requiredScore: 9,
     rewardItemId: alphaItems.rankSeal.id,
     summary: 'A first guild rank proof for wayfarers who can bond, scout, plan tactics, and practice safely with friends.'
+  }
+];
+
+const spiritGrowthRites: readonly SpiritGrowthRite[] = [
+  {
+    id: 'moonwell-bloom-rite',
+    name: 'Moonwell Bloom Rite',
+    formTitle: 'Moonwell Bloom Form',
+    requiredGrowth: 'glow',
+    requiredBond: 5,
+    requiredTrainingXp: 3,
+    requiredRankTrialId: guildRankTrials[0].id,
+    rewardItemId: alphaItems.growthSigil.id,
+    summary: 'A first Mochirii growth rite for bonded spirits that have trained, received care, and earned Jade Court standing.'
   }
 ];
 
@@ -1006,6 +1056,43 @@ function resolveGuildRankTrial(progress: GuildRankTrialProgress, trialId: string
       ? `${activeName} presents the ${trial.title}: score ${score}/${trial.requiredScore}. ${trial.rankTitle} recorded as no-real-value Mochirii guild progress.`
       : `${trial.title} needs ${trial.requiredSpiritCount} spirits, ${trial.requiredQuestStepCount} quest step, tactic proof, and score ${trial.requiredScore}. Current score ${score}; keep bonding, scouting, and practicing safely.`,
     source: 'guild-rank-trial'
+  };
+}
+
+function resolveSpiritGrowthRite(progress: SpiritGrowthRiteProgress, riteId: string = spiritGrowthRites[0].id) {
+  const rite = spiritGrowthRites.find((entry) => entry.id === riteId) || spiritGrowthRites[0];
+  const spirit = getSpirit(progress.spiritId || '');
+  const spiritId = spirit?.id || String(progress.spiritId || '');
+  const bond = Math.max(0, Math.min(5, Math.floor(progress.bond || 0)));
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  const growth = ['seed', 'sprout', 'glow'].includes(String(progress.growth))
+    ? progress.growth as SpiritGrowthStage
+    : growthStageFromBond(bond);
+  const rankMatches = Boolean(progress.rankTrialProof) && progress.rankTrialId === rite.requiredRankTrialId;
+  const passed = Boolean(spirit) &&
+    bond >= rite.requiredBond &&
+    growth === rite.requiredGrowth &&
+    trainingXp >= rite.requiredTrainingXp &&
+    progress.raisingProof &&
+    rankMatches;
+  const spiritName = spirit?.name || 'your Mochi Spirit';
+
+  return {
+    ok: passed,
+    passed,
+    riteId: rite.id,
+    riteName: rite.name,
+    spiritId,
+    spiritName,
+    formTitle: rite.formTitle,
+    bond,
+    growth,
+    trainingXp,
+    rewardItemId: rite.rewardItemId,
+    message: passed
+      ? `${spiritName} completes the ${rite.name} and opens ${rite.formTitle}. This is no-real-value Mochirii growth proof for closed-alpha testing.`
+      : `${rite.name} needs ${rite.requiredGrowth} growth, bond ${rite.requiredBond}/5, ${rite.requiredTrainingXp} training XP, raising care, and Jade Court rank proof before a spirit can bloom.`,
+    source: 'spirit-growth-rite'
   };
 }
 
@@ -1859,6 +1946,68 @@ function guildRankBell(): EventDefinition {
   };
 }
 
+function growthMoonwell(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('growth-moonwell');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const activeSpirit = activeSpiritId(actingPlayer);
+      if (!activeSpirit) {
+        showAlphaPrompt(actingPlayer, 'Attune with a Mochi Spirit before opening the Moonwell Bloom Rite.');
+        return;
+      }
+
+      const rite = spiritGrowthRites[0];
+      const bond = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const growth = actingPlayer.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.growth`) || growthStageFromBond(bond);
+      const trainingXp = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.trainingXp`) || 0);
+      const riteResult = resolveSpiritGrowthRite(
+        {
+          spiritId: activeSpirit,
+          bond,
+          growth,
+          trainingXp,
+          raisingProof: Boolean(actingPlayer.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.raisingProof`)),
+          rankTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.guild.rankTrialProof')),
+          rankTrialId: actingPlayer.getVariable<string>('mochiSocial.guild.rankTrial')
+        },
+        rite.id
+      );
+
+      if (!riteResult.passed) {
+        showAlphaPrompt(actingPlayer, riteResult.message);
+        return;
+      }
+
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthRiteProof`, true);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthRite`, riteResult.riteId);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthForm`, riteResult.formTitle);
+      if (!actingPlayer.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.growthSigilClaimed`)) {
+        actingPlayer.addItem(alphaItems.growthSigil, 1);
+        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthSigilClaimed`, true);
+      }
+
+      actingPlayer.showNotification('Growth rite opened', { time: 1800, icon: 'growth-moonwell' });
+      emitAlphaHudState(actingPlayer, {
+        growthRite: {
+          riteId: riteResult.riteId,
+          riteName: riteResult.riteName,
+          spiritId: riteResult.spiritId,
+          formTitle: riteResult.formTitle,
+          rewardItemId: riteResult.rewardItemId,
+          proof: true,
+          message: riteResult.message
+        },
+        spirit: { id: activeSpirit, bond: riteResult.bond, growth: riteResult.growth }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit growth rite' }, { reason: 'auto', source: 'growth-moonwell' });
+      showAlphaPrompt(actingPlayer, `${riteResult.message} Growth rites are closed-alpha, no-real-value spirit progression.`);
+    }
+  };
+}
+
 function marketBoard(): EventDefinition {
   return {
     onInit() {
@@ -2053,6 +2202,12 @@ const mainServerModule = defineModule({
           x: 1280,
           y: 512,
           event: guildRankBell()
+        },
+        {
+          id: 'growth-moonwell',
+          x: 1408,
+          y: 512,
+          event: growthMoonwell()
         },
         {
           id: 'market-board',

@@ -149,6 +149,13 @@ const spriteSpecs = [
     palette: { wood: '#5f463c', bell: '#8ed0b1', ribbon: '#d85f4d', seal: '#f2c65f', paper: '#f4e7bd', light: '#fff0b6', shadow: '#263a35' }
   },
   {
+    id: 'growth-moonwell',
+    role: 'Mochi Spirit growth rite moonwell',
+    prompt: 'Mochirii Moonwell Bloom Rite shrine with jade moon basin, silk bloom tassels, gold growth sigil glow, lacquer base, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'moonwell',
+    palette: { base: '#4f766d', water: '#8ed0d1', moon: '#fff0b6', blossom: '#ee86aa', ribbon: '#d85f4d', jade: '#8ed0b1', seal: '#f2c65f', shadow: '#263a35' }
+  },
+  {
     id: 'canary-shrine',
     role: 'Enjin Canary preview-stub shrine',
     prompt: 'Canary preview shrine with violet lacquer base, gold crystal, no-real-value staging aura, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -273,6 +280,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
   if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
   if (spec.kind === 'rank') return guildRankBellFrame(spec, row, col, bob);
+  if (spec.kind === 'moonwell') return growthMoonwellFrame(spec, row, col, bob);
   return shrineFrame(spec, row, col, bob);
 }
 
@@ -692,6 +700,38 @@ function guildRankBellFrame(spec, _row, col, _bob) {
     <circle cx="183" cy="145" r="15" fill="#221f1e"/>
     <circle cx="183" cy="145" r="9" fill="${spec.palette.seal}"/>
     <path d="M86 270 C111 284 145 284 170 270" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+  `;
+}
+
+function growthMoonwellFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.5 : 0.28;
+  const shimmer = col === 1 ? -5 : col === 2 ? 5 : 0;
+  return `
+    <ellipse cx="128" cy="319" rx="84" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="188" rx="108" ry="118" fill="${spec.palette.moon}" opacity="${pulse}"/>
+    <path d="M48 260 L208 260 L222 306 L34 306 Z" fill="#221f1e"/>
+    <path d="M63 264 L193 264 L204 294 L52 294 Z" fill="${spec.palette.base}"/>
+    <ellipse cx="128" cy="230" rx="72" ry="42" fill="#221f1e"/>
+    <ellipse cx="128" cy="224" rx="60" ry="32" fill="${spec.palette.water}"/>
+    <path d="M82 221 C102 207 154 207 174 221" stroke="#fff7d4" stroke-width="8" stroke-linecap="round" opacity="0.62" fill="none"/>
+    <path d="M92 ${231 + shimmer} C112 ${244 + shimmer} 144 ${244 + shimmer} 164 ${231 + shimmer}" stroke="#28726c" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M71 254 C86 185 106 145 128 145 C150 145 170 185 185 254" fill="none" stroke="#221f1e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M84 252 C96 195 112 164 128 164 C144 164 160 195 172 252" fill="none" stroke="${spec.palette.jade}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M98 134 C109 101 122 88 128 88 C134 88 147 101 158 134 C145 126 111 126 98 134 Z" fill="#221f1e"/>
+    <path d="M111 132 C119 109 125 103 128 103 C131 103 137 109 145 132 C136 127 120 127 111 132 Z" fill="${spec.palette.moon}"/>
+    <path d="M76 ${151 + shimmer} C99 ${170 + shimmer} 106 ${200 + shimmer} 92 ${225 + shimmer}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M180 ${151 + shimmer} C157 ${170 + shimmer} 150 ${200 + shimmer} 164 ${225 + shimmer}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <circle cx="80" cy="147" r="14" fill="#221f1e"/>
+    <circle cx="80" cy="147" r="8" fill="${spec.palette.seal}"/>
+    <circle cx="176" cy="147" r="14" fill="#221f1e"/>
+    <circle cx="176" cy="147" r="8" fill="${spec.palette.seal}"/>
+    <path d="M115 186 C117 173 123 164 128 164 C133 164 139 173 141 186 C136 183 120 183 115 186 Z" fill="${spec.palette.blossom}"/>
+    <path d="M103 190 C91 182 87 168 93 160 C107 164 116 173 119 187 Z" fill="${spec.palette.blossom}" opacity="0.9"/>
+    <path d="M153 190 C165 182 169 168 163 160 C149 164 140 173 137 187 Z" fill="${spec.palette.blossom}" opacity="0.9"/>
+    <rect x="86" y="248" width="84" height="28" rx="9" fill="#221f1e"/>
+    <rect x="96" y="254" width="64" height="16" rx="6" fill="#f4e7bd"/>
+    <path d="M109 262 H148" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.72"/>
+    <path d="M82 272 C109 287 147 287 174 272" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
   `;
 }
 

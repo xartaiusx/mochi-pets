@@ -6,6 +6,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
+  SPIRIT_GROWTH_RITES,
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
   resolveSpiritAttunement,
@@ -14,6 +15,7 @@ import {
   resolveSpiritCapture,
   resolveSpiritExpedition,
   resolveGuildRankTrial,
+  resolveSpiritGrowthRite,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -45,6 +47,10 @@ interface AlphaHudState {
   guildRankTitle: string;
   guildRankScore: number;
   guildRankSealClaimed: boolean;
+  growthRiteProof: boolean;
+  growthRiteId?: string;
+  growthForm: string;
+  growthSigilClaimed: boolean;
   statusMood: string;
   bond: number;
   growth: string;
@@ -176,6 +182,15 @@ export interface AlphaWorldStatePatch {
     trialId: string;
     trialTitle: string;
   };
+  growthRite?: {
+    formTitle: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    riteId: string;
+    riteName: string;
+    spiritId: string;
+  };
   party?: {
     activeSpiritId?: string;
     message?: string;
@@ -245,6 +260,9 @@ function defaultAlphaState(): AlphaHudState {
     guildRankTitle: 'Visitor',
     guildRankScore: 0,
     guildRankSealClaimed: false,
+    growthRiteProof: false,
+    growthForm: 'Unawakened',
+    growthSigilClaimed: false,
     statusMood: 'exploring',
     bond: 0,
     growth: 'seed',
@@ -393,6 +411,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
+      <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
     </div>
     <div class="mochi-hud__actions" aria-label="Alpha quick actions">
@@ -416,6 +435,7 @@ function createHud() {
       <button type="button" data-alpha-action="quest.accept" aria-label="Accept the first Mochirii guild quest">Quest</button>
       <button type="button" data-alpha-action="quest.progress" aria-label="Progress the active Mochirii guild quest">Step</button>
       <button type="button" data-alpha-action="guild.rank_trial" aria-label="Record a no-real-value Mochirii guild rank trial">Rank</button>
+      <button type="button" data-alpha-action="spirit.growth_rite" aria-label="Record a no-real-value Mochi Spirit growth rite">Bloom</button>
       <button type="button" data-alpha-action="emote.send" aria-label="Wave to nearby testers">Wave</button>
       <button type="button" data-alpha-action="market.fixed_list" aria-label="List a no-real-value market item">List</button>
       <button type="button" data-alpha-action="trade.direct_offer" aria-label="Record a no-real-value direct trade proof">Trade</button>
@@ -449,6 +469,7 @@ function createHud() {
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
+  const growthLabel = hud.querySelector('[data-growth-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
   const marketLabel = hud.querySelector('[data-market-label]');
   const feed = hud.querySelector<HTMLOListElement>('[data-alpha-feed]');
@@ -508,6 +529,11 @@ function createHud() {
     }
     if (trainingLabel) {
       trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? 'raised' : 'needs care'}`;
+    }
+    if (growthLabel) {
+      growthLabel.textContent = state.growthRiteProof
+        ? `Growth Rite: ${state.growthForm}`
+        : `Growth Rite: ${state.growth === 'glow' ? 'ready' : 'pending'}`;
     }
     if (questLabel) {
       const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === state.activeQuestId);
@@ -857,6 +883,15 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.rank.message || `Guild rank recorded: ${state.guildRankTitle}.`);
   }
 
+  if (patch.growthRite) {
+    state.growthRiteProof = patch.growthRite.proof || state.growthRiteProof;
+    state.growthRiteId = patch.growthRite.riteId || state.growthRiteId;
+    state.growthForm = patch.growthRite.formTitle || state.growthForm;
+    state.growthSigilClaimed = state.growthSigilClaimed || patch.growthRite.rewardItemId === 'moonwell-bloom-sigil';
+    state.spiritId = patch.growthRite.spiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.growthRite.message || `Growth rite recorded: ${state.growthForm}.`);
+  }
+
   if (patch.affinity) {
     state.affinityProof = patch.affinity.proof || state.affinityProof;
     state.lastAffinityTrialId = patch.affinity.trialId || state.lastAffinityTrialId;
@@ -1077,6 +1112,20 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       sparWins: state.sparLadderWins,
       journalDiscoveredCount: state.journalDiscoveredCount,
       guildBuddyProof: state.guildBuddyProof
+    };
+  }
+
+  if (type === 'spirit.growth_rite') {
+    const rite = SPIRIT_GROWTH_RITES[0];
+    return {
+      riteId: rite.id,
+      spiritId: state.spiritId || state.attunedSpiritIds[0],
+      bond: state.bond || 1,
+      growth: state.growth || 'seed',
+      trainingXp: state.trainingXp || 0,
+      raisingProof: state.raisingProof,
+      rankTrialProof: state.guildRankProof,
+      rankTrialId: state.guildRankId
     };
   }
 
@@ -1446,6 +1495,30 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.guildRankTitle = result.rankTitle;
       state.guildRankScore = result.score;
       state.guildRankSealClaimed = result.rewardItemId === 'jade-court-rank-seal';
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.growth_rite') {
+    const result = resolveSpiritGrowthRite(
+      {
+        spiritId: String(payload.spiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        bond: Number(payload.bond || state.bond || 1),
+        growth: String(payload.growth || state.growth || 'seed'),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
+        rankTrialProof: Boolean(payload.rankTrialProof ?? state.guildRankProof),
+        rankTrialId: String(payload.rankTrialId || state.guildRankId || '')
+      },
+      String(payload.riteId || SPIRIT_GROWTH_RITES[0].id)
+    );
+    if (result.passed) {
+      state.growthRiteProof = true;
+      state.growthRiteId = result.riteId;
+      state.growthForm = result.formTitle;
+      state.growthSigilClaimed = result.rewardItemId === 'moonwell-bloom-sigil';
+      state.spiritId = result.spiritId;
+      state.growth = result.growth;
     }
     state.chat.push(result.message);
   }

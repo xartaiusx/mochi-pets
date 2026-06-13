@@ -1,0 +1,13 @@
+{
+  "id": "growth-moonwell",
+  "role": "Mochi Spirit growth rite moonwell",
+  "runtimePath": "apps/game/public/spritesheets/growth-moonwell.png",
+  "masterPath": "assets/source/game/hd/growth-moonwell-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Mochirii Moonwell Bloom Rite shrine with jade moon basin, silk bloom tassels, gold growth sigil glow, lacquer base, transparent background, smooth illustrated 2D prop sprite sheet.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

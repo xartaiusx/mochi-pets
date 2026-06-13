@@ -7,6 +7,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_EXPEDITION_ROUTES,
+  SPIRIT_GROWTH_RITES,
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
   resolveSpiritAffinityTrial,
@@ -14,6 +15,7 @@ import {
   resolveSpiritCapture,
   resolveSpiritExpedition,
   resolveGuildRankTrial,
+  resolveSpiritGrowthRite,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -132,6 +134,15 @@ type AlphaHudStatePatch = {
     score: number;
     trialId: string;
     trialTitle: string;
+  };
+  growthRite?: {
+    formTitle: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    riteId: string;
+    riteName: string;
+    spiritId: string;
   };
   training?: {
     message?: string;
@@ -875,6 +886,68 @@ export function GuildRankBell(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochirii guild rank trial' }, { reason: 'auto', source: 'guild-rank-bell' });
       showAlphaPrompt(player, `${rank.message} Guild rank is closed-alpha, no-real-value progression for tester coordination.`);
+    }
+  };
+}
+
+export function GrowthMoonwell(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('growth-moonwell');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const activeSpirit = activeSpiritId(player);
+      if (!activeSpirit) {
+        showAlphaPrompt(player, 'Attune with a Mochi Spirit before opening the Moonwell Bloom Rite.');
+        return;
+      }
+
+      const rite = SPIRIT_GROWTH_RITES[0];
+      const bond = Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const growth = player.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.growth`) || growthStageFromBond(bond);
+      const trainingXp = Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.trainingXp`) || 0);
+      const riteResult = resolveSpiritGrowthRite(
+        {
+          spiritId: activeSpirit,
+          bond,
+          growth,
+          trainingXp,
+          raisingProof: Boolean(player.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.raisingProof`)),
+          rankTrialProof: Boolean(player.getVariable<boolean>('mochiSocial.guild.rankTrialProof')),
+          rankTrialId: player.getVariable<string>('mochiSocial.guild.rankTrial')
+        },
+        rite.id
+      );
+
+      if (!riteResult.passed) {
+        showAlphaPrompt(player, riteResult.message);
+        return;
+      }
+
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.growthRiteProof`, true);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.growthRite`, riteResult.riteId);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.growthForm`, riteResult.formTitle);
+      if (!player.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.growthSigilClaimed`)) {
+        player.addItem(ALPHA_ITEMS.growthSigil, 1);
+        player.setVariable(`mochiSocial.spirit.${activeSpirit}.growthSigilClaimed`, true);
+      }
+
+      player.showNotification('Growth rite opened', { time: 1800, icon: 'growth-moonwell' });
+      emitAlphaHudState(player, {
+        growthRite: {
+          riteId: riteResult.riteId,
+          riteName: riteResult.riteName,
+          spiritId: riteResult.spiritId,
+          formTitle: riteResult.formTitle,
+          rewardItemId: riteResult.rewardItemId,
+          proof: true,
+          message: riteResult.message
+        },
+        spirit: { id: activeSpirit, bond: riteResult.bond, growth: riteResult.growth }
+      });
+      await player.save('auto', { title: 'Mochi Spirit growth rite' }, { reason: 'auto', source: 'growth-moonwell' });
+      showAlphaPrompt(player, `${riteResult.message} Growth rites are closed-alpha, no-real-value spirit progression.`);
     }
   };
 }

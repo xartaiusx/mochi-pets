@@ -48,6 +48,8 @@ assert(browserPresence.data?.hudAction?.state?.lastTacticId === 'goldleaf-openin
 assert(browserPresence.data?.hudAction?.state?.tacticMasteryXp >= 1, 'HUD action proof must include tactic mastery XP');
 assert(browserPresence.data?.hudAction?.state?.guildRankProof === true, 'HUD action proof must include the guild rank trial loop');
 assert(browserPresence.data?.hudAction?.state?.guildRankId === 'jade-court-initiate', 'HUD action proof must include the Jade Court rank trial');
+assert(browserPresence.data?.hudAction?.state?.growthRiteProof === true, 'HUD action proof must include the growth rite loop');
+assert(browserPresence.data?.hudAction?.state?.growthRiteId === 'moonwell-bloom-rite', 'HUD action proof must include the Moonwell growth rite');
 assert(browserPresence.data?.hudAction?.state?.affinityProof === true, 'HUD action proof must include the affinity trial loop');
 assert(browserPresence.data?.hudAction?.state?.lastAffinityTrialId === 'silk-cinder-trial', 'HUD action proof must include the Silk Cinder affinity trial');
 assert(browserPresence.data?.hudAction?.state?.partyIds?.includes?.('jintari'), 'HUD action proof must include Mochi Spirit party formation');
@@ -73,7 +75,7 @@ for (const [label, item] of Object.entries(screenshotEvidence)) {
   assert(item.sha256 === item.reportedSha256, `${label} screenshot hash must match visual snapshot report`);
 }
 
-const mapObjects = ['welcome-npc', 'guild-seal-chest', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'care-shrine', 'habitat-grove', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'market-board', 'trade-post', 'canary-shrine'];
+const mapObjects = ['welcome-npc', 'guild-seal-chest', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'care-shrine', 'habitat-grove', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'market-board', 'trade-post', 'canary-shrine'];
 for (const id of mapObjects) {
   assert(mapServerSource.includes(`id: '${id}'`), `map server placement missing ${id}`);
 }
@@ -94,6 +96,7 @@ for (const snippet of [
   "this.setGraphic('training-ring')",
   "this.setGraphic('quest-board')",
   "this.setGraphic('guild-rank-bell')",
+  "this.setGraphic('growth-moonwell')",
   "this.setGraphic('canary-shrine')",
   "source: 'guild-seal-chest'",
   "source: 'journal-pavilion'",
@@ -107,6 +110,7 @@ for (const snippet of [
   "source: 'training-ring'",
   "source: 'quest-board'",
   "source: 'guild-rank-bell'",
+  "source: 'growth-moonwell'",
   "source: 'market-board'",
   "source: 'trade-post'",
   "source: 'canary-shrine'"
@@ -144,6 +148,7 @@ const expectedAssetLedgerEntries = [
   'training-ring.png',
   'quest-board.png',
   'guild-rank-bell.png',
+  'growth-moonwell.png',
   'canary-shrine.png',
   'hd-source-export.md',
   'project-authored/generated-for-project'
@@ -160,7 +165,7 @@ const visualChecklist = {
   },
   interactableRecognition: {
     status: mapObjects.every((id) => mapServerSource.includes(`id: '${id}'`)) ? 'machine-supported' : 'blocked',
-    records: 'Sifu Narao, guild seal chest, journal pavilion, expedition gate, route invitation altar, technique dojo, tactic scroll stand, affinity dais, care shrine, habitat grove, training ring, party banner, quest board, guild rank bell, market board, trade post, and Canary shrine are present in the stable map-object contract.'
+    records: 'Sifu Narao, guild seal chest, journal pavilion, expedition gate, route invitation altar, technique dojo, tactic scroll stand, affinity dais, care shrine, habitat grove, training ring, party banner, quest board, guild rank bell, growth moonwell, market board, trade post, and Canary shrine are present in the stable map-object contract.'
   },
   hudContrast: {
     status: Boolean(visualSnapshot.data?.dom?.hud) ? 'machine-supported' : 'blocked',
@@ -208,6 +213,7 @@ const report = {
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
       battleTactic: browserPresence.data?.hudAction?.state?.tacticProof === true,
       guildRank: browserPresence.data?.hudAction?.state?.guildRankProof === true,
+      growthRite: browserPresence.data?.hudAction?.state?.growthRiteProof === true,
       affinityTrial: browserPresence.data?.hudAction?.state?.affinityProof === true,
       partyFormation: browserPresence.data?.hudAction?.state?.partyIds?.includes?.('jintari') === true,
       sparLadder: browserPresence.data?.hudAction?.state?.sparLadderXp >= 1,
@@ -388,7 +394,7 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - Canvas PNG: ${summary.evidence.screenshots.canvas.path || 'missing'} (${summary.evidence.screenshots.canvas.width}x${summary.evidence.screenshots.canvas.height})
 - Two-tab presence: ${summary.machineReview.twoTabPresence ? 'yes' : 'no'}
 - Observer movement: ${summary.machineReview.observerMovement ? 'yes' : 'no'}
-- HUD action loop: spirit capture ${summary.machineReview.hudActionLoop.spiritCapture ? 'yes' : 'no'}, spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, spirit journal ${summary.machineReview.hudActionLoop.spiritJournal ? 'yes' : 'no'}, field expedition ${summary.machineReview.hudActionLoop.fieldExpedition ? 'yes' : 'no'}, route invitation ${summary.machineReview.hudActionLoop.routeInvitation ? 'yes' : 'no'}, technique mastery ${summary.machineReview.hudActionLoop.techniqueMastery ? 'yes' : 'no'}, battle tactic ${summary.machineReview.hudActionLoop.battleTactic ? 'yes' : 'no'}, guild rank ${summary.machineReview.hudActionLoop.guildRank ? 'yes' : 'no'}, affinity trial ${summary.machineReview.hudActionLoop.affinityTrial ? 'yes' : 'no'}, party formation ${summary.machineReview.hudActionLoop.partyFormation ? 'yes' : 'no'}, spar ladder ${summary.machineReview.hudActionLoop.sparLadder ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
+- HUD action loop: spirit capture ${summary.machineReview.hudActionLoop.spiritCapture ? 'yes' : 'no'}, spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, spirit journal ${summary.machineReview.hudActionLoop.spiritJournal ? 'yes' : 'no'}, field expedition ${summary.machineReview.hudActionLoop.fieldExpedition ? 'yes' : 'no'}, route invitation ${summary.machineReview.hudActionLoop.routeInvitation ? 'yes' : 'no'}, technique mastery ${summary.machineReview.hudActionLoop.techniqueMastery ? 'yes' : 'no'}, battle tactic ${summary.machineReview.hudActionLoop.battleTactic ? 'yes' : 'no'}, guild rank ${summary.machineReview.hudActionLoop.guildRank ? 'yes' : 'no'}, growth rite ${summary.machineReview.hudActionLoop.growthRite ? 'yes' : 'no'}, affinity trial ${summary.machineReview.hudActionLoop.affinityTrial ? 'yes' : 'no'}, party formation ${summary.machineReview.hudActionLoop.partyFormation ? 'yes' : 'no'}, spar ladder ${summary.machineReview.hudActionLoop.sparLadder ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
 

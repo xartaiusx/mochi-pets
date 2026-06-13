@@ -4,6 +4,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_BATTLE_TACTICS,
+  SPIRIT_GROWTH_RITES,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -15,6 +16,7 @@ import {
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
   resolveGuildRankTrial,
+  resolveSpiritGrowthRite,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
@@ -35,6 +37,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -71,6 +74,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
     expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
@@ -231,6 +235,41 @@ describe('alpha contract', () => {
       affinityWins: 0,
       sparWins: 0,
       journalDiscoveredCount: 1
+    }).passed).toBe(false);
+
+    expect(SPIRIT_GROWTH_RITES.map((rite) => rite.id)).toEqual(['moonwell-bloom-rite']);
+    const growthRite = resolveSpiritGrowthRite({
+      spiritId: 'jintari',
+      bond: 5,
+      growth: 'glow',
+      trainingXp: 3,
+      raisingProof: true,
+      rankTrialProof: true,
+      rankTrialId: 'jade-court-initiate'
+    });
+    expect(growthRite).toMatchObject({
+      ok: true,
+      passed: true,
+      riteId: 'moonwell-bloom-rite',
+      riteName: 'Moonwell Bloom Rite',
+      spiritId: 'jintari',
+      spiritName: 'Jintari',
+      formTitle: 'Moonwell Bloom Form',
+      bond: 5,
+      growth: 'glow',
+      trainingXp: 3,
+      rewardItemId: 'moonwell-bloom-sigil',
+      source: 'spirit-growth-rite'
+    });
+    expect(growthRite.message).toContain('no-real-value Mochirii growth proof');
+    expect(resolveSpiritGrowthRite({
+      spiritId: 'jintari',
+      bond: 4,
+      growth: 'sprout',
+      trainingXp: 2,
+      raisingProof: true,
+      rankTrialProof: true,
+      rankTrialId: 'jade-court-initiate'
     }).passed).toBe(false);
 
     const affinity = resolveSpiritAffinityTrial('lirabao', 'lantern-pulse', 'jade-mirror-trial', 3, 7);

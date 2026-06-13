@@ -136,6 +136,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'growth-moonwell',
+            image: '/spritesheets/growth-moonwell.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'canary-shrine',
             image: '/spritesheets/canary-shrine.png',
             ...SPIRIT_SHEET

@@ -50,6 +50,7 @@ describe('game manifest', () => {
         techniqueMastery: true,
         battleTactics: true,
         guildRankTrials: true,
+        spiritGrowthRites: true,
         affinityTrials: true,
         raisingCare: true,
         roleplayQuests: true,
