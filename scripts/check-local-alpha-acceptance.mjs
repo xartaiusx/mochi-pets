@@ -58,6 +58,7 @@ async function run() {
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
   assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
+  assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
   assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
@@ -77,6 +78,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
+  assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
   assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
@@ -230,6 +232,23 @@ async function run() {
       requestId: `${runId}-spar`,
       type: 'battle.spar_ladder',
       payload: { partyIds: ['lirabao'], opponentId: 'jade-echo-apprentice', priorWins: 0, noInjury: true }
+    },
+    {
+      requestId: `${runId}-harmony-form`,
+      type: 'party.harmony_form',
+      payload: {
+        formId: 'triune-jade-harmony',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        routeMasteryProof: true,
+        routeMasteryId: 'jade-cloudbell-circuit',
+        growthRiteProof: true,
+        growthRiteId: 'moonwell-bloom-rite',
+        tacticProof: true,
+        affinityProof: true,
+        trainingXp: 3,
+        sparLadderXp: 5,
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-bond`,

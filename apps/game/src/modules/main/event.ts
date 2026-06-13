@@ -8,6 +8,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_HARMONY_FORMS,
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
   resolveSpiritAffinityTrial,
@@ -16,6 +17,7 @@ import {
   resolveSpiritExpedition,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  resolveSpiritHarmonyForm,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -91,6 +93,16 @@ type AlphaHudStatePatch = {
     message?: string;
     partyIds: string[];
     supportIds: string[];
+  };
+  harmonyForm?: {
+    formId: string;
+    message?: string;
+    name: string;
+    partyIds: string[];
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
   };
   spirit?: {
     bond: number;
@@ -235,6 +247,12 @@ function bondMap(player: RpgPlayer, spirits: readonly string[]) {
   return Object.fromEntries(
     spirits.map((spiritId) => [spiritId, Number(player.getVariable<number>(`mochiSocial.spirit.${spiritId}.bond`) || 1)])
   );
+}
+
+function trainingXpTotal(player: RpgPlayer, spirits: readonly string[]) {
+  return spirits.reduce((total, spiritId) => {
+    return total + Number(player.getVariable<number>(`mochiSocial.spirit.${spiritId}.trainingXp`) || 0);
+  }, 0);
 }
 
 function growthMap(player: RpgPlayer, spirits: readonly string[]) {
@@ -405,17 +423,61 @@ export function PartyBanner(): EventDefinition {
       player.setVariable('mochiSocial.spirits.party', formation.partyIds);
       player.setVariable('mochiSocial.spirits.active', formation.activeSpiritId);
       player.setVariable('mochiSocial.spirits.support', formation.supportIds);
-      player.showNotification('Party formed', { time: 1800, icon: 'party-banner' });
-      emitAlphaHudState(player, {
+      const growthRiteId = formation.partyIds
+        .map((spiritId) => player.getVariable<string>(`mochiSocial.spirit.${spiritId}.growthRite`))
+        .find(Boolean);
+      const harmony = resolveSpiritHarmonyForm(
+        {
+          partyIds: formation.partyIds,
+          routeMasteryProof: Boolean(player.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
+          routeMasteryId: player.getVariable<string>('mochiSocial.world.routeMastery'),
+          growthRiteProof: formation.partyIds.some((spiritId) => Boolean(player.getVariable<boolean>(`mochiSocial.spirit.${spiritId}.growthRiteProof`))),
+          growthRiteId,
+          tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+          affinityProof: Number(player.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+          trainingXp: trainingXpTotal(player, formation.partyIds),
+          sparLadderXp: Number(player.getVariable<number>('mochiSocial.battle.sparLadderXp') || 0)
+        },
+        SPIRIT_HARMONY_FORMS[0].id
+      );
+      const patch: AlphaHudStatePatch = {
         party: {
           activeSpiritId: formation.activeSpiritId,
           partyIds: formation.partyIds,
           supportIds: formation.supportIds,
           message: formation.message
         }
-      });
-      await player.save('auto', { title: 'Mochi Spirit party formed' }, { reason: 'auto', source: 'party-banner' });
-      showAlphaPrompt(player, `${formation.message} Party formation stays no-injury, social-first, and no-real-value.`);
+      };
+      let prompt = `${formation.message} Party formation stays no-injury, social-first, and no-real-value.`;
+      let saveTitle = 'Mochi Spirit party formed';
+
+      if (harmony.formed) {
+        player.setVariable('mochiSocial.spirits.harmonyFormProof', true);
+        player.setVariable('mochiSocial.spirits.harmonyForm', harmony.formId);
+        player.setVariable('mochiSocial.spirits.harmonyName', harmony.name);
+        player.setVariable('mochiSocial.spirits.harmonyScore', harmony.score);
+        if (!player.getVariable<boolean>('mochiSocial.spirits.harmonySashClaimed')) {
+          player.addItem(ALPHA_ITEMS.harmonySash, 1);
+          player.setVariable('mochiSocial.spirits.harmonySashClaimed', true);
+        }
+        patch.harmonyForm = {
+          formId: harmony.formId,
+          name: harmony.name,
+          title: harmony.title,
+          partyIds: harmony.partyIds,
+          score: harmony.score,
+          rewardItemId: harmony.rewardItemId,
+          proof: true,
+          message: harmony.message
+        };
+        prompt = `${formation.message} ${harmony.message} The Triune Jade Sash is no-real-value closed-alpha proof.`;
+        saveTitle = 'Mochi Spirit party harmony formed';
+      }
+
+      player.showNotification(harmony.formed ? 'Harmony formed' : 'Party formed', { time: 1800, icon: 'party-banner' });
+      emitAlphaHudState(player, patch);
+      await player.save('auto', { title: saveTitle }, { reason: 'auto', source: 'party-banner' });
+      showAlphaPrompt(player, prompt);
     }
   };
 }

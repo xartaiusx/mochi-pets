@@ -272,6 +272,48 @@ export interface SpiritPartyFormation {
   source: string;
 }
 
+export interface SpiritHarmonyForm {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredPartySize: number;
+  requiredRouteMasteryId: string;
+  requiredGrowthRiteId: string;
+  requiredTrainingXp: number;
+  requiredSparLadderXp: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritHarmonyFormProgress {
+  partyIds: readonly string[];
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  growthRiteProof: boolean;
+  growthRiteId?: string;
+  tacticProof: boolean;
+  affinityProof: boolean;
+  trainingXp: number;
+  sparLadderXp: number;
+}
+
+export interface SpiritHarmonyFormResult {
+  ok: boolean;
+  formed: boolean;
+  formId: string;
+  name: string;
+  title: string;
+  partyIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritSparOpponent {
   id: string;
   name: string;
@@ -659,6 +701,11 @@ export const ALPHA_ITEMS = {
     name: 'Moonwell Bloom Sigil',
     description: 'A no-real-value Mochi Spirit growth rite proof for closed-alpha progression.'
   },
+  harmonySash: {
+    id: 'triune-jade-sash',
+    name: 'Triune Jade Sash',
+    description: 'A no-real-value three-spirit party harmony proof for closed-alpha Mochirii progression.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -836,6 +883,23 @@ export const SPIRIT_ROUTE_MASTERIES: readonly SpiritRouteMastery[] = [
     requiredRankTrialId: GUILD_RANK_TRIALS[0].id,
     rewardItemId: ALPHA_ITEMS.routeKnot.id,
     summary: 'A no-real-value field mastery proof for wayfarers who complete the first Mochirii route circuit with a full spirit roster.'
+  }
+];
+
+export const SPIRIT_HARMONY_FORMS: readonly SpiritHarmonyForm[] = [
+  {
+    id: 'triune-jade-harmony',
+    name: 'Triune Jade Harmony',
+    title: 'First Three-Spirit Harmony Form',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredPartySize: MOCHI_SPIRITS.length,
+    requiredRouteMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+    requiredGrowthRiteId: SPIRIT_GROWTH_RITES[0].id,
+    requiredTrainingXp: 3,
+    requiredSparLadderXp: 5,
+    requiredScore: 27,
+    rewardItemId: ALPHA_ITEMS.harmonySash.id,
+    summary: 'A no-real-value social party form for wayfarers who synchronize all first-court Mochi Spirits after mastery, growth, tactics, and safe sparring.'
   }
 ];
 
@@ -1165,6 +1229,86 @@ export function resolveSpiritRouteMastery(
       ? `${mastery.title} mastered: all first-circuit Mochirii routes, spirits, journal records, quest postings, and Jade Court rank proof are complete.`
       : `${mastery.title} needs ${missing.join(', ')} before field mastery can be recorded.`,
     source: 'world-route-mastery'
+  };
+}
+
+export function resolveSpiritHarmonyForm(
+  progress: SpiritHarmonyFormProgress,
+  formId: string = SPIRIT_HARMONY_FORMS[0].id
+): SpiritHarmonyFormResult {
+  const form = SPIRIT_HARMONY_FORMS.find((entry) => entry.id === formId) || SPIRIT_HARMONY_FORMS[0];
+  const requiredSpiritIds = new Set(form.requiredSpiritIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of form.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  if (partyIds.length < form.requiredPartySize) {
+    missing.push(`party:${partyIds.length}/${form.requiredPartySize}`);
+  }
+
+  const routeMasteryReady = progress.routeMasteryProof && progress.routeMasteryId === form.requiredRouteMasteryId;
+  if (!routeMasteryReady) {
+    missing.push(`route:${form.requiredRouteMasteryId}`);
+  }
+
+  const growthRiteReady = progress.growthRiteProof && progress.growthRiteId === form.requiredGrowthRiteId;
+  if (!growthRiteReady) {
+    missing.push(`growth:${form.requiredGrowthRiteId}`);
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.affinityProof) {
+    missing.push('affinity');
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  const sparLadderXp = Math.max(0, Math.floor(progress.sparLadderXp || 0));
+  if (trainingXp < form.requiredTrainingXp) {
+    missing.push(`training:${trainingXp}/${form.requiredTrainingXp}`);
+  }
+
+  if (sparLadderXp < form.requiredSparLadderXp) {
+    missing.push(`spar:${sparLadderXp}/${form.requiredSparLadderXp}`);
+  }
+
+  const score =
+    Math.min(partyIds.length, form.requiredPartySize) * 3 +
+    (routeMasteryReady ? 3 : 0) +
+    (growthRiteReady ? 3 : 0) +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.affinityProof ? 2 : 0) +
+    Math.min(trainingXp, form.requiredTrainingXp) +
+    Math.min(sparLadderXp, form.requiredSparLadderXp);
+  const formed = missing.length === 0 && score >= form.requiredScore;
+  const partyNames = partyIds
+    .map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId)
+    .join(', ');
+
+  return {
+    ok: true,
+    formed,
+    formId: form.id,
+    name: form.name,
+    title: form.title,
+    partyIds,
+    score,
+    requiredScore: form.requiredScore,
+    missing,
+    rewardItemId: form.rewardItemId,
+    message: formed
+      ? `${form.name} formed: ${partyNames} synchronize a no-injury party form for closed-alpha Mochirii testing.`
+      : `${form.name} needs ${missing.join(', ')} before the three-spirit harmony form can be recorded.`,
+    source: 'party-harmony-form'
   };
 }
 

@@ -93,6 +93,7 @@ describe('Mochi town map object contract', () => {
       'Affinity trial',
       'spirit invitation',
       'Party formed',
+      'Harmony formed',
       'Training spar complete',
       'Guild rank recorded',
       'Growth rite opened',
@@ -143,6 +144,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('guild-rank-trial');
     expect(alphaContentSource).toContain('Moonwell Bloom Rite');
     expect(alphaContentSource).toContain('spirit-growth-rite');
+    expect(alphaContentSource).toContain('Triune Jade Harmony');
+    expect(alphaContentSource).toContain('triune-jade-sash');
+    expect(alphaContentSource).toContain('party-harmony-form');
     expect(runtimeServerSource).toContain('First Lantern Vow');
     expect(runtimeServerSource).toContain('Silk Market Kindness');
     expect(runtimeServerSource).toContain('Skybell Spar');
@@ -162,6 +166,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('guild-rank-trial');
     expect(runtimeServerSource).toContain('Moonwell Bloom Rite');
     expect(runtimeServerSource).toContain('spirit-growth-rite');
+    expect(runtimeServerSource).toContain('Triune Jade Harmony');
+    expect(runtimeServerSource).toContain('triune-jade-sash');
+    expect(runtimeServerSource).toContain('party-harmony-form');
   });
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {

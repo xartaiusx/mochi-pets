@@ -7,6 +7,7 @@ import {
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_HARMONY_FORMS,
   SPIRIT_ROUTE_MASTERIES,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
@@ -20,6 +21,7 @@ import {
   resolveSpiritExpedition,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  resolveSpiritHarmonyForm,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -99,6 +101,11 @@ interface AlphaHudState {
   activePartyId?: string;
   partyIds: string[];
   supportSpiritIds: string[];
+  harmonyFormProof: boolean;
+  harmonyFormId?: string;
+  harmonyFormName: string;
+  harmonyFormScore: number;
+  harmonySashClaimed: boolean;
   sparLadderXp: number;
   sparLadderWins: number;
   lastSparOpponentId?: string;
@@ -217,6 +224,16 @@ export interface AlphaWorldStatePatch {
     partyIds: string[];
     supportIds: string[];
   };
+  harmonyForm?: {
+    formId: string;
+    message?: string;
+    name: string;
+    partyIds: string[];
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -316,6 +333,10 @@ function defaultAlphaState(): AlphaHudState {
     affinityTrialScore: 0,
     partyIds: [],
     supportSpiritIds: [],
+    harmonyFormProof: false,
+    harmonyFormName: 'Unformed',
+    harmonyFormScore: 0,
+    harmonySashClaimed: false,
     sparLadderXp: 0,
     sparLadderWins: 0,
     trainingXp: 0,
@@ -441,6 +462,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
+      <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
@@ -452,6 +474,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.capture" aria-label="Invite a Mochi Spirit from the habitat grove">Invite</button>
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
       <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
+      <button type="button" data-alpha-action="party.harmony_form" aria-label="Record the no-real-value three-spirit harmony form">Harmony</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
@@ -501,6 +524,7 @@ function createHud() {
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
+  const harmonyLabel = hud.querySelector('[data-harmony-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
@@ -564,6 +588,11 @@ function createHud() {
       partyLabel.textContent = state.partyIds.length
         ? `Party: ${state.partyIds.length} spirit${state.partyIds.length === 1 ? '' : 's'}, ${state.sparLadderWins} ladder win${state.sparLadderWins === 1 ? '' : 's'}`
         : 'Party: not formed';
+    }
+    if (harmonyLabel) {
+      harmonyLabel.textContent = state.harmonyFormProof
+        ? `Harmony: ${state.harmonyFormName}, score ${state.harmonyFormScore}`
+        : 'Harmony: pending';
     }
     if (trainingLabel) {
       trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? 'raised' : 'needs care'}`;
@@ -966,6 +995,17 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.party.message || `Party formed with ${state.partyIds.length} Mochi Spirits.`);
   }
 
+  if (patch.harmonyForm) {
+    state.harmonyFormProof = patch.harmonyForm.proof || state.harmonyFormProof;
+    state.harmonyFormId = patch.harmonyForm.formId || state.harmonyFormId;
+    state.harmonyFormName = patch.harmonyForm.name || state.harmonyFormName;
+    state.harmonyFormScore = Math.max(state.harmonyFormScore, Number(patch.harmonyForm.score) || 0);
+    state.harmonySashClaimed = state.harmonySashClaimed || patch.harmonyForm.rewardItemId === 'triune-jade-sash';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.harmonyForm.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    appendUniqueAlphaChat(state, patch.harmonyForm.message || `${state.harmonyFormName} recorded as no-real-value party harmony proof.`);
+  }
+
   if (patch.training) {
     state.trainingXp = Math.max(state.trainingXp, Number(patch.training.xp) || 0);
     state.trainingVictories = Math.max(state.trainingVictories, Number(patch.training.victories) || 0);
@@ -1149,6 +1189,21 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     return {
       partyIds: state.attunedSpiritIds.slice(0, 3),
       activeSpiritId: state.spiritId || state.attunedSpiritIds[0]
+    };
+  }
+
+  if (type === 'party.harmony_form') {
+    return {
+      formId: SPIRIT_HARMONY_FORMS[0].id,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      tacticProof: state.tacticProof,
+      affinityProof: state.affinityProof,
+      trainingXp: state.trainingXp,
+      sparLadderXp: state.sparLadderXp
     };
   }
 
@@ -1499,6 +1554,35 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.supportIds;
       state.spiritId = result.activeSpiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'party.harmony_form') {
+    const result = resolveSpiritHarmonyForm(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        affinityProof: Boolean(payload.affinityProof ?? state.affinityProof),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        sparLadderXp: Number(payload.sparLadderXp ?? state.sparLadderXp ?? 0)
+      },
+      String(payload.formId || SPIRIT_HARMONY_FORMS[0].id)
+    );
+    if (result.formed) {
+      state.harmonyFormProof = true;
+      state.harmonyFormId = result.formId;
+      state.harmonyFormName = result.name;
+      state.harmonyFormScore = result.score;
+      state.harmonySashClaimed = result.rewardItemId === 'triune-jade-sash';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
     }
     state.chat.push(result.message);
   }

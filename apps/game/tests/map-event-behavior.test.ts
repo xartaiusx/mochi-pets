@@ -362,6 +362,56 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no real value');
   });
 
+  it('records Triune Jade Harmony from the party banner after mastery and growth proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'aozhen');
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.world.routeMastery', 'jade-cloudbell-circuit');
+    player.variables.set('mochiSocial.spirit.aozhen.growthRiteProof', true);
+    player.variables.set('mochiSocial.spirit.aozhen.growthRite', 'moonwell-bloom-rite');
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
+    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
+    player.variables.set('mochiSocial.battle.sparLadderXp', 5);
+
+    await runAction(PartyBanner(), player);
+
+    expect(player.variables.get('mochiSocial.spirits.party')).toEqual(['aozhen', 'lirabao', 'jintari']);
+    expect(player.variables.get('mochiSocial.spirits.harmonyFormProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.harmonyForm')).toBe('triune-jade-harmony');
+    expect(player.variables.get('mochiSocial.spirits.harmonyName')).toBe('Triune Jade Harmony');
+    expect(player.variables.get('mochiSocial.spirits.harmonyScore')).toBe(27);
+    expect(player.variables.get('mochiSocial.spirits.harmonySashClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('triune-jade-sash');
+    expect(player.notifications.at(-1)?.message).toBe('Harmony formed');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit party harmony formed' });
+    expect(player.saves.at(-1)?.options.source).toBe('party-banner');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        party: {
+          activeSpiritId: 'aozhen',
+          partyIds: ['aozhen', 'lirabao', 'jintari'],
+          supportIds: ['lirabao', 'jintari'],
+          message: 'Aozhen leads a 3-spirit Mochirii party for no-injury sparring.'
+        },
+        harmonyForm: {
+          formId: 'triune-jade-harmony',
+          name: 'Triune Jade Harmony',
+          title: 'First Three-Spirit Harmony Form',
+          partyIds: ['aozhen', 'lirabao', 'jintari'],
+          score: 27,
+          rewardItemId: 'triune-jade-sash',
+          proof: true,
+          message: 'Triune Jade Harmony formed: Aozhen, Lirabao, Jintari synchronize a no-injury party form for closed-alpha Mochirii testing.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Triune Jade Harmony formed');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha proof');
+  });
+
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
     const player = createFakePlayer();
 

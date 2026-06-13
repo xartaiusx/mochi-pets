@@ -44,6 +44,9 @@ assert(browserPresence.data?.hudAction?.state?.lastRouteInviteSpiritId === 'aozh
 assert(browserPresence.data?.hudAction?.state?.routeMasteryProof === true, 'HUD action proof must include route mastery proof');
 assert(browserPresence.data?.hudAction?.state?.routeMasteryId === 'jade-cloudbell-circuit', 'HUD action proof must include the Jade Cloudbell Circuit id');
 assert(browserPresence.data?.hudAction?.state?.routeMasteryKnotClaimed === true, 'HUD action proof must include the route mastery knot proof');
+assert(browserPresence.data?.hudAction?.state?.harmonyFormProof === true, 'HUD action proof must include party harmony proof');
+assert(browserPresence.data?.hudAction?.state?.harmonyFormId === 'triune-jade-harmony', 'HUD action proof must include the Triune Jade Harmony id');
+assert(browserPresence.data?.hudAction?.state?.harmonySashClaimed === true, 'HUD action proof must include the no-real-value harmony sash proof');
 assert(browserPresence.data?.hudAction?.state?.techniqueProof === true, 'HUD action proof must include the technique dojo loop');
 assert(browserPresence.data?.hudAction?.state?.techniqueMasteryXp >= 1, 'HUD action proof must include technique mastery XP');
 assert(browserPresence.data?.hudAction?.state?.tacticProof === true, 'HUD action proof must include the battle tactic scroll loop');
@@ -122,6 +125,8 @@ for (const snippet of [
   assert(mapEventSource.includes(snippet), `map event source missing snippet: ${snippet}`);
 }
 assert(alphaContentSource.includes("jadeLanternCourt: 'Jade Lantern Court'"), 'Jade Lantern Court habitat constant must be present');
+assert(alphaContentSource.includes('Triune Jade Harmony'), 'Triune Jade Harmony content must be present');
+assert(alphaContentSource.includes('party-harmony-form'), 'party harmony source id must be present');
 assert(
   Array.from(
     alphaContentSource.matchAll(
@@ -215,6 +220,7 @@ const report = {
       fieldExpedition: browserPresence.data?.hudAction?.state?.expeditionProof === true,
       routeInvitation: browserPresence.data?.hudAction?.state?.routeInviteProof === true,
       routeMastery: browserPresence.data?.hudAction?.state?.routeMasteryProof === true,
+      partyHarmony: browserPresence.data?.hudAction?.state?.harmonyFormProof === true,
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
       battleTactic: browserPresence.data?.hudAction?.state?.tacticProof === true,
       guildRank: browserPresence.data?.hudAction?.state?.guildRankProof === true,

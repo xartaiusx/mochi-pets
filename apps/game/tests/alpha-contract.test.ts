@@ -5,6 +5,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_HARMONY_FORMS,
   SPIRIT_ROUTE_MASTERIES,
   growthStageFromBond,
   resolveSpiritAttunement,
@@ -20,6 +21,7 @@ import {
   resolveSpiritBattleTactic,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  resolveSpiritHarmonyForm,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
@@ -43,6 +45,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -83,6 +86,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
+    expect(ALPHA_ACTION_TYPES).toContain('party.harmony_form');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -226,6 +230,42 @@ describe('alpha contract', () => {
       completedQuestIds: ['first-lantern-vow'],
       guildRankProof: false
     }).mastered).toBe(false);
+
+    expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
+    const harmonyForm = resolveSpiritHarmonyForm({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 3,
+      sparLadderXp: 5
+    });
+    expect(harmonyForm).toMatchObject({
+      ok: true,
+      formed: true,
+      formId: 'triune-jade-harmony',
+      name: 'Triune Jade Harmony',
+      title: 'First Three-Spirit Harmony Form',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 27,
+      requiredScore: 27,
+      rewardItemId: 'triune-jade-sash',
+      source: 'party-harmony-form'
+    });
+    expect(harmonyForm.message).toContain('no-injury party form');
+    expect(resolveSpiritHarmonyForm({
+      partyIds: ['lirabao', 'jintari'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      growthRiteProof: false,
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 1,
+      sparLadderXp: 0
+    }).formed).toBe(false);
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
     expect(technique).toMatchObject({
