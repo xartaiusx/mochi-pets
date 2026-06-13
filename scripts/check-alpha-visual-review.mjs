@@ -33,14 +33,14 @@ assert(String(visualSnapshot.data?.dom?.presence || '').includes('Nearby:'), 'vi
 assert(Array.isArray(browserPresence.data?.tabs) && browserPresence.data.tabs.length === 2, 'browser presence must include two tabs');
 assert(browserPresence.data?.tabs?.every((tab) => String(tab.presence || '').includes('Nearby: 2 testers')), 'browser presence tabs must show Nearby: 2 testers');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
-assert(browserPresence.data?.hudAction?.state?.spiritId === 'jintari', 'HUD action proof must include the Jintari route-invited care loop');
+assert(browserPresence.data?.hudAction?.state?.spiritId === 'aozhen', 'HUD action proof must include the Aozhen second-route care loop');
 assert(browserPresence.data?.hudAction?.state?.captureProof === true, 'HUD action proof must include the spirit invitation capture loop');
 assert(browserPresence.data?.hudAction?.state?.journalProof === true, 'HUD action proof must include the spirit journal loop');
-assert(browserPresence.data?.hudAction?.state?.journalDiscoveredCount >= 1, 'HUD action proof must include at least one discovered journal record');
+assert(browserPresence.data?.hudAction?.state?.journalDiscoveredCount === 3, 'HUD action proof must include all three discovered journal records');
 assert(browserPresence.data?.hudAction?.state?.expeditionProof === true, 'HUD action proof must include the field expedition loop');
-assert(browserPresence.data?.hudAction?.state?.lastExpeditionRouteId === 'moonbridge-bamboo-trail', 'HUD action proof must include the first field expedition route');
+assert(browserPresence.data?.hudAction?.state?.lastExpeditionRouteId === 'cloudbell-reed-bank', 'HUD action proof must include the second field expedition route');
 assert(browserPresence.data?.hudAction?.state?.routeInviteProof === true, 'HUD action proof must include the route spirit invitation loop');
-assert(browserPresence.data?.hudAction?.state?.lastRouteInviteSpiritId === 'jintari', 'HUD action proof must include Jintari as the route-invited spirit');
+assert(browserPresence.data?.hudAction?.state?.lastRouteInviteSpiritId === 'aozhen', 'HUD action proof must include Aozhen as the route-invited spirit');
 assert(browserPresence.data?.hudAction?.state?.techniqueProof === true, 'HUD action proof must include the technique dojo loop');
 assert(browserPresence.data?.hudAction?.state?.techniqueMasteryXp >= 1, 'HUD action proof must include technique mastery XP');
 assert(browserPresence.data?.hudAction?.state?.tacticProof === true, 'HUD action proof must include the battle tactic scroll loop');
@@ -52,13 +52,14 @@ assert(browserPresence.data?.hudAction?.state?.growthRiteProof === true, 'HUD ac
 assert(browserPresence.data?.hudAction?.state?.growthRiteId === 'moonwell-bloom-rite', 'HUD action proof must include the Moonwell growth rite');
 assert(browserPresence.data?.hudAction?.state?.affinityProof === true, 'HUD action proof must include the affinity trial loop');
 assert(browserPresence.data?.hudAction?.state?.lastAffinityTrialId === 'silk-cinder-trial', 'HUD action proof must include the Silk Cinder affinity trial');
-assert(browserPresence.data?.hudAction?.state?.partyIds?.includes?.('jintari'), 'HUD action proof must include Mochi Spirit party formation');
+assert(browserPresence.data?.hudAction?.state?.partyIds?.includes?.('jintari') && browserPresence.data?.hudAction?.state?.partyIds?.includes?.('aozhen'), 'HUD action proof must include three-spirit Mochi party formation');
 assert(browserPresence.data?.hudAction?.state?.sparLadderXp >= 1, 'HUD action proof must include spar ladder XP');
 assert(browserPresence.data?.hudAction?.state?.lastSparOpponentId === 'jade-echo-apprentice', 'HUD action proof must include the first spar ladder opponent');
 assert(browserPresence.data?.hudAction?.state?.profileViewed === true, 'HUD action proof must include profile view');
 assert(browserPresence.data?.hudAction?.state?.guildBuddyProof === true, 'HUD action proof must include local guild buddy proof');
 assert(browserPresence.data?.hudAction?.state?.statusMood === 'cozy', 'HUD action proof must include local status/mood proof');
-assert(browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'jintari', 'HUD action proof must include spirit inspection');
+assert(browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'aozhen', 'HUD action proof must include spirit inspection');
+assert(browserPresence.data?.hudAction?.state?.questChainProof === true, 'HUD action proof must include completed quest-chain proof');
 assert(browserPresence.data?.hudAction?.state?.charmListed === true, 'HUD action proof must include fixed market listing');
 assert(browserPresence.data?.hudAction?.state?.tradeProof === true, 'HUD action proof must include direct trade proof');
 assert(browserPresence.data?.hudAction?.state?.canaryRequested === true, 'HUD action proof must include Canary certificate request');
@@ -205,9 +206,9 @@ const report = {
     twoTabPresence: browserPresence.data?.tabs?.length === 2,
     observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true,
     hudActionLoop: {
-      spiritCare: browserPresence.data?.hudAction?.state?.spiritId === 'jintari',
+      spiritCare: browserPresence.data?.hudAction?.state?.spiritId === 'aozhen',
       spiritCapture: browserPresence.data?.hudAction?.state?.captureProof === true,
-      spiritJournal: browserPresence.data?.hudAction?.state?.journalProof === true,
+      spiritJournal: browserPresence.data?.hudAction?.state?.journalProof === true && browserPresence.data?.hudAction?.state?.journalDiscoveredCount === 3,
       fieldExpedition: browserPresence.data?.hudAction?.state?.expeditionProof === true,
       routeInvitation: browserPresence.data?.hudAction?.state?.routeInviteProof === true,
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
@@ -215,12 +216,13 @@ const report = {
       guildRank: browserPresence.data?.hudAction?.state?.guildRankProof === true,
       growthRite: browserPresence.data?.hudAction?.state?.growthRiteProof === true,
       affinityTrial: browserPresence.data?.hudAction?.state?.affinityProof === true,
-      partyFormation: browserPresence.data?.hudAction?.state?.partyIds?.includes?.('jintari') === true,
+      partyFormation: browserPresence.data?.hudAction?.state?.partyIds?.includes?.('jintari') === true && browserPresence.data?.hudAction?.state?.partyIds?.includes?.('aozhen') === true,
       sparLadder: browserPresence.data?.hudAction?.state?.sparLadderXp >= 1,
+      questChain: browserPresence.data?.hudAction?.state?.questChainProof === true,
       profileView: browserPresence.data?.hudAction?.state?.profileViewed === true,
       guildBuddyProof: browserPresence.data?.hudAction?.state?.guildBuddyProof === true,
       statusMood: browserPresence.data?.hudAction?.state?.statusMood === 'cozy',
-      spiritInspect: browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'jintari',
+      spiritInspect: browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'aozhen',
       fixedMarket: browserPresence.data?.hudAction?.state?.charmListed === true,
       directTrade: browserPresence.data?.hudAction?.state?.tradeProof === true,
       canaryRequest: browserPresence.data?.hudAction?.state?.canaryRequested === true

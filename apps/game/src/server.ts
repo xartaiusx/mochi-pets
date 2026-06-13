@@ -95,9 +95,12 @@ type AlphaHudStatePatch = {
     id: string;
   };
   quest?: {
+    chainComplete?: boolean;
+    completedQuestIds?: string[];
     completedSteps: string[];
     id: string;
     message?: string;
+    nextQuestId?: string;
   };
   raising?: {
     message?: string;
@@ -567,9 +570,28 @@ const quests = [
   {
     id: 'first-lantern-vow',
     title: 'First Lantern Vow',
+    summary: 'Attune with a Mochi Spirit, greet Sifu Narao, and record the first guild journal entry.',
     requiredSpiritId: 'lirabao',
     steps: ['attune-spirit', 'greet-sifu-narao', 'open-journal'],
+    rewardItemId: alphaItems.guildSeal.id,
     rewardBond: 1
+  },
+  {
+    id: 'silk-market-kindness',
+    title: 'Silk Market Kindness',
+    summary: 'Use a no-real-value market listing and direct trade proof to practice generous guild exchange.',
+    requiredSpiritId: 'jintari',
+    steps: ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy'],
+    rewardItemId: alphaItems.charm.id,
+    rewardBond: 1
+  },
+  {
+    id: 'skybell-spar',
+    title: 'Skybell Spar',
+    summary: 'Complete one non-lethal training battle and one raising action before returning to the court.',
+    requiredSpiritId: 'aozhen',
+    steps: ['choose-training-move', 'finish-training-bout', 'complete-raising-care'],
+    rewardBond: 2
   }
 ] as const;
 
@@ -1284,6 +1306,35 @@ function growthMap(actingPlayer: RpgPlayer, party: readonly string[]) {
   );
 }
 
+function questSteps(actingPlayer: RpgPlayer, questId: string): string[] {
+  const completedSteps = actingPlayer.getVariable<string[]>(`mochiSocial.quest.${questId}.steps`);
+  return Array.isArray(completedSteps) ? completedSteps : [];
+}
+
+function completedQuestIds(actingPlayer: RpgPlayer): string[] {
+  return quests.filter((quest) => questSteps(actingPlayer, quest.id).length >= quest.steps.length).map((quest) => quest.id);
+}
+
+function selectQuestBoardQuest(actingPlayer: RpgPlayer) {
+  const roster = bondedSpirits(actingPlayer);
+  const completed = new Set(completedQuestIds(actingPlayer));
+  const activeQuestId = actingPlayer.getVariable<string>('mochiSocial.quest.active');
+  const activeQuest = quests.find((quest) => quest.id === activeQuestId);
+  if (
+    activeQuest &&
+    !completed.has(activeQuest.id) &&
+    (!activeQuest.requiredSpiritId || roster.includes(activeQuest.requiredSpiritId))
+  ) {
+    return activeQuest;
+  }
+
+  return (
+    quests.find((quest) => !completed.has(quest.id) && (!quest.requiredSpiritId || roster.includes(quest.requiredSpiritId))) ||
+    quests.find((quest) => !completed.has(quest.id)) ||
+    quests[0]
+  );
+}
+
 function spiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
@@ -1839,17 +1890,19 @@ function questBoard(): EventDefinition {
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      const quest = quests[0];
-      const activeSpirit = activeSpiritId(actingPlayer);
-      if (!activeSpirit || !bondedSpirits(actingPlayer).includes(quest.requiredSpiritId)) {
-        showAlphaPrompt(actingPlayer, `${quest.title} is posted on the Mochirii quest board. Bond with Lirabao before recording this guild vow.`);
+      const roster = bondedSpirits(actingPlayer);
+      const quest = selectQuestBoardQuest(actingPlayer);
+      const requiredSpiritId = quest.requiredSpiritId || activeSpiritId(actingPlayer);
+      const rewardSpiritId = requiredSpiritId && roster.includes(requiredSpiritId) ? requiredSpiritId : activeSpiritId(actingPlayer);
+      if (!requiredSpiritId || !roster.includes(requiredSpiritId)) {
+        const spiritName = spirits.find((entry) => entry.id === requiredSpiritId)?.name || requiredSpiritId || 'a Mochi Spirit';
+        showAlphaPrompt(actingPlayer, `${quest.title} is posted on the Mochirii quest board. Bond with ${spiritName} before recording this guild step.`);
         return;
       }
 
       const stepsKey = `mochiSocial.quest.${quest.id}.steps`;
       const rewardKey = `mochiSocial.quest.${quest.id}.rewardClaimed`;
-      const completedSteps = actingPlayer.getVariable<string[]>(stepsKey);
-      const nextCompleted = Array.isArray(completedSteps) ? [...completedSteps] : [];
+      const nextCompleted = [...questSteps(actingPlayer, quest.id)];
       const nextStep = quest.steps.find((step) => !nextCompleted.includes(step));
       if (nextStep) {
         nextCompleted.push(nextStep);
@@ -1857,26 +1910,39 @@ function questBoard(): EventDefinition {
 
       actingPlayer.setVariable('mochiSocial.quest.active', quest.id);
       actingPlayer.setVariable(stepsKey, nextCompleted);
+      const nextCompletedQuestIds = completedQuestIds(actingPlayer);
+      const nextQuest = quests.find((entry) => {
+        return !nextCompletedQuestIds.includes(entry.id) && (!entry.requiredSpiritId || roster.includes(entry.requiredSpiritId));
+      });
 
       const patch: AlphaHudStatePatch = {
         quest: {
           id: quest.id,
           completedSteps: nextCompleted,
-          message: `${quest.title} ${nextCompleted.length}/${quest.steps.length}`
+          completedQuestIds: nextCompletedQuestIds,
+          chainComplete: nextCompletedQuestIds.length >= quests.length,
+          nextQuestId: nextCompleted.length >= quest.steps.length ? nextQuest?.id : undefined,
+          message: nextCompleted.length >= quest.steps.length
+            ? `${quest.title} complete. ${nextCompletedQuestIds.length}/${quests.length} Mochirii quest postings complete.`
+            : `${quest.title} ${nextCompleted.length}/${quest.steps.length}`
         }
       };
       let prompt = `${quest.title}: ${nextCompleted.length}/${quest.steps.length} guild steps recorded. This is no-real-value alpha quest progress.`;
 
       if (nextCompleted.length >= quest.steps.length && !actingPlayer.getVariable<boolean>(rewardKey)) {
         actingPlayer.setVariable(rewardKey, true);
-        const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+        actingPlayer.setVariable('mochiSocial.quest.completed', nextCompletedQuestIds);
+        const bondKey = `mochiSocial.spirit.${rewardSpiritId}.bond`;
         const nextBond = Math.min(5, Number(actingPlayer.getVariable<number>(bondKey) || 1) + quest.rewardBond);
         const nextGrowth = growthStageFromBond(nextBond);
         actingPlayer.setVariable(bondKey, nextBond);
-        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
-        patch.spirit = { id: activeSpirit, bond: nextBond, growth: nextGrowth };
-        const spiritName = spirits.find((entry) => entry.id === activeSpirit)?.name || activeSpirit;
+        actingPlayer.setVariable(`mochiSocial.spirit.${rewardSpiritId}.growth`, nextGrowth);
+        patch.spirit = { id: rewardSpiritId, bond: nextBond, growth: nextGrowth };
+        const spiritName = spirits.find((entry) => entry.id === rewardSpiritId)?.name || rewardSpiritId;
         prompt = `${quest.title} complete. Guild reward recorded as no-real-value alpha progress; ${spiritName} is now ${nextGrowth} bond ${nextBond}/5.`;
+        if (nextCompletedQuestIds.length >= quests.length) {
+          prompt = `${prompt} The first Mochirii quest chain is complete for closed-alpha testers.`;
+        }
       }
 
       actingPlayer.showNotification(nextCompleted.length >= quest.steps.length ? 'Quest complete' : 'Quest step recorded', { time: 1800, icon: 'quest-board' });
@@ -1897,8 +1963,7 @@ function guildRankBell(): EventDefinition {
       const roster = bondedSpirits(actingPlayer);
       const activeSpirit = activeSpiritId(actingPlayer);
       const trial = guildRankTrials[0];
-      const questStepsRaw = actingPlayer.getVariable<string[]>(`mochiSocial.quest.${quests[0].id}.steps`);
-      const completedQuestSteps = Array.isArray(questStepsRaw) ? questStepsRaw : [];
+      const completedQuestSteps = quests.flatMap((quest) => questSteps(actingPlayer, quest.id));
       const bond = activeSpirit ? Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 0;
       const rank = resolveGuildRankTrial(
         {

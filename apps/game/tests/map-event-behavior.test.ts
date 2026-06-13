@@ -255,13 +255,54 @@ describe('Mochi town event behavior', () => {
         quest: {
           id: 'first-lantern-vow',
           completedSteps: ['attune-spirit', 'greet-sifu-narao', 'open-journal'],
-          message: 'First Lantern Vow 3/3'
+          completedQuestIds: ['first-lantern-vow'],
+          chainComplete: false,
+          nextQuestId: undefined,
+          message: 'First Lantern Vow complete. 1/3 Mochirii quest postings complete.'
         },
         spirit: { id: 'lirabao', bond: 3, growth: 'sprout' }
       }
     });
     expect(player.texts.at(-1)).toContain('First Lantern Vow complete');
     expect(player.texts.at(-1)).toContain('no-real-value alpha progress');
+  });
+
+  it('advances the in-world quest board through the first Mochirii quest chain', async () => {
+    const player = createFakePlayer();
+
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+
+    for (let step = 0; step < 9; step += 1) {
+      await runAction(QuestBoard(), player);
+    }
+
+    expect(player.variables.get('mochiSocial.quest.active')).toBe('skybell-spar');
+    expect(player.variables.get('mochiSocial.quest.first-lantern-vow.steps')).toEqual(['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    expect(player.variables.get('mochiSocial.quest.silk-market-kindness.steps')).toEqual(['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    expect(player.variables.get('mochiSocial.quest.skybell-spar.steps')).toEqual(['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    expect(player.variables.get('mochiSocial.quest.completed')).toEqual(['first-lantern-vow', 'silk-market-kindness', 'skybell-spar']);
+    expect(player.variables.get('mochiSocial.quest.skybell-spar.rewardClaimed')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirit.aozhen.bond')).toBe(3);
+    expect(player.variables.get('mochiSocial.spirit.aozhen.growth')).toBe('sprout');
+    expect(player.saves.filter((save) => save.options.source === 'quest-board')).toHaveLength(9);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        quest: {
+          id: 'skybell-spar',
+          completedSteps: ['choose-training-move', 'finish-training-bout', 'complete-raising-care'],
+          completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+          chainComplete: true,
+          nextQuestId: undefined,
+          message: 'Skybell Spar complete. 3/3 Mochirii quest postings complete.'
+        },
+        spirit: { id: 'aozhen', bond: 3, growth: 'sprout' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('first Mochirii quest chain is complete');
+    expect(player.texts.at(-1)).toContain('closed-alpha testers');
   });
 
   it('forms a Mochi Spirit party and clears the first no-injury spar ladder', async () => {
@@ -465,6 +506,59 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('consent-based');
     expect(player.texts.at(-1)).toContain('no-real-value alpha capture progress');
+
+    await runAction(CareShrine(), player);
+    await runAction(ExpeditionGate(), player);
+
+    expect(player.variables.get('mochiSocial.world.lastExpeditionRoute')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiSocial.world.lastExpeditionEncounter')).toBe('aozhen');
+    expect(player.variables.get('mochiSocial.world.discoveredRoutes')).toEqual(['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
+    expect(player.variables.get('mochiSocial.world.expeditionCount')).toBe(2);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        expedition: {
+          routeId: 'cloudbell-reed-bank',
+          routeName: 'Cloudbell Reed Bank',
+          encounterSpiritId: 'aozhen',
+          recommendedItemId: 'lantern-harmony-tea',
+          rewardItemId: 'moonbridge-field-ribbon',
+          discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+          count: 2,
+          proof: true,
+          message: 'Jintari scouts the Cloudbell Reed Bank and records Aozhen signs. Bring lantern-harmony-tea for the next invitation. A quiet reed bank under guild bells where Aozhen listens for careful wayfarers.'
+        }
+      }
+    });
+
+    await runAction(RouteInvitationAltar(), player);
+
+    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari', 'aozhen']);
+    expect(player.variables.get('mochiSocial.spirits.active')).toBe('aozhen');
+    expect(player.variables.get('mochiSocial.spirit.aozhen.captureEncounter')).toBe('cloudbell-reed-bank-route-invitation');
+    expect(player.variables.get('mochiSocial.spirit.aozhen.lastRouteInvitation')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiSocial.world.lastRouteInvitation')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiSocial.world.lastRouteInvitationSpirit')).toBe('aozhen');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        routeInvite: {
+          routeId: 'cloudbell-reed-bank',
+          routeName: 'Cloudbell Reed Bank',
+          spiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          alreadyRostered: false,
+          proof: true,
+          message: 'Aozhen accepts the Skybell Vow Invitation at Cloudbell Reed Bank and joins your Mochirii roster by consent.'
+        },
+        capture: {
+          spiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          message: 'Aozhen accepts the Skybell Vow Invitation at Cloudbell Reed Bank and joins your Mochirii roster by consent.'
+        },
+        spirit: { id: 'aozhen', bond: 1, growth: 'seed' }
+      }
+    });
   });
 
   it('records no-injury technique mastery at the Mochirii dojo', async () => {

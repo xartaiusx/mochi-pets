@@ -86,6 +86,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
   assert(alphaStatus.body.gameplay?.roleplayQuests === true, 'Alpha status must expose roleplay quests.');
+  assert(alphaStatus.body.gameplay?.questChains === true, 'Alpha status must expose roleplay quest chains.');
   assert(alphaStatus.body.gameplay?.copiedUpstreamContent === false, 'Alpha status must reject copied upstream content.');
   assert(alphaStatus.body.chain?.network === 'CANARY', 'Alpha status must stay Canary-only.');
   assert(alphaStatus.body.edgeFunctions?.action === 'mochi-social-alpha-action', 'Alpha status must expose the Mochirii action function name.');
@@ -175,6 +176,16 @@ async function run() {
       payload: { routeId: 'moonbridge-bamboo-trail', offeredItemId: 'jade-thread-charm', harmonyScore: 3, roster: ['lirabao'], discoveredRoutes: ['moonbridge-bamboo-trail'] }
     },
     {
+      requestId: `${runId}-cloudbell-expedition`,
+      type: 'world.expedition',
+      payload: { routeId: 'cloudbell-reed-bank', roster: ['lirabao', 'jintari'], activeSpiritId: 'jintari', harmonyScore: 4, discoveredRoutes: ['moonbridge-bamboo-trail'] }
+    },
+    {
+      requestId: `${runId}-cloudbell-route-invite`,
+      type: 'spirit.route_invite',
+      payload: { routeId: 'cloudbell-reed-bank', offeredItemId: 'lantern-harmony-tea', harmonyScore: 4, roster: ['lirabao', 'jintari'], discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'] }
+    },
+    {
       requestId: `${runId}-technique`,
       type: 'spirit.technique',
       payload: { spiritId: 'lirabao', moveId: 'lantern-pulse', currentMasteryXp: 0, bond: 3, noInjury: true }
@@ -233,6 +244,31 @@ async function run() {
       requestId: `${runId}-quest-progress`,
       type: 'quest.progress',
       payload: { questId: 'first-lantern-vow', stepId: 'attune-spirit' }
+    },
+    {
+      requestId: `${runId}-quest-first-complete`,
+      type: 'quest.progress',
+      payload: { questId: 'first-lantern-vow', stepId: 'open-journal', completedSteps: ['attune-spirit', 'greet-sifu-narao'] }
+    },
+    {
+      requestId: `${runId}-quest-market-accept`,
+      type: 'quest.accept',
+      payload: { questId: 'silk-market-kindness' }
+    },
+    {
+      requestId: `${runId}-quest-market-complete`,
+      type: 'quest.progress',
+      payload: { questId: 'silk-market-kindness', stepId: 'thank-local-buddy', completedSteps: ['list-jade-thread-charm', 'offer-direct-trade'] }
+    },
+    {
+      requestId: `${runId}-quest-skybell-accept`,
+      type: 'quest.accept',
+      payload: { questId: 'skybell-spar' }
+    },
+    {
+      requestId: `${runId}-quest-skybell-complete`,
+      type: 'quest.progress',
+      payload: { questId: 'skybell-spar', stepId: 'complete-raising-care', completedSteps: ['choose-training-move', 'finish-training-bout'] }
     },
     {
       requestId: `${runId}-market`,

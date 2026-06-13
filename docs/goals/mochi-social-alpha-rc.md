@@ -39,7 +39,7 @@ Recommended slash goal:
    - Keep RPGJS 2D.
    - Add one cozy town plus one visible habitat area.
    - Add three original Mochi Spirit companions.
-   - Implement attunement, Mochi Spirit journal records, field route scouting, route spirit invitations, technique mastery, battle tactic scroll planning, guild rank trial proof, spirit growth rite proof, no-injury affinity trials, party formation, no-injury spar ladder practice, care, no-injury training battles, raising, roleplay quest progress, bond/growth, profile/status HUD, inspect spirit, local chat UI, emotes/status actions, fixed market board, direct trade proof, and Enjin Canary certificate request proof.
+   - Implement attunement, Mochi Spirit journal records, Moonbridge/Cloudbell field route scouting, route spirit invitations for Jintari and Aozhen, technique mastery, battle tactic scroll planning, guild rank trial proof, spirit growth rite proof, no-injury affinity trials, party formation, no-injury spar ladder practice, care, no-injury training battles, raising, first-chain roleplay quest progress, bond/growth, profile/status HUD, inspect spirit, local chat UI, emotes/status actions, fixed market board, direct trade proof, and Enjin Canary certificate request proof.
    - Store local fallback alpha events as no-real-value audit lines when Supabase Edge is not configured.
 
 3. Game backend integrations.
@@ -114,7 +114,7 @@ For the next development pass, optimize for [`docs/alpha-preview-ready.md`](alph
 ## Acceptance Criteria
 
 - Two browser tabs show player presence.
-- A tester can attune one Mochi Spirit, record discovered spirit journal details, scout one field route, invite that route's encounter spirit, practice one technique mastery action, study one battle tactic scroll, record one Jade Court guild rank trial proof, open one Moonwell Bloom growth rite proof, complete or study one no-injury affinity trial, form a party, practice a no-injury spar ladder, care for it, train in a no-injury guild spar, complete one raising action, progress one roleplay quest, increase bond, unlock a growth state, and see status in the HUD.
+- A tester can attune one Mochi Spirit, record 3/3 discovered spirit journal details, scout Moonbridge and Cloudbell field routes, invite those routes' Jintari and Aozhen encounter spirits, practice one technique mastery action, study one battle tactic scroll, record one Jade Court guild rank trial proof, open one Moonwell Bloom growth rite proof, complete or study one no-injury affinity trial, form a three-spirit party, practice a no-injury spar ladder, care for it, train in a no-injury guild spar, complete one raising action, complete the First Lantern Vow/Silk Market Kindness/Skybell Spar roleplay quest chain, increase bond, unlock a growth state, and see status in the HUD.
 - A tester can use local chat/emote UI and see actions recorded locally or through Supabase Edge.
 - A tester can create a no-real-value fixed market listing proof and a direct trade proof for eligible alpha assets.
 - A tester can request an Enjin Canary certificate path for one eligible rare asset; when Enjin env is missing, the runtime must explain it is a configured preview stub.

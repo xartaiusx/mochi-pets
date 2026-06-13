@@ -54,6 +54,7 @@ describe('game manifest', () => {
         affinityTrials: true,
         raisingCare: true,
         roleplayQuests: true,
+        questChains: true,
         spiritJournal: true,
         copiedUpstreamContent: false
       }

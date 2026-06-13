@@ -34,6 +34,7 @@ if (
   alphaStatus.gameplay?.trainingBattles !== true ||
   alphaStatus.gameplay?.raisingCare !== true ||
   alphaStatus.gameplay?.roleplayQuests !== true ||
+  alphaStatus.gameplay?.questChains !== true ||
   alphaStatus.gameplay?.copiedUpstreamContent !== false
 ) {
   throw new Error('Alpha status does not expose the Mochirii-native creature loop scope.');

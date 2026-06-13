@@ -91,6 +91,28 @@ export interface MochiSpiritQuest {
   rewardBond: number;
 }
 
+export interface MochiSpiritQuestProgress {
+  roster: readonly string[];
+  activeQuestId?: string;
+  completedQuestIds?: readonly string[];
+  questStepsById?: Record<string, readonly string[]>;
+}
+
+export interface MochiSpiritQuestProgressResult {
+  ok: boolean;
+  questId: string;
+  title: string;
+  completedSteps: string[];
+  completedQuestIds: string[];
+  completed: boolean;
+  chainComplete: boolean;
+  nextQuestId?: string;
+  rewardItemId?: string;
+  rewardBond: number;
+  message: string;
+  source: string;
+}
+
 export interface GuildRankTrial {
   id: string;
   title: string;
@@ -605,7 +627,7 @@ export const ALPHA_ITEMS = {
   }
 } as const;
 
-export const MOCHI_SPIRIT_QUESTS = [
+export const MOCHI_SPIRIT_QUESTS: readonly MochiSpiritQuest[] = [
   {
     id: 'first-lantern-vow',
     title: 'First Lantern Vow',
@@ -635,7 +657,82 @@ export const MOCHI_SPIRIT_QUESTS = [
     steps: ['choose-training-move', 'finish-training-bout', 'complete-raising-care'],
     rewardBond: 2
   }
-] as const satisfies readonly MochiSpiritQuest[];
+] as const;
+
+export function selectMochiSpiritQuest(progress: MochiSpiritQuestProgress = { roster: [] }): MochiSpiritQuest {
+  const roster = new Set(progress.roster.filter(Boolean));
+  const completedQuestIds = new Set(progress.completedQuestIds || []);
+  const activeQuest = MOCHI_SPIRIT_QUESTS.find((quest) => quest.id === progress.activeQuestId);
+  if (
+    activeQuest &&
+    !completedQuestIds.has(activeQuest.id) &&
+    (!activeQuest.requiredSpiritId || roster.has(activeQuest.requiredSpiritId))
+  ) {
+    return activeQuest;
+  }
+
+  const availableQuest = MOCHI_SPIRIT_QUESTS.find((quest) => {
+    return !completedQuestIds.has(quest.id) && (!quest.requiredSpiritId || roster.has(quest.requiredSpiritId));
+  });
+  if (availableQuest) return availableQuest;
+
+  return MOCHI_SPIRIT_QUESTS.find((quest) => !completedQuestIds.has(quest.id)) || MOCHI_SPIRIT_QUESTS[0];
+}
+
+export function resolveMochiSpiritQuestProgress(
+  questId: string = MOCHI_SPIRIT_QUESTS[0].id,
+  stepId = '',
+  progress: MochiSpiritQuestProgress = { roster: [] }
+): MochiSpiritQuestProgressResult {
+  const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === questId) || selectMochiSpiritQuest(progress);
+  const roster = new Set(progress.roster.filter(Boolean));
+  const previousQuestIds = Array.from(new Set(progress.completedQuestIds || []));
+  const questStepsById = progress.questStepsById || {};
+  const previousSteps = Array.from(new Set(questStepsById[quest.id] || []));
+
+  if (quest.requiredSpiritId && !roster.has(quest.requiredSpiritId)) {
+    const spirit = MOCHI_SPIRITS.find((entry) => entry.id === quest.requiredSpiritId);
+    return {
+      ok: false,
+      questId: quest.id,
+      title: quest.title,
+      completedSteps: previousSteps,
+      completedQuestIds: previousQuestIds,
+      completed: previousQuestIds.includes(quest.id),
+      chainComplete: previousQuestIds.length >= MOCHI_SPIRIT_QUESTS.length,
+      rewardItemId: quest.rewardItemId,
+      rewardBond: 0,
+      message: `${quest.title} needs ${spirit?.name || quest.requiredSpiritId} in your Mochirii roster before this guild step can be recorded.`,
+      source: 'quest-chain'
+    };
+  }
+
+  const nextStep = stepId && quest.steps.includes(stepId) ? stepId : quest.steps.find((step) => !previousSteps.includes(step));
+  const completedSteps = nextStep && !previousSteps.includes(nextStep) ? [...previousSteps, nextStep] : previousSteps;
+  const completed = completedSteps.length >= quest.steps.length;
+  const completedQuestIds = completed ? Array.from(new Set([...previousQuestIds, quest.id])) : previousQuestIds;
+  const nextQuest = MOCHI_SPIRIT_QUESTS.find((entry) => {
+    return !completedQuestIds.includes(entry.id) && (!entry.requiredSpiritId || roster.has(entry.requiredSpiritId));
+  });
+  const chainComplete = completedQuestIds.length >= MOCHI_SPIRIT_QUESTS.length;
+
+  return {
+    ok: true,
+    questId: quest.id,
+    title: quest.title,
+    completedSteps,
+    completedQuestIds,
+    completed,
+    chainComplete,
+    nextQuestId: nextQuest?.id,
+    rewardItemId: quest.rewardItemId,
+    rewardBond: completed ? quest.rewardBond : 0,
+    message: completed
+      ? `${quest.title} complete. ${chainComplete ? 'The first Mochirii quest chain is complete for closed-alpha testing.' : `${nextQuest?.title || 'The next guild posting'} is ready on the quest board.`}`
+      : `${quest.title} ${completedSteps.length}/${quest.steps.length} guild steps recorded.`,
+    source: 'quest-chain'
+  };
+}
 
 export const GUILD_RANK_TRIALS: readonly GuildRankTrial[] = [
   {

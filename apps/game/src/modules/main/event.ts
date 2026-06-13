@@ -89,9 +89,12 @@ type AlphaHudStatePatch = {
     id: string;
   };
   quest?: {
+    chainComplete?: boolean;
+    completedQuestIds?: string[];
     completedSteps: string[];
     id: string;
     message?: string;
+    nextQuestId?: string;
   };
   raising?: {
     message?: string;
@@ -228,6 +231,35 @@ function bondMap(player: RpgPlayer, spirits: readonly string[]) {
 function growthMap(player: RpgPlayer, spirits: readonly string[]) {
   return Object.fromEntries(
     spirits.map((spiritId) => [spiritId, player.getVariable<string>(`mochiSocial.spirit.${spiritId}.growth`) || 'seed'])
+  );
+}
+
+function questSteps(player: RpgPlayer, questId: string): string[] {
+  const completedSteps = player.getVariable<string[]>(`mochiSocial.quest.${questId}.steps`);
+  return Array.isArray(completedSteps) ? completedSteps : [];
+}
+
+function completedQuestIds(player: RpgPlayer): string[] {
+  return MOCHI_SPIRIT_QUESTS.filter((quest) => questSteps(player, quest.id).length >= quest.steps.length).map((quest) => quest.id);
+}
+
+function selectQuestBoardQuest(player: RpgPlayer) {
+  const roster = bondedSpirits(player);
+  const completed = new Set(completedQuestIds(player));
+  const activeQuestId = player.getVariable<string>('mochiSocial.quest.active');
+  const activeQuest = MOCHI_SPIRIT_QUESTS.find((quest) => quest.id === activeQuestId);
+  if (
+    activeQuest &&
+    !completed.has(activeQuest.id) &&
+    (!activeQuest.requiredSpiritId || roster.includes(activeQuest.requiredSpiritId))
+  ) {
+    return activeQuest;
+  }
+
+  return (
+    MOCHI_SPIRIT_QUESTS.find((quest) => !completed.has(quest.id) && (!quest.requiredSpiritId || roster.includes(quest.requiredSpiritId))) ||
+    MOCHI_SPIRIT_QUESTS.find((quest) => !completed.has(quest.id)) ||
+    MOCHI_SPIRIT_QUESTS[0]
   );
 }
 
@@ -783,17 +815,19 @@ export function QuestBoard(): EventDefinition {
     },
 
     async onAction(player: RpgPlayer) {
-      const quest = MOCHI_SPIRIT_QUESTS[0];
-      const activeSpirit = activeSpiritId(player);
-      if (!activeSpirit || !bondedSpirits(player).includes(quest.requiredSpiritId || activeSpirit)) {
-        showAlphaPrompt(player, `${quest.title} is posted on the Mochirii quest board. Bond with Lirabao before recording this guild vow.`);
+      const roster = bondedSpirits(player);
+      const quest = selectQuestBoardQuest(player);
+      const requiredSpiritId = quest.requiredSpiritId || activeSpiritId(player);
+      const rewardSpiritId = requiredSpiritId && roster.includes(requiredSpiritId) ? requiredSpiritId : activeSpiritId(player);
+      if (!requiredSpiritId || !roster.includes(requiredSpiritId)) {
+        const spiritName = MOCHI_SPIRITS.find((entry) => entry.id === requiredSpiritId)?.name || requiredSpiritId || 'a Mochi Spirit';
+        showAlphaPrompt(player, `${quest.title} is posted on the Mochirii quest board. Bond with ${spiritName} before recording this guild step.`);
         return;
       }
 
       const stepsKey = `mochiSocial.quest.${quest.id}.steps`;
       const rewardKey = `mochiSocial.quest.${quest.id}.rewardClaimed`;
-      const completedSteps = player.getVariable<string[]>(stepsKey);
-      const nextCompleted = Array.isArray(completedSteps) ? [...completedSteps] : [];
+      const nextCompleted = [...questSteps(player, quest.id)];
       const nextStep = quest.steps.find((step) => !nextCompleted.includes(step));
       if (nextStep) {
         nextCompleted.push(nextStep);
@@ -801,26 +835,39 @@ export function QuestBoard(): EventDefinition {
 
       player.setVariable('mochiSocial.quest.active', quest.id);
       player.setVariable(stepsKey, nextCompleted);
+      const nextCompletedQuestIds = completedQuestIds(player);
+      const nextQuest = MOCHI_SPIRIT_QUESTS.find((entry) => {
+        return !nextCompletedQuestIds.includes(entry.id) && (!entry.requiredSpiritId || roster.includes(entry.requiredSpiritId));
+      });
 
       const patch: AlphaHudStatePatch = {
         quest: {
           id: quest.id,
           completedSteps: nextCompleted,
-          message: `${quest.title} ${nextCompleted.length}/${quest.steps.length}`
+          completedQuestIds: nextCompletedQuestIds,
+          chainComplete: nextCompletedQuestIds.length >= MOCHI_SPIRIT_QUESTS.length,
+          nextQuestId: nextCompleted.length >= quest.steps.length ? nextQuest?.id : undefined,
+          message: nextCompleted.length >= quest.steps.length
+            ? `${quest.title} complete. ${nextCompletedQuestIds.length}/${MOCHI_SPIRIT_QUESTS.length} Mochirii quest postings complete.`
+            : `${quest.title} ${nextCompleted.length}/${quest.steps.length}`
         }
       };
       let prompt = `${quest.title}: ${nextCompleted.length}/${quest.steps.length} guild steps recorded. This is no-real-value alpha quest progress.`;
 
       if (nextCompleted.length >= quest.steps.length && !player.getVariable<boolean>(rewardKey)) {
         player.setVariable(rewardKey, true);
-        const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+        player.setVariable('mochiSocial.quest.completed', nextCompletedQuestIds);
+        const bondKey = `mochiSocial.spirit.${rewardSpiritId}.bond`;
         const nextBond = Math.min(5, Number(player.getVariable<number>(bondKey) || 1) + quest.rewardBond);
         const nextGrowth = growthStageFromBond(nextBond);
         player.setVariable(bondKey, nextBond);
-        player.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
-        patch.spirit = { id: activeSpirit, bond: nextBond, growth: nextGrowth };
-        const spiritName = MOCHI_SPIRITS.find((entry) => entry.id === activeSpirit)?.name || activeSpirit;
+        player.setVariable(`mochiSocial.spirit.${rewardSpiritId}.growth`, nextGrowth);
+        patch.spirit = { id: rewardSpiritId, bond: nextBond, growth: nextGrowth };
+        const spiritName = MOCHI_SPIRITS.find((entry) => entry.id === rewardSpiritId)?.name || rewardSpiritId;
         prompt = `${quest.title} complete. Guild reward recorded as no-real-value alpha progress; ${spiritName} is now ${nextGrowth} bond ${nextBond}/5.`;
+        if (nextCompletedQuestIds.length >= MOCHI_SPIRIT_QUESTS.length) {
+          prompt = `${prompt} The first Mochirii quest chain is complete for closed-alpha testers.`;
+        }
       }
 
       player.showNotification(nextCompleted.length >= quest.steps.length ? 'Quest complete' : 'Quest step recorded', { time: 1800, icon: 'quest-board' });
@@ -841,8 +888,7 @@ export function GuildRankBell(): EventDefinition {
       const roster = bondedSpirits(player);
       const activeSpirit = activeSpiritId(player);
       const trial = GUILD_RANK_TRIALS[0];
-      const questStepsRaw = player.getVariable<string[]>(`mochiSocial.quest.${MOCHI_SPIRIT_QUESTS[0].id}.steps`);
-      const completedQuestSteps = Array.isArray(questStepsRaw) ? questStepsRaw : [];
+      const completedQuestSteps = MOCHI_SPIRIT_QUESTS.flatMap((quest) => questSteps(player, quest.id));
       const bond = activeSpirit ? Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 0;
       const rank = resolveGuildRankTrial(
         {

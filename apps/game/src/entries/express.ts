@@ -51,6 +51,7 @@ const ALPHA_FEATURES = {
     techniqueMastery: true,
     raisingCare: true,
     roleplayQuests: true,
+    questChains: true,
     spiritJournal: true,
     copiedUpstreamContent: false
   },

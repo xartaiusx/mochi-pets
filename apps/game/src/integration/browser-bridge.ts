@@ -8,7 +8,9 @@ import {
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
   growthStageFromBond,
+  resolveMochiSpiritQuestProgress,
   techniqueMasteryLevelFromXp,
+  selectMochiSpiritQuest,
   resolveSpiritAttunement,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
@@ -98,6 +100,9 @@ interface AlphaHudState {
   raisingProof: boolean;
   activeQuestId?: string;
   completedQuestSteps: string[];
+  completedQuestIds: string[];
+  questStepsById: Record<string, string[]>;
+  questChainProof: boolean;
   charmListed: boolean;
   tradeProof: boolean;
   canaryRequested: boolean;
@@ -203,9 +208,12 @@ export interface AlphaWorldStatePatch {
     id: string;
   };
   quest?: {
+    chainComplete?: boolean;
+    completedQuestIds?: string[];
     completedSteps: string[];
     id: string;
     message?: string;
+    nextQuestId?: string;
   };
   raising?: {
     message?: string;
@@ -295,6 +303,9 @@ function defaultAlphaState(): AlphaHudState {
     trainingVictories: 0,
     raisingProof: false,
     completedQuestSteps: [],
+    completedQuestIds: [],
+    questStepsById: {},
+    questChainProof: false,
     charmListed: false,
     tradeProof: false,
     canaryRequested: false,
@@ -537,9 +548,11 @@ function createHud() {
     }
     if (questLabel) {
       const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === state.activeQuestId);
-      questLabel.textContent = quest
-        ? `Quest: ${quest.title}, ${state.completedQuestSteps.length}/${quest.steps.length} steps`
-        : 'Quest: not started';
+      questLabel.textContent = state.questChainProof
+        ? `Quest Chain: ${state.completedQuestIds.length}/${MOCHI_SPIRIT_QUESTS.length} complete`
+        : quest
+          ? `Quest: ${quest.title}, ${state.completedQuestSteps.length}/${quest.steps.length} steps`
+          : 'Quest: not started';
     }
     if (marketLabel) {
       marketLabel.textContent = state.canaryRequested
@@ -938,6 +951,20 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
   if (patch.quest?.id) {
     state.activeQuestId = patch.quest.id;
     state.completedQuestSteps = Array.isArray(patch.quest.completedSteps) ? patch.quest.completedSteps.map(String) : state.completedQuestSteps;
+    state.questStepsById = {
+      ...state.questStepsById,
+      [patch.quest.id]: state.completedQuestSteps
+    };
+    if (Array.isArray(patch.quest.completedQuestIds)) {
+      state.completedQuestIds = Array.from(new Set(patch.quest.completedQuestIds.map(String)));
+    }
+    if (patch.quest.chainComplete) {
+      state.questChainProof = true;
+    }
+    if (patch.quest.nextQuestId && !state.questChainProof) {
+      state.activeQuestId = patch.quest.nextQuestId;
+      state.completedQuestSteps = state.questStepsById[patch.quest.nextQuestId] || [];
+    }
     appendUniqueAlphaChat(state, patch.quest.message || `Quest progress: ${state.completedQuestSteps.length} steps.`);
   }
 
@@ -952,6 +979,15 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
   }
 
   writeAlphaState(state);
+}
+
+function selectHudQuest(state: AlphaHudState) {
+  return selectMochiSpiritQuest({
+    roster: state.attunedSpiritIds,
+    activeQuestId: state.activeQuestId,
+    completedQuestIds: state.completedQuestIds,
+    questStepsById: state.questStepsById
+  });
 }
 
 function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
@@ -1087,15 +1123,16 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
   }
 
   if (type === 'quest.accept') {
-    return { questId: state.activeQuestId || MOCHI_SPIRIT_QUESTS[0].id };
+    return { questId: selectHudQuest(state).id };
   }
 
   if (type === 'quest.progress') {
-    const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === state.activeQuestId) || MOCHI_SPIRIT_QUESTS[0];
+    const quest = state.activeQuestId ? MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === state.activeQuestId) || selectHudQuest(state) : selectHudQuest(state);
     const questSteps: readonly string[] = quest.steps;
+    const completedSteps = state.questStepsById[quest.id] || [];
     return {
       questId: quest.id,
-      stepId: questSteps[state.completedQuestSteps.length] || questSteps[questSteps.length - 1]
+      stepId: questSteps[completedSteps.length] || questSteps[questSteps.length - 1]
     };
   }
 
@@ -1450,27 +1487,46 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   }
 
   if (type === 'quest.accept') {
-    const questId = String(payload.questId || MOCHI_SPIRIT_QUESTS[0].id);
-    const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === questId) || MOCHI_SPIRIT_QUESTS[0];
+    const questId = String(payload.questId || selectHudQuest(state).id);
+    const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === questId) || selectHudQuest(state);
     state.activeQuestId = quest.id;
-    state.completedQuestSteps = [];
+    state.completedQuestSteps = state.questStepsById[quest.id] || [];
     state.chat.push(`Quest accepted: ${quest.title}. ${quest.summary}`);
   }
 
   if (type === 'quest.progress') {
-    const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === String(payload.questId || state.activeQuestId)) || MOCHI_SPIRIT_QUESTS[0];
-    const questSteps: readonly string[] = quest.steps;
-    const stepId = String(payload.stepId || questSteps[state.completedQuestSteps.length] || questSteps[questSteps.length - 1]);
-    state.activeQuestId = quest.id;
-    if (questSteps.includes(stepId) && !state.completedQuestSteps.includes(stepId)) {
-      state.completedQuestSteps.push(stepId);
-    }
-    if (state.completedQuestSteps.length >= questSteps.length) {
-      state.bond = Math.min(5, Math.max(state.bond, 1) + quest.rewardBond);
+    const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === String(payload.questId || state.activeQuestId)) || selectHudQuest(state);
+    const completedSteps = state.questStepsById[quest.id] || [];
+    const stepId = String(payload.stepId || quest.steps[completedSteps.length] || quest.steps[quest.steps.length - 1]);
+    const result = resolveMochiSpiritQuestProgress(quest.id, stepId, {
+      roster: state.attunedSpiritIds,
+      activeQuestId: state.activeQuestId,
+      completedQuestIds: state.completedQuestIds,
+      questStepsById: state.questStepsById
+    });
+    state.activeQuestId = result.nextQuestId && result.completed ? result.nextQuestId : result.questId;
+    state.questStepsById = {
+      ...state.questStepsById,
+      [result.questId]: result.completedSteps
+    };
+    state.completedQuestSteps = state.questStepsById[state.activeQuestId] || result.completedSteps;
+    state.completedQuestIds = result.completedQuestIds;
+    state.questChainProof = result.chainComplete;
+    if (result.completed && result.rewardBond > 0) {
+      state.bond = Math.min(5, Math.max(state.bond, 1) + result.rewardBond);
       state.growth = growthStageFromBond(state.bond);
-      state.chat.push(`Quest complete: ${quest.title}. Reward recorded as no-real-value alpha progress.`);
+      state.chat.push(`Quest complete: ${result.title}. Reward recorded as no-real-value alpha progress.`);
     } else {
-      state.chat.push(`Quest progress: ${quest.title} ${state.completedQuestSteps.length}/${questSteps.length}.`);
+      state.chat.push(result.message);
+    }
+    if (result.completed && result.nextQuestId) {
+      const nextQuest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === result.nextQuestId);
+      if (nextQuest) {
+        state.chat.push(`Quest posted: ${nextQuest.title}.`);
+      }
+    }
+    if (result.chainComplete) {
+      state.chat.push('Quest chain complete: first Mochirii guild postings finished for closed-alpha testing.');
     }
   }
 

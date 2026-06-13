@@ -13,10 +13,12 @@ import {
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritRouteInvitation,
+  resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
+  selectMochiSpiritQuest,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
@@ -38,6 +40,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -165,6 +168,32 @@ describe('alpha contract', () => {
     expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 3, ['lirabao'], []).ok).toBe(false);
     expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'lantern-harmony-tea', 3, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
     expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 2, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
+
+    const cloudbell = resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao', 'jintari'], 'jintari', 4, ['moonbridge-bamboo-trail']);
+    expect(cloudbell).toMatchObject({
+      ok: true,
+      routeId: 'cloudbell-reed-bank',
+      routeName: 'Cloudbell Reed Bank',
+      encounterSpiritId: 'aozhen',
+      recommendedItemId: 'lantern-harmony-tea',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      source: 'world-expedition'
+    });
+    const cloudbellInvitation = resolveSpiritRouteInvitation(
+      'cloudbell-reed-bank',
+      'lantern-harmony-tea',
+      4,
+      ['lirabao', 'jintari'],
+      ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']
+    );
+    expect(cloudbellInvitation).toMatchObject({
+      ok: true,
+      routeId: 'cloudbell-reed-bank',
+      routeName: 'Cloudbell Reed Bank',
+      spiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      source: 'spirit-route-invite'
+    });
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
     expect(technique).toMatchObject({
@@ -330,5 +359,38 @@ describe('alpha contract', () => {
       'skybell-spar'
     ]);
     expect(MOCHI_SPIRIT_QUESTS.every((quest) => quest.steps.length >= 3)).toBe(true);
+    expect(selectMochiSpiritQuest({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow']
+    }).id).toBe('silk-market-kindness');
+
+    const firstQuest = resolveMochiSpiritQuestProgress('first-lantern-vow', 'open-journal', {
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: [],
+      questStepsById: { 'first-lantern-vow': ['attune-spirit', 'greet-sifu-narao'] }
+    });
+    expect(firstQuest).toMatchObject({
+      ok: true,
+      questId: 'first-lantern-vow',
+      completed: true,
+      completedQuestIds: ['first-lantern-vow'],
+      nextQuestId: 'silk-market-kindness',
+      rewardBond: 1,
+      source: 'quest-chain'
+    });
+
+    const finalQuest = resolveMochiSpiritQuestProgress('skybell-spar', 'complete-raising-care', {
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness'],
+      questStepsById: { 'skybell-spar': ['choose-training-move', 'finish-training-bout'] }
+    });
+    expect(finalQuest).toMatchObject({
+      ok: true,
+      questId: 'skybell-spar',
+      completed: true,
+      chainComplete: true,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      rewardBond: 2
+    });
   });
 });
