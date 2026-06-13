@@ -198,6 +198,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="chain.deposit_request"]', { timeout: timeoutMs });
 
   try {
     await page.waitForFunction(
@@ -275,7 +276,7 @@ async function exerciseAlphaHud(page) {
         && !battleRound.includes('pending')
         && growth.includes('Moonwell Bloom Form')
         && quest.includes('Quest Chain')
-        && market.includes('Canary: requested')
+        && market.includes('Canary: request + return staged')
         && state.spiritId === 'aozhen'
         && state.captureProof === true
         && state.lastCaptureSpiritId === 'aozhen'
@@ -432,11 +433,13 @@ async function exerciseAlphaHud(page) {
         && state.charmListed === true
         && state.tradeProof === true
         && state.canaryRequested === true
+        && state.canaryReturnRequested === true
         && chat.includes('Inspect Aozhen')
         && chat.includes('You wave')
         && chat.includes('Jade Thread Charm listed')
         && chat.includes('Direct trade proof')
         && chat.includes('Canary certificate request staged')
+        && chat.includes('Jade Vault Return Proof staged')
         && chat.includes('Cloudbell Reed Bank')
         && chat.includes('Skybell Vow Invitation')
         && chat.includes('Jade Cloudbell Circuit mastered')
@@ -696,6 +699,7 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
+  assert(snapshot.state.canaryReturnRequested === true, 'HUD Canary return action must stage a no-real-value return preview.');
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
   assert(chat.some((line) => String(line).includes('Cloudbell Reed Bank')), 'HUD chat state must record the second field expedition action.');
   assert(chat.some((line) => String(line).includes('Skybell Vow Invitation')), 'HUD chat state must record the Aozhen route invitation action.');
@@ -718,6 +722,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Thread Charm listed')), 'HUD chat state must record the fixed-list action.');
   assert(chat.some((line) => String(line).includes('Direct trade proof')), 'HUD chat state must record the trade action.');
   assert(chat.some((line) => String(line).includes('Canary certificate request staged')), 'HUD chat state must record the Canary action.');
+  assert(chat.some((line) => String(line).includes('Jade Vault Return Proof staged')), 'HUD chat state must record the Canary return preview action.');
 
   return {
     chatMessage,

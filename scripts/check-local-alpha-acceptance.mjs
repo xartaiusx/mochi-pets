@@ -558,6 +558,17 @@ async function run() {
       requestId: `${runId}-canary`,
       type: 'chain.withdraw_request',
       payload: { assetId: 'lirabao-canary-certificate', chainNetwork: 'CANARY', noRealValue: true }
+    },
+    {
+      requestId: `${runId}-canary-return`,
+      type: 'chain.deposit_request',
+      payload: {
+        assetId: 'lirabao-canary-certificate',
+        chainNetwork: 'CANARY',
+        noRealValue: true,
+        priorRequestStaged: true,
+        confirmNoCreditUntilFinalized: true
+      }
     }
   ];
 

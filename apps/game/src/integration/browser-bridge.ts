@@ -213,6 +213,7 @@ interface AlphaHudState {
   charmListed: boolean;
   tradeProof: boolean;
   canaryRequested: boolean;
+  canaryReturnRequested: boolean;
   chat: string[];
 }
 
@@ -260,6 +261,7 @@ export interface AlphaWorldStatePatch {
     wins: number;
   };
   canaryRequested?: boolean;
+  canaryReturnRequested?: boolean;
   charmListed?: boolean;
   capture?: {
     message?: string;
@@ -647,6 +649,7 @@ function defaultAlphaState(): AlphaHudState {
     charmListed: false,
     tradeProof: false,
     canaryRequested: false,
+    canaryReturnRequested: false,
     chat: []
   };
 }
@@ -816,6 +819,7 @@ function createHud() {
       <button type="button" data-alpha-action="market.fixed_list" aria-label="List a no-real-value market item">List</button>
       <button type="button" data-alpha-action="trade.direct_offer" aria-label="Record a no-real-value direct trade proof">Trade</button>
       <button type="button" data-alpha-action="chain.withdraw_request" aria-label="Stage a no-real-value Enjin Canary preview request">Canary</button>
+      <button type="button" data-alpha-action="chain.deposit_request" aria-label="Stage a no-real-value Enjin Canary return preview">Return</button>
     </div>
     <section class="mochi-hud__feed-panel" aria-label="Local chat and action log">
       <form class="mochi-hud__chat" data-chat-form>
@@ -1004,15 +1008,12 @@ function createHud() {
           : 'Quest: not started';
     }
     if (marketLabel) {
-      marketLabel.textContent = state.canaryRequested
-        ? 'Canary: requested - preview stub'
-        : state.tradeProof
-          ? state.provisionProof
-            ? 'Bag: stocked - test only'
-            : 'Trade: proofed - test only'
-          : state.charmListed
-            ? 'Market: listed - test soft currency'
-            : 'Market: ready - fixed price';
+      let marketText = 'Market: ready - fixed price';
+      if (state.charmListed) marketText = 'Market: listed - test soft currency';
+      if (state.tradeProof) marketText = state.provisionProof ? 'Bag: stocked - test only' : 'Trade: proofed - test only';
+      if (state.canaryRequested) marketText = 'Canary: requested - preview stub';
+      if (state.canaryReturnRequested) marketText = state.canaryRequested ? 'Canary: request + return staged - preview stub' : 'Canary: return staged - preview stub';
+      marketLabel.textContent = marketText;
     }
     if (feed) {
       feed.innerHTML = '';
@@ -1614,6 +1615,11 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, 'Canary certificate request staged from the shrine as preview stub. No real value.');
   }
 
+  if (patch.canaryReturnRequested) {
+    state.canaryReturnRequested = true;
+    appendUniqueAlphaChat(state, 'Jade Vault Return Proof staged from the shrine as preview stub. No inventory credit before FINALIZED. No real value.');
+  }
+
   writeAlphaState(state);
 }
 
@@ -1996,6 +2002,18 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       amount: 1,
       entityType: 'chain_operation',
       entityId: 'lirabao-canary-certificate'
+    };
+  }
+
+  if (type === 'chain.deposit_request') {
+    return {
+      itemId: 'lirabao-canary-certificate',
+      tokenId: '1',
+      amount: 1,
+      entityType: 'chain_operation',
+      entityId: 'jade-vault-return-proof',
+      priorRequestStaged: state.canaryRequested,
+      confirmNoCreditUntilFinalized: true
     };
   }
 
@@ -2851,6 +2869,15 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   if (type === 'chain.withdraw_request') {
     state.canaryRequested = true;
     state.chat.push('Canary certificate request staged as preview stub. No real value.');
+  }
+
+  if (type === 'chain.deposit_request') {
+    if (state.canaryRequested || payload.priorRequestStaged === true) {
+      state.canaryReturnRequested = true;
+      state.chat.push('Jade Vault Return Proof staged as preview stub. No inventory credit unless a future Canary operation reaches FINALIZED. No real value.');
+    } else {
+      state.chat.push('Stage the Canary certificate request before the Jade Vault Return Proof. No real value.');
+    }
   }
 
   if (type === 'chat.send') {

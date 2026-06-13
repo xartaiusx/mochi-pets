@@ -165,6 +165,7 @@ type AlphaHudStatePatch = {
     wins: number;
   };
   canaryRequested?: boolean;
+  canaryReturnRequested?: boolean;
   charmListed?: boolean;
   capture?: {
     message?: string;
@@ -1946,13 +1947,23 @@ export function CanaryShrine(): EventDefinition {
       if (!player.getVariable<boolean>('mochiSocial.alpha.canaryCertificateRequested')) {
         player.addItem(ALPHA_ITEMS.certificate, 1);
         player.setVariable('mochiSocial.alpha.canaryCertificateRequested', true);
+        player.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
+        emitAlphaHudState(player, { canaryRequested: true });
+        await player.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
+        showAlphaPrompt(
+          player,
+          'A no-real-value Enjin Canary certificate request is staged. Final mint/burn settlement requires configured Enjin Platform and Wallet Daemon services.'
+        );
+        return;
       }
-      player.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
-      emitAlphaHudState(player, { canaryRequested: true });
-      await player.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
+
+      player.setVariable('mochiSocial.alpha.canaryReturnRequested', true);
+      player.showNotification('Jade Vault return staged', { time: 1800, icon: 'canary-shrine' });
+      emitAlphaHudState(player, { canaryRequested: true, canaryReturnRequested: true });
+      await player.save('auto', { title: 'Jade Vault return proof' }, { reason: 'auto', source: 'canary-shrine' });
       showAlphaPrompt(
         player,
-        'A no-real-value Enjin Canary certificate request is staged. Final mint/burn settlement requires configured Enjin Platform and Wallet Daemon services.'
+        'Jade Vault Return Proof staged as a no-real-value Canary preview. It does not credit hot inventory unless a future Enjin operation reaches FINALIZED.'
       );
     }
   };

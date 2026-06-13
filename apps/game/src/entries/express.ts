@@ -925,7 +925,7 @@ function createEnjinCanaryRuntime(config = getEnjinCanaryConfig()): EnjinCanaryR
     mode: configured ? 'configured' : 'configured-preview-stub',
     message: configured
       ? 'Enjin Canary is configured for operator-verified hot/cold proof submission.'
-      : 'Enjin Canary is running as a configured preview stub. The certificate request is recorded with no real value until Fly secrets, Enjin Platform, Fuel Tank, and Wallet Daemon signing are configured.',
+      : 'Enjin Canary is running as a configured preview stub. Chain requests are recorded with no real value until Fly secrets, Enjin Platform, Fuel Tank, and Wallet Daemon signing are configured.',
     requiredServerEnv: ['ENJIN_PLATFORM_TOKEN', 'ENJIN_COLLECTION_ID', 'ENJIN_FUEL_TANK_ID']
   };
 }

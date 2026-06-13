@@ -36,6 +36,7 @@ const alphaPromptMs = 2600;
 
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
+  canaryReturnRequested?: boolean;
   charmListed?: boolean;
   expedition?: {
     count: number;
@@ -4850,13 +4851,23 @@ function canaryShrine(): EventDefinition {
       if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.canaryCertificateRequested')) {
         actingPlayer.addItem(alphaItems.certificate, 1);
         actingPlayer.setVariable('mochiSocial.alpha.canaryCertificateRequested', true);
+        actingPlayer.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
+        emitAlphaHudState(actingPlayer, { canaryRequested: true });
+        await actingPlayer.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
+        showAlphaPrompt(
+          actingPlayer,
+          'A no-real-value Enjin Canary certificate request is staged. Final mint/burn settlement requires configured Enjin Platform and Wallet Daemon services.'
+        );
+        return;
       }
-      actingPlayer.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
-      emitAlphaHudState(actingPlayer, { canaryRequested: true });
-      await actingPlayer.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
+
+      actingPlayer.setVariable('mochiSocial.alpha.canaryReturnRequested', true);
+      actingPlayer.showNotification('Jade Vault return staged', { time: 1800, icon: 'canary-shrine' });
+      emitAlphaHudState(actingPlayer, { canaryRequested: true, canaryReturnRequested: true });
+      await actingPlayer.save('auto', { title: 'Jade Vault return proof' }, { reason: 'auto', source: 'canary-shrine' });
       showAlphaPrompt(
         actingPlayer,
-        'A no-real-value Enjin Canary certificate request is staged. Final mint/burn settlement requires configured Enjin Platform and Wallet Daemon services.'
+        'Jade Vault Return Proof staged as a no-real-value Canary preview. It does not credit hot inventory unless a future Enjin operation reaches FINALIZED.'
       );
     }
   };

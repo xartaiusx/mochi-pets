@@ -141,6 +141,11 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
     expect(ALPHA_ACTION_TYPES).toContain('quest.accept');
     expect(ALPHA_ACTION_TYPES).toContain('quest.progress');
+    expect(ALPHA_ACTION_TYPES).toContain('market.fixed_list');
+    expect(ALPHA_ACTION_TYPES).toContain('trade.direct_offer');
+    expect(ALPHA_ACTION_TYPES).toContain('chain.withdraw_request');
+    expect(ALPHA_ACTION_TYPES).toContain('chain.deposit_request');
+    expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'spirit.care', payload: {} })).toBe(true);
     expect(isAlphaActionEnvelope({ requestId: 'short', type: 'spirit.care', payload: {} })).toBe(false);
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);

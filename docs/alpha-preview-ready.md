@@ -34,8 +34,8 @@ Alpha Preview Ready can pass while funded-chain gates are red. Alpha RC Ready ca
 
 - Do not set dummy `ENJIN_COLLECTION_ID` or `ENJIN_FUEL_TANK_ID`.
 - Keep `ENJIN_NETWORK=CANARY`.
-- Keep the Canary/certificate UI visible with clear `configured-preview-stub` messaging.
-- Record chain requests as audit-only preview rows.
+- Keep the Canary certificate and Jade Vault return UI visible with clear `configured-preview-stub` messaging.
+- Record chain requests, including return previews, as audit-only preview rows.
 - Never credit inventory, cold inventory, market settlement, trade settlement, cashout, or player value from a chain request unless a real Enjin state reaches `FINALIZED`.
 
 ## Action Approval Rules
@@ -71,10 +71,10 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 Before testers enter the Vercel Preview:
 
 - Mochi Spirits loop works: attune, bond, care, Moonbridge/Cloudbell field route scouting, Jintari/Aozhen route spirit invitation, Jade Cloudbell route mastery, Jade Court Habitat Bond, Jade Court Research Folio, Jade Court Spirit Compendium, Jade Court Provision Satchel, Jade Court Commission Ledger, technique mastery, tactic scroll planning, Jade Step Loadout proof, Jade Heart Trait Attunement proof, Jade Mirror Condition Weave proof, guild rank trial proof, Moonwell growth rite proof, affinity trial, three-spirit party formation, Triune Jade Harmony proof, Jade Echo Concord social battle proof, Jade Mirror Team Match proof, Silk Banner Mentor Drill proof, deterministic no-injury battle round transcript, train, raise, inspect, first-chain roleplay quest completion, bond growth, 3/3 journal/status, and active spirit status.
-- HUD works: profile view, guild buddy proof, social status, spirit status, Jade Court Research Folio proof, Jade Court Spirit Compendium proof, Jade Court Provision Satchel proof, Jade Court Commission Ledger proof, inspect detail, Jade Court rank proof, Moonwell Bloom proof, technique loadout proof, trait attunement proof, condition weave proof, harmony/concord/team-match/mentor proof, battle round transcript proof, chat, emote, market, trade, Canary request.
+- HUD works: profile view, guild buddy proof, social status, spirit status, Jade Court Research Folio proof, Jade Court Spirit Compendium proof, Jade Court Provision Satchel proof, Jade Court Commission Ledger proof, inspect detail, Jade Court rank proof, Moonwell Bloom proof, technique loadout proof, trait attunement proof, condition weave proof, harmony/concord/team-match/mentor proof, battle round transcript proof, chat, emote, market, trade, Canary request, and Jade Vault return preview.
 - Social loop works: local guild buddy proof, chat/emote, and two-tab presence.
 - Economy loop is no-real-value: fixed market proof, Jade Court Provision Satchel proof, Jade Court Commission Ledger proof, and direct trade proof stay alpha/test labeled.
-- Chain request stub works: visible Canary request records an audit-only request and explains `configured-preview-stub`.
+- Chain request stub works: visible Canary request and Jade Vault return preview record audit-only requests and explain `configured-preview-stub`.
 - Visual/manual gates work: map prompt review covers NPC, chest, habitat/care, and first-screen composition.
 - Asset ledger is current for any original or CC0 assets.
 
@@ -115,7 +115,7 @@ Browser preview gates:
 - Allowlisted testers must accept terms.
 - The iframe loads the Fly game.
 - The parent sends only `MOCHI_SOCIAL_AUTH`.
-- The chain request shows stub/no-real-value messaging.
+- The chain request and return preview show stub/no-real-value messaging and do not imply inventory credit before `FINALIZED`.
 - Feedback appears in the admin/audit flow.
 
 Preview Ready audit:

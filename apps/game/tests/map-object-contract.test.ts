@@ -104,6 +104,7 @@ describe('Mochi town map object contract', () => {
       'Provision satchel stocked',
       'Direct trade proof recorded',
       'no-real-value Enjin Canary certificate request',
+      'Jade Vault Return Proof',
       "source: 'spirit-bond'",
       "source: 'spirit-care'",
       "source: 'journal-pavilion'",

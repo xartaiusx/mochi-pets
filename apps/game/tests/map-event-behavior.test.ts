@@ -1503,5 +1503,16 @@ describe('Mochi town event behavior', () => {
     expect(player.saves.at(-1)?.options.source).toBe('canary-shrine');
     expect(player.texts.at(-1)).toContain('no-real-value Enjin Canary certificate request');
     expect(player.texts.at(-1)).toContain('Wallet Daemon services');
+
+    await runAction(CanaryShrine(), player);
+    expect(player.variables.get('mochiSocial.alpha.canaryReturnRequested')).toBe(true);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: { canaryRequested: true, canaryReturnRequested: true }
+    });
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Jade Vault return proof' });
+    expect(player.saves.at(-1)?.options.source).toBe('canary-shrine');
+    expect(player.texts.at(-1)).toContain('Jade Vault Return Proof');
+    expect(player.texts.at(-1)).toContain('does not credit hot inventory unless a future Enjin operation reaches FINALIZED');
   });
 });
