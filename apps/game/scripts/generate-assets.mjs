@@ -12,7 +12,7 @@ const paths = {
   source: join(repoRoot, 'assets', 'source', 'game', 'hd')
 };
 
-const generatedAt = new Date().toISOString();
+const sourceCardGeneratedAt = '2026-06-13T00:00:00.000Z';
 
 const spriteSpecs = [
   {
@@ -145,7 +145,7 @@ async function exportSprite(spec) {
 async function writeSourceCard(card) {
   await writeFile(
     join(paths.source, `${card.id}.source.json`),
-    `${JSON.stringify({ ...card, tool: 'sharp svg-to-png source-master export', generatedAt }, null, 2)}\n`,
+    `${JSON.stringify({ ...card, tool: 'sharp svg-to-png source-master export', generatedAt: sourceCardGeneratedAt }, null, 2)}\n`,
     'utf8'
   );
 }
