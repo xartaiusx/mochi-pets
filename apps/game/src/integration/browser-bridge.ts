@@ -8,6 +8,7 @@ import {
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HARMONY_FORMS,
+  SPIRIT_HARMONY_TRIALS,
   SPIRIT_ROUTE_MASTERIES,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
@@ -22,6 +23,7 @@ import {
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
   resolveSpiritHarmonyForm,
+  resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -106,6 +108,11 @@ interface AlphaHudState {
   harmonyFormName: string;
   harmonyFormScore: number;
   harmonySashClaimed: boolean;
+  harmonyTrialProof: boolean;
+  harmonyTrialId?: string;
+  harmonyTrialName: string;
+  harmonyTrialScore: number;
+  concordTallyClaimed: boolean;
   sparLadderXp: number;
   sparLadderWins: number;
   lastSparOpponentId?: string;
@@ -234,6 +241,16 @@ export interface AlphaWorldStatePatch {
     score: number;
     title: string;
   };
+  harmonyTrial?: {
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    trialId: string;
+    trialName: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -337,6 +354,10 @@ function defaultAlphaState(): AlphaHudState {
     harmonyFormName: 'Unformed',
     harmonyFormScore: 0,
     harmonySashClaimed: false,
+    harmonyTrialProof: false,
+    harmonyTrialName: 'Uncleared',
+    harmonyTrialScore: 0,
+    concordTallyClaimed: false,
     sparLadderXp: 0,
     sparLadderWins: 0,
     trainingXp: 0,
@@ -463,6 +484,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
+      <span class="mochi-hud__hint" data-harmony-trial-label>Concord: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
@@ -475,6 +497,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
       <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
       <button type="button" data-alpha-action="party.harmony_form" aria-label="Record the no-real-value three-spirit harmony form">Harmony</button>
+      <button type="button" data-alpha-action="battle.harmony_trial" aria-label="Clear the no-injury social harmony battle trial">Concord</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
@@ -525,6 +548,7 @@ function createHud() {
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
+  const harmonyTrialLabel = hud.querySelector('[data-harmony-trial-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
@@ -593,6 +617,11 @@ function createHud() {
       harmonyLabel.textContent = state.harmonyFormProof
         ? `Harmony: ${state.harmonyFormName}, score ${state.harmonyFormScore}`
         : 'Harmony: pending';
+    }
+    if (harmonyTrialLabel) {
+      harmonyTrialLabel.textContent = state.harmonyTrialProof
+        ? `Concord: ${state.harmonyTrialName}, score ${state.harmonyTrialScore}`
+        : 'Concord: pending';
     }
     if (trainingLabel) {
       trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? 'raised' : 'needs care'}`;
@@ -1006,6 +1035,17 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.harmonyForm.message || `${state.harmonyFormName} recorded as no-real-value party harmony proof.`);
   }
 
+  if (patch.harmonyTrial) {
+    state.harmonyTrialProof = patch.harmonyTrial.proof || state.harmonyTrialProof;
+    state.harmonyTrialId = patch.harmonyTrial.trialId || state.harmonyTrialId;
+    state.harmonyTrialName = patch.harmonyTrial.trialName || state.harmonyTrialName;
+    state.harmonyTrialScore = Math.max(state.harmonyTrialScore, Number(patch.harmonyTrial.score) || 0);
+    state.concordTallyClaimed = state.concordTallyClaimed || patch.harmonyTrial.rewardItemId === 'jade-echo-concord-tally';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.harmonyTrial.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    appendUniqueAlphaChat(state, patch.harmonyTrial.message || `${state.harmonyTrialName} recorded as no-real-value concord proof.`);
+  }
+
   if (patch.training) {
     state.trainingXp = Math.max(state.trainingXp, Number(patch.training.xp) || 0);
     state.trainingVictories = Math.max(state.trainingVictories, Number(patch.training.victories) || 0);
@@ -1204,6 +1244,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       affinityProof: state.affinityProof,
       trainingXp: state.trainingXp,
       sparLadderXp: state.sparLadderXp
+    };
+  }
+
+  if (type === 'battle.harmony_trial') {
+    return {
+      trialId: SPIRIT_HARMONY_TRIALS[0].id,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      harmonyFormProof: state.harmonyFormProof,
+      harmonyFormId: state.harmonyFormId,
+      tacticProof: state.tacticProof,
+      affinityProof: state.affinityProof,
+      sparLadderWins: state.sparLadderWins,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
     };
   }
 
@@ -1579,6 +1635,36 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.harmonyFormName = result.name;
       state.harmonyFormScore = result.score;
       state.harmonySashClaimed = result.rewardItemId === 'triune-jade-sash';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.harmony_trial') {
+    const result = resolveSpiritHarmonyTrial(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        harmonyFormId: String(payload.harmonyFormId || state.harmonyFormId || ''),
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        affinityProof: Boolean(payload.affinityProof ?? state.affinityProof),
+        sparLadderWins: Number(payload.sparLadderWins ?? state.sparLadderWins ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.trialId || SPIRIT_HARMONY_TRIALS[0].id)
+    );
+    if (result.cleared) {
+      state.harmonyTrialProof = true;
+      state.harmonyTrialId = result.trialId;
+      state.harmonyTrialName = result.trialName;
+      state.harmonyTrialScore = result.score;
+      state.concordTallyClaimed = result.rewardItemId === 'jade-echo-concord-tally';
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0];

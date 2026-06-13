@@ -75,6 +75,16 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  harmonyTrial?: {
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    trialId: string;
+    trialName: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -356,6 +366,31 @@ type SpiritHarmonyFormProgress = {
   sparLadderXp: number;
 };
 
+type SpiritHarmonyTrial = {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredHarmonyFormId: string;
+  requiredSparWins: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritHarmonyTrialProgress = {
+  partyIds: readonly string[];
+  harmonyFormProof: boolean;
+  harmonyFormId?: string;
+  tacticProof: boolean;
+  affinityProof: boolean;
+  sparLadderWins: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines: readonly string[];
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -416,6 +451,11 @@ const alphaItems = {
     id: 'triune-jade-sash',
     name: 'Triune Jade Sash',
     description: 'A no-real-value three-spirit party harmony proof for closed-alpha Mochirii progression.'
+  },
+  concordTally: {
+    id: 'jade-echo-concord-tally',
+    name: 'Jade Echo Concord Tally',
+    description: 'A no-real-value team battle and social concord proof for closed-alpha Mochirii progression.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -729,6 +769,20 @@ const harmonyForms: readonly SpiritHarmonyForm[] = [
   }
 ];
 
+const harmonyTrials: readonly SpiritHarmonyTrial[] = [
+  {
+    id: 'jade-echo-concord',
+    name: 'Jade Echo Concord Trial',
+    title: 'First Social Harmony Battle Trial',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredHarmonyFormId: harmonyForms[0].id,
+    requiredSparWins: 1,
+    requiredScore: 24,
+    rewardItemId: alphaItems.concordTally.id,
+    summary: 'A no-injury team battle proof for a full Mochirii party that has formed harmony, practiced safely, and coordinated with local social presence.'
+  }
+];
+
 function growthStageFromBond(bond: number): SpiritGrowthStage {
   if (bond >= 5) return 'glow';
   if (bond >= 3) return 'sprout';
@@ -971,6 +1025,88 @@ function resolveSpiritHarmonyForm(progress: SpiritHarmonyFormProgress, formId: s
       ? `${form.name} formed: ${partyNames} synchronize a no-injury party form for closed-alpha Mochirii testing.`
       : `${form.name} needs ${missing.join(', ')} before the three-spirit harmony form can be recorded.`,
     source: 'party-harmony-form'
+  };
+}
+
+function resolveSpiritHarmonyTrial(progress: SpiritHarmonyTrialProgress, trialId: string = harmonyTrials[0].id) {
+  const trial = harmonyTrials.find((entry) => entry.id === trialId) || harmonyTrials[0];
+  const requiredSpiritIds = new Set(trial.requiredSpiritIds);
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of trial.requiredSpiritIds) {
+    if (!party.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const harmonyReady = progress.harmonyFormProof && progress.harmonyFormId === trial.requiredHarmonyFormId;
+  if (!harmonyReady) {
+    missing.push(`harmony:${trial.requiredHarmonyFormId}`);
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.affinityProof) {
+    missing.push('affinity');
+  }
+
+  const sparWins = Math.max(0, Math.floor(progress.sparLadderWins || 0));
+  if (sparWins < trial.requiredSparWins) {
+    missing.push(`spar-wins:${sparWins}/${trial.requiredSparWins}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  const score =
+    Math.min(party.length, trial.requiredSpiritIds.length) * 3 +
+    (harmonyReady ? 4 : 0) +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.affinityProof ? 2 : 0) +
+    Math.min(sparWins, trial.requiredSparWins) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 2 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const cleared = missing.length === 0 && score >= trial.requiredScore;
+  const partyNames = party.map((spiritId) => getSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    trialId: trial.id,
+    trialName: trial.name,
+    title: trial.title,
+    partyIds: party,
+    score,
+    requiredScore: trial.requiredScore,
+    missing,
+    rewardItemId: trial.rewardItemId,
+    message: cleared
+      ? `${trial.name} cleared: ${partyNames} complete a no-injury team battle while local testers coordinate through profile, guild, status, and chat proof.`
+      : `${trial.name} needs ${missing.join(', ')} before the social harmony battle trial can be recorded.`,
+    source: 'battle-harmony-trial'
   };
 }
 
@@ -2122,8 +2258,7 @@ function affinityDais(): EventDefinition {
       actingPlayer.setVariable(xpKey, affinity.masteryXp);
       actingPlayer.setVariable(bondKey, nextBond);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
-      actingPlayer.showNotification(affinity.victory ? 'Affinity trial cleared' : 'Affinity trial studied', { time: 1800, icon: 'affinity-dais' });
-      emitAlphaHudState(actingPlayer, {
+      const patch: AlphaHudStatePatch = {
         affinity: {
           spiritId: activeSpirit,
           moveId: move.id,
@@ -2139,9 +2274,57 @@ function affinityDais(): EventDefinition {
           message: affinity.message
         },
         spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth }
-      });
-      await actingPlayer.save('auto', { title: 'Mochi Spirit affinity trial' }, { reason: 'auto', source: 'affinity-dais' });
-      showAlphaPrompt(actingPlayer, `${affinity.message} Affinity trials are no-injury alpha battle practice with no real value.`);
+      };
+      let notification = affinity.victory ? 'Affinity trial cleared' : 'Affinity trial studied';
+      let saveTitle = 'Mochi Spirit affinity trial';
+      let prompt = `${affinity.message} Affinity trials are no-injury alpha battle practice with no real value.`;
+
+      if (actingPlayer.getVariable<boolean>('mochiSocial.spirits.harmonyFormProof')) {
+        const concord = resolveSpiritHarmonyTrial(
+          {
+            partyIds: partyIds(actingPlayer),
+            harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.harmonyFormProof')),
+            harmonyFormId: actingPlayer.getVariable<string>('mochiSocial.spirits.harmonyForm'),
+            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+            affinityProof: nextWins > 0,
+            sparLadderWins: Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0),
+            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
+            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+            statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
+            chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || []
+          },
+          harmonyTrials[0].id
+        );
+
+        if (concord.cleared) {
+          actingPlayer.setVariable('mochiSocial.battle.harmonyTrialProof', true);
+          actingPlayer.setVariable('mochiSocial.battle.harmonyTrial', concord.trialId);
+          actingPlayer.setVariable('mochiSocial.battle.harmonyTrialName', concord.trialName);
+          actingPlayer.setVariable('mochiSocial.battle.harmonyTrialScore', concord.score);
+          if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.concordTallyClaimed')) {
+            actingPlayer.addItem(alphaItems.concordTally, 1);
+            actingPlayer.setVariable('mochiSocial.battle.concordTallyClaimed', true);
+          }
+          patch.harmonyTrial = {
+            trialId: concord.trialId,
+            trialName: concord.trialName,
+            title: concord.title,
+            partyIds: concord.partyIds,
+            score: concord.score,
+            rewardItemId: concord.rewardItemId,
+            proof: true,
+            message: concord.message
+          };
+          notification = 'Concord trial cleared';
+          saveTitle = 'Mochi Spirit harmony trial';
+          prompt = `${affinity.message} ${concord.message} The Jade Echo Concord Tally is no-real-value closed-alpha battle proof.`;
+        }
+      }
+
+      actingPlayer.showNotification(notification, { time: 1800, icon: 'affinity-dais' });
+      emitAlphaHudState(actingPlayer, patch);
+      await actingPlayer.save('auto', { title: saveTitle }, { reason: 'auto', source: 'affinity-dais' });
+      showAlphaPrompt(actingPlayer, prompt);
     }
   };
 }

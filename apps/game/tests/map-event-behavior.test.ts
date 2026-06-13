@@ -412,6 +412,52 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha proof');
   });
 
+  it('records the Jade Echo Concord trial from the affinity dais after harmony and social proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'lirabao');
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.harmonyFormProof', true);
+    player.variables.set('mochiSocial.spirits.harmonyForm', 'triune-jade-harmony');
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
+    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
+    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 7);
+    player.variables.set('mochiSocial.social.profileViewed', true);
+    player.variables.set('mochiSocial.social.guildBuddyProof', true);
+    player.variables.set('mochiSocial.social.statusMood', 'cozy');
+    player.variables.set('mochiSocial.social.chatLines', ['Ready for concord.']);
+
+    await runAction(AffinityDais(), player);
+
+    expect(player.variables.get('mochiSocial.battle.harmonyTrialProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.harmonyTrial')).toBe('jade-echo-concord');
+    expect(player.variables.get('mochiSocial.battle.harmonyTrialName')).toBe('Jade Echo Concord Trial');
+    expect(player.variables.get('mochiSocial.battle.harmonyTrialScore')).toBe(24);
+    expect(player.variables.get('mochiSocial.battle.concordTallyClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('jade-echo-concord-tally');
+    expect(player.notifications.at(-1)?.message).toBe('Concord trial cleared');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit harmony trial' });
+    expect(player.saves.at(-1)?.options.source).toBe('affinity-dais');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        harmonyTrial: {
+          trialId: 'jade-echo-concord',
+          trialName: 'Jade Echo Concord Trial',
+          title: 'First Social Harmony Battle Trial',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          score: 24,
+          rewardItemId: 'jade-echo-concord-tally',
+          proof: true,
+          message: 'Jade Echo Concord Trial cleared: Lirabao, Jintari, Aozhen complete a no-injury team battle while local testers coordinate through profile, guild, status, and chat proof.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Echo Concord Trial cleared');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha battle proof');
+  });
+
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
     const player = createFakePlayer();
 

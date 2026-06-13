@@ -181,6 +181,7 @@ async function exerciseAlphaHud(page) {
   }
   await page.click('[data-alpha-action="world.route_mastery"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.harmony_form"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.harmony_trial"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -205,6 +206,7 @@ async function exerciseAlphaHud(page) {
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const harmony = document.querySelector('[data-harmony-label]')?.textContent || '';
+      const concord = document.querySelector('[data-harmony-trial-label]')?.textContent || '';
       const training = document.querySelector('[data-training-label]')?.textContent || '';
       const growth = document.querySelector('[data-growth-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
@@ -233,6 +235,7 @@ async function exerciseAlphaHud(page) {
         && party.includes('Party:')
         && !party.includes('not formed')
         && harmony.includes('Triune Jade Harmony')
+        && concord.includes('Jade Echo Concord Trial')
         && training.includes('Training:')
         && training.includes('XP')
         && training.includes('ladder')
@@ -266,6 +269,11 @@ async function exerciseAlphaHud(page) {
         && state.harmonyFormName === 'Triune Jade Harmony'
         && state.harmonyFormScore >= 27
         && state.harmonySashClaimed === true
+        && state.harmonyTrialProof === true
+        && state.harmonyTrialId === 'jade-echo-concord'
+        && state.harmonyTrialName === 'Jade Echo Concord Trial'
+        && state.harmonyTrialScore >= 24
+        && state.concordTallyClaimed === true
         && state.techniqueProof === true
         && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
@@ -328,6 +336,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Skybell Vow Invitation')
         && chat.includes('Jade Cloudbell Circuit mastered')
         && chat.includes('Triune Jade Harmony formed')
+        && chat.includes('Jade Echo Concord Trial cleared')
         && chat.includes('Quest chain complete')
         && feed.includes('Canary');
       },
@@ -342,6 +351,7 @@ async function exerciseAlphaHud(page) {
       routeInvite: document.querySelector('[data-route-invite-label]')?.textContent || '',
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
+      concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
       quest: document.querySelector('[data-quest-label]')?.textContent || '',
       state: JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}')
     }));
@@ -367,6 +377,7 @@ async function exerciseAlphaHud(page) {
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent?.trim() || '',
+      concord: document.querySelector('[data-harmony-trial-label]')?.textContent?.trim() || '',
       training: document.querySelector('[data-training-label]')?.textContent?.trim() || '',
       growth: document.querySelector('[data-growth-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
@@ -410,6 +421,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.harmonyFormName === 'Triune Jade Harmony', 'HUD harmony action must record the harmony form name.');
   assert(snapshot.state.harmonyFormScore >= 27, 'HUD harmony action must record a passing harmony score.');
   assert(snapshot.state.harmonySashClaimed === true, 'HUD harmony action must mark the no-real-value sash proof.');
+  assert(snapshot.concord.includes('Jade Echo Concord Trial'), 'HUD concord label must show the completed harmony trial.');
+  assert(snapshot.state.harmonyTrialProof === true, 'HUD concord action must record harmony trial proof.');
+  assert(snapshot.state.harmonyTrialId === 'jade-echo-concord', 'HUD concord action must record the trial id.');
+  assert(snapshot.state.harmonyTrialName === 'Jade Echo Concord Trial', 'HUD concord action must record the trial name.');
+  assert(snapshot.state.harmonyTrialScore >= 24, 'HUD concord action must record a passing trial score.');
+  assert(snapshot.state.concordTallyClaimed === true, 'HUD concord action must mark the no-real-value concord tally proof.');
   assert(snapshot.technique.includes('Technique:'), 'HUD technique label must show mastery state.');
   assert(snapshot.state.techniqueProof === true, 'HUD technique action must record technique proof.');
   assert(snapshot.state.techniqueMoveId === 'goldleaf-feint', 'HUD technique action must record the practiced route-spirit move.');
@@ -466,6 +483,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Skybell Vow Invitation')), 'HUD chat state must record the Aozhen route invitation action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Circuit mastered')), 'HUD chat state must record the route mastery action.');
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');
+  assert(chat.some((line) => String(line).includes('Jade Echo Concord Trial cleared')), 'HUD chat state must record the harmony trial action.');
   assert(chat.some((line) => String(line).includes('Quest chain complete')), 'HUD chat state must record the completed quest chain.');
   assert(chat.some((line) => String(line).includes('Inspect Aozhen')), 'HUD chat state must record the spirit inspect action.');
   assert(chat.some((line) => String(line).includes('You wave')), 'HUD chat state must record the emote action.');

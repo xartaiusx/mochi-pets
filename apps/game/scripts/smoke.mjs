@@ -33,6 +33,7 @@ if (
   alphaStatus.gameplay?.spiritAttunement !== true ||
   alphaStatus.gameplay?.routeMastery !== true ||
   alphaStatus.gameplay?.partyHarmony !== true ||
+  alphaStatus.gameplay?.harmonyTrials !== true ||
   alphaStatus.gameplay?.trainingBattles !== true ||
   alphaStatus.gameplay?.raisingCare !== true ||
   alphaStatus.gameplay?.roleplayQuests !== true ||

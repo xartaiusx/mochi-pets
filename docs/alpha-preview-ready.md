@@ -70,8 +70,8 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 
 Before testers enter the Vercel Preview:
 
-- Mochi Spirits loop works: attune, bond, care, Moonbridge/Cloudbell field route scouting, Jintari/Aozhen route spirit invitation, Jade Cloudbell route mastery, technique mastery, tactic scroll planning, guild rank trial proof, Moonwell growth rite proof, affinity trial, three-spirit party formation, Triune Jade Harmony proof, train, raise, inspect, first-chain roleplay quest completion, bond growth, 3/3 journal/status, and active spirit status.
-- HUD works: profile view, guild buddy proof, social status, spirit status, inspect detail, Jade Court rank proof, Moonwell Bloom proof, chat, emote, market, trade, Canary request.
+- Mochi Spirits loop works: attune, bond, care, Moonbridge/Cloudbell field route scouting, Jintari/Aozhen route spirit invitation, Jade Cloudbell route mastery, technique mastery, tactic scroll planning, guild rank trial proof, Moonwell growth rite proof, affinity trial, three-spirit party formation, Triune Jade Harmony proof, Jade Echo Concord social battle proof, train, raise, inspect, first-chain roleplay quest completion, bond growth, 3/3 journal/status, and active spirit status.
+- HUD works: profile view, guild buddy proof, social status, spirit status, inspect detail, Jade Court rank proof, Moonwell Bloom proof, harmony/concord proof, chat, emote, market, trade, Canary request.
 - Social loop works: local guild buddy proof, chat/emote, and two-tab presence.
 - Economy loop is no-real-value: fixed market proof and direct trade proof stay alpha/test labeled.
 - Chain request stub works: visible Canary request records an audit-only request and explains `configured-preview-stub`.

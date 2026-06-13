@@ -314,6 +314,46 @@ export interface SpiritHarmonyFormResult {
   source: string;
 }
 
+export interface SpiritHarmonyTrial {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredHarmonyFormId: string;
+  requiredSparWins: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritHarmonyTrialProgress {
+  partyIds: readonly string[];
+  harmonyFormProof: boolean;
+  harmonyFormId?: string;
+  tacticProof: boolean;
+  affinityProof: boolean;
+  sparLadderWins: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines: readonly string[];
+}
+
+export interface SpiritHarmonyTrialResult {
+  ok: boolean;
+  cleared: boolean;
+  trialId: string;
+  trialName: string;
+  title: string;
+  partyIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritSparOpponent {
   id: string;
   name: string;
@@ -706,6 +746,11 @@ export const ALPHA_ITEMS = {
     name: 'Triune Jade Sash',
     description: 'A no-real-value three-spirit party harmony proof for closed-alpha Mochirii progression.'
   },
+  concordTally: {
+    id: 'jade-echo-concord-tally',
+    name: 'Jade Echo Concord Tally',
+    description: 'A no-real-value team battle and social concord proof for closed-alpha Mochirii progression.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -900,6 +945,20 @@ export const SPIRIT_HARMONY_FORMS: readonly SpiritHarmonyForm[] = [
     requiredScore: 27,
     rewardItemId: ALPHA_ITEMS.harmonySash.id,
     summary: 'A no-real-value social party form for wayfarers who synchronize all first-court Mochi Spirits after mastery, growth, tactics, and safe sparring.'
+  }
+];
+
+export const SPIRIT_HARMONY_TRIALS: readonly SpiritHarmonyTrial[] = [
+  {
+    id: 'jade-echo-concord',
+    name: 'Jade Echo Concord Trial',
+    title: 'First Social Harmony Battle Trial',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredHarmonyFormId: SPIRIT_HARMONY_FORMS[0].id,
+    requiredSparWins: 1,
+    requiredScore: 24,
+    rewardItemId: ALPHA_ITEMS.concordTally.id,
+    summary: 'A no-injury team battle proof for a full Mochirii party that has formed harmony, practiced safely, and coordinated with local social presence.'
   }
 ];
 
@@ -1309,6 +1368,91 @@ export function resolveSpiritHarmonyForm(
       ? `${form.name} formed: ${partyNames} synchronize a no-injury party form for closed-alpha Mochirii testing.`
       : `${form.name} needs ${missing.join(', ')} before the three-spirit harmony form can be recorded.`,
     source: 'party-harmony-form'
+  };
+}
+
+export function resolveSpiritHarmonyTrial(
+  progress: SpiritHarmonyTrialProgress,
+  trialId: string = SPIRIT_HARMONY_TRIALS[0].id
+): SpiritHarmonyTrialResult {
+  const trial = SPIRIT_HARMONY_TRIALS.find((entry) => entry.id === trialId) || SPIRIT_HARMONY_TRIALS[0];
+  const requiredSpiritIds = new Set(trial.requiredSpiritIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of trial.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const harmonyReady = progress.harmonyFormProof && progress.harmonyFormId === trial.requiredHarmonyFormId;
+  if (!harmonyReady) {
+    missing.push(`harmony:${trial.requiredHarmonyFormId}`);
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.affinityProof) {
+    missing.push('affinity');
+  }
+
+  const sparWins = Math.max(0, Math.floor(progress.sparLadderWins || 0));
+  if (sparWins < trial.requiredSparWins) {
+    missing.push(`spar-wins:${sparWins}/${trial.requiredSparWins}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  const score =
+    Math.min(partyIds.length, trial.requiredSpiritIds.length) * 3 +
+    (harmonyReady ? 4 : 0) +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.affinityProof ? 2 : 0) +
+    Math.min(sparWins, trial.requiredSparWins) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 2 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const cleared = missing.length === 0 && score >= trial.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    trialId: trial.id,
+    trialName: trial.name,
+    title: trial.title,
+    partyIds,
+    score,
+    requiredScore: trial.requiredScore,
+    missing,
+    rewardItemId: trial.rewardItemId,
+    message: cleared
+      ? `${trial.name} cleared: ${partyNames} complete a no-injury team battle while local testers coordinate through profile, guild, status, and chat proof.`
+      : `${trial.name} needs ${missing.join(', ')} before the social harmony battle trial can be recorded.`,
+    source: 'battle-harmony-trial'
   };
 }
 

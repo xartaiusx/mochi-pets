@@ -243,6 +243,8 @@ function addStaticRequirements() {
     'routeMasteryProof',
     'data-alpha-action="party.harmony_form"',
     'harmonyFormProof',
+    'data-alpha-action="battle.harmony_trial"',
+    'harmonyTrialProof',
     'data-alpha-action="battle.tactic_scroll"',
     'tacticProof',
     'data-alpha-action="guild.rank_trial"',

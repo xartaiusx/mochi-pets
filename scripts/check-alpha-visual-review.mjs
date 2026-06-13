@@ -47,6 +47,9 @@ assert(browserPresence.data?.hudAction?.state?.routeMasteryKnotClaimed === true,
 assert(browserPresence.data?.hudAction?.state?.harmonyFormProof === true, 'HUD action proof must include party harmony proof');
 assert(browserPresence.data?.hudAction?.state?.harmonyFormId === 'triune-jade-harmony', 'HUD action proof must include the Triune Jade Harmony id');
 assert(browserPresence.data?.hudAction?.state?.harmonySashClaimed === true, 'HUD action proof must include the no-real-value harmony sash proof');
+assert(browserPresence.data?.hudAction?.state?.harmonyTrialProof === true, 'HUD action proof must include harmony trial proof');
+assert(browserPresence.data?.hudAction?.state?.harmonyTrialId === 'jade-echo-concord', 'HUD action proof must include the Jade Echo Concord id');
+assert(browserPresence.data?.hudAction?.state?.concordTallyClaimed === true, 'HUD action proof must include the no-real-value concord tally proof');
 assert(browserPresence.data?.hudAction?.state?.techniqueProof === true, 'HUD action proof must include the technique dojo loop');
 assert(browserPresence.data?.hudAction?.state?.techniqueMasteryXp >= 1, 'HUD action proof must include technique mastery XP');
 assert(browserPresence.data?.hudAction?.state?.tacticProof === true, 'HUD action proof must include the battle tactic scroll loop');
@@ -127,6 +130,8 @@ for (const snippet of [
 assert(alphaContentSource.includes("jadeLanternCourt: 'Jade Lantern Court'"), 'Jade Lantern Court habitat constant must be present');
 assert(alphaContentSource.includes('Triune Jade Harmony'), 'Triune Jade Harmony content must be present');
 assert(alphaContentSource.includes('party-harmony-form'), 'party harmony source id must be present');
+assert(alphaContentSource.includes('Jade Echo Concord Trial'), 'Jade Echo Concord Trial content must be present');
+assert(alphaContentSource.includes('battle-harmony-trial'), 'battle harmony trial source id must be present');
 assert(
   Array.from(
     alphaContentSource.matchAll(
@@ -221,6 +226,7 @@ const report = {
       routeInvitation: browserPresence.data?.hudAction?.state?.routeInviteProof === true,
       routeMastery: browserPresence.data?.hudAction?.state?.routeMasteryProof === true,
       partyHarmony: browserPresence.data?.hudAction?.state?.harmonyFormProof === true,
+      harmonyTrial: browserPresence.data?.hudAction?.state?.harmonyTrialProof === true,
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
       battleTactic: browserPresence.data?.hudAction?.state?.tacticProof === true,
       guildRank: browserPresence.data?.hudAction?.state?.guildRankProof === true,

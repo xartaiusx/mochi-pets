@@ -46,6 +46,7 @@ describe('game manifest', () => {
         routeMastery: true,
         partyFormation: true,
         partyHarmony: true,
+        harmonyTrials: true,
         fieldExpeditions: true,
         sparringLadder: true,
         trainingBattles: true,

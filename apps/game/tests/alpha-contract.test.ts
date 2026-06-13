@@ -6,6 +6,7 @@ import {
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HARMONY_FORMS,
+  SPIRIT_HARMONY_TRIALS,
   SPIRIT_ROUTE_MASTERIES,
   growthStageFromBond,
   resolveSpiritAttunement,
@@ -22,6 +23,7 @@ import {
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
   resolveSpiritHarmonyForm,
+  resolveSpiritHarmonyTrial,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
@@ -46,6 +48,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -87,6 +90,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('party.harmony_form');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -266,6 +270,45 @@ describe('alpha contract', () => {
       trainingXp: 1,
       sparLadderXp: 0
     }).formed).toBe(false);
+
+    expect(SPIRIT_HARMONY_TRIALS.map((trial) => trial.id)).toEqual(['jade-echo-concord']);
+    const concord = resolveSpiritHarmonyTrial({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      tacticProof: true,
+      affinityProof: true,
+      sparLadderWins: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for concord.']
+    });
+    expect(concord).toMatchObject({
+      ok: true,
+      cleared: true,
+      trialId: 'jade-echo-concord',
+      trialName: 'Jade Echo Concord Trial',
+      title: 'First Social Harmony Battle Trial',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 24,
+      requiredScore: 24,
+      rewardItemId: 'jade-echo-concord-tally',
+      source: 'battle-harmony-trial'
+    });
+    expect(concord.message).toContain('no-injury team battle');
+    expect(resolveSpiritHarmonyTrial({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      tacticProof: true,
+      affinityProof: true,
+      sparLadderWins: 1,
+      profileViewed: false,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for concord.']
+    }).cleared).toBe(false);
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
     expect(technique).toMatchObject({
