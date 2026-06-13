@@ -13,6 +13,7 @@ import {
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
+  SPIRIT_TRAIT_ATTUNEMENTS,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -35,6 +36,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
+  resolveSpiritTraitAttunement,
   selectSpiritRaisingNeed,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
@@ -53,6 +55,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueLoadouts).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritTraits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
@@ -106,6 +109,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique_loadout');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.trait_attune');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
     expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
@@ -715,6 +719,50 @@ describe('alpha contract', () => {
       profileViewed: false,
       guildBuddyProof: false
     }).cleared).toBe(false);
+
+    expect(SPIRIT_TRAIT_ATTUNEMENTS.map((trait) => trait.id)).toEqual(['jade-heart-trait']);
+    const trait = resolveSpiritTraitAttunement({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      growthRiteProof: true,
+      careStreak: 2,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      bondBySpiritId: { aozhen: 5, lirabao: 4, jintari: 4 }
+    });
+    expect(trait).toMatchObject({
+      ok: true,
+      unlocked: true,
+      traitId: 'jade-heart-trait',
+      traitName: 'Jade Heart Trait Attunement',
+      title: 'First Mochirii Party Trait',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      traitLabel: 'Skybell Wayfinder',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      score: 36,
+      requiredScore: 31,
+      rewardItemId: 'jade-heart-trait-thread',
+      source: 'spirit-trait-attunement'
+    });
+    expect(trait.message).toContain('no-real-value Mochirii trait progress');
+    expect(resolveSpiritTraitAttunement({
+      partyIds: ['lirabao'],
+      mentorChallengeProof: false,
+      techniqueLoadoutProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      growthRiteProof: false,
+      careStreak: 0,
+      journalProof: false,
+      journalDiscoveredCount: 0
+    }).unlocked).toBe(false);
 
     const battle = resolveSpiritTrainingBattle('lirabao', 'lantern-pulse', 5, 1);
     expect(battle.ok).toBe(true);

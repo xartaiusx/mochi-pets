@@ -15,6 +15,7 @@ import {
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
+  SPIRIT_TRAIT_ATTUNEMENTS,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
   resolveSpiritRouteMastery,
@@ -42,6 +43,7 @@ import {
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
+  resolveSpiritTraitAttunement,
   resolveSpiritTrainingBattle
 } from '../alpha/content';
 import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
@@ -122,6 +124,12 @@ interface AlphaHudState {
   techniqueLoadoutScore: number;
   techniqueLoadoutMoves: string[];
   loadoutSlipClaimed: boolean;
+  traitAttunementProof: boolean;
+  traitAttunementId?: string;
+  traitAttunementName: string;
+  traitLabel: string;
+  traitAttunementScore: number;
+  traitThreadClaimed: boolean;
   affinityProof: boolean;
   affinityTrialWins: number;
   lastAffinityTrialId?: string;
@@ -347,6 +355,20 @@ export interface AlphaWorldStatePatch {
     score: number;
     title: string;
   };
+  traitAttunement?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    traitId: string;
+    traitLabel: string;
+    traitName: string;
+  };
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
@@ -476,6 +498,11 @@ function defaultAlphaState(): AlphaHudState {
     techniqueLoadoutScore: 0,
     techniqueLoadoutMoves: [],
     loadoutSlipClaimed: false,
+    traitAttunementProof: false,
+    traitAttunementName: 'Unattuned',
+    traitLabel: 'No trait',
+    traitAttunementScore: 0,
+    traitThreadClaimed: false,
     affinityProof: false,
     affinityTrialWins: 0,
     affinityAdvantage: false,
@@ -632,6 +659,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
+      <span class="mochi-hud__hint" data-trait-label>Trait: pending</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
@@ -664,6 +692,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="battle.tactic_scroll" aria-label="Study a no-injury Mochirii tactic scroll">Tactic</button>
       <button type="button" data-alpha-action="spirit.technique_loadout" aria-label="Prepare the three-spirit Mochirii move loadout">Moves</button>
+      <button type="button" data-alpha-action="spirit.trait_attune" aria-label="Attune an original no-real-value Mochirii spirit trait">Trait</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
@@ -707,6 +736,7 @@ function createHud() {
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
+  const traitLabel = hud.querySelector('[data-trait-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
@@ -782,6 +812,11 @@ function createHud() {
       loadoutLabel.textContent = state.techniqueLoadoutProof
         ? `Loadout: ${state.techniqueLoadoutName}, score ${state.techniqueLoadoutScore}`
         : 'Loadout: pending';
+    }
+    if (traitLabel) {
+      traitLabel.textContent = state.traitAttunementProof
+        ? `Trait: ${state.traitLabel}, score ${state.traitAttunementScore}`
+        : 'Trait: pending';
     }
     if (affinityLabel) {
       affinityLabel.textContent = state.affinityProof
@@ -1228,6 +1263,19 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.techniqueLoadout.message || `${state.techniqueLoadoutName} recorded as no-real-value move loadout proof.`);
   }
 
+  if (patch.traitAttunement) {
+    state.traitAttunementProof = patch.traitAttunement.proof || state.traitAttunementProof;
+    state.traitAttunementId = patch.traitAttunement.traitId || state.traitAttunementId;
+    state.traitAttunementName = patch.traitAttunement.traitName || state.traitAttunementName;
+    state.traitLabel = patch.traitAttunement.traitLabel || state.traitLabel;
+    state.traitAttunementScore = Math.max(state.traitAttunementScore, Number(patch.traitAttunement.score) || 0);
+    state.traitThreadClaimed = state.traitThreadClaimed || patch.traitAttunement.rewardItemId === 'jade-heart-trait-thread';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.traitAttunement.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.spiritId = patch.traitAttunement.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.traitAttunement.message || `${state.traitLabel} recorded as no-real-value trait proof.`);
+  }
+
   if (patch.rank) {
     state.guildRankProof = patch.rank.proof || state.guildRankProof;
     state.guildRankId = patch.rank.trialId || state.guildRankId;
@@ -1536,6 +1584,26 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       trialId: trial.id,
       bond: state.bond || 1,
       techniqueMasteryXp: state.techniqueMasteryXp || 0
+    };
+  }
+
+  if (type === 'spirit.trait_attune') {
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    return {
+      traitId: SPIRIT_TRAIT_ATTUNEMENTS[0].id,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0],
+      mentorChallengeProof: state.mentorChallengeProof,
+      mentorChallengeId: state.mentorChallengeId,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      techniqueLoadoutId: state.techniqueLoadoutId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      growthRiteProof: state.growthRiteProof,
+      careStreak: state.raisingCareStreak,
+      journalProof: state.journalProof,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      bondBySpiritId: Object.fromEntries(partyIds.map((partySpiritId) => [partySpiritId, state.bond || 1]))
     };
   }
 
@@ -1992,6 +2060,43 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0];
       state.spiritId = result.partyIds[0] || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.trait_attune') {
+    const partyIds = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
+    const result = resolveSpiritTraitAttunement(
+      {
+        partyIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || partyIds[0] || ''),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        mentorChallengeId: String(payload.mentorChallengeId || state.mentorChallengeId || ''),
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        techniqueLoadoutId: String(payload.techniqueLoadoutId || state.techniqueLoadoutId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        careStreak: Number(payload.careStreak ?? state.raisingCareStreak ?? 0),
+        journalProof: Boolean(payload.journalProof ?? state.journalProof),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        bondBySpiritId:
+          payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
+            ? (payload.bondBySpiritId as Record<string, number>)
+            : Object.fromEntries(partyIds.map((spiritId) => [spiritId, state.bond || 1]))
+      },
+      String(payload.traitId || SPIRIT_TRAIT_ATTUNEMENTS[0].id)
+    );
+    if (result.unlocked) {
+      state.traitAttunementProof = true;
+      state.traitAttunementId = result.traitId;
+      state.traitAttunementName = result.traitName;
+      state.traitLabel = result.traitLabel;
+      state.traitAttunementScore = result.score;
+      state.traitThreadClaimed = result.rewardItemId === 'jade-heart-trait-thread';
+      state.spiritId = result.activeSpiritId;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
     }
     state.chat.push(result.message);
   }

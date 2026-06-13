@@ -71,6 +71,7 @@ async function run() {
   assert(manifest.body.gameplay?.techniqueMastery === true, 'Manifest must expose Mochi Spirit technique mastery.');
   assert(manifest.body.gameplay?.battleTactics === true, 'Manifest must expose Mochi Spirit battle tactics.');
   assert(manifest.body.gameplay?.techniqueLoadouts === true, 'Manifest must expose Mochi Spirit technique loadouts.');
+  assert(manifest.body.gameplay?.spiritTraits === true, 'Manifest must expose Mochi Spirit trait attunements.');
   assert(manifest.body.gameplay?.guildRankTrials === true, 'Manifest must expose Mochirii guild rank trials.');
   assert(manifest.body.gameplay?.spiritGrowthRites === true, 'Manifest must expose Mochi Spirit growth rites.');
   assert(manifest.body.gameplay?.affinityTrials === true, 'Manifest must expose Mochi Spirit affinity trials.');
@@ -98,6 +99,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.techniqueMastery === true, 'Alpha status must expose Mochi Spirit technique mastery.');
   assert(alphaStatus.body.gameplay?.battleTactics === true, 'Alpha status must expose Mochi Spirit battle tactics.');
   assert(alphaStatus.body.gameplay?.techniqueLoadouts === true, 'Alpha status must expose Mochi Spirit technique loadouts.');
+  assert(alphaStatus.body.gameplay?.spiritTraits === true, 'Alpha status must expose Mochi Spirit trait attunements.');
   assert(alphaStatus.body.gameplay?.guildRankTrials === true, 'Alpha status must expose Mochirii guild rank trials.');
   assert(alphaStatus.body.gameplay?.spiritGrowthRites === true, 'Alpha status must expose Mochi Spirit growth rites.');
   assert(alphaStatus.body.gameplay?.affinityTrials === true, 'Alpha status must expose Mochi Spirit affinity trials.');
@@ -374,6 +376,27 @@ async function run() {
         raisingCareStreak: 1,
         profileViewed: true,
         guildBuddyProof: true,
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-trait-attune`,
+      type: 'spirit.trait_attune',
+      payload: {
+        traitId: 'jade-heart-trait',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'lirabao',
+        mentorChallengeProof: true,
+        mentorChallengeId: 'silk-banner-mentor-drill',
+        techniqueLoadoutProof: true,
+        techniqueLoadoutId: 'jade-step-loadout',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        growthRiteProof: true,
+        careStreak: 2,
+        journalProof: true,
+        journalDiscoveredCount: 3,
+        bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 4 },
         noRealValue: true
       }
     },

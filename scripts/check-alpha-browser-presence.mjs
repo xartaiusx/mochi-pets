@@ -187,6 +187,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="battle.harmony_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.team_spar_match"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.mentor_challenge"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.trait_attune"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -211,6 +212,7 @@ async function exerciseAlphaHud(page) {
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const tactic = document.querySelector('[data-tactic-label]')?.textContent || '';
       const loadout = document.querySelector('[data-loadout-label]')?.textContent || '';
+      const trait = document.querySelector('[data-trait-label]')?.textContent || '';
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const harmony = document.querySelector('[data-harmony-label]')?.textContent || '';
@@ -244,6 +246,7 @@ async function exerciseAlphaHud(page) {
         && tactic.includes('Tactic:')
         && tactic.includes('goldleaf-opening')
         && loadout.includes('Jade Step Loadout')
+        && trait.includes('Skybell Wayfinder')
         && affinity.includes('Affinity:')
         && !affinity.includes('not started')
         && party.includes('Party:')
@@ -313,6 +316,12 @@ async function exerciseAlphaHud(page) {
         && state.mentorChallengeName === 'Silk Banner Mentor Drill'
         && state.mentorChallengeScore >= 28
         && state.mentorSealClaimed === true
+        && state.traitAttunementProof === true
+        && state.traitAttunementId === 'jade-heart-trait'
+        && state.traitAttunementName === 'Jade Heart Trait Attunement'
+        && state.traitLabel === 'Skybell Wayfinder'
+        && state.traitAttunementScore >= 31
+        && state.traitThreadClaimed === true
         && state.techniqueProof === true
         && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
@@ -394,6 +403,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Habitat Bond recorded')
         && chat.includes('Jade Court Research Folio recorded')
         && chat.includes('Jade Step Loadout prepared')
+        && chat.includes('Jade Heart Trait Attunement')
         && chat.includes('Triune Jade Harmony formed')
         && chat.includes('Jade Echo Concord Trial cleared')
         && chat.includes('Jade Mirror Team Match cleared')
@@ -414,6 +424,7 @@ async function exerciseAlphaHud(page) {
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent || '',
       research: document.querySelector('[data-research-label]')?.textContent || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
+      trait: document.querySelector('[data-trait-label]')?.textContent || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent || '',
@@ -444,6 +455,7 @@ async function exerciseAlphaHud(page) {
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       tactic: document.querySelector('[data-tactic-label]')?.textContent?.trim() || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent?.trim() || '',
+      trait: document.querySelector('[data-trait-label]')?.textContent?.trim() || '',
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent?.trim() || '',
@@ -545,6 +557,13 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.techniqueLoadoutMoves) && snapshot.state.techniqueLoadoutMoves.includes('lirabao:lantern-pulse'), 'HUD loadout action must include Lirabao Lantern Pulse.');
   assert(Array.isArray(snapshot.state.techniqueLoadoutMoves) && snapshot.state.techniqueLoadoutMoves.includes('jintari:goldleaf-feint'), 'HUD loadout action must include Jintari Goldleaf Feint.');
   assert(Array.isArray(snapshot.state.techniqueLoadoutMoves) && snapshot.state.techniqueLoadoutMoves.includes('aozhen:skybell-guard'), 'HUD loadout action must include Aozhen Skybell Guard.');
+  assert(snapshot.trait.includes('Skybell Wayfinder'), 'HUD trait label must show the attuned spirit trait.');
+  assert(snapshot.state.traitAttunementProof === true, 'HUD trait action must record trait attunement proof.');
+  assert(snapshot.state.traitAttunementId === 'jade-heart-trait', 'HUD trait action must record the Jade Heart trait id.');
+  assert(snapshot.state.traitAttunementName === 'Jade Heart Trait Attunement', 'HUD trait action must record the trait attunement name.');
+  assert(snapshot.state.traitLabel === 'Skybell Wayfinder', 'HUD trait action must record the active spirit trait label.');
+  assert(snapshot.state.traitAttunementScore >= 31, 'HUD trait action must record a passing trait score.');
+  assert(snapshot.state.traitThreadClaimed === true, 'HUD trait action must mark the no-real-value trait thread proof.');
   assert(snapshot.affinity.includes('Affinity:'), 'HUD affinity label must show trial state.');
   assert(snapshot.state.affinityProof === true, 'HUD affinity action must record affinity trial proof.');
   assert(snapshot.state.lastAffinityTrialId === 'silk-cinder-trial', 'HUD affinity action must record the Silk Cinder trial.');
@@ -602,6 +621,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Habitat Bond recorded')), 'HUD chat state must record the habitat bond action.');
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
   assert(chat.some((line) => String(line).includes('Jade Step Loadout prepared')), 'HUD chat state must record the technique loadout action.');
+  assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');
   assert(chat.some((line) => String(line).includes('Jade Echo Concord Trial cleared')), 'HUD chat state must record the harmony trial action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Team Match cleared')), 'HUD chat state must record the team spar match action.');

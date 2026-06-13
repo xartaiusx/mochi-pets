@@ -133,6 +133,20 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  traitAttunement?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    traitId: string;
+    traitLabel: string;
+    traitName: string;
+  };
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
@@ -576,6 +590,37 @@ type SpiritTechniqueLoadoutProgress = {
   journalDiscoveredCount: number;
 };
 
+type SpiritTraitAttunement = {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredMentorChallengeId: string;
+  requiredLoadoutId: string;
+  requiredBond: number;
+  requiredCareStreak: number;
+  requiredScore: number;
+  rewardItemId: string;
+  traitBySpiritId: Record<string, string>;
+  summary: string;
+};
+
+type SpiritTraitAttunementProgress = {
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  mentorChallengeProof: boolean;
+  mentorChallengeId?: string;
+  techniqueLoadoutProof: boolean;
+  techniqueLoadoutId?: string;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  growthRiteProof: boolean;
+  careStreak: number;
+  journalProof: boolean;
+  journalDiscoveredCount: number;
+  bondBySpiritId?: Record<string, number>;
+};
+
 type SpiritMentorChallenge = {
   id: string;
   name: string;
@@ -697,6 +742,11 @@ const alphaItems = {
     id: 'jade-step-loadout-slip',
     name: 'Jade Step Loadout Slip',
     description: 'A no-real-value technique loadout proof for closed-alpha Mochirii party battles.'
+  },
+  traitThread: {
+    id: 'jade-heart-trait-thread',
+    name: 'Jade Heart Trait Thread',
+    description: 'A no-real-value trait attunement proof for closed-alpha Mochirii spirit raising.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -1098,6 +1148,27 @@ const mentorChallenges: readonly SpiritMentorChallenge[] = [
     requiredScore: 28,
     rewardItemId: alphaItems.mentorSeal.id,
     summary: 'A no-injury mentor challenge proving the first Mochirii party can blend care, tactics, technique, team sparring, and local social coordination.'
+  }
+];
+
+const traitAttunements: readonly SpiritTraitAttunement[] = [
+  {
+    id: 'jade-heart-trait',
+    name: 'Jade Heart Trait Attunement',
+    title: 'First Mochirii Party Trait',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredMentorChallengeId: mentorChallenges[0].id,
+    requiredLoadoutId: techniqueLoadouts[0].id,
+    requiredBond: 3,
+    requiredCareStreak: 1,
+    requiredScore: 31,
+    rewardItemId: alphaItems.traitThread.id,
+    traitBySpiritId: {
+      lirabao: 'Lanternhearted Guard',
+      jintari: 'Goldleaf Quickstep',
+      aozhen: 'Skybell Wayfinder'
+    },
+    summary: 'A no-real-value raising and battle identity proof that gives each first-court Mochi Spirit one original Mochirii trait after care, growth, loadout, mentor, and battle readiness.'
   }
 ];
 
@@ -2220,6 +2291,93 @@ function resolveSpiritTechniqueLoadout(
       ? `${loadout.name} prepared: ${moveSummary} are set as no-injury Mochirii party moves for closed-alpha battles.`
       : `${loadout.name} needs ${missing.join(', ')} before party moves can be locked for battle practice.`,
     source: 'spirit-technique-loadout'
+  };
+}
+
+function resolveSpiritTraitAttunement(
+  progress: SpiritTraitAttunementProgress,
+  traitId: string = traitAttunements[0].id
+) {
+  const trait = traitAttunements.find((entry) => entry.id === traitId) || traitAttunements[0];
+  const requiredSpiritIds = new Set(trait.requiredSpiritIds);
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && party.includes(progress.activeSpiritId) ? progress.activeSpiritId : party[0] || trait.requiredSpiritIds[0];
+  const activeSpirit = getSpirit(activeSpiritId) || spirits[0];
+  const missing: string[] = [];
+
+  for (const spiritId of trait.requiredSpiritIds) {
+    if (!party.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const mentorReady = progress.mentorChallengeProof && progress.mentorChallengeId === trait.requiredMentorChallengeId;
+  if (!mentorReady) {
+    missing.push(`mentor:${trait.requiredMentorChallengeId}`);
+  }
+
+  const loadoutReady = progress.techniqueLoadoutProof && progress.techniqueLoadoutId === trait.requiredLoadoutId;
+  if (!loadoutReady) {
+    missing.push(`loadout:${trait.requiredLoadoutId}`);
+  }
+
+  const battleReady = progress.battleRoundProof && progress.battleRoundVictory;
+  if (!battleReady) {
+    missing.push('battle-round');
+  }
+
+  if (!progress.growthRiteProof) {
+    missing.push('growth-rite');
+  }
+
+  const careStreak = Math.max(0, Math.floor(progress.careStreak || 0));
+  if (careStreak < trait.requiredCareStreak) {
+    missing.push(`care-streak:${careStreak}/${trait.requiredCareStreak}`);
+  }
+
+  const bondBySpiritId = progress.bondBySpiritId || {};
+  const activeBond = Math.max(0, Math.floor(bondBySpiritId[activeSpiritId] ?? bondBySpiritId[activeSpirit.id] ?? 0));
+  if (activeBond < trait.requiredBond) {
+    missing.push(`bond:${activeBond}/${trait.requiredBond}`);
+  }
+
+  if (!progress.journalProof || progress.journalDiscoveredCount < trait.requiredSpiritIds.length) {
+    missing.push(`journal:${Math.max(0, Math.floor(progress.journalDiscoveredCount || 0))}/${trait.requiredSpiritIds.length}`);
+  }
+
+  const bondScore = Math.min(6, party.reduce((total, spiritId) => total + Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0)), 0));
+  const score =
+    Math.min(party.length, trait.requiredSpiritIds.length) * 3 +
+    (mentorReady ? 6 : 0) +
+    (loadoutReady ? 4 : 0) +
+    (battleReady ? 3 : 0) +
+    (progress.growthRiteProof ? 3 : 0) +
+    Math.min(3, careStreak * 2) +
+    bondScore +
+    (progress.journalProof ? 2 : 0);
+  const unlocked = missing.length === 0 && score >= trait.requiredScore;
+  const traitLabel = trait.traitBySpiritId[activeSpirit.id] || trait.traitBySpiritId[activeSpiritId] || trait.name;
+
+  return {
+    ok: true,
+    unlocked,
+    traitId: trait.id,
+    traitName: trait.name,
+    title: trait.title,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    traitLabel,
+    partyIds: party,
+    score,
+    requiredScore: trait.requiredScore,
+    missing,
+    rewardItemId: trait.rewardItemId,
+    message: unlocked
+      ? `${activeSpirit.name} unlocks ${traitLabel} through ${trait.name}: care, growth, mentor readiness, battle proof, and Jade Step moves are recorded as no-real-value Mochirii trait progress.`
+      : `${trait.name} needs ${missing.join(', ')} before an original Mochirii trait can be attuned.`,
+    source: 'spirit-trait-attunement'
   };
 }
 
@@ -3506,6 +3664,55 @@ function trainingRing(): EventDefinition {
             notification = 'Mentor challenge cleared';
             saveTitle = 'Mochi Spirit mentor challenge';
             prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} The Silk Banner Mentor Seal is no-real-value closed-alpha battle readiness proof.`;
+
+            const trait = resolveSpiritTraitAttunement(
+              {
+                partyIds: mentor.partyIds,
+                activeSpiritId: activeSpirit,
+                mentorChallengeProof: true,
+                mentorChallengeId: mentor.challengeId,
+                techniqueLoadoutProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.techniqueLoadoutProof')),
+                techniqueLoadoutId: actingPlayer.getVariable<string>('mochiSocial.battle.techniqueLoadout'),
+                battleRoundProof: battleRound.victory,
+                battleRoundVictory: battleRound.victory,
+                growthRiteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.growthRiteProof')),
+                careStreak: careStreakTotal(actingPlayer, mentor.partyIds),
+                journalProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.journalProof')),
+                journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+                bondBySpiritId: bondMap(actingPlayer, mentor.partyIds)
+              },
+              traitAttunements[0].id
+            );
+
+            if (trait.unlocked) {
+              actingPlayer.setVariable('mochiSocial.spirits.traitAttunementProof', true);
+              actingPlayer.setVariable('mochiSocial.spirits.traitAttunement', trait.traitId);
+              actingPlayer.setVariable('mochiSocial.spirits.traitAttunementName', trait.traitName);
+              actingPlayer.setVariable('mochiSocial.spirits.traitAttunementScore', trait.score);
+              actingPlayer.setVariable(`mochiSocial.spirit.${trait.activeSpiritId}.traitProof`, true);
+              actingPlayer.setVariable(`mochiSocial.spirit.${trait.activeSpiritId}.trait`, trait.traitLabel);
+              if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.traitThreadClaimed')) {
+                actingPlayer.addItem(alphaItems.traitThread, 1);
+                actingPlayer.setVariable('mochiSocial.spirits.traitThreadClaimed', true);
+              }
+              patch.traitAttunement = {
+                activeSpiritId: trait.activeSpiritId,
+                activeSpiritName: trait.activeSpiritName,
+                title: trait.title,
+                partyIds: trait.partyIds,
+                score: trait.score,
+                requiredScore: trait.requiredScore,
+                rewardItemId: trait.rewardItemId,
+                proof: true,
+                traitId: trait.traitId,
+                traitLabel: trait.traitLabel,
+                traitName: trait.traitName,
+                message: trait.message
+              };
+              notification = 'Trait attuned';
+              saveTitle = 'Mochi Spirit trait attunement';
+              prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} ${trait.message} The Jade Heart Trait Thread is no-real-value closed-alpha raising proof.`;
+            }
           } else {
             notification = 'Team match cleared';
             saveTitle = 'Mochi Spirit team match';

@@ -608,6 +608,71 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha battle readiness proof');
   });
 
+  it('attunes the Jade Heart trait from the training ring after mentor, loadout, growth, and care proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'lirabao');
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
+    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 17);
+    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiSocial.spirits.journalProof', true);
+    player.variables.set('mochiSocial.spirits.journalCount', 3);
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.tacticMasteryXp', 14);
+    player.variables.set('mochiSocial.battle.techniqueLoadoutProof', true);
+    player.variables.set('mochiSocial.battle.techniqueLoadout', 'jade-step-loadout');
+    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
+    player.variables.set('mochiSocial.social.profileViewed', true);
+    player.variables.set('mochiSocial.social.guildBuddyProof', true);
+    player.variables.set('mochiSocial.social.chatLines', ['Ready for the trait rite.']);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+
+    await runAction(TrainingRing(), player);
+
+    expect(player.variables.get('mochiSocial.battle.mentorChallengeProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.traitAttunementProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.traitAttunement')).toBe('jade-heart-trait');
+    expect(player.variables.get('mochiSocial.spirits.traitAttunementName')).toBe('Jade Heart Trait Attunement');
+    expect(player.variables.get('mochiSocial.spirits.traitAttunementScore')).toBe(35);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.traitProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.trait')).toBe('Lanternhearted Guard');
+    expect(player.variables.get('mochiSocial.spirits.traitThreadClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('jade-heart-trait-thread');
+    expect(player.notifications.at(-1)?.message).toBe('Trait attuned');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit trait attunement' });
+    expect(player.saves.at(-1)?.options.source).toBe('training-ring');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        traitAttunement: {
+          activeSpiritId: 'lirabao',
+          activeSpiritName: 'Lirabao',
+          title: 'First Mochirii Party Trait',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          score: 35,
+          requiredScore: 31,
+          rewardItemId: 'jade-heart-trait-thread',
+          proof: true,
+          traitId: 'jade-heart-trait',
+          traitLabel: 'Lanternhearted Guard',
+          traitName: 'Jade Heart Trait Attunement',
+          message: 'Lirabao unlocks Lanternhearted Guard through Jade Heart Trait Attunement: care, growth, mentor readiness, battle proof, and Jade Step moves are recorded as no-real-value Mochirii trait progress.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Heart Trait Attunement');
+    expect(player.texts.at(-1)).toContain('Jade Heart Trait Thread is no-real-value closed-alpha raising proof');
+  });
+
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
     const player = createFakePlayer();
 

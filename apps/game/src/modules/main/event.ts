@@ -16,6 +16,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
+  SPIRIT_TRAIT_ATTUNEMENTS,
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
   resolveSpiritAffinityTrial,
@@ -40,6 +41,7 @@ import {
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
+  resolveSpiritTraitAttunement,
   resolveSpiritTrainingBattle,
   type MochiSpirit
 } from '../../alpha/content';
@@ -176,6 +178,20 @@ type AlphaHudStatePatch = {
     rewardItemId: string;
     score: number;
     title: string;
+  };
+  traitAttunement?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+    traitId: string;
+    traitLabel: string;
+    traitName: string;
   };
   mentorChallenge?: {
     challengeId: string;
@@ -1354,6 +1370,55 @@ export function TrainingRing(): EventDefinition {
             notification = 'Mentor challenge cleared';
             saveTitle = 'Mochi Spirit mentor challenge';
             prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} The Silk Banner Mentor Seal is no-real-value closed-alpha battle readiness proof.`;
+
+            const trait = resolveSpiritTraitAttunement(
+              {
+                partyIds: mentor.partyIds,
+                activeSpiritId: activeSpirit,
+                mentorChallengeProof: true,
+                mentorChallengeId: mentor.challengeId,
+                techniqueLoadoutProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.techniqueLoadoutProof')),
+                techniqueLoadoutId: player.getVariable<string>('mochiSocial.battle.techniqueLoadout'),
+                battleRoundProof: battleRound.victory,
+                battleRoundVictory: battleRound.victory,
+                growthRiteProof: Boolean(player.getVariable<boolean>('mochiSocial.spirits.growthRiteProof')),
+                careStreak: careStreakTotal(player, mentor.partyIds),
+                journalProof: Boolean(player.getVariable<boolean>('mochiSocial.spirits.journalProof')),
+                journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+                bondBySpiritId: bondMap(player, mentor.partyIds)
+              },
+              SPIRIT_TRAIT_ATTUNEMENTS[0].id
+            );
+
+            if (trait.unlocked) {
+              player.setVariable('mochiSocial.spirits.traitAttunementProof', true);
+              player.setVariable('mochiSocial.spirits.traitAttunement', trait.traitId);
+              player.setVariable('mochiSocial.spirits.traitAttunementName', trait.traitName);
+              player.setVariable('mochiSocial.spirits.traitAttunementScore', trait.score);
+              player.setVariable(`mochiSocial.spirit.${trait.activeSpiritId}.traitProof`, true);
+              player.setVariable(`mochiSocial.spirit.${trait.activeSpiritId}.trait`, trait.traitLabel);
+              if (!player.getVariable<boolean>('mochiSocial.spirits.traitThreadClaimed')) {
+                player.addItem(ALPHA_ITEMS.traitThread, 1);
+                player.setVariable('mochiSocial.spirits.traitThreadClaimed', true);
+              }
+              patch.traitAttunement = {
+                activeSpiritId: trait.activeSpiritId,
+                activeSpiritName: trait.activeSpiritName,
+                title: trait.title,
+                partyIds: trait.partyIds,
+                score: trait.score,
+                requiredScore: trait.requiredScore,
+                rewardItemId: trait.rewardItemId,
+                proof: true,
+                traitId: trait.traitId,
+                traitLabel: trait.traitLabel,
+                traitName: trait.traitName,
+                message: trait.message
+              };
+              notification = 'Trait attuned';
+              saveTitle = 'Mochi Spirit trait attunement';
+              prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} ${mentor.message} ${trait.message} The Jade Heart Trait Thread is no-real-value closed-alpha raising proof.`;
+            }
           }
           if (!mentor.cleared) {
             notification = 'Team match cleared';
