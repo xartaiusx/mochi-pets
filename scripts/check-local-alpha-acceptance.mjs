@@ -62,6 +62,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
+  assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -94,6 +95,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
+  assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -551,6 +553,25 @@ async function run() {
         guildBuddyProof: true,
         statusMood: 'cozy',
         chatLines: ['Local acceptance commission proof.'],
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-guild-rally`,
+      type: 'guild.social_rally',
+      payload: {
+        rallyId: 'jade-courtyard-rally',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance rally proof.'],
+        emoteProof: true,
+        commissionProof: true,
+        harmonyFormProof: true,
+        harmonyTrialProof: true,
+        teamSparMatchProof: true,
         noRealValue: true
       }
     },

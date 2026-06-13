@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   GUILD_COMMISSIONS,
+  GUILD_SOCIAL_RALLIES,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -26,6 +27,7 @@ import {
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveGuildCommission,
+  resolveGuildSocialRally,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
@@ -73,6 +75,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -120,6 +123,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -484,6 +488,51 @@ describe('alpha contract', () => {
       profileViewed: false,
       guildBuddyProof: false
     }).completed).toBe(false);
+
+    expect(GUILD_SOCIAL_RALLIES.map((rally) => rally.id)).toEqual(['jade-courtyard-rally']);
+    const socialRally = resolveGuildSocialRally({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first guild rally.'],
+      emoteProof: true,
+      commissionProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true
+    });
+    expect(socialRally).toMatchObject({
+      ok: true,
+      rallied: true,
+      rallyId: 'jade-courtyard-rally',
+      rallyName: 'Jade Courtyard Rally',
+      title: 'First Two-Tester Guild Rally',
+      habitat: 'Jade Lantern Court',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 30,
+      requiredScore: 22,
+      rewardItemId: 'jade-courtyard-rally-knot',
+      source: 'guild-social-rally'
+    });
+    expect(socialRally.message).toContain('no-injury party proof');
+    const missingRally = resolveGuildSocialRally({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first guild rally.'],
+      emoteProof: true,
+      commissionProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true
+    });
+    expect(missingRally.rallied).toBe(false);
+    expect(missingRally.missing).toContain('presence:1/2');
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

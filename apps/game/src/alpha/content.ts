@@ -489,6 +489,49 @@ export interface GuildCommissionResult {
   source: string;
 }
 
+export interface GuildSocialRally {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredPartySize: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface GuildSocialRallyProgress {
+  partyIds: readonly string[];
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+  emoteProof: boolean;
+  commissionProof: boolean;
+  harmonyFormProof: boolean;
+  harmonyTrialProof: boolean;
+  teamSparMatchProof: boolean;
+}
+
+export interface GuildSocialRallyResult {
+  ok: boolean;
+  rallied: boolean;
+  rallyId: string;
+  rallyName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  partyIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -1331,6 +1374,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Commission Knot',
     description: 'A no-real-value guild commission proof for closed-alpha Mochirii social roleplay progression.'
   },
+  rallyKnot: {
+    id: 'jade-courtyard-rally-knot',
+    name: 'Jade Courtyard Rally Knot',
+    description: 'A no-real-value two-tester guild rally proof for closed-alpha Mochirii social play.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -1589,6 +1637,20 @@ export const GUILD_COMMISSIONS: readonly GuildCommission[] = [
     requiredScore: 24,
     rewardItemId: ALPHA_ITEMS.commissionKnot.id,
     summary: 'A no-real-value roleplay commission proof for testers who connect the first quest chain, profile, guild buddy, provisions, training, market, and trade loops.'
+  }
+];
+
+export const GUILD_SOCIAL_RALLIES: readonly GuildSocialRally[] = [
+  {
+    id: 'jade-courtyard-rally',
+    name: 'Jade Courtyard Rally',
+    title: 'First Two-Tester Guild Rally',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredPartySize: MOCHI_SPIRITS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 22,
+    rewardItemId: ALPHA_ITEMS.rallyKnot.id,
+    summary: 'A no-real-value social rally proof for testers who coordinate two local presences, chat, emote, guild buddy, commission, and full-party Mochi Spirit readiness.'
   }
 ];
 
@@ -2471,6 +2533,98 @@ export function resolveGuildCommission(
       ? `${commission.name} complete: ${activeName} signs a first social commission with quest, provision, training, market, trade, profile, guild buddy, and status proof. No-real-value guild reputation only.`
       : `${commission.name} needs ${missing.join(', ')} before the first social commission can be recorded.`,
     source: 'guild-commission-ledger'
+  };
+}
+
+export function resolveGuildSocialRally(
+  progress: GuildSocialRallyProgress,
+  rallyId: string = GUILD_SOCIAL_RALLIES[0].id
+): GuildSocialRallyResult {
+  const rally = GUILD_SOCIAL_RALLIES.find((entry) => entry.id === rallyId) || GUILD_SOCIAL_RALLIES[0];
+  const requiredSpiritIds = new Set<string>(MOCHI_SPIRITS.map((spirit) => spirit.id));
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => requiredSpiritIds.has(spiritId));
+  const missing: string[] = [];
+
+  if (partyIds.length < rally.requiredPartySize) {
+    missing.push(`party:${partyIds.length}/${rally.requiredPartySize}`);
+  }
+
+  const localPresenceCount = Math.max(1, Math.floor(progress.localPresenceCount || 1));
+  if (localPresenceCount < rally.requiredPresenceCount) {
+    missing.push(`presence:${localPresenceCount}/${rally.requiredPresenceCount}`);
+  }
+
+  if (!progress.profileViewed) {
+    missing.push('profile');
+  }
+
+  if (!progress.guildBuddyProof) {
+    missing.push('guild-buddy');
+  }
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  if (!progress.emoteProof) {
+    missing.push('emote');
+  }
+
+  if (!progress.commissionProof) {
+    missing.push('commission');
+  }
+
+  if (!progress.harmonyFormProof) {
+    missing.push('harmony');
+  }
+
+  if (!progress.harmonyTrialProof) {
+    missing.push('concord');
+  }
+
+  if (!progress.teamSparMatchProof) {
+    missing.push('team-match');
+  }
+
+  const score =
+    Math.min(partyIds.length, rally.requiredPartySize) * 2 +
+    Math.min(localPresenceCount, rally.requiredPresenceCount) * 3 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 2 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0) +
+    (progress.emoteProof ? 1 : 0) +
+    (progress.commissionProof ? 3 : 0) +
+    (progress.harmonyFormProof ? 3 : 0) +
+    (progress.harmonyTrialProof ? 3 : 0) +
+    (progress.teamSparMatchProof ? 3 : 0);
+  const rallied = missing.length === 0 && score >= rally.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    rallied,
+    rallyId: rally.id,
+    rallyName: rally.name,
+    title: rally.title,
+    habitat: rally.habitat,
+    partyIds,
+    localPresenceCount,
+    score,
+    requiredScore: rally.requiredScore,
+    missing,
+    rewardItemId: rally.rewardItemId,
+    message: rallied
+      ? `${rally.name} complete: ${partyNames} rally with ${localPresenceCount} local testers, chat, emote, commission, and no-injury party proof. No-real-value social proof only.`
+      : `${rally.name} needs ${missing.join(', ')} before the two-tester guild rally can be recorded.`,
+    source: 'guild-social-rally'
   };
 }
 

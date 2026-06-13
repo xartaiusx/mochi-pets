@@ -63,7 +63,9 @@ function addStaticRequirements() {
     'noRealValue: true',
     "network: 'CANARY'",
     'cashout: false',
-    "ugc: 'curated'"
+    "ugc: 'curated'",
+    'socialRallies: true',
+    "'guild.social_rally'"
   ]);
   requireFileIncludes('game.bridge-protocol', 'Bridge protocol declares Supabase access-token auth and sign-out events.', 'apps/game/src/integration/protocol.ts', [
     'MOCHI_SOCIAL_AUTH',
@@ -76,7 +78,10 @@ function addStaticRequirements() {
     'BRIDGE_EVENTS.auth',
     'BRIDGE_EVENTS.signOut',
     'accessToken',
-    'configured-preview-stub'
+    'configured-preview-stub',
+    'data-alpha-action="guild.social_rally"',
+    'data-rally-label',
+    'rallyProof'
   ]);
   requireFileIncludes('game.supabase-edge-bridge', 'Supabase Edge bridge uses the scoped game server token header and keeps service-role secrets out of game requests.', 'apps/game/src/integration/supabase-edge-client.ts', [
     'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
@@ -111,6 +116,8 @@ function addStaticRequirements() {
     'jade-court-provision-satchel',
     'guild.commission_complete',
     'jade-court-commission-ledger',
+    'guild.social_rally',
+    'jade-courtyard-rally',
     'market.fixed_list',
     'trade.direct_offer',
     'chain.withdraw_request',
@@ -267,6 +274,10 @@ function addStaticRequirements() {
     'data-alpha-action="guild.commission_complete"',
     'commissionProof',
     'jade-court-commission-ledger',
+    'data-alpha-action="guild.social_rally"',
+    'rallyProof',
+    'emoteProof',
+    'Jade Courtyard Rally',
     'data-alpha-action="party.harmony_form"',
     'harmonyFormProof',
     'data-alpha-action="battle.harmony_trial"',
@@ -343,6 +354,9 @@ function addStaticRequirements() {
     'provisionProof',
     'guildCommission',
     'commissionProof',
+    'socialRally',
+    'rallyProof',
+    'emoteProof',
     'affinity-dais',
     'techniqueMastery',
     'battleTactic',

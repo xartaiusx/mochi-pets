@@ -1,6 +1,7 @@
 import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
   GUILD_COMMISSIONS,
+  GUILD_SOCIAL_RALLIES,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -36,6 +37,7 @@ import {
   resolveSpiritExpedition,
   resolveGuildCommission,
   resolveGuildRankTrial,
+  resolveGuildSocialRally,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
@@ -130,6 +132,13 @@ interface AlphaHudState {
   commissionName: string;
   commissionScore: number;
   commissionKnotClaimed: boolean;
+  emoteProof: boolean;
+  rallyProof: boolean;
+  rallyId?: string;
+  rallyName: string;
+  rallyScore: number;
+  rallyPresenceCount: number;
+  rallyKnotClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -585,6 +594,12 @@ function defaultAlphaState(): AlphaHudState {
     commissionName: 'Pending',
     commissionScore: 0,
     commissionKnotClaimed: false,
+    emoteProof: false,
+    rallyProof: false,
+    rallyName: 'Pending',
+    rallyScore: 0,
+    rallyPresenceCount: 1,
+    rallyKnotClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -764,6 +779,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
+      <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
@@ -798,6 +814,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
+      <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -850,6 +867,7 @@ function createHud() {
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
+  const rallyLabel = hud.querySelector('[data-rally-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
@@ -932,6 +950,11 @@ function createHud() {
       commissionLabel.textContent = state.commissionProof
         ? `Commission: ${state.commissionName}, score ${state.commissionScore}`
         : 'Commission: pending';
+    }
+    if (rallyLabel) {
+      rallyLabel.textContent = state.rallyProof
+        ? `Rally: ${state.rallyName}, ${state.rallyPresenceCount} testers, score ${state.rallyScore}`
+        : 'Rally: pending';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -1753,6 +1776,24 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'guild.social_rally') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || 1);
+    return {
+      rallyId: GUILD_SOCIAL_RALLIES[0].id,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat,
+      emoteProof: state.emoteProof,
+      commissionProof: state.commissionProof,
+      harmonyFormProof: state.harmonyFormProof,
+      harmonyTrialProof: state.harmonyTrialProof,
+      teamSparMatchProof: state.teamSparMatchProof
+    };
+  }
+
   if (type === 'world.expedition') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : state.spiritId ? [state.spiritId] : [];
     const route = SPIRIT_EXPEDITION_ROUTES[state.expeditionCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
@@ -2270,6 +2311,38 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.attunedSpiritIds = result.roster;
       state.completedQuestIds = result.completedQuestIds;
       state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'guild.social_rally') {
+    const result = resolveGuildSocialRally(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat,
+        emoteProof: Boolean(payload.emoteProof ?? state.emoteProof),
+        commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        harmonyTrialProof: Boolean(payload.harmonyTrialProof ?? state.harmonyTrialProof),
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof)
+      },
+      String(payload.rallyId || GUILD_SOCIAL_RALLIES[0].id)
+    );
+    if (result.rallied) {
+      state.rallyProof = true;
+      state.rallyId = result.rallyId;
+      state.rallyName = result.rallyName;
+      state.rallyScore = result.score;
+      state.rallyPresenceCount = result.localPresenceCount;
+      state.rallyKnotClaimed = result.rewardItemId === 'jade-courtyard-rally-knot';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.partyIds[0] || state.spiritId;
     }
     state.chat.push(result.message);
   }
@@ -2853,6 +2926,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   }
 
   if (type === 'emote.send') {
+    state.emoteProof = true;
     state.chat.push('You wave from the town square.');
   }
 
