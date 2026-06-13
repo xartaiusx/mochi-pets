@@ -153,6 +153,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.capture"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.journal"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.expedition"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.technique"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.affinity_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.set"]', { timeout: timeoutMs });
@@ -180,6 +181,7 @@ async function exerciseAlphaHud(page) {
       const guild = document.querySelector('[data-guild-label]')?.textContent || '';
       const status = document.querySelector('[data-status-label]')?.textContent || '';
       const journal = document.querySelector('[data-journal-label]')?.textContent || '';
+      const expedition = document.querySelector('[data-expedition-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
@@ -195,6 +197,8 @@ async function exerciseAlphaHud(page) {
         && status.includes('Status: cozy')
         && journal.includes('Journal:')
         && journal.includes('1/3')
+        && expedition.includes('Route:')
+        && !expedition.includes('not scouted')
         && technique.includes('Technique:')
         && technique.includes('XP')
         && affinity.includes('Affinity:')
@@ -213,6 +217,12 @@ async function exerciseAlphaHud(page) {
         && state.journalDiscoveredCount >= 1
         && state.journalTotal === 3
         && state.lastJournalSpiritId === 'lirabao'
+        && state.expeditionProof === true
+        && state.lastExpeditionRouteId === 'moonbridge-bamboo-trail'
+        && state.lastExpeditionEncounterId === 'jintari'
+        && Array.isArray(state.discoveredRouteIds)
+        && state.discoveredRouteIds.includes('moonbridge-bamboo-trail')
+        && state.expeditionCount >= 1
         && state.techniqueProof === true
         && state.techniqueMoveId === 'lantern-pulse'
         && state.techniqueMasteryXp >= 1
@@ -252,6 +262,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Lantern Harmony Invitation')
         && chat.includes('accepts the Lantern Invite')
         && chat.includes('Mochirii spirit journal')
+        && chat.includes('Moonbridge Bamboo Trail')
         && chat.includes('Mochirii Technique Dojo')
         && chat.includes('Jade Mirror Trial')
         && chat.includes('Mochirii party')
@@ -275,6 +286,7 @@ async function exerciseAlphaHud(page) {
       status: document.querySelector('[data-status-label]')?.textContent?.trim() || '',
       spirit: document.querySelector('[data-spirit-label]')?.textContent?.trim() || '',
       journal: document.querySelector('[data-journal-label]')?.textContent?.trim() || '',
+      expedition: document.querySelector('[data-expedition-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
@@ -295,6 +307,12 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.journalProof === true, 'HUD journal action must record journal proof.');
   assert(snapshot.state.journalDiscoveredCount >= 1, 'HUD journal action must record at least one discovered spirit.');
   assert(snapshot.state.lastJournalSpiritId === 'lirabao', 'HUD journal action must record the active journal spirit.');
+  assert(snapshot.expedition.includes('Route:'), 'HUD expedition label must show route state.');
+  assert(snapshot.state.expeditionProof === true, 'HUD expedition action must record field route proof.');
+  assert(snapshot.state.lastExpeditionRouteId === 'moonbridge-bamboo-trail', 'HUD expedition action must record the Moonbridge route.');
+  assert(snapshot.state.lastExpeditionEncounterId === 'jintari', 'HUD expedition action must record Jintari route signs.');
+  assert(Array.isArray(snapshot.state.discoveredRouteIds) && snapshot.state.discoveredRouteIds.includes('moonbridge-bamboo-trail'), 'HUD expedition action must record discovered route ids.');
+  assert(snapshot.state.expeditionCount >= 1, 'HUD expedition action must increment expedition count.');
   assert(snapshot.technique.includes('Technique:'), 'HUD technique label must show mastery state.');
   assert(snapshot.state.techniqueProof === true, 'HUD technique action must record technique proof.');
   assert(snapshot.state.techniqueMoveId === 'lantern-pulse', 'HUD technique action must record the practiced move.');
@@ -329,6 +347,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Lantern Harmony Invitation')), 'HUD chat state must record the spirit invitation action.');
   assert(chat.some((line) => String(line).includes('accepts the Lantern Invite')), 'HUD chat state must record the attunement action.');
   assert(chat.some((line) => String(line).includes('Mochirii spirit journal')), 'HUD chat state must record the spirit journal action.');
+  assert(chat.some((line) => String(line).includes('Moonbridge Bamboo Trail')), 'HUD chat state must record the field expedition action.');
   assert(chat.some((line) => String(line).includes('Mochirii Technique Dojo')), 'HUD chat state must record the spirit technique action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Trial')), 'HUD chat state must record the affinity trial action.');
   assert(chat.some((line) => String(line).includes('Mochirii party')), 'HUD chat state must record the party formation action.');

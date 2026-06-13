@@ -86,6 +86,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'expedition-gate',
+            image: '/spritesheets/expedition-gate.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'technique-dojo',
             image: '/spritesheets/technique-dojo.png',
             ...SPIRIT_SHEET

@@ -1,0 +1,13 @@
+{
+  "id": "expedition-gate",
+  "role": "Mochirii field expedition gate",
+  "runtimePath": "apps/game/public/spritesheets/expedition-gate.png",
+  "masterPath": "assets/source/game/hd/expedition-gate-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Mochirii Moonbridge field expedition gate with curved lacquer moon-arch, bamboo trail markers, jade route lanterns, silk scout ribbons, transparent background, smooth illustrated 2D prop sprite sheet.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

@@ -89,6 +89,31 @@ export interface MochiSpiritQuest {
   rewardBond: number;
 }
 
+export interface SpiritExpeditionRoute {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredHarmony: number;
+  encounterSpiritId: string;
+  recommendedItemId: string;
+  rewardItemId: string;
+  routeNote: string;
+}
+
+export interface SpiritExpeditionResult {
+  ok: boolean;
+  routeId: string;
+  routeName: string;
+  encounterSpiritId: string;
+  recommendedItemId: string;
+  rewardItemId: string;
+  harmonyScore: number;
+  discoveredRoutes: string[];
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -438,6 +463,11 @@ export const ALPHA_ITEMS = {
     name: 'Lantern Harmony Tea',
     description: 'A no-real-value spirit invitation lure brewed for Jade Lantern Court encounters.'
   },
+  trailRibbon: {
+    id: 'moonbridge-field-ribbon',
+    name: 'Moonbridge Field Ribbon',
+    description: 'A no-real-value route-scouting proof for the first Mochirii field expedition.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -476,6 +506,31 @@ export const MOCHI_SPIRIT_QUESTS = [
     rewardBond: 2
   }
 ] as const satisfies readonly MochiSpiritQuest[];
+
+export const SPIRIT_EXPEDITION_ROUTES: readonly SpiritExpeditionRoute[] = [
+  {
+    id: 'moonbridge-bamboo-trail',
+    name: 'Moonbridge Bamboo Trail',
+    title: 'First Field Route',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredHarmony: 2,
+    encounterSpiritId: 'jintari',
+    recommendedItemId: ALPHA_ITEMS.charm.id,
+    rewardItemId: ALPHA_ITEMS.trailRibbon.id,
+    routeNote: 'A moonlit bamboo path where market ribbons flutter and Jintari signs appear before the court opens.'
+  },
+  {
+    id: 'cloudbell-reed-bank',
+    name: 'Cloudbell Reed Bank',
+    title: 'Sky-Jade Scout Route',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredHarmony: 4,
+    encounterSpiritId: 'aozhen',
+    recommendedItemId: ALPHA_ITEMS.harmonyTea.id,
+    rewardItemId: ALPHA_ITEMS.trailRibbon.id,
+    routeNote: 'A quiet reed bank under guild bells where Aozhen listens for careful wayfarers.'
+  }
+];
 
 export const SPIRIT_SPAR_LADDER = [
   {
@@ -542,6 +597,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'habitat-grove',
     'party-banner',
     'journal-pavilion',
+    'expedition-gate',
     'technique-dojo',
     'affinity-dais',
     'market-board',
@@ -642,6 +698,67 @@ export function resolveSpiritCapture(spiritId: string, offeredItemId: string, ha
     bond: ok ? 1 : 0,
     growth: 'seed',
     source: 'spirit-capture'
+  };
+}
+
+export function resolveSpiritExpedition(
+  routeId: string = SPIRIT_EXPEDITION_ROUTES[0].id,
+  roster: readonly string[] = [],
+  activeSpiritId?: string,
+  harmonyScore = 1,
+  discoveredRoutes: readonly string[] = []
+): SpiritExpeditionResult {
+  const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === routeId) || SPIRIT_EXPEDITION_ROUTES[0];
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getMochiSpirit(spiritId)));
+  const activeId = activeSpiritId && knownRoster.includes(activeSpiritId) ? activeSpiritId : knownRoster[0];
+  const activeSpirit = activeId ? getMochiSpirit(activeId) : undefined;
+  const boundedHarmony = Math.max(0, Math.floor(harmonyScore));
+  const priorRoutes = Array.from(new Set(discoveredRoutes.filter(Boolean)));
+
+  if (!activeSpirit) {
+    return {
+      ok: false,
+      routeId: route.id,
+      routeName: route.name,
+      encounterSpiritId: route.encounterSpiritId,
+      recommendedItemId: route.recommendedItemId,
+      rewardItemId: route.rewardItemId,
+      harmonyScore: boundedHarmony,
+      discoveredRoutes: priorRoutes,
+      message: 'Attune with a Mochi Spirit before scouting a Mochirii field route.',
+      source: 'world-expedition'
+    };
+  }
+
+  if (boundedHarmony < route.requiredHarmony) {
+    return {
+      ok: false,
+      routeId: route.id,
+      routeName: route.name,
+      encounterSpiritId: route.encounterSpiritId,
+      recommendedItemId: route.recommendedItemId,
+      rewardItemId: route.rewardItemId,
+      harmonyScore: boundedHarmony,
+      discoveredRoutes: priorRoutes,
+      message: `${route.name} needs harmony ${route.requiredHarmony}. Care for ${activeSpirit.name}, form a party, or return after more guild practice.`,
+      source: 'world-expedition'
+    };
+  }
+
+  const discovered = Array.from(new Set([...priorRoutes, route.id]));
+  const encounterSpirit = getMochiSpirit(route.encounterSpiritId);
+
+  return {
+    ok: true,
+    routeId: route.id,
+    routeName: route.name,
+    encounterSpiritId: route.encounterSpiritId,
+    recommendedItemId: route.recommendedItemId,
+    rewardItemId: route.rewardItemId,
+    harmonyScore: boundedHarmony,
+    discoveredRoutes: discovered,
+    message: `${activeSpirit.name} scouts the ${route.name} and records ${encounterSpirit?.name || route.encounterSpiritId} signs. Bring ${route.recommendedItemId} for the next invitation. ${route.routeNote}`,
+    source: 'world-expedition'
   };
 }
 

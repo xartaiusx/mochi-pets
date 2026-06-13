@@ -5,6 +5,7 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritExpedition,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -24,6 +25,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -56,6 +58,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
+    expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
@@ -105,6 +108,22 @@ describe('alpha contract', () => {
     expect(journal.records.find((record) => record.spiritId === 'aozhen')?.discovered).toBe(false);
     expect(journal.message).toContain('Mochirii spirit journal');
     expect(resolveSpiritJournal([]).ok).toBe(false);
+
+    const expedition = resolveSpiritExpedition('moonbridge-bamboo-trail', ['lirabao'], 'lirabao', 2, []);
+    expect(expedition).toMatchObject({
+      ok: true,
+      routeId: 'moonbridge-bamboo-trail',
+      routeName: 'Moonbridge Bamboo Trail',
+      encounterSpiritId: 'jintari',
+      recommendedItemId: 'jade-thread-charm',
+      rewardItemId: 'moonbridge-field-ribbon',
+      harmonyScore: 2,
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      source: 'world-expedition'
+    });
+    expect(expedition.message).toContain('Jintari signs');
+    expect(resolveSpiritExpedition('moonbridge-bamboo-trail', [], undefined, 2, []).ok).toBe(false);
+    expect(resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao'], 'lirabao', 2, []).ok).toBe(false);
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
     expect(technique).toMatchObject({

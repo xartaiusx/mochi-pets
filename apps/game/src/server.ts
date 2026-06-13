@@ -37,6 +37,17 @@ const alphaPromptMs = 2600;
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   charmListed?: boolean;
+  expedition?: {
+    count: number;
+    discoveredRoutes: string[];
+    encounterSpiritId: string;
+    message?: string;
+    proof: boolean;
+    recommendedItemId: string;
+    rewardItemId: string;
+    routeId: string;
+    routeName: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -165,6 +176,18 @@ type SpiritAffinityTrial = {
   lesson: string;
 };
 
+type SpiritExpeditionRoute = {
+  id: string;
+  name: string;
+  title: string;
+  habitat: 'Jade Lantern Court';
+  requiredHarmony: number;
+  encounterSpiritId: string;
+  recommendedItemId: string;
+  rewardItemId: string;
+  routeNote: string;
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -200,6 +223,11 @@ const alphaItems = {
     id: 'lantern-harmony-tea',
     name: 'Lantern Harmony Tea',
     description: 'A no-real-value spirit invitation lure brewed for Jade Lantern Court encounters.'
+  },
+  trailRibbon: {
+    id: 'moonbridge-field-ribbon',
+    name: 'Moonbridge Field Ribbon',
+    description: 'A no-real-value route-scouting proof for the first Mochirii field expedition.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -365,6 +393,31 @@ const affinityTrials: readonly SpiritAffinityTrial[] = [
   }
 ];
 
+const expeditionRoutes: readonly SpiritExpeditionRoute[] = [
+  {
+    id: 'moonbridge-bamboo-trail',
+    name: 'Moonbridge Bamboo Trail',
+    title: 'First Field Route',
+    habitat: 'Jade Lantern Court',
+    requiredHarmony: 2,
+    encounterSpiritId: 'jintari',
+    recommendedItemId: alphaItems.charm.id,
+    rewardItemId: alphaItems.trailRibbon.id,
+    routeNote: 'A moonlit bamboo path where market ribbons flutter and Jintari signs appear before the court opens.'
+  },
+  {
+    id: 'cloudbell-reed-bank',
+    name: 'Cloudbell Reed Bank',
+    title: 'Sky-Jade Scout Route',
+    habitat: 'Jade Lantern Court',
+    requiredHarmony: 4,
+    encounterSpiritId: 'aozhen',
+    recommendedItemId: alphaItems.harmonyTea.id,
+    rewardItemId: alphaItems.trailRibbon.id,
+    routeNote: 'A quiet reed bank under guild bells where Aozhen listens for careful wayfarers.'
+  }
+];
+
 const quests = [
   {
     id: 'first-lantern-vow',
@@ -425,6 +478,67 @@ function resolveSpiritCapture(spiritId: string, offeredItemId: string, harmonySc
       : `${spirit.name} notices the grove, but this invitation needs ${spirit.capture.lureItemId} and harmony ${spirit.capture.harmonyRequired}.`,
     bond: ok ? 1 : 0,
     growth: 'seed' as SpiritGrowthStage
+  };
+}
+
+function resolveSpiritExpedition(
+  routeId: string = expeditionRoutes[0].id,
+  roster: readonly string[] = [],
+  activeSpiritId?: string,
+  harmonyScore = 1,
+  discoveredRoutes: readonly string[] = []
+) {
+  const route = expeditionRoutes.find((entry) => entry.id === routeId) || expeditionRoutes[0];
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getSpirit(spiritId)));
+  const activeId = activeSpiritId && knownRoster.includes(activeSpiritId) ? activeSpiritId : knownRoster[0];
+  const activeSpirit = activeId ? getSpirit(activeId) : undefined;
+  const boundedHarmony = Math.max(0, Math.floor(harmonyScore));
+  const priorRoutes = Array.from(new Set(discoveredRoutes.filter(Boolean)));
+
+  if (!activeSpirit) {
+    return {
+      ok: false,
+      routeId: route.id,
+      routeName: route.name,
+      encounterSpiritId: route.encounterSpiritId,
+      recommendedItemId: route.recommendedItemId,
+      rewardItemId: route.rewardItemId,
+      harmonyScore: boundedHarmony,
+      discoveredRoutes: priorRoutes,
+      message: 'Attune with a Mochi Spirit before scouting a Mochirii field route.',
+      source: 'world-expedition'
+    };
+  }
+
+  if (boundedHarmony < route.requiredHarmony) {
+    return {
+      ok: false,
+      routeId: route.id,
+      routeName: route.name,
+      encounterSpiritId: route.encounterSpiritId,
+      recommendedItemId: route.recommendedItemId,
+      rewardItemId: route.rewardItemId,
+      harmonyScore: boundedHarmony,
+      discoveredRoutes: priorRoutes,
+      message: `${route.name} needs harmony ${route.requiredHarmony}. Care for ${activeSpirit.name}, form a party, or return after more guild practice.`,
+      source: 'world-expedition'
+    };
+  }
+
+  const discovered = Array.from(new Set([...priorRoutes, route.id]));
+  const encounterSpirit = getSpirit(route.encounterSpiritId);
+
+  return {
+    ok: true,
+    routeId: route.id,
+    routeName: route.name,
+    encounterSpiritId: route.encounterSpiritId,
+    recommendedItemId: route.recommendedItemId,
+    rewardItemId: route.rewardItemId,
+    harmonyScore: boundedHarmony,
+    discoveredRoutes: discovered,
+    message: `${activeSpirit.name} scouts the ${route.name} and records ${encounterSpirit?.name || route.encounterSpiritId} signs. Bring ${route.recommendedItemId} for the next invitation. ${route.routeNote}`,
+    source: 'world-expedition'
   };
 }
 
@@ -972,6 +1086,67 @@ function journalPavilion(): EventDefinition {
   };
 }
 
+function expeditionGate(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('expedition-gate');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const roster = bondedSpirits(actingPlayer);
+      const activeSpirit = activeSpiritId(actingPlayer);
+      if (!activeSpirit || !roster.length) {
+        showAlphaPrompt(actingPlayer, 'Attune with a Mochi Spirit before scouting the Moonbridge field route.');
+        return;
+      }
+
+      const routeCount = Number(actingPlayer.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const route = expeditionRoutes[routeCount % expeditionRoutes.length] || expeditionRoutes[0];
+      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const bond = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const harmonyScore = bond + Math.max(1, roster.length) + partyIds(actingPlayer).length;
+      const expedition = resolveSpiritExpedition(route.id, roster, activeSpirit, harmonyScore, discoveredRoutes);
+      if (!expedition.ok) {
+        showAlphaPrompt(actingPlayer, expedition.message);
+        return;
+      }
+
+      const nextCount = routeCount + 1;
+      actingPlayer.setVariable('mochiSocial.world.lastExpeditionRoute', expedition.routeId);
+      actingPlayer.setVariable('mochiSocial.world.lastExpeditionEncounter', expedition.encounterSpiritId);
+      actingPlayer.setVariable('mochiSocial.world.discoveredRoutes', expedition.discoveredRoutes);
+      actingPlayer.setVariable('mochiSocial.world.expeditionCount', nextCount);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastExpeditionRoute`, expedition.routeId);
+
+      if (!actingPlayer.getVariable<boolean>('mochiSocial.world.trailRibbonClaimed')) {
+        actingPlayer.addItem(alphaItems.trailRibbon, 1);
+        actingPlayer.setVariable('mochiSocial.world.trailRibbonClaimed', true);
+      }
+
+      actingPlayer.showNotification('Route scouted', { time: 1800, icon: 'expedition-gate' });
+      emitAlphaHudState(actingPlayer, {
+        expedition: {
+          routeId: expedition.routeId,
+          routeName: expedition.routeName,
+          encounterSpiritId: expedition.encounterSpiritId,
+          recommendedItemId: expedition.recommendedItemId,
+          rewardItemId: expedition.rewardItemId,
+          discoveredRoutes: expedition.discoveredRoutes,
+          count: nextCount,
+          proof: true,
+          message: expedition.message
+        }
+      });
+      await actingPlayer.save('auto', { title: 'Mochirii field route scouted' }, { reason: 'auto', source: 'expedition-gate' });
+      showAlphaPrompt(
+        actingPlayer,
+        `${expedition.message} Route scouting is a no-real-value alpha field encounter proof; invitations still happen through habitat and consent.`
+      );
+    }
+  };
+}
+
 function techniqueDojo(): EventDefinition {
   return {
     onInit() {
@@ -1316,6 +1491,12 @@ const mainServerModule = defineModule({
           x: 768,
           y: 704,
           event: journalPavilion()
+        },
+        {
+          id: 'expedition-gate',
+          x: 256,
+          y: 704,
+          event: expeditionGate()
         },
         {
           id: 'technique-dojo',

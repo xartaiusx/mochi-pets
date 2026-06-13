@@ -43,6 +43,7 @@ describe('game manifest', () => {
         spiritCapture: true,
         spiritAttunement: true,
         partyFormation: true,
+        fieldExpeditions: true,
         sparringLadder: true,
         trainingBattles: true,
         techniqueMastery: true,

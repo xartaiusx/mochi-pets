@@ -12,6 +12,7 @@ const runtimeAssets = [
   { path: 'public/spritesheets/habitat-grove.png', width: 384, height: 768 },
   { path: 'public/spritesheets/party-banner.png', width: 384, height: 768 },
   { path: 'public/spritesheets/journal-pavilion.png', width: 384, height: 768 },
+  { path: 'public/spritesheets/expedition-gate.png', width: 384, height: 768 },
   { path: 'public/spritesheets/technique-dojo.png', width: 384, height: 768 },
   { path: 'public/spritesheets/affinity-dais.png', width: 384, height: 768 },
   { path: 'public/spritesheets/market-board.png', width: 384, height: 768 },

@@ -3,6 +3,7 @@ import {
   AffinityDais,
   CanaryShrine,
   CareShrine,
+  ExpeditionGate,
   GuildSealChest,
   HabitatGrove,
   JournalPavilion,
@@ -376,6 +377,44 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('habitat, rarity, temperament, role, and care notes');
     expect(player.texts.at(-1)).toContain('no-real-value alpha lore');
+  });
+
+  it('records Moonbridge field expedition scouting as no-real-value route proof', async () => {
+    const player = createFakePlayer();
+
+    await runAction(ExpeditionGate(), player);
+    expect(player.texts.at(-1)).toContain('Attune with a Mochi Spirit before scouting');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(ExpeditionGate(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('moonbridge-field-ribbon');
+    expect(player.variables.get('mochiSocial.world.lastExpeditionRoute')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiSocial.world.lastExpeditionEncounter')).toBe('jintari');
+    expect(player.variables.get('mochiSocial.world.discoveredRoutes')).toEqual(['moonbridge-bamboo-trail']);
+    expect(player.variables.get('mochiSocial.world.expeditionCount')).toBe(1);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.lastExpeditionRoute')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiSocial.world.trailRibbonClaimed')).toBe(true);
+    expect(player.notifications.at(-1)?.message).toBe('Route scouted');
+    expect(player.saves.at(-1)?.options.source).toBe('expedition-gate');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        expedition: {
+          routeId: 'moonbridge-bamboo-trail',
+          routeName: 'Moonbridge Bamboo Trail',
+          encounterSpiritId: 'jintari',
+          recommendedItemId: 'jade-thread-charm',
+          rewardItemId: 'moonbridge-field-ribbon',
+          discoveredRoutes: ['moonbridge-bamboo-trail'],
+          count: 1,
+          proof: true,
+          message: 'Lirabao scouts the Moonbridge Bamboo Trail and records Jintari signs. Bring jade-thread-charm for the next invitation. A moonlit bamboo path where market ribbons flutter and Jintari signs appear before the court opens.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('field encounter proof');
+    expect(player.texts.at(-1)).toContain('no-real-value alpha');
   });
 
   it('records no-injury technique mastery at the Mochirii dojo', async () => {

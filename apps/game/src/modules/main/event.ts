@@ -5,9 +5,11 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_EXPEDITION_ROUTES,
   growthStageFromBond,
   resolveSpiritAffinityTrial,
   resolveSpiritCapture,
+  resolveSpiritExpedition,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -20,6 +22,17 @@ import {
 const ALPHA_PROMPT_MS = 2600;
 
 type AlphaHudStatePatch = {
+  expedition?: {
+    count: number;
+    discoveredRoutes: string[];
+    encounterSpiritId: string;
+    message?: string;
+    proof: boolean;
+    recommendedItemId: string;
+    rewardItemId: string;
+    routeId: string;
+    routeName: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -350,6 +363,64 @@ export function JournalPavilion(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochi Spirit journal reviewed' }, { reason: 'auto', source: 'journal-pavilion' });
       showAlphaPrompt(player, `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`);
+    }
+  };
+}
+
+export function ExpeditionGate(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('expedition-gate');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const roster = bondedSpirits(player);
+      const activeSpirit = activeSpiritId(player);
+      if (!activeSpirit || !roster.length) {
+        showAlphaPrompt(player, 'Attune with a Mochi Spirit before scouting the Moonbridge field route.');
+        return;
+      }
+
+      const routeCount = Number(player.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const route = SPIRIT_EXPEDITION_ROUTES[routeCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
+      const discoveredRoutesRaw = player.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
+      const bond = Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const harmonyScore = bond + Math.max(1, roster.length) + partyIds(player).length;
+      const expedition = resolveSpiritExpedition(route.id, roster, activeSpirit, harmonyScore, discoveredRoutes);
+      if (!expedition.ok) {
+        showAlphaPrompt(player, expedition.message);
+        return;
+      }
+
+      const nextCount = routeCount + 1;
+      player.setVariable('mochiSocial.world.lastExpeditionRoute', expedition.routeId);
+      player.setVariable('mochiSocial.world.lastExpeditionEncounter', expedition.encounterSpiritId);
+      player.setVariable('mochiSocial.world.discoveredRoutes', expedition.discoveredRoutes);
+      player.setVariable('mochiSocial.world.expeditionCount', nextCount);
+      player.setVariable(`mochiSocial.spirit.${activeSpirit}.lastExpeditionRoute`, expedition.routeId);
+
+      if (!player.getVariable<boolean>('mochiSocial.world.trailRibbonClaimed')) {
+        player.addItem(ALPHA_ITEMS.trailRibbon, 1);
+        player.setVariable('mochiSocial.world.trailRibbonClaimed', true);
+      }
+
+      player.showNotification('Route scouted', { time: 1800, icon: 'expedition-gate' });
+      emitAlphaHudState(player, {
+        expedition: {
+          routeId: expedition.routeId,
+          routeName: expedition.routeName,
+          encounterSpiritId: expedition.encounterSpiritId,
+          recommendedItemId: expedition.recommendedItemId,
+          rewardItemId: expedition.rewardItemId,
+          discoveredRoutes: expedition.discoveredRoutes,
+          count: nextCount,
+          proof: true,
+          message: expedition.message
+        }
+      });
+      await player.save('auto', { title: 'Mochirii field route scouted' }, { reason: 'auto', source: 'expedition-gate' });
+      showAlphaPrompt(player, `${expedition.message} Route scouting is a no-real-value alpha field encounter proof; invitations still happen through habitat and consent.`);
     }
   };
 }

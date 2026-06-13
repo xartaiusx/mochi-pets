@@ -37,6 +37,8 @@ assert(browserPresence.data?.hudAction?.state?.spiritId === 'lirabao', 'HUD acti
 assert(browserPresence.data?.hudAction?.state?.captureProof === true, 'HUD action proof must include the spirit invitation capture loop');
 assert(browserPresence.data?.hudAction?.state?.journalProof === true, 'HUD action proof must include the spirit journal loop');
 assert(browserPresence.data?.hudAction?.state?.journalDiscoveredCount >= 1, 'HUD action proof must include at least one discovered journal record');
+assert(browserPresence.data?.hudAction?.state?.expeditionProof === true, 'HUD action proof must include the field expedition loop');
+assert(browserPresence.data?.hudAction?.state?.lastExpeditionRouteId === 'moonbridge-bamboo-trail', 'HUD action proof must include the first field expedition route');
 assert(browserPresence.data?.hudAction?.state?.techniqueProof === true, 'HUD action proof must include the technique dojo loop');
 assert(browserPresence.data?.hudAction?.state?.techniqueMasteryXp >= 1, 'HUD action proof must include technique mastery XP');
 assert(browserPresence.data?.hudAction?.state?.affinityProof === true, 'HUD action proof must include the affinity trial loop');
@@ -64,7 +66,7 @@ for (const [label, item] of Object.entries(screenshotEvidence)) {
   assert(item.sha256 === item.reportedSha256, `${label} screenshot hash must match visual snapshot report`);
 }
 
-const mapObjects = ['welcome-npc', 'guild-seal-chest', 'journal-pavilion', 'technique-dojo', 'affinity-dais', 'care-shrine', 'habitat-grove', 'training-ring', 'party-banner', 'quest-board', 'market-board', 'trade-post', 'canary-shrine'];
+const mapObjects = ['welcome-npc', 'guild-seal-chest', 'journal-pavilion', 'expedition-gate', 'technique-dojo', 'affinity-dais', 'care-shrine', 'habitat-grove', 'training-ring', 'party-banner', 'quest-board', 'market-board', 'trade-post', 'canary-shrine'];
 for (const id of mapObjects) {
   assert(mapServerSource.includes(`id: '${id}'`), `map server placement missing ${id}`);
 }
@@ -73,6 +75,7 @@ for (const snippet of [
   "this.setGraphic('sifu-narao')",
   "this.setGraphic('chest')",
   "this.setGraphic('journal-pavilion')",
+  "this.setGraphic('expedition-gate')",
   "this.setGraphic('technique-dojo')",
   "this.setGraphic('affinity-dais')",
   "this.setGraphic('habitat-grove')",
@@ -84,6 +87,7 @@ for (const snippet of [
   "this.setGraphic('canary-shrine')",
   "source: 'guild-seal-chest'",
   "source: 'journal-pavilion'",
+  "source: 'expedition-gate'",
   "source: 'technique-dojo'",
   "source: 'affinity-dais'",
   "source: 'habitat-grove'",
@@ -97,7 +101,14 @@ for (const snippet of [
   assert(mapEventSource.includes(snippet), `map event source missing snippet: ${snippet}`);
 }
 assert(alphaContentSource.includes("jadeLanternCourt: 'Jade Lantern Court'"), 'Jade Lantern Court habitat constant must be present');
-assert((alphaContentSource.match(/habitat:\s*SPIRIT_HABITATS\.jadeLanternCourt/g) || []).length === 3, 'three Mochi Spirits must share the Jade Lantern Court habitat');
+assert(
+  Array.from(
+    alphaContentSource.matchAll(
+      /id:\s*'(lirabao|jintari|aozhen)'[\s\S]*?habitat:\s*SPIRIT_HABITATS\.jadeLanternCourt/g
+    )
+  ).length === 3,
+  'three Mochi Spirits must share the Jade Lantern Court habitat'
+);
 
 const expectedAssetLedgerEntries = [
   'mochi-tiles.png',
@@ -110,6 +121,7 @@ const expectedAssetLedgerEntries = [
   'habitat-grove.png',
   'party-banner.png',
   'journal-pavilion.png',
+  'expedition-gate.png',
   'technique-dojo.png',
   'affinity-dais.png',
   'market-board.png',
@@ -132,7 +144,7 @@ const visualChecklist = {
   },
   interactableRecognition: {
     status: mapObjects.every((id) => mapServerSource.includes(`id: '${id}'`)) ? 'machine-supported' : 'blocked',
-    records: 'Sifu Narao, guild seal chest, journal pavilion, technique dojo, affinity dais, care shrine, habitat grove, training ring, party banner, quest board, market board, trade post, and Canary shrine are present in the stable map-object contract.'
+    records: 'Sifu Narao, guild seal chest, journal pavilion, expedition gate, technique dojo, affinity dais, care shrine, habitat grove, training ring, party banner, quest board, market board, trade post, and Canary shrine are present in the stable map-object contract.'
   },
   hudContrast: {
     status: Boolean(visualSnapshot.data?.dom?.hud) ? 'machine-supported' : 'blocked',
@@ -175,6 +187,7 @@ const report = {
       spiritCare: browserPresence.data?.hudAction?.state?.spiritId === 'lirabao',
       spiritCapture: browserPresence.data?.hudAction?.state?.captureProof === true,
       spiritJournal: browserPresence.data?.hudAction?.state?.journalProof === true,
+      fieldExpedition: browserPresence.data?.hudAction?.state?.expeditionProof === true,
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
       affinityTrial: browserPresence.data?.hudAction?.state?.affinityProof === true,
       partyFormation: browserPresence.data?.hudAction?.state?.partyIds?.includes?.('lirabao') === true,
@@ -356,7 +369,7 @@ This file is intentionally no-secret and local-only. It ties together first-scre
 - Canvas PNG: ${summary.evidence.screenshots.canvas.path || 'missing'} (${summary.evidence.screenshots.canvas.width}x${summary.evidence.screenshots.canvas.height})
 - Two-tab presence: ${summary.machineReview.twoTabPresence ? 'yes' : 'no'}
 - Observer movement: ${summary.machineReview.observerMovement ? 'yes' : 'no'}
-- HUD action loop: spirit capture ${summary.machineReview.hudActionLoop.spiritCapture ? 'yes' : 'no'}, spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, spirit journal ${summary.machineReview.hudActionLoop.spiritJournal ? 'yes' : 'no'}, technique mastery ${summary.machineReview.hudActionLoop.techniqueMastery ? 'yes' : 'no'}, affinity trial ${summary.machineReview.hudActionLoop.affinityTrial ? 'yes' : 'no'}, party formation ${summary.machineReview.hudActionLoop.partyFormation ? 'yes' : 'no'}, spar ladder ${summary.machineReview.hudActionLoop.sparLadder ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
+- HUD action loop: spirit capture ${summary.machineReview.hudActionLoop.spiritCapture ? 'yes' : 'no'}, spirit care ${summary.machineReview.hudActionLoop.spiritCare ? 'yes' : 'no'}, spirit journal ${summary.machineReview.hudActionLoop.spiritJournal ? 'yes' : 'no'}, field expedition ${summary.machineReview.hudActionLoop.fieldExpedition ? 'yes' : 'no'}, technique mastery ${summary.machineReview.hudActionLoop.techniqueMastery ? 'yes' : 'no'}, affinity trial ${summary.machineReview.hudActionLoop.affinityTrial ? 'yes' : 'no'}, party formation ${summary.machineReview.hudActionLoop.partyFormation ? 'yes' : 'no'}, spar ladder ${summary.machineReview.hudActionLoop.sparLadder ? 'yes' : 'no'}, profile view ${summary.machineReview.hudActionLoop.profileView ? 'yes' : 'no'}, guild buddy proof ${summary.machineReview.hudActionLoop.guildBuddyProof ? 'yes' : 'no'}, status mood ${summary.machineReview.hudActionLoop.statusMood ? 'yes' : 'no'}, spirit inspect ${summary.machineReview.hudActionLoop.spiritInspect ? 'yes' : 'no'}, fixed market ${summary.machineReview.hudActionLoop.fixedMarket ? 'yes' : 'no'}, direct trade ${summary.machineReview.hudActionLoop.directTrade ? 'yes' : 'no'}, Canary request ${summary.machineReview.hudActionLoop.canaryRequest ? 'yes' : 'no'}
 - Map objects: ${summary.evidence.mapObjects.join(', ')}
 - Habitat: ${summary.evidence.habitat}
 

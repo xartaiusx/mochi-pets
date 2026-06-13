@@ -3,10 +3,12 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_EXPEDITION_ROUTES,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritAffinityTrial,
   resolveSpiritCapture,
+  resolveSpiritExpedition,
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
@@ -41,6 +43,12 @@ interface AlphaHudState {
   journalDiscoveredCount: number;
   journalTotal: number;
   lastJournalSpiritId?: string;
+  expeditionProof: boolean;
+  expeditionCount: number;
+  discoveredRouteIds: string[];
+  lastExpeditionRouteId?: string;
+  lastExpeditionEncounterId?: string;
+  routeRibbonClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -70,6 +78,17 @@ interface AlphaHudState {
 }
 
 export interface AlphaWorldStatePatch {
+  expedition?: {
+    count: number;
+    discoveredRoutes: string[];
+    encounterSpiritId: string;
+    message?: string;
+    proof: boolean;
+    recommendedItemId: string;
+    rewardItemId: string;
+    routeId: string;
+    routeName: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -179,6 +198,10 @@ function defaultAlphaState(): AlphaHudState {
     journalProof: false,
     journalDiscoveredCount: 0,
     journalTotal: MOCHI_SPIRITS.length,
+    expeditionProof: false,
+    expeditionCount: 0,
+    discoveredRouteIds: [],
+    routeRibbonClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -304,6 +327,7 @@ function createHud() {
       <span class="mochi-hud__kicker">Active Spirit</span>
       <strong data-spirit-label>Spirit: none</strong>
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
+      <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
@@ -319,6 +343,7 @@ function createHud() {
       <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
+      <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
@@ -352,6 +377,7 @@ function createHud() {
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
   const journalLabel = hud.querySelector('[data-journal-label]');
+  const expeditionLabel = hud.querySelector('[data-expedition-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
@@ -379,6 +405,11 @@ function createHud() {
     }
     if (journalLabel) {
       journalLabel.textContent = `Journal: ${state.journalDiscoveredCount}/${state.journalTotal || MOCHI_SPIRITS.length} records`;
+    }
+    if (expeditionLabel) {
+      expeditionLabel.textContent = state.expeditionProof
+        ? `Route: ${state.expeditionCount} scout${state.expeditionCount === 1 ? '' : 's'}, ${state.lastExpeditionEncounterId || 'signs'}`
+        : 'Route: not scouted';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -683,6 +714,16 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.journal.message || `Mochirii spirit journal ${state.journalDiscoveredCount}/${state.journalTotal}.`);
   }
 
+  if (patch.expedition) {
+    state.expeditionProof = patch.expedition.proof || state.expeditionProof;
+    state.lastExpeditionRouteId = patch.expedition.routeId || state.lastExpeditionRouteId;
+    state.lastExpeditionEncounterId = patch.expedition.encounterSpiritId || state.lastExpeditionEncounterId;
+    state.discoveredRouteIds = Array.from(new Set([...(state.discoveredRouteIds || []), ...patch.expedition.discoveredRoutes.map(String)]));
+    state.expeditionCount = Math.max(state.expeditionCount, Number(patch.expedition.count) || state.discoveredRouteIds.length);
+    state.routeRibbonClaimed = state.routeRibbonClaimed || patch.expedition.rewardItemId === 'moonbridge-field-ribbon';
+    appendUniqueAlphaChat(state, patch.expedition.message || `Route scouted: ${patch.expedition.routeName}.`);
+  }
+
   if (patch.technique) {
     state.techniqueProof = patch.technique.proof || state.techniqueProof;
     state.techniqueMoveId = patch.technique.moveId || state.techniqueMoveId;
@@ -793,6 +834,18 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       activeSpiritId: state.spiritId || roster[0],
       bondBySpiritId: Object.fromEntries(roster.map((id) => [id, state.bond || 1])),
       growthBySpiritId: Object.fromEntries(roster.map((id) => [id, state.growth || 'seed']))
+    };
+  }
+
+  if (type === 'world.expedition') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : state.spiritId ? [state.spiritId] : [];
+    const route = SPIRIT_EXPEDITION_ROUTES[state.expeditionCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
+    return {
+      routeId: route.id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      harmonyScore: (state.bond || 1) + Math.max(1, roster.length) + state.partyIds.length,
+      discoveredRoutes: state.discoveredRouteIds
     };
   }
 
@@ -973,6 +1026,27 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.journalDiscoveredCount = result.discoveredCount;
       state.journalTotal = result.totalCount;
       state.lastJournalSpiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'world.expedition') {
+    const roster = Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds;
+    const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === String(payload.routeId || '')) || SPIRIT_EXPEDITION_ROUTES[0];
+    const result = resolveSpiritExpedition(
+      route.id,
+      roster,
+      String(payload.activeSpiritId || state.spiritId || roster[0] || ''),
+      Number(payload.harmonyScore || (state.bond || 1) + Math.max(1, roster.length) + state.partyIds.length),
+      Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds
+    );
+    if (result.ok) {
+      state.expeditionProof = true;
+      state.lastExpeditionRouteId = result.routeId;
+      state.lastExpeditionEncounterId = result.encounterSpiritId;
+      state.discoveredRouteIds = result.discoveredRoutes;
+      state.expeditionCount = Math.max(state.expeditionCount + 1, result.discoveredRoutes.length);
+      state.routeRibbonClaimed = state.routeRibbonClaimed || result.rewardItemId === 'moonbridge-field-ribbon';
     }
     state.chat.push(result.message);
   }

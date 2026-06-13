@@ -11,6 +11,7 @@ const expectedPlacements = {
   'welcome-npc': { x: 896, y: 512 },
   'guild-seal-chest': { x: 640, y: 704 },
   'journal-pavilion': { x: 768, y: 704 },
+  'expedition-gate': { x: 256, y: 704 },
   'technique-dojo': { x: 896, y: 704 },
   'affinity-dais': { x: 1408, y: 704 },
   'spirit-lirabao': { x: 384, y: 320 },
@@ -62,6 +63,7 @@ describe('Mochi town map object contract', () => {
       "this.setGraphic('sifu-narao')",
       "this.setGraphic('chest')",
       "this.setGraphic('journal-pavilion')",
+      "this.setGraphic('expedition-gate')",
       "this.setGraphic('technique-dojo')",
       "this.setGraphic('affinity-dais')",
       "this.setGraphic('habitat-grove')",
@@ -76,6 +78,7 @@ describe('Mochi town map object contract', () => {
       'Bond with a Mochi Spirit first',
       'Care complete',
       'Journal updated',
+      'Route scouted',
       'Technique refined',
       'Affinity trial',
       'spirit invitation',
@@ -87,6 +90,7 @@ describe('Mochi town map object contract', () => {
       "source: 'spirit-bond'",
       "source: 'spirit-care'",
       "source: 'journal-pavilion'",
+      "source: 'expedition-gate'",
       "source: 'technique-dojo'",
       "source: 'affinity-dais'",
       "source: 'habitat-grove'",
@@ -106,11 +110,13 @@ describe('Mochi town map object contract', () => {
 
     expect(alphaContentSource).toContain('First Lantern Vow');
     expect(alphaContentSource).toContain('Mochirii spirit journal updated');
+    expect(alphaContentSource).toContain('Moonbridge Bamboo Trail');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
     expect(alphaContentSource).toContain('Jade Mirror Trial');
     expect(alphaContentSource).toContain('Jade Echo Apprentice');
     expect(runtimeServerSource).toContain('First Lantern Vow');
     expect(runtimeServerSource).toContain('Mochirii spirit journal updated');
+    expect(runtimeServerSource).toContain('Moonbridge Bamboo Trail');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
     expect(runtimeServerSource).toContain('Jade Mirror Trial');
     expect(runtimeServerSource).toContain('Jade Echo Apprentice');
@@ -118,7 +124,9 @@ describe('Mochi town map object contract', () => {
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {
     expect(alphaContentSource).toContain("jadeLanternCourt: 'Jade Lantern Court'");
-    expect(alphaContentSource.match(/habitat:\s*SPIRIT_HABITATS\.jadeLanternCourt/g)).toHaveLength(3);
+    expect(
+      Array.from(alphaContentSource.matchAll(/id:\s*'(lirabao|jintari|aozhen)'[\s\S]*?habitat:\s*SPIRIT_HABITATS\.jadeLanternCourt/g))
+    ).toHaveLength(3);
 
     const cells = collisionCells();
     expect(cells).toHaveLength(25 * 18);
