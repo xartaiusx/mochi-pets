@@ -458,6 +458,56 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha battle proof');
   });
 
+  it('records the Jade Mirror team match from the training ring after concord proof', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'lirabao');
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
+    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
+    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
+    player.variables.set('mochiSocial.social.chatLines', ['Ready for the team match.']);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+
+    await runAction(TrainingRing(), player);
+
+    expect(player.variables.get('mochiSocial.battle.teamSparMatchProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.teamSparMatch')).toBe('jade-mirror-team-match');
+    expect(player.variables.get('mochiSocial.battle.teamSparMatchName')).toBe('Jade Mirror Team Match');
+    expect(player.variables.get('mochiSocial.battle.teamSparMatchScore')).toBe(32);
+    expect(player.variables.get('mochiSocial.battle.teamMatchRibbonClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('jade-mirror-match-ribbon');
+    expect(player.notifications.at(-1)?.message).toBe('Team match cleared');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit team match' });
+    expect(player.saves.at(-1)?.options.source).toBe('training-ring');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        teamSparMatch: {
+          matchId: 'jade-mirror-team-match',
+          matchName: 'Jade Mirror Team Match',
+          title: 'First Full-Party Spar Match',
+          opponentName: 'Mirror Court Trio',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          score: 32,
+          rewardItemId: 'jade-mirror-match-ribbon',
+          proof: true,
+          message: 'Jade Mirror Team Match cleared: Lirabao, Jintari, Aozhen complete a no-injury full-party spar match against Mirror Court Trio with route, growth, tactic, quest, concord, and chat proof.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Mirror Team Match cleared');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha battle proof');
+  });
+
   it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
     const player = createFakePlayer();
 

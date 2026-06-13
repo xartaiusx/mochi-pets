@@ -85,6 +85,17 @@ type AlphaHudStatePatch = {
     trialId: string;
     trialName: string;
   };
+  teamSparMatch?: {
+    matchId: string;
+    matchName: string;
+    message?: string;
+    opponentName: string;
+    partyIds: string[];
+    proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   affinity?: {
     affinityAdvantage: boolean;
     focusScore: number;
@@ -391,6 +402,34 @@ type SpiritHarmonyTrialProgress = {
   chatLines: readonly string[];
 };
 
+type SpiritTeamSparMatch = {
+  id: string;
+  name: string;
+  title: string;
+  opponentName: string;
+  requiredSpiritIds: readonly string[];
+  requiredHarmonyTrialId: string;
+  requiredTrainingXp: number;
+  requiredSparWins: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritTeamSparMatchProgress = {
+  partyIds: readonly string[];
+  harmonyTrialProof: boolean;
+  harmonyTrialId?: string;
+  harmonyTrialScore: number;
+  routeMasteryProof: boolean;
+  tacticProof: boolean;
+  growthRiteProof: boolean;
+  questChainProof: boolean;
+  trainingXp: number;
+  sparLadderWins: number;
+  chatLines: readonly string[];
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -456,6 +495,11 @@ const alphaItems = {
     id: 'jade-echo-concord-tally',
     name: 'Jade Echo Concord Tally',
     description: 'A no-real-value team battle and social concord proof for closed-alpha Mochirii progression.'
+  },
+  teamMatchRibbon: {
+    id: 'jade-mirror-match-ribbon',
+    name: 'Jade Mirror Match Ribbon',
+    description: 'A no-real-value full-party spar match proof for closed-alpha Mochirii progression.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -783,6 +827,22 @@ const harmonyTrials: readonly SpiritHarmonyTrial[] = [
   }
 ];
 
+const teamSparMatches: readonly SpiritTeamSparMatch[] = [
+  {
+    id: 'jade-mirror-team-match',
+    name: 'Jade Mirror Team Match',
+    title: 'First Full-Party Spar Match',
+    opponentName: 'Mirror Court Trio',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredHarmonyTrialId: harmonyTrials[0].id,
+    requiredTrainingXp: 3,
+    requiredSparWins: 1,
+    requiredScore: 30,
+    rewardItemId: alphaItems.teamMatchRibbon.id,
+    summary: 'A no-injury full-party battle match for testers who have proven route mastery, growth, harmony, concord, tactics, quests, and local social coordination.'
+  }
+];
+
 function growthStageFromBond(bond: number): SpiritGrowthStage {
   if (bond >= 5) return 'glow';
   if (bond >= 3) return 'sprout';
@@ -1107,6 +1167,90 @@ function resolveSpiritHarmonyTrial(progress: SpiritHarmonyTrialProgress, trialId
       ? `${trial.name} cleared: ${partyNames} complete a no-injury team battle while local testers coordinate through profile, guild, status, and chat proof.`
       : `${trial.name} needs ${missing.join(', ')} before the social harmony battle trial can be recorded.`,
     source: 'battle-harmony-trial'
+  };
+}
+
+function resolveSpiritTeamSparMatch(progress: SpiritTeamSparMatchProgress, matchId: string = teamSparMatches[0].id) {
+  const match = teamSparMatches.find((entry) => entry.id === matchId) || teamSparMatches[0];
+  const requiredSpiritIds = new Set(match.requiredSpiritIds);
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of match.requiredSpiritIds) {
+    if (!party.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const harmonyReady = progress.harmonyTrialProof && progress.harmonyTrialId === match.requiredHarmonyTrialId;
+  if (!harmonyReady) {
+    missing.push(`concord:${match.requiredHarmonyTrialId}`);
+  }
+
+  if (!progress.routeMasteryProof) {
+    missing.push('route-mastery');
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.growthRiteProof) {
+    missing.push('growth-rite');
+  }
+
+  if (!progress.questChainProof) {
+    missing.push('quest-chain');
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < match.requiredTrainingXp) {
+    missing.push(`training-xp:${trainingXp}/${match.requiredTrainingXp}`);
+  }
+
+  const sparWins = Math.max(0, Math.floor(progress.sparLadderWins || 0));
+  if (sparWins < match.requiredSparWins) {
+    missing.push(`spar-wins:${sparWins}/${match.requiredSparWins}`);
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  const concordScore = Math.max(0, Math.floor(progress.harmonyTrialScore || 0));
+  const score =
+    Math.min(party.length, match.requiredSpiritIds.length) * 3 +
+    (harmonyReady ? 5 : 0) +
+    (progress.routeMasteryProof ? 2 : 0) +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.growthRiteProof ? 2 : 0) +
+    (progress.questChainProof ? 2 : 0) +
+    Math.min(trainingXp, match.requiredTrainingXp) +
+    Math.min(sparWins, match.requiredSparWins) * 2 +
+    Math.min(4, Math.floor(concordScore / 6)) +
+    (chatLines.length ? 1 : 0);
+  const cleared = missing.length === 0 && score >= match.requiredScore;
+  const partyNames = party.map((spiritId) => getSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    matchId: match.id,
+    matchName: match.name,
+    title: match.title,
+    opponentName: match.opponentName,
+    partyIds: party,
+    score,
+    requiredScore: match.requiredScore,
+    missing,
+    rewardItemId: match.rewardItemId,
+    message: cleared
+      ? `${match.name} cleared: ${partyNames} complete a no-injury full-party spar match against ${match.opponentName} with route, growth, tactic, quest, concord, and chat proof.`
+      : `${match.name} needs ${missing.join(', ')} before the full-party spar match can be recorded.`,
+    source: 'battle-team-spar-match'
   };
 }
 
@@ -2373,8 +2517,7 @@ function trainingRing(): EventDefinition {
       actingPlayer.setVariable('mochiSocial.battle.lastSparOpponent', spar.opponentId);
       actingPlayer.setVariable(bondKey, nextBond);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
-      actingPlayer.showNotification('Training spar complete', { time: 1800, icon: 'training-ring' });
-      emitAlphaHudState(actingPlayer, {
+      const patch: AlphaHudStatePatch = {
         spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth },
         training: {
           xp: nextXp,
@@ -2388,9 +2531,60 @@ function trainingRing(): EventDefinition {
           wins: nextSparWins,
           message: spar.message
         }
-      });
-      await actingPlayer.save('auto', { title: 'Mochi Spirit training spar' }, { reason: 'auto', source: 'training-ring' });
-      showAlphaPrompt(actingPlayer, `Training spar complete: ${result.message} ${spar.message} Training is no-injury guild practice with no real value.`);
+      };
+      let notification = 'Training spar complete';
+      let saveTitle = 'Mochi Spirit training spar';
+      let prompt = `Training spar complete: ${result.message} ${spar.message} Training is no-injury guild practice with no real value.`;
+
+      if (actingPlayer.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')) {
+        const matchParty = partyIds(actingPlayer).length ? partyIds(actingPlayer) : sparParty;
+        const match = resolveSpiritTeamSparMatch(
+          {
+            partyIds: matchParty,
+            harmonyTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')),
+            harmonyTrialId: actingPlayer.getVariable<string>('mochiSocial.battle.harmonyTrial'),
+            harmonyTrialScore: Number(actingPlayer.getVariable<number>('mochiSocial.battle.harmonyTrialScore') || 0),
+            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
+            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+            growthRiteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.growthRiteProof')),
+            questChainProof: completedQuestIds(actingPlayer).length >= quests.length,
+            trainingXp: Math.max(trainingXpTotal(actingPlayer, matchParty), nextXp),
+            sparLadderWins: nextSparWins,
+            chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || []
+          },
+          teamSparMatches[0].id
+        );
+
+        if (match.cleared) {
+          actingPlayer.setVariable('mochiSocial.battle.teamSparMatchProof', true);
+          actingPlayer.setVariable('mochiSocial.battle.teamSparMatch', match.matchId);
+          actingPlayer.setVariable('mochiSocial.battle.teamSparMatchName', match.matchName);
+          actingPlayer.setVariable('mochiSocial.battle.teamSparMatchScore', match.score);
+          if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.teamMatchRibbonClaimed')) {
+            actingPlayer.addItem(alphaItems.teamMatchRibbon, 1);
+            actingPlayer.setVariable('mochiSocial.battle.teamMatchRibbonClaimed', true);
+          }
+          patch.teamSparMatch = {
+            matchId: match.matchId,
+            matchName: match.matchName,
+            title: match.title,
+            opponentName: match.opponentName,
+            partyIds: match.partyIds,
+            score: match.score,
+            rewardItemId: match.rewardItemId,
+            proof: true,
+            message: match.message
+          };
+          notification = 'Team match cleared';
+          saveTitle = 'Mochi Spirit team match';
+          prompt = `Training spar complete: ${result.message} ${spar.message} ${match.message} The Jade Mirror Match Ribbon is no-real-value closed-alpha battle proof.`;
+        }
+      }
+
+      actingPlayer.showNotification(notification, { time: 1800, icon: 'training-ring' });
+      emitAlphaHudState(actingPlayer, patch);
+      await actingPlayer.save('auto', { title: saveTitle }, { reason: 'auto', source: 'training-ring' });
+      showAlphaPrompt(actingPlayer, prompt);
     }
   };
 }

@@ -50,6 +50,9 @@ assert(browserPresence.data?.hudAction?.state?.harmonySashClaimed === true, 'HUD
 assert(browserPresence.data?.hudAction?.state?.harmonyTrialProof === true, 'HUD action proof must include harmony trial proof');
 assert(browserPresence.data?.hudAction?.state?.harmonyTrialId === 'jade-echo-concord', 'HUD action proof must include the Jade Echo Concord id');
 assert(browserPresence.data?.hudAction?.state?.concordTallyClaimed === true, 'HUD action proof must include the no-real-value concord tally proof');
+assert(browserPresence.data?.hudAction?.state?.teamSparMatchProof === true, 'HUD action proof must include team spar match proof');
+assert(browserPresence.data?.hudAction?.state?.teamSparMatchId === 'jade-mirror-team-match', 'HUD action proof must include the Jade Mirror Team Match id');
+assert(browserPresence.data?.hudAction?.state?.teamMatchRibbonClaimed === true, 'HUD action proof must include the no-real-value team match ribbon proof');
 assert(browserPresence.data?.hudAction?.state?.techniqueProof === true, 'HUD action proof must include the technique dojo loop');
 assert(browserPresence.data?.hudAction?.state?.techniqueMasteryXp >= 1, 'HUD action proof must include technique mastery XP');
 assert(browserPresence.data?.hudAction?.state?.tacticProof === true, 'HUD action proof must include the battle tactic scroll loop');
@@ -132,6 +135,8 @@ assert(alphaContentSource.includes('Triune Jade Harmony'), 'Triune Jade Harmony 
 assert(alphaContentSource.includes('party-harmony-form'), 'party harmony source id must be present');
 assert(alphaContentSource.includes('Jade Echo Concord Trial'), 'Jade Echo Concord Trial content must be present');
 assert(alphaContentSource.includes('battle-harmony-trial'), 'battle harmony trial source id must be present');
+assert(alphaContentSource.includes('Jade Mirror Team Match'), 'Jade Mirror Team Match content must be present');
+assert(alphaContentSource.includes('battle-team-spar-match'), 'team spar match source id must be present');
 assert(
   Array.from(
     alphaContentSource.matchAll(
@@ -227,6 +232,7 @@ const report = {
       routeMastery: browserPresence.data?.hudAction?.state?.routeMasteryProof === true,
       partyHarmony: browserPresence.data?.hudAction?.state?.harmonyFormProof === true,
       harmonyTrial: browserPresence.data?.hudAction?.state?.harmonyTrialProof === true,
+      teamSparMatch: browserPresence.data?.hudAction?.state?.teamSparMatchProof === true,
       techniqueMastery: browserPresence.data?.hudAction?.state?.techniqueProof === true,
       battleTactic: browserPresence.data?.hudAction?.state?.tacticProof === true,
       guildRank: browserPresence.data?.hudAction?.state?.guildRankProof === true,

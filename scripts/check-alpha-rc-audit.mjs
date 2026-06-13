@@ -245,6 +245,8 @@ function addStaticRequirements() {
     'harmonyFormProof',
     'data-alpha-action="battle.harmony_trial"',
     'harmonyTrialProof',
+    'data-alpha-action="battle.team_spar_match"',
+    'teamSparMatchProof',
     'data-alpha-action="battle.tactic_scroll"',
     'tacticProof',
     'data-alpha-action="guild.rank_trial"',

@@ -34,6 +34,7 @@ if (
   alphaStatus.gameplay?.routeMastery !== true ||
   alphaStatus.gameplay?.partyHarmony !== true ||
   alphaStatus.gameplay?.harmonyTrials !== true ||
+  alphaStatus.gameplay?.teamSparMatches !== true ||
   alphaStatus.gameplay?.trainingBattles !== true ||
   alphaStatus.gameplay?.raisingCare !== true ||
   alphaStatus.gameplay?.roleplayQuests !== true ||

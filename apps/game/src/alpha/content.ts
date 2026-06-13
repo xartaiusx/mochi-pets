@@ -354,6 +354,50 @@ export interface SpiritHarmonyTrialResult {
   source: string;
 }
 
+export interface SpiritTeamSparMatch {
+  id: string;
+  name: string;
+  title: string;
+  opponentName: string;
+  requiredSpiritIds: readonly string[];
+  requiredHarmonyTrialId: string;
+  requiredTrainingXp: number;
+  requiredSparWins: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritTeamSparMatchProgress {
+  partyIds: readonly string[];
+  harmonyTrialProof: boolean;
+  harmonyTrialId?: string;
+  harmonyTrialScore: number;
+  routeMasteryProof: boolean;
+  tacticProof: boolean;
+  growthRiteProof: boolean;
+  questChainProof: boolean;
+  trainingXp: number;
+  sparLadderWins: number;
+  chatLines: readonly string[];
+}
+
+export interface SpiritTeamSparMatchResult {
+  ok: boolean;
+  cleared: boolean;
+  matchId: string;
+  matchName: string;
+  title: string;
+  opponentName: string;
+  partyIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritSparOpponent {
   id: string;
   name: string;
@@ -751,6 +795,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Echo Concord Tally',
     description: 'A no-real-value team battle and social concord proof for closed-alpha Mochirii progression.'
   },
+  teamMatchRibbon: {
+    id: 'jade-mirror-match-ribbon',
+    name: 'Jade Mirror Match Ribbon',
+    description: 'A no-real-value full-party spar match proof for closed-alpha Mochirii progression.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -959,6 +1008,22 @@ export const SPIRIT_HARMONY_TRIALS: readonly SpiritHarmonyTrial[] = [
     requiredScore: 24,
     rewardItemId: ALPHA_ITEMS.concordTally.id,
     summary: 'A no-injury team battle proof for a full Mochirii party that has formed harmony, practiced safely, and coordinated with local social presence.'
+  }
+];
+
+export const SPIRIT_TEAM_SPAR_MATCHES: readonly SpiritTeamSparMatch[] = [
+  {
+    id: 'jade-mirror-team-match',
+    name: 'Jade Mirror Team Match',
+    title: 'First Full-Party Spar Match',
+    opponentName: 'Mirror Court Trio',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredHarmonyTrialId: SPIRIT_HARMONY_TRIALS[0].id,
+    requiredTrainingXp: 3,
+    requiredSparWins: 1,
+    requiredScore: 30,
+    rewardItemId: ALPHA_ITEMS.teamMatchRibbon.id,
+    summary: 'A no-injury full-party battle match for testers who have proven route mastery, growth, harmony, concord, tactics, quests, and local social coordination.'
   }
 ];
 
@@ -1453,6 +1518,93 @@ export function resolveSpiritHarmonyTrial(
       ? `${trial.name} cleared: ${partyNames} complete a no-injury team battle while local testers coordinate through profile, guild, status, and chat proof.`
       : `${trial.name} needs ${missing.join(', ')} before the social harmony battle trial can be recorded.`,
     source: 'battle-harmony-trial'
+  };
+}
+
+export function resolveSpiritTeamSparMatch(
+  progress: SpiritTeamSparMatchProgress,
+  matchId: string = SPIRIT_TEAM_SPAR_MATCHES[0].id
+): SpiritTeamSparMatchResult {
+  const match = SPIRIT_TEAM_SPAR_MATCHES.find((entry) => entry.id === matchId) || SPIRIT_TEAM_SPAR_MATCHES[0];
+  const requiredSpiritIds = new Set(match.requiredSpiritIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of match.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  const harmonyReady = progress.harmonyTrialProof && progress.harmonyTrialId === match.requiredHarmonyTrialId;
+  if (!harmonyReady) {
+    missing.push(`concord:${match.requiredHarmonyTrialId}`);
+  }
+
+  if (!progress.routeMasteryProof) {
+    missing.push('route-mastery');
+  }
+
+  if (!progress.tacticProof) {
+    missing.push('tactic');
+  }
+
+  if (!progress.growthRiteProof) {
+    missing.push('growth-rite');
+  }
+
+  if (!progress.questChainProof) {
+    missing.push('quest-chain');
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < match.requiredTrainingXp) {
+    missing.push(`training-xp:${trainingXp}/${match.requiredTrainingXp}`);
+  }
+
+  const sparWins = Math.max(0, Math.floor(progress.sparLadderWins || 0));
+  if (sparWins < match.requiredSparWins) {
+    missing.push(`spar-wins:${sparWins}/${match.requiredSparWins}`);
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  const concordScore = Math.max(0, Math.floor(progress.harmonyTrialScore || 0));
+  const score =
+    Math.min(partyIds.length, match.requiredSpiritIds.length) * 3 +
+    (harmonyReady ? 5 : 0) +
+    (progress.routeMasteryProof ? 2 : 0) +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.growthRiteProof ? 2 : 0) +
+    (progress.questChainProof ? 2 : 0) +
+    Math.min(trainingXp, match.requiredTrainingXp) +
+    Math.min(sparWins, match.requiredSparWins) * 2 +
+    Math.min(4, Math.floor(concordScore / 6)) +
+    (chatLines.length ? 1 : 0);
+  const cleared = missing.length === 0 && score >= match.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    matchId: match.id,
+    matchName: match.name,
+    title: match.title,
+    opponentName: match.opponentName,
+    partyIds,
+    score,
+    requiredScore: match.requiredScore,
+    missing,
+    rewardItemId: match.rewardItemId,
+    message: cleared
+      ? `${match.name} cleared: ${partyNames} complete a no-injury full-party spar match against ${match.opponentName} with route, growth, tactic, quest, concord, and chat proof.`
+      : `${match.name} needs ${missing.join(', ')} before the full-party spar match can be recorded.`,
+    source: 'battle-team-spar-match'
   };
 }
 

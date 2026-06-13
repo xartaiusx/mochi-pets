@@ -60,6 +60,7 @@ async function run() {
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
+  assert(manifest.body.gameplay?.teamSparMatches === true, 'Manifest must expose Mochi Spirit team spar matches.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
   assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
@@ -81,6 +82,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
+  assert(alphaStatus.body.gameplay?.teamSparMatches === true, 'Alpha status must expose Mochi Spirit team spar matches.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
   assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
@@ -267,6 +269,25 @@ async function run() {
         guildBuddyProof: true,
         statusMood: 'cozy',
         chatLines: ['Local acceptance concord proof.'],
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-team-spar-match`,
+      type: 'battle.team_spar_match',
+      payload: {
+        matchId: 'jade-mirror-team-match',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        harmonyTrialProof: true,
+        harmonyTrialId: 'jade-echo-concord',
+        harmonyTrialScore: 24,
+        routeMasteryProof: true,
+        tacticProof: true,
+        growthRiteProof: true,
+        questChainProof: true,
+        trainingXp: 3,
+        sparLadderWins: 1,
+        chatLines: ['Local acceptance team spar match proof.'],
         noRealValue: true
       }
     },

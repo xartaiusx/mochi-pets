@@ -8,6 +8,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_ROUTE_MASTERIES,
+  SPIRIT_TEAM_SPAR_MATCHES,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -24,6 +25,7 @@ import {
   resolveSpiritGrowthRite,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
+  resolveSpiritTeamSparMatch,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
@@ -49,6 +51,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
     expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -91,6 +94,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('party.harmony_form');
     expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -308,6 +312,48 @@ describe('alpha contract', () => {
       guildBuddyProof: true,
       statusMood: 'cozy',
       chatLines: ['Ready for concord.']
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_TEAM_SPAR_MATCHES.map((match) => match.id)).toEqual(['jade-mirror-team-match']);
+    const teamMatch = resolveSpiritTeamSparMatch({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      harmonyTrialScore: 24,
+      routeMasteryProof: true,
+      tacticProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      trainingXp: 3,
+      sparLadderWins: 1,
+      chatLines: ['Ready for the team match.']
+    });
+    expect(teamMatch).toMatchObject({
+      ok: true,
+      cleared: true,
+      matchId: 'jade-mirror-team-match',
+      matchName: 'Jade Mirror Team Match',
+      title: 'First Full-Party Spar Match',
+      opponentName: 'Mirror Court Trio',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 32,
+      requiredScore: 30,
+      rewardItemId: 'jade-mirror-match-ribbon',
+      source: 'battle-team-spar-match'
+    });
+    expect(teamMatch.message).toContain('no-injury full-party spar match');
+    expect(resolveSpiritTeamSparMatch({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      harmonyTrialScore: 24,
+      routeMasteryProof: true,
+      tacticProof: true,
+      growthRiteProof: false,
+      questChainProof: true,
+      trainingXp: 3,
+      sparLadderWins: 1,
+      chatLines: ['Ready for the team match.']
     }).cleared).toBe(false);
 
     const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);

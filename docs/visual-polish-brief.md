@@ -34,8 +34,8 @@ This brief keeps visual work focused on Alpha Preview Ready. It improves the fir
 ## HUD Direction
 
 - Top status strip: title, guest/auth state, nearby testers, guild seal state, and no-real-value badge.
-- Spirit card: active Mochi Spirit name, invited/captured roster proof, journal records, field route scouting, route invitation proof, route mastery proof, technique mastery, tactic scroll proof, guild rank proof, Moonwell growth rite proof, affinity trial proof, party formation, Triune Jade Harmony proof, Jade Echo Concord proof, spar ladder progress, bond, growth, training, raising, and quest progress.
-- Bottom action bar: profile, guild, mood, invite, attune, journal, scout, route invite, circuit, dojo, tactic, trial, party, harmony, concord, care, train, spar, raise, inspect, quest, rank, bloom, wave, list, trade, Canary.
+- Spirit card: active Mochi Spirit name, invited/captured roster proof, journal records, field route scouting, route invitation proof, route mastery proof, technique mastery, tactic scroll proof, guild rank proof, Moonwell growth rite proof, affinity trial proof, party formation, Triune Jade Harmony proof, Jade Echo Concord proof, Jade Mirror Team Match proof, spar ladder progress, bond, growth, training, raising, and quest progress.
+- Bottom action bar: profile, guild, mood, invite, attune, journal, scout, route invite, circuit, dojo, tactic, trial, party, harmony, concord, match, care, train, spar, raise, inspect, quest, rank, bloom, wave, list, trade, Canary.
 - Side/feed panel: local chat and recent action log.
 - Preserve test hooks: `data-alpha-action`, `data-alpha-local-action`, `data-presence-label`, `data-chat-input`, and `data-alpha-feed`.
 - Canary action copy must say preview stub, request staged, and no real value.
