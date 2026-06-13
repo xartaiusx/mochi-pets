@@ -222,6 +222,13 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.battle.sparLadderXp')).toBe(2);
     expect(player.variables.get('mochiSocial.battle.sparLadderWins')).toBe(0);
     expect(player.variables.get('mochiSocial.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
+    expect(player.variables.get('mochiSocial.battle.lastRound')).toBe('jade-echo-apprentice-round-1');
+    expect(player.variables.get('mochiSocial.battle.lastRoundFocusScore')).toBe(13);
+    expect(player.variables.get('mochiSocial.battle.lastRoundOpponentScore')).toBe(17);
+    expect(player.variables.get('mochiSocial.battle.lastRoundVictory')).toBe(false);
+    expect(player.variables.get('mochiSocial.battle.lastRoundNoInjury')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.lastRoundParty')).toEqual(['lirabao']);
+    expect(player.variables.get('mochiSocial.battle.lastRoundTranscript')).toEqual(['Lirabao:Lantern Pulse:13']);
     expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(2);
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toEqual({
@@ -239,6 +246,16 @@ describe('Mochi town event behavior', () => {
           xp: 2,
           wins: 0,
           message: "Lirabao's party studies the Jade Echo Apprentice spar ladder rhythm and prepares for another no-injury round."
+        },
+        battleRound: {
+          roundId: 'jade-echo-apprentice-round-1',
+          opponentName: 'Jade Echo Apprentice',
+          focusScore: 13,
+          opponentScore: 17,
+          victory: false,
+          noInjury: true,
+          participants: ['lirabao'],
+          message: 'Battle round transcript: Lirabao studies Jade Echo Apprentice with Lirabao:Lantern Pulse, focus 13/17. No-injury practice recorded with no real value.'
         }
       }
     });
@@ -345,6 +362,17 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.battle.sparLadderXp')).toBe(5);
     expect(player.variables.get('mochiSocial.battle.sparLadderWins')).toBe(1);
     expect(player.variables.get('mochiSocial.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
+    expect(player.variables.get('mochiSocial.battle.lastRound')).toBe('jade-echo-apprentice-round-1');
+    expect(player.variables.get('mochiSocial.battle.lastRoundFocusScore')).toBe(35);
+    expect(player.variables.get('mochiSocial.battle.lastRoundOpponentScore')).toBe(19);
+    expect(player.variables.get('mochiSocial.battle.lastRoundVictory')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.lastRoundNoInjury')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.lastRoundParty')).toEqual(['aozhen', 'lirabao', 'jintari']);
+    expect(player.variables.get('mochiSocial.battle.lastRoundTranscript')).toEqual([
+      'Aozhen:Skybell Guard:14',
+      'Lirabao:Lantern Pulse:11',
+      'Jintari:Goldleaf Feint:10'
+    ]);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
       value: {
@@ -360,6 +388,16 @@ describe('Mochi town event behavior', () => {
           xp: 5,
           wins: 1,
           message: "Aozhen's party clears the Jade Echo Apprentice spar ladder with calm wuxia teamwork."
+        },
+        battleRound: {
+          roundId: 'jade-echo-apprentice-round-1',
+          opponentName: 'Jade Echo Apprentice',
+          focusScore: 35,
+          opponentScore: 19,
+          victory: true,
+          noInjury: true,
+          participants: ['aozhen', 'lirabao', 'jintari'],
+          message: 'Battle round transcript: Aozhen leads Aozhen:Skybell Guard, Lirabao:Lantern Pulse, Jintari:Goldleaf Feint against Jade Echo Apprentice, focus 35/19. No-injury victory recorded with no real value.'
         }
       }
     });

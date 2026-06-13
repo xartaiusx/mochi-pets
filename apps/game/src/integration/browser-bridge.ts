@@ -21,6 +21,7 @@ import {
   selectSpiritRaisingNeed,
   resolveSpiritAttunement,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritExpedition,
@@ -138,6 +139,13 @@ interface AlphaHudState {
   sparLadderXp: number;
   sparLadderWins: number;
   lastSparOpponentId?: string;
+  battleRoundProof: boolean;
+  battleRoundId?: string;
+  battleRoundOpponentName: string;
+  battleRoundFocusScore: number;
+  battleRoundOpponentScore: number;
+  battleRoundVictory: boolean;
+  battleRoundTranscript: string[];
   trainingXp: number;
   trainingVictories: number;
   raisingProof: boolean;
@@ -340,6 +348,16 @@ export interface AlphaWorldStatePatch {
     wins: number;
     xp: number;
   };
+  battleRound?: {
+    focusScore: number;
+    message?: string;
+    noInjury: true;
+    opponentName: string;
+    opponentScore: number;
+    participants: string[];
+    roundId: string;
+    victory: boolean;
+  };
   training?: {
     message?: string;
     victories: number;
@@ -435,6 +453,12 @@ function defaultAlphaState(): AlphaHudState {
     teamMatchRibbonClaimed: false,
     sparLadderXp: 0,
     sparLadderWins: 0,
+    battleRoundProof: false,
+    battleRoundOpponentName: 'Unrecorded',
+    battleRoundFocusScore: 0,
+    battleRoundOpponentScore: 0,
+    battleRoundVictory: false,
+    battleRoundTranscript: [],
     trainingXp: 0,
     trainingVictories: 0,
     raisingProof: false,
@@ -565,6 +589,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-harmony-trial-label>Concord: pending</span>
       <span class="mochi-hud__hint" data-team-match-label>Team Match: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
+      <span class="mochi-hud__hint" data-battle-round-label>Battle Round: pending</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
     </div>
@@ -635,6 +660,7 @@ function createHud() {
   const harmonyTrialLabel = hud.querySelector('[data-harmony-trial-label]');
   const teamMatchLabel = hud.querySelector('[data-team-match-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
+  const battleRoundLabel = hud.querySelector('[data-battle-round-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
   const marketLabel = hud.querySelector('[data-market-label]');
@@ -725,6 +751,11 @@ function createHud() {
     }
     if (trainingLabel) {
       trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? `care streak ${state.raisingCareStreak}` : 'needs care'}`;
+    }
+    if (battleRoundLabel) {
+      battleRoundLabel.textContent = state.battleRoundProof
+        ? `Battle Round: ${state.battleRoundOpponentName}, ${state.battleRoundFocusScore}/${state.battleRoundOpponentScore}, ${state.battleRoundVictory ? 'clear' : 'study'}`
+        : 'Battle Round: pending';
     }
     if (growthLabel) {
       growthLabel.textContent = state.growthRiteProof
@@ -961,6 +992,7 @@ function readAlphaState(): AlphaHudState {
       attunedSpiritIds: Array.isArray(parsed?.attunedSpiritIds) ? parsed.attunedSpiritIds.map(String) : [],
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
+      battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-32).map(String) : []
     };
@@ -978,6 +1010,22 @@ function appendUniqueAlphaChat(state: AlphaHudState, message: string) {
   if (state.chat[state.chat.length - 1] !== message) {
     state.chat.push(message);
   }
+}
+
+function applyBattleRoundState(state: AlphaHudState, result: ReturnType<typeof resolveSpiritBattleRound>) {
+  if (!result.ok) {
+    state.chat.push(result.message);
+    return;
+  }
+
+  state.battleRoundProof = true;
+  state.battleRoundId = result.roundId;
+  state.battleRoundOpponentName = result.opponentName;
+  state.battleRoundFocusScore = result.focusScore;
+  state.battleRoundOpponentScore = result.opponentScore;
+  state.battleRoundVictory = result.victory;
+  state.battleRoundTranscript = result.participants.map((participant) => `${participant.name}:${participant.moveLabel}:${participant.focusContribution}`);
+  appendUniqueAlphaChat(state, result.message);
 }
 
 export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
@@ -1191,6 +1239,17 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.sparLadderWins = Math.max(state.sparLadderWins, Number(patch.spar.wins) || 0);
     state.lastSparOpponentId = patch.spar.opponentId;
     appendUniqueAlphaChat(state, patch.spar.message || `Spar ladder ${patch.spar.victory ? 'cleared' : 'practiced'}.`);
+  }
+
+  if (patch.battleRound) {
+    state.battleRoundProof = true;
+    state.battleRoundId = patch.battleRound.roundId;
+    state.battleRoundOpponentName = patch.battleRound.opponentName;
+    state.battleRoundFocusScore = Number(patch.battleRound.focusScore) || 0;
+    state.battleRoundOpponentScore = Number(patch.battleRound.opponentScore) || 0;
+    state.battleRoundVictory = Boolean(patch.battleRound.victory);
+    state.battleRoundTranscript = Array.isArray(patch.battleRound.participants) ? patch.battleRound.participants.map(String) : state.battleRoundTranscript;
+    appendUniqueAlphaChat(state, patch.battleRound.message || `Battle round transcript recorded against ${state.battleRoundOpponentName}.`);
   }
 
   if (patch.raising) {
@@ -1949,7 +2008,18 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
 
   if (type === 'battle.spar_ladder') {
     const requestedParty = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
-    const result = resolveSpiritSparLadder(requestedParty, String(payload.opponentId || 'jade-echo-apprentice'), { [state.spiritId || 'lirabao']: state.bond || 1 }, Number(payload.priorWins || state.sparLadderWins || 0));
+    const priorWins = Number(payload.priorWins || state.sparLadderWins || 0);
+    const bondBySpiritId = Object.fromEntries(requestedParty.map((spiritId) => [spiritId, state.bond || 1]));
+    const result = resolveSpiritSparLadder(requestedParty, String(payload.opponentId || 'jade-echo-apprentice'), bondBySpiritId, priorWins);
+    const battleRound = resolveSpiritBattleRound({
+      partyIds: requestedParty,
+      activeSpiritId: state.spiritId || requestedParty[0],
+      bondBySpiritId,
+      opponentId: result.opponentId,
+      tacticProof: state.tacticProof,
+      harmonyFormProof: state.harmonyFormProof,
+      priorWins
+    });
     if (result.ok) {
       state.partyIds = result.partyIds;
       state.activePartyId = result.partyIds[0];
@@ -1963,13 +2033,26 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       }
     }
     state.chat.push(result.message);
+    applyBattleRoundState(state, battleRound);
   }
 
   if (type === 'spirit.train') {
     const spiritId = String(payload.spiritId || state.spiritId || 'lirabao');
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
     const moveId = String(payload.moveId || spirit.battle.moves[0].id);
-    const result = resolveSpiritTrainingBattle(spirit.id, moveId, Number(payload.bond || state.bond || 1), Number(payload.round || 1));
+    const priorBond = Number(payload.bond || state.bond || 1);
+    const result = resolveSpiritTrainingBattle(spirit.id, moveId, priorBond, Number(payload.round || 1));
+    const battleParty = state.partyIds.length ? state.partyIds : [spirit.id];
+    const battleRound = resolveSpiritBattleRound({
+      partyIds: battleParty,
+      activeSpiritId: spirit.id,
+      moveIdBySpiritId: { [spirit.id]: moveId },
+      bondBySpiritId: Object.fromEntries(battleParty.map((partySpiritId) => [partySpiritId, partySpiritId === spirit.id ? priorBond : state.bond || 1])),
+      opponentId: state.lastSparOpponentId || 'jade-echo-apprentice',
+      tacticProof: state.tacticProof,
+      harmonyFormProof: state.harmonyFormProof,
+      priorWins: state.sparLadderWins
+    });
     state.spiritId = spirit.id;
     if (!state.attunedSpiritIds.includes(spirit.id)) {
       state.attunedSpiritIds.push(spirit.id);
@@ -1981,6 +2064,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.growth = growthStageFromBond(state.bond);
     }
     state.chat.push(result.message);
+    applyBattleRoundState(state, battleRound);
   }
 
   if (type === 'spirit.raise') {

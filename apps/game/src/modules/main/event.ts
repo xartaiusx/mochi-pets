@@ -16,6 +16,7 @@ import {
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
   resolveSpiritExpedition,
@@ -186,6 +187,16 @@ type AlphaHudStatePatch = {
     victory: boolean;
     wins: number;
     xp: number;
+  };
+  battleRound?: {
+    focusScore: number;
+    message?: string;
+    noInjury: true;
+    opponentName: string;
+    opponentScore: number;
+    participants: string[];
+    roundId: string;
+    victory: boolean;
   };
   technique?: {
     focusScore: number;
@@ -1092,6 +1103,16 @@ export function TrainingRing(): EventDefinition {
       const sparParty = partyIds(player).length ? partyIds(player) : [activeSpirit];
       const priorSparWins = Number(player.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0);
       const spar = resolveSpiritSparLadder(sparParty, 'jade-echo-apprentice', bondMap(player, sparParty), priorSparWins);
+      const battleRound = resolveSpiritBattleRound({
+        partyIds: sparParty,
+        activeSpiritId: activeSpirit,
+        moveIdBySpiritId: { [activeSpirit]: move.id },
+        bondBySpiritId: bondMap(player, sparParty),
+        opponentId: spar.opponentId,
+        tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+        harmonyFormProof: Boolean(player.getVariable<boolean>('mochiSocial.spirits.harmonyFormProof')),
+        priorWins: priorSparWins
+      });
       const nextXp = currentXp + result.trainingXp;
       const nextVictories = currentVictories + (result.victory ? 1 : 0);
       const nextSparXp = Number(player.getVariable<number>('mochiSocial.battle.sparLadderXp') || 0) + spar.trainingXp;
@@ -1104,6 +1125,17 @@ export function TrainingRing(): EventDefinition {
       player.setVariable('mochiSocial.battle.sparLadderXp', nextSparXp);
       player.setVariable('mochiSocial.battle.sparLadderWins', nextSparWins);
       player.setVariable('mochiSocial.battle.lastSparOpponent', spar.opponentId);
+      player.setVariable('mochiSocial.battle.lastRound', battleRound.roundId);
+      player.setVariable('mochiSocial.battle.lastRoundOpponent', battleRound.opponentId);
+      player.setVariable('mochiSocial.battle.lastRoundFocusScore', battleRound.focusScore);
+      player.setVariable('mochiSocial.battle.lastRoundOpponentScore', battleRound.opponentScore);
+      player.setVariable('mochiSocial.battle.lastRoundVictory', battleRound.victory);
+      player.setVariable('mochiSocial.battle.lastRoundNoInjury', battleRound.noInjury);
+      player.setVariable('mochiSocial.battle.lastRoundParty', battleRound.partyIds);
+      player.setVariable(
+        'mochiSocial.battle.lastRoundTranscript',
+        battleRound.participants.map((participant) => `${participant.name}:${participant.moveLabel}:${participant.focusContribution}`)
+      );
       player.setVariable(bondKey, nextBond);
       player.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
       const patch: AlphaHudStatePatch = {
@@ -1119,11 +1151,21 @@ export function TrainingRing(): EventDefinition {
           xp: nextSparXp,
           wins: nextSparWins,
           message: spar.message
+        },
+        battleRound: {
+          roundId: battleRound.roundId,
+          opponentName: battleRound.opponentName,
+          focusScore: battleRound.focusScore,
+          opponentScore: battleRound.opponentScore,
+          victory: battleRound.victory,
+          noInjury: battleRound.noInjury,
+          participants: battleRound.participants.map((participant) => participant.spiritId),
+          message: battleRound.message
         }
       };
       let notification = 'Training spar complete';
       let saveTitle = 'Mochi Spirit training spar';
-      let prompt = `Training spar complete: ${result.message} ${spar.message} Training is no-injury guild practice with no real value.`;
+      let prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} Training is no-injury guild practice with no real value.`;
 
       if (player.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')) {
         const matchParty = partyIds(player).length ? partyIds(player) : sparParty;
@@ -1166,7 +1208,7 @@ export function TrainingRing(): EventDefinition {
           };
           notification = 'Team match cleared';
           saveTitle = 'Mochi Spirit team match';
-          prompt = `Training spar complete: ${result.message} ${spar.message} ${match.message} The Jade Mirror Match Ribbon is no-real-value closed-alpha battle proof.`;
+          prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} ${match.message} The Jade Mirror Match Ribbon is no-real-value closed-alpha battle proof.`;
         }
       }
 

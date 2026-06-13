@@ -149,6 +149,7 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('battle-tactic-scroll');
     expect(alphaContentSource).toContain('Jade Mirror Trial');
     expect(alphaContentSource).toContain('Jade Echo Apprentice');
+    expect(alphaContentSource).toContain('battle-round-transcript');
     expect(alphaContentSource).toContain('Jade Court Initiate Trial');
     expect(alphaContentSource).toContain('guild-rank-trial');
     expect(alphaContentSource).toContain('Moonwell Bloom Rite');
@@ -183,6 +184,7 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('battle-tactic-scroll');
     expect(runtimeServerSource).toContain('Jade Mirror Trial');
     expect(runtimeServerSource).toContain('Jade Echo Apprentice');
+    expect(runtimeServerSource).toContain('battle-round-transcript');
     expect(runtimeServerSource).toContain('Jade Court Initiate Trial');
     expect(runtimeServerSource).toContain('guild-rank-trial');
     expect(runtimeServerSource).toContain('Moonwell Bloom Rite');

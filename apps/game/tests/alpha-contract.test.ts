@@ -18,6 +18,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritBattleRound,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteMastery,
   resolveMochiSpiritQuestProgress,
@@ -59,6 +60,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
     expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -588,6 +590,36 @@ describe('alpha contract', () => {
     expect(spar.victory).toBe(true);
     expect(spar.trainingXp).toBeGreaterThan(0);
     expect(spar.message).toContain('spar ladder');
+
+    const battleRound = resolveSpiritBattleRound({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      moveIdBySpiritId: { aozhen: 'skybell-guard' },
+      bondBySpiritId: { lirabao: 3, jintari: 2, aozhen: 2 },
+      opponentId: 'jade-echo-apprentice',
+      tacticProof: true,
+      harmonyFormProof: true,
+      priorWins: 1
+    });
+    expect(battleRound).toMatchObject({
+      ok: true,
+      roundId: 'jade-echo-apprentice-round-2',
+      opponentId: 'jade-echo-apprentice',
+      opponentName: 'Jade Echo Apprentice',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      focusScore: 45,
+      opponentScore: 20,
+      victory: true,
+      noInjury: true,
+      source: 'battle-round-transcript'
+    });
+    expect(battleRound.participants.map((participant) => [participant.spiritId, participant.moveId])).toEqual([
+      ['aozhen', 'skybell-guard'],
+      ['lirabao', 'lantern-pulse'],
+      ['jintari', 'goldleaf-feint']
+    ]);
+    expect(battleRound.message).toContain('No-injury victory recorded with no real value');
+    expect(resolveSpiritBattleRound({ partyIds: [] }).ok).toBe(false);
 
     const battle = resolveSpiritTrainingBattle('lirabao', 'lantern-pulse', 5, 1);
     expect(battle.ok).toBe(true);

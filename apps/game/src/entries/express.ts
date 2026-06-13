@@ -47,6 +47,7 @@ const ALPHA_FEATURES = {
     partyHarmony: true,
     harmonyTrials: true,
     teamSparMatches: true,
+    battleRoundTranscripts: true,
     fieldExpeditions: true,
     affinityTrials: true,
     battleTactics: true,

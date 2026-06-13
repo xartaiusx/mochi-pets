@@ -495,6 +495,45 @@ export interface SpiritSparOpponent {
   bondDelta: number;
 }
 
+export interface SpiritBattleRoundParticipant {
+  spiritId: string;
+  name: string;
+  role: SpiritBattleRole;
+  moveId: string;
+  moveLabel: string;
+  affinity: string;
+  bond: number;
+  focusContribution: number;
+}
+
+export interface SpiritBattleRoundProgress {
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  moveIdBySpiritId?: Record<string, string>;
+  bondBySpiritId?: Record<string, number>;
+  opponentId?: string;
+  tacticProof?: boolean;
+  harmonyFormProof?: boolean;
+  priorWins?: number;
+}
+
+export interface SpiritBattleRoundResult {
+  ok: boolean;
+  roundId: string;
+  opponentId: string;
+  opponentName: string;
+  partyIds: string[];
+  participants: SpiritBattleRoundParticipant[];
+  focusScore: number;
+  opponentScore: number;
+  victory: boolean;
+  noInjury: true;
+  trainingXp: number;
+  bondDelta: number;
+  message: string;
+  source: string;
+}
+
 export interface SpiritAttunementResult {
   ok: boolean;
   spiritId: string;
@@ -2051,6 +2090,80 @@ export function resolveSpiritSparLadder(
       ? `${party[0].name}'s party clears the ${opponent.name} spar ladder with calm wuxia teamwork.`
       : `${party[0].name}'s party studies the ${opponent.name} spar ladder rhythm and prepares for another no-injury round.`,
     source: 'battle-spar-ladder'
+  };
+}
+
+export function resolveSpiritBattleRound(
+  progress: SpiritBattleRoundProgress,
+  fallbackOpponentId: string = SPIRIT_SPAR_LADDER[0].id
+): SpiritBattleRoundResult {
+  const opponent: SpiritSparOpponent = SPIRIT_SPAR_LADDER.find((entry) => entry.id === (progress.opponentId || fallbackOpponentId)) || SPIRIT_SPAR_LADDER[0];
+  const formation = resolveSpiritParty(progress.partyIds || [], progress.activeSpiritId);
+  if (!formation.ok) {
+    return {
+      ok: false,
+      roundId: `${opponent.id}-round-0`,
+      opponentId: opponent.id,
+      opponentName: opponent.name,
+      partyIds: [],
+      participants: [],
+      focusScore: 0,
+      opponentScore: opponent.baseFocus,
+      victory: false,
+      noInjury: true,
+      trainingXp: 0,
+      bondDelta: 0,
+      message: 'A Mochirii party is required before a battle round transcript can be recorded.',
+      source: 'battle-round-transcript'
+    };
+  }
+
+  const bondBySpiritId = progress.bondBySpiritId || {};
+  const moveIdBySpiritId = progress.moveIdBySpiritId || {};
+  const participants = formation.partyIds.map((spiritId, index) => {
+    const spirit = getMochiSpirit(spiritId) as MochiSpirit;
+    const selectedMove = spirit.battle.moves.find((move) => move.id === moveIdBySpiritId[spirit.id]) || spirit.battle.moves[0];
+    const bond = Math.max(1, Math.min(5, Math.floor(bondBySpiritId[spirit.id] || 1)));
+    const roleBonus = opponent.preferredRoles.includes(spirit.battle.role) ? 2 : 0;
+    const leadBonus = index === 0 ? 2 : 0;
+    const tacticBonus = progress.tacticProof ? 1 : 0;
+    const harmonyBonus = progress.harmonyFormProof ? 1 : 0;
+    return {
+      spiritId: spirit.id,
+      name: spirit.name,
+      role: spirit.battle.role,
+      moveId: selectedMove.id,
+      moveLabel: selectedMove.label,
+      affinity: selectedMove.affinity,
+      bond,
+      focusContribution: spirit.battle.baseFocus + selectedMove.power + bond + roleBonus + leadBonus + tacticBonus + harmonyBonus - selectedMove.focusCost
+    };
+  });
+  const priorWins = Math.max(0, Math.min(5, Math.floor(progress.priorWins || 0)));
+  const focusScore = participants.reduce((total, participant) => total + participant.focusContribution, 0);
+  const opponentScore = opponent.baseFocus + priorWins + Math.max(0, participants.length - 1);
+  const victory = focusScore >= opponentScore;
+  const roundNumber = priorWins + 1;
+  const lead = participants[0];
+  const moveSummary = participants.map((participant) => `${participant.name}:${participant.moveLabel}`).join(', ');
+
+  return {
+    ok: true,
+    roundId: `${opponent.id}-round-${roundNumber}`,
+    opponentId: opponent.id,
+    opponentName: opponent.name,
+    partyIds: participants.map((participant) => participant.spiritId),
+    participants,
+    focusScore,
+    opponentScore,
+    victory,
+    noInjury: true,
+    trainingXp: victory ? opponent.rewardXp + Math.max(0, participants.length - 1) : Math.max(1, Math.floor(opponent.rewardXp / 2)),
+    bondDelta: victory ? opponent.bondDelta : 0,
+    message: victory
+      ? `Battle round transcript: ${lead.name} leads ${moveSummary} against ${opponent.name}, focus ${focusScore}/${opponentScore}. No-injury victory recorded with no real value.`
+      : `Battle round transcript: ${lead.name} studies ${opponent.name} with ${moveSummary}, focus ${focusScore}/${opponentScore}. No-injury practice recorded with no real value.`,
+    source: 'battle-round-transcript'
   };
 }
 
