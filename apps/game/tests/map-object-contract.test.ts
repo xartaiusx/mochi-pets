@@ -101,6 +101,7 @@ describe('Mochi town map object contract', () => {
       'Guild rank recorded',
       'Growth rite opened',
       'test soft currency',
+      'Provision satchel stocked',
       'Direct trade proof recorded',
       'no-real-value Enjin Canary certificate request',
       "source: 'spirit-bond'",
@@ -146,6 +147,11 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Court Spirit Compendium');
     expect(alphaContentSource).toContain('jade-court-compendium-seal');
     expect(alphaContentSource).toContain('spirit-compendium');
+    expect(alphaContentSource).toContain('Jade Court Provision Satchel');
+    expect(alphaContentSource).toContain('jade-court-provision-satchel');
+    expect(alphaContentSource).toContain('Jade Mooncake Box');
+    expect(alphaContentSource).toContain('jade-mooncake-box');
+    expect(alphaContentSource).toContain('item-provision-satchel');
     expect(alphaContentSource).toContain('spirit-route-invite');
     expect(alphaContentSource).toContain('Mochirii Technique Dojo');
     expect(alphaContentSource).toContain('Goldleaf Opening Form');
@@ -193,6 +199,11 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Court Spirit Compendium');
     expect(runtimeServerSource).toContain('jade-court-compendium-seal');
     expect(runtimeServerSource).toContain('spirit-compendium');
+    expect(runtimeServerSource).toContain('Jade Court Provision Satchel');
+    expect(runtimeServerSource).toContain('jade-court-provision-satchel');
+    expect(runtimeServerSource).toContain('Jade Mooncake Box');
+    expect(runtimeServerSource).toContain('jade-mooncake-box');
+    expect(runtimeServerSource).toContain('item-provision-satchel');
     expect(runtimeServerSource).toContain('spirit-route-invite');
     expect(runtimeServerSource).toContain('Mochirii Technique Dojo');
     expect(runtimeServerSource).toContain('Goldleaf Opening Form');

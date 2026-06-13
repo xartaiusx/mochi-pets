@@ -60,6 +60,7 @@ async function run() {
   assert(manifest.body.gameplay?.habitatBonds === true, 'Manifest must expose Mochi Spirit habitat bonds.');
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
+  assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -89,6 +90,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.habitatBonds === true, 'Alpha status must expose Mochi Spirit habitat bonds.');
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
+  assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -483,6 +485,22 @@ async function run() {
       requestId: `${runId}-trade`,
       type: 'trade.direct_offer',
       payload: { targetPlayerId: 'local-acceptance-peer', offered: ['jade-thread-charm'], requested: ['guild-seals:5'] }
+    },
+    {
+      requestId: `${runId}-provision-satchel`,
+      type: 'item.provision_satchel',
+      payload: {
+        satchelId: 'jade-court-provision-satchel',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        journalDiscoveredCount: 3,
+        marketProof: true,
+        tradeProof: true,
+        routeInviteProof: true,
+        careStreak: 1,
+        completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-canary`,

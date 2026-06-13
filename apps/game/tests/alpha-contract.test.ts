@@ -10,6 +10,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -35,6 +36,7 @@ import {
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
+  resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
@@ -64,6 +66,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -108,6 +111,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -382,6 +386,44 @@ describe('alpha contract', () => {
       researchProof: false,
       routeMasteryProof: false
     }).completed).toBe(false);
+
+    expect(SPIRIT_PROVISION_SATCHELS.map((satchel) => satchel.id)).toEqual(['jade-court-provision-satchel']);
+    const satchel = resolveSpiritProvisionSatchel({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      marketProof: true,
+      tradeProof: true,
+      routeInviteProof: true,
+      careStreak: 1,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar']
+    });
+    expect(satchel).toMatchObject({
+      ok: true,
+      stocked: true,
+      satchelId: 'jade-court-provision-satchel',
+      satchelName: 'Jade Court Provision Satchel',
+      title: 'First-Court Provision Bag',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      score: 30,
+      requiredScore: 24,
+      rewardItemId: 'jade-court-provision-satchel',
+      source: 'item-provision-satchel'
+    });
+    expect(satchel.message).toContain('No-real-value item preparation');
+    expect(resolveSpiritProvisionSatchel({
+      roster: ['lirabao'],
+      journalDiscoveredCount: 1,
+      marketProof: false,
+      tradeProof: false,
+      routeInviteProof: false,
+      careStreak: 0,
+      completedQuestIds: []
+    }).stocked).toBe(false);
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

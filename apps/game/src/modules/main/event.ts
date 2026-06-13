@@ -14,6 +14,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
@@ -34,6 +35,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
+  resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
   resolveSpiritRouteMastery,
@@ -115,6 +117,20 @@ type AlphaHudStatePatch = {
     rewardItemId: string;
     roster: string[];
     score: number;
+    title: string;
+  };
+  provisionSatchel?: {
+    activeSpiritId?: string;
+    completedQuestIds: string[];
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    satchelId: string;
+    satchelName: string;
+    score: number;
+    stockItemIds: string[];
     title: string;
   };
   affinity?: {
@@ -1699,7 +1715,58 @@ export function MarketBoard(): EventDefinition {
         return;
       }
 
-      showAlphaPrompt(player, 'Your Jade Thread Charm listing proof is already recorded for this alpha save.');
+      if (player.getVariable<boolean>('mochiSocial.alpha.provisionSatchelClaimed')) {
+        showAlphaPrompt(player, 'Your Jade Court Provision Satchel is already stocked for this alpha save. Item prep remains no-real-value.');
+        return;
+      }
+
+      const roster = bondedSpirits(player);
+      const satchel = resolveSpiritProvisionSatchel(
+        {
+          roster,
+          activeSpiritId: activeSpiritId(player),
+          journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+          marketProof: true,
+          tradeProof: Boolean(player.getVariable<boolean>('mochiSocial.alpha.tradeProof')),
+          routeInviteProof: Boolean(player.getVariable<boolean>('mochiSocial.world.routeInvitationProof')),
+          careStreak: careStreakTotal(player, roster),
+          completedQuestIds: completedQuestIds(player)
+        },
+        SPIRIT_PROVISION_SATCHELS[0].id
+      );
+
+      if (!satchel.stocked) {
+        showAlphaPrompt(player, satchel.message);
+        return;
+      }
+
+      player.setVariable('mochiSocial.alpha.provisionSatchelProof', true);
+      player.setVariable('mochiSocial.alpha.provisionSatchel', satchel.satchelId);
+      player.setVariable('mochiSocial.alpha.provisionSatchelName', satchel.satchelName);
+      player.setVariable('mochiSocial.alpha.provisionScore', satchel.score);
+      player.setVariable('mochiSocial.alpha.provisionStockItems', satchel.stockItemIds);
+      player.addItem(ALPHA_ITEMS.mooncakeBox, 1);
+      player.addItem(ALPHA_ITEMS.provisionSatchel, 1);
+      player.setVariable('mochiSocial.alpha.provisionSatchelClaimed', true);
+      player.showNotification('Provision satchel stocked', { time: 1800, icon: 'market-board' });
+      emitAlphaHudState(player, {
+        provisionSatchel: {
+          satchelId: satchel.satchelId,
+          satchelName: satchel.satchelName,
+          title: satchel.title,
+          habitat: satchel.habitat,
+          activeSpiritId: satchel.activeSpiritId,
+          roster: satchel.roster,
+          stockItemIds: satchel.stockItemIds,
+          completedQuestIds: satchel.completedQuestIds,
+          score: satchel.score,
+          rewardItemId: satchel.rewardItemId,
+          proof: true,
+          message: satchel.message
+        }
+      });
+      await player.save('auto', { title: 'Mochirii provision satchel stocked' }, { reason: 'auto', source: 'market-board' });
+      showAlphaPrompt(player, `${satchel.message} The Jade Court Provision Satchel is no-real-value closed-alpha item preparation proof.`);
     }
   };
 }

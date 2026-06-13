@@ -1347,7 +1347,48 @@ describe('Mochi town event behavior', () => {
     await runAction(CanaryShrine(), player);
     expect(player.texts.at(-1)).toContain('Bond with Lirabao');
 
-    await runAction(SpiritEvent(SPIRITS[0]), player);
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'aozhen');
+    player.variables.set('mochiSocial.spirits.journalCount', 3);
+    player.variables.set('mochiSocial.world.routeInvitationProof', true);
+    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+
+    await runAction(MarketBoard(), player);
+    expect(player.items.at(-1)?.item.id).toBe('jade-court-provision-satchel');
+    expect(player.variables.get('mochiSocial.alpha.provisionSatchelProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.alpha.provisionSatchel')).toBe('jade-court-provision-satchel');
+    expect(player.variables.get('mochiSocial.alpha.provisionScore')).toBe(30);
+    expect(player.variables.get('mochiSocial.alpha.provisionStockItems')).toEqual([
+      'jade-thread-charm',
+      'lantern-harmony-tea',
+      'jade-mooncake-box'
+    ]);
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        provisionSatchel: {
+          satchelId: 'jade-court-provision-satchel',
+          satchelName: 'Jade Court Provision Satchel',
+          title: 'First-Court Provision Bag',
+          habitat: 'Jade Lantern Court',
+          activeSpiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+          completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+          score: 30,
+          rewardItemId: 'jade-court-provision-satchel',
+          proof: true,
+          message: expect.stringContaining('No-real-value item preparation')
+        }
+      }
+    });
+    expect(player.saves.at(-1)?.options.source).toBe('market-board');
+    expect(player.texts.at(-1)).toContain('Jade Court Provision Satchel stocked');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha item preparation proof');
+
     await runAction(CanaryShrine(), player);
     expect(player.items.at(-1)?.item.id).toBe('lirabao-canary-certificate');
     expect(player.variables.get('mochiSocial.alpha.canaryCertificateRequested')).toBe(true);

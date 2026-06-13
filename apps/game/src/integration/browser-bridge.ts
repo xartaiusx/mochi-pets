@@ -12,6 +12,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -38,6 +39,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
+  resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
   resolveSpiritRouteInvitation,
@@ -113,6 +115,12 @@ interface AlphaHudState {
   compendiumName: string;
   compendiumScore: number;
   compendiumSealClaimed: boolean;
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  provisionSatchelName: string;
+  provisionScore: number;
+  provisionStockItemIds: string[];
+  provisionSatchelClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -286,6 +294,20 @@ export interface AlphaWorldStatePatch {
     rewardItemId: string;
     roster: string[];
     score: number;
+    title: string;
+  };
+  provisionSatchel?: {
+    activeSpiritId?: string;
+    completedQuestIds: string[];
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    satchelId: string;
+    satchelName: string;
+    score: number;
+    stockItemIds: string[];
     title: string;
   };
   technique?: {
@@ -510,6 +532,11 @@ function defaultAlphaState(): AlphaHudState {
     compendiumName: 'Unsealed',
     compendiumScore: 0,
     compendiumSealClaimed: false,
+    provisionProof: false,
+    provisionSatchelName: 'Unstocked',
+    provisionScore: 0,
+    provisionStockItemIds: [],
+    provisionSatchelClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -681,6 +708,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-habitat-bond-label>Habitat Bond: pending</span>
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
+      <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
@@ -712,6 +740,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
       <button type="button" data-alpha-action="spirit.research" aria-label="Record the Mochirii spirit research folio">Research</button>
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
+      <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -760,6 +789,7 @@ function createHud() {
   const habitatBondLabel = hud.querySelector('[data-habitat-bond-label]');
   const researchLabel = hud.querySelector('[data-research-label]');
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
+  const provisionLabel = hud.querySelector('[data-provision-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
@@ -831,6 +861,11 @@ function createHud() {
       compendiumLabel.textContent = state.compendiumProof
         ? `Compendium: ${state.compendiumName}, score ${state.compendiumScore}`
         : 'Compendium: pending';
+    }
+    if (provisionLabel) {
+      provisionLabel.textContent = state.provisionProof
+        ? `Satchel: ${state.provisionSatchelName}, ${state.provisionStockItemIds.length} items`
+        : 'Satchel: pending';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -905,7 +940,9 @@ function createHud() {
       marketLabel.textContent = state.canaryRequested
         ? 'Canary: requested - preview stub'
         : state.tradeProof
-          ? 'Trade: proofed - test only'
+          ? state.provisionProof
+            ? 'Bag: stocked - test only'
+            : 'Trade: proofed - test only'
           : state.charmListed
             ? 'Market: listed - test soft currency'
             : 'Market: ready - fixed price';
@@ -1232,6 +1269,21 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.discoveredRouteIds = Array.from(new Set([...(state.discoveredRouteIds || []), ...patch.compendium.discoveredRoutes.map(String)]));
     state.spiritId = patch.compendium.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.compendium.message || `${state.compendiumName} sealed as no-real-value collection proof.`);
+  }
+
+  if (patch.provisionSatchel) {
+    state.provisionProof = patch.provisionSatchel.proof || state.provisionProof;
+    state.provisionSatchelId = patch.provisionSatchel.satchelId || state.provisionSatchelId;
+    state.provisionSatchelName = patch.provisionSatchel.satchelName || state.provisionSatchelName;
+    state.provisionScore = Math.max(state.provisionScore, Number(patch.provisionSatchel.score) || 0);
+    state.provisionStockItemIds = Array.isArray(patch.provisionSatchel.stockItemIds)
+      ? patch.provisionSatchel.stockItemIds.map(String)
+      : state.provisionStockItemIds;
+    state.provisionSatchelClaimed = state.provisionSatchelClaimed || patch.provisionSatchel.rewardItemId === 'jade-court-provision-satchel';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.provisionSatchel.roster.map(String)]));
+    state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.provisionSatchel.completedQuestIds.map(String)]));
+    state.spiritId = patch.provisionSatchel.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.provisionSatchel.message || `${state.provisionSatchelName} stocked as no-real-value item proof.`);
   }
 
   if (patch.expedition) {
@@ -1565,6 +1617,20 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       researchProof: state.researchProof,
       researchFolioId: state.researchFolioId,
       routeMasteryProof: state.routeMasteryProof
+    };
+  }
+
+  if (type === 'item.provision_satchel') {
+    return {
+      satchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+      roster: state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      marketProof: state.charmListed,
+      tradeProof: state.tradeProof,
+      routeInviteProof: state.routeInviteProof,
+      careStreak: state.raisingCareStreak,
+      completedQuestIds: state.completedQuestIds
     };
   }
 
@@ -1986,6 +2052,34 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.compendiumSealClaimed = result.rewardItemId === 'jade-court-compendium-seal';
       state.attunedSpiritIds = result.roster;
       state.discoveredRouteIds = result.discoveredRoutes;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'item.provision_satchel') {
+    const result = resolveSpiritProvisionSatchel(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        routeInviteProof: Boolean(payload.routeInviteProof ?? state.routeInviteProof),
+        careStreak: Number(payload.careStreak ?? state.raisingCareStreak ?? 0),
+        completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds
+      },
+      String(payload.satchelId || SPIRIT_PROVISION_SATCHELS[0].id)
+    );
+    if (result.stocked) {
+      state.provisionProof = true;
+      state.provisionSatchelId = result.satchelId;
+      state.provisionSatchelName = result.satchelName;
+      state.provisionScore = result.score;
+      state.provisionStockItemIds = result.stockItemIds;
+      state.provisionSatchelClaimed = result.rewardItemId === 'jade-court-provision-satchel';
+      state.attunedSpiritIds = result.roster;
+      state.completedQuestIds = result.completedQuestIds;
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);

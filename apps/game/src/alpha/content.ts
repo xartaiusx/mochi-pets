@@ -394,6 +394,51 @@ export interface SpiritCompendiumResult {
   source: string;
 }
 
+export interface SpiritProvisionSatchel {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  stockItemIds: readonly string[];
+  requiredRosterCount: number;
+  requiredJournalCount: number;
+  requiredCareStreak: number;
+  requiredCompletedQuestCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritProvisionSatchelProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  journalDiscoveredCount: number;
+  marketProof: boolean;
+  tradeProof: boolean;
+  routeInviteProof: boolean;
+  careStreak: number;
+  completedQuestIds: readonly string[];
+}
+
+export interface SpiritProvisionSatchelResult {
+  ok: boolean;
+  stocked: boolean;
+  satchelId: string;
+  satchelName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  roster: string[];
+  stockItemIds: string[];
+  completedQuestIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -1083,6 +1128,16 @@ export const ALPHA_ITEMS = {
     name: 'Lantern Harmony Tea',
     description: 'A no-real-value spirit invitation lure brewed for Jade Lantern Court encounters.'
   },
+  mooncakeBox: {
+    id: 'jade-mooncake-box',
+    name: 'Jade Mooncake Box',
+    description: 'A no-real-value care provision for closed-alpha Mochirii spirit raising.'
+  },
+  provisionSatchel: {
+    id: 'jade-court-provision-satchel',
+    name: 'Jade Court Provision Satchel',
+    description: 'A no-real-value item bag proof for closed-alpha Mochirii shop, care, route, and trade preparation.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -1372,6 +1427,23 @@ export const SPIRIT_COMPENDIUMS: readonly SpiritCompendiumCompletion[] = [
     requiredScore: 25,
     rewardItemId: ALPHA_ITEMS.compendiumSeal.id,
     summary: 'A no-real-value first-court species compendium for testers who collect every original Mochi Spirit, scout both field routes, and prove habitat plus research coverage.'
+  }
+];
+
+export const SPIRIT_PROVISION_SATCHELS: readonly SpiritProvisionSatchel[] = [
+  {
+    id: 'jade-court-provision-satchel',
+    name: 'Jade Court Provision Satchel',
+    title: 'First-Court Provision Bag',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    stockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+    requiredRosterCount: MOCHI_SPIRITS.length,
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredCareStreak: 1,
+    requiredCompletedQuestCount: MOCHI_SPIRIT_QUESTS.length,
+    requiredScore: 24,
+    rewardItemId: ALPHA_ITEMS.provisionSatchel.id,
+    summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, market listings, direct trades, and quest supplies.'
   }
 ];
 
@@ -2039,6 +2111,86 @@ export function resolveSpiritCompendiumCompletion(
       ? `${compendium.name} complete: ${activeName} anchors all first-court Mochi Spirit records with roster, journal, route, habitat, and research proof. No-real-value collection progress only.`
       : `${compendium.name} needs ${missing.join(', ')} before the first-court species collection can be sealed.`,
     source: 'spirit-compendium'
+  };
+}
+
+export function resolveSpiritProvisionSatchel(
+  progress: SpiritProvisionSatchelProgress,
+  satchelId: string = SPIRIT_PROVISION_SATCHELS[0].id
+): SpiritProvisionSatchelResult {
+  const satchel = SPIRIT_PROVISION_SATCHELS.find((entry) => entry.id === satchelId) || SPIRIT_PROVISION_SATCHELS[0];
+  const knownSpiritIds = new Set<string>(MOCHI_SPIRITS.map((spirit) => spirit.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const completedQuestIds = Array.from(new Set(progress.completedQuestIds.filter(Boolean))).filter((questId) => {
+    return MOCHI_SPIRIT_QUESTS.some((quest) => quest.id === questId);
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const stockItemIds = satchel.stockItemIds.filter((itemId) => {
+    return Object.values(ALPHA_ITEMS).some((item) => item.id === itemId);
+  });
+  const missing: string[] = [];
+
+  if (roster.length < satchel.requiredRosterCount) {
+    missing.push(`roster:${roster.length}/${satchel.requiredRosterCount}`);
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < satchel.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${satchel.requiredJournalCount}`);
+  }
+
+  if (!progress.marketProof) {
+    missing.push('market-listing');
+  }
+
+  if (!progress.tradeProof) {
+    missing.push('direct-trade');
+  }
+
+  if (!progress.routeInviteProof) {
+    missing.push('route-invitation');
+  }
+
+  const careStreak = Math.max(0, Math.floor(progress.careStreak || 0));
+  if (careStreak < satchel.requiredCareStreak) {
+    missing.push(`care-streak:${careStreak}/${satchel.requiredCareStreak}`);
+  }
+
+  if (completedQuestIds.length < satchel.requiredCompletedQuestCount) {
+    missing.push(`quests:${completedQuestIds.length}/${satchel.requiredCompletedQuestCount}`);
+  }
+
+  const score =
+    stockItemIds.length * 2 +
+    Math.min(roster.length, satchel.requiredRosterCount) * 2 +
+    Math.min(journalCount, satchel.requiredJournalCount) +
+    (progress.marketProof ? 3 : 0) +
+    (progress.tradeProof ? 3 : 0) +
+    (progress.routeInviteProof ? 2 : 0) +
+    Math.min(careStreak, 2) +
+    Math.min(completedQuestIds.length, satchel.requiredCompletedQuestCount) * 2;
+  const stocked = missing.length === 0 && score >= satchel.requiredScore;
+  const activeName = getMochiSpirit(activeSpiritId || '')?.name || 'the first-court roster';
+
+  return {
+    ok: true,
+    stocked,
+    satchelId: satchel.id,
+    satchelName: satchel.name,
+    title: satchel.title,
+    habitat: satchel.habitat,
+    activeSpiritId,
+    roster,
+    stockItemIds,
+    completedQuestIds,
+    score,
+    requiredScore: satchel.requiredScore,
+    missing,
+    rewardItemId: satchel.rewardItemId,
+    message: stocked
+      ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market proof, trade proof, and quest supplies. No-real-value item preparation only.`
+      : `${satchel.name} needs ${missing.join(', ')} before the first-court provision bag can be stocked.`,
+    source: 'item-provision-satchel'
   };
 }
 
