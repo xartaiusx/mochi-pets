@@ -148,6 +148,7 @@ async function readCanvasMovementPulse(page) {
 
 async function exerciseAlphaHud(page) {
   const chatMessage = `Hello from browser smoke ${Date.now().toString(36)}`;
+  await page.click('[data-alpha-action="spirit.capture"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.train"]', { timeout: timeoutMs });
@@ -186,6 +187,8 @@ async function exerciseAlphaHud(page) {
         && quest.includes('First Lantern Vow')
         && market.includes('Canary: requested')
         && state.spiritId === 'lirabao'
+        && state.captureProof === true
+        && state.lastCaptureSpiritId === 'lirabao'
         && Array.isArray(state.attunedSpiritIds)
         && state.attunedSpiritIds.includes('lirabao')
         && state.trainingXp >= 1
@@ -209,6 +212,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Thread Charm listed')
         && chat.includes('Direct trade proof')
         && chat.includes('Canary certificate request staged')
+        && chat.includes('Lantern Harmony Invitation')
         && chat.includes('accepts the Lantern Invite')
         && chat.includes('guild spar')
         && chat.includes('Jade brush grooming')
@@ -237,6 +241,8 @@ async function exerciseAlphaHud(page) {
   });
 
   assert(snapshot.state.spiritId === 'lirabao', 'HUD care action must select Lirabao as the active spirit.');
+  assert(snapshot.state.captureProof === true, 'HUD invite action must record spirit capture proof.');
+  assert(snapshot.state.lastCaptureSpiritId === 'lirabao', 'HUD invite action must record Lirabao as the invited spirit.');
   assert(snapshot.state.bond >= 1, 'HUD care action must increase spirit bond.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('lirabao'), 'HUD attune action must add Lirabao to the local spirit roster.');
   assert(snapshot.training.includes('Training:'), 'HUD training label must show training state.');
@@ -256,6 +262,7 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
+  assert(chat.some((line) => String(line).includes('Lantern Harmony Invitation')), 'HUD chat state must record the spirit invitation action.');
   assert(chat.some((line) => String(line).includes('accepts the Lantern Invite')), 'HUD chat state must record the attunement action.');
   assert(chat.some((line) => String(line).includes('Care complete')), 'HUD chat state must record the care action.');
   assert(chat.some((line) => String(line).includes('guild spar')), 'HUD chat state must record the training battle action.');

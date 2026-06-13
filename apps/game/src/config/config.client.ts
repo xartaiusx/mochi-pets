@@ -71,6 +71,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'habitat-grove',
+            image: '/spritesheets/habitat-grove.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
             ...SPIRIT_SHEET

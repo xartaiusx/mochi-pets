@@ -4,6 +4,8 @@ export type SpiritGrowthStage = 'seed' | 'sprout' | 'glow';
 
 export type SpiritBattleRole = 'guardian' | 'trickster' | 'scout';
 
+export type SpiritEncounterRarity = 'common' | 'uncommon' | 'rare';
+
 export interface SpiritJournalEntry {
   title: string;
   summary: string;
@@ -22,6 +24,15 @@ export interface SpiritAttunementProfile {
   label: string;
   lureItemId: string;
   socialPrompt: string;
+}
+
+export interface SpiritCaptureProfile {
+  encounterId: string;
+  invitationLabel: string;
+  lureItemId: string;
+  harmonyRequired: number;
+  rarity: SpiritEncounterRarity;
+  habitatNote: string;
 }
 
 export interface SpiritBattleMove {
@@ -58,6 +69,7 @@ export interface MochiSpirit {
   guildRelation: string;
   certificateEligible: boolean;
   attunement: SpiritAttunementProfile;
+  capture: SpiritCaptureProfile;
   battle: SpiritTrainingProfile;
   journal: SpiritJournalEntry;
   careActions: SpiritCareAction[];
@@ -77,6 +89,16 @@ export interface MochiSpiritQuest {
 
 export interface SpiritAttunementResult {
   ok: boolean;
+  spiritId: string;
+  message: string;
+  bond: number;
+  growth: SpiritGrowthStage;
+  source: string;
+}
+
+export interface SpiritCaptureResult {
+  ok: boolean;
+  alreadyRostered: boolean;
   spiritId: string;
   message: string;
   bond: number;
@@ -197,6 +219,14 @@ export const MOCHI_SPIRITS = [
       lureItemId: 'mochirii-guild-seal',
       socialPrompt: 'Offer a calm greeting beside the guild lanterns.'
     },
+    capture: {
+      encounterId: 'court-habitat-lirabao',
+      invitationLabel: 'Lantern Harmony Invitation',
+      lureItemId: 'lantern-harmony-tea',
+      harmonyRequired: 2,
+      rarity: 'common',
+      habitatNote: 'Appears where warm lanterns, quiet friends, and soft tea steam overlap.'
+    },
     battle: {
       role: 'guardian',
       baseFocus: 4,
@@ -225,6 +255,14 @@ export const MOCHI_SPIRITS = [
       label: 'Market Ribbon Greeting',
       lureItemId: 'jade-thread-charm',
       socialPrompt: 'Show a Jade Thread Charm near the market ribbons.'
+    },
+    capture: {
+      encounterId: 'court-habitat-jintari',
+      invitationLabel: 'Goldleaf Ribbon Invitation',
+      lureItemId: 'jade-thread-charm',
+      harmonyRequired: 3,
+      rarity: 'uncommon',
+      habitatNote: 'Appears beside generous trades, guild ribbons, and bright market chatter.'
     },
     battle: {
       role: 'trickster',
@@ -255,6 +293,14 @@ export const MOCHI_SPIRITS = [
       lureItemId: 'mochirii-guild-seal',
       socialPrompt: 'Stand near the upper path and promise to carry a guild bell message.'
     },
+    capture: {
+      encounterId: 'court-habitat-aozhen',
+      invitationLabel: 'Skybell Vow Invitation',
+      lureItemId: 'lantern-harmony-tea',
+      harmonyRequired: 4,
+      rarity: 'rare',
+      habitatNote: 'Appears near open air, guild bells, and wayfarers who keep promises.'
+    },
     battle: {
       role: 'scout',
       baseFocus: 6,
@@ -280,6 +326,11 @@ export const ALPHA_ITEMS = {
     id: 'jade-thread-charm',
     name: 'Jade Thread Charm',
     description: 'A no-real-value alpha market item for fixed-price and trade testing.'
+  },
+  harmonyTea: {
+    id: 'lantern-harmony-tea',
+    name: 'Lantern Harmony Tea',
+    description: 'A no-real-value spirit invitation lure brewed for Jade Lantern Court encounters.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -334,6 +385,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'spirit-lirabao',
     'spirit-jintari',
     'spirit-aozhen',
+    'habitat-grove',
     'market-board',
     'trade-post',
     'training-ring',
@@ -383,6 +435,49 @@ export function resolveSpiritAttunement(spiritId: string, offeredItemId: string)
     bond: ok ? 1 : 0,
     growth: 'seed',
     source: 'spirit-attune'
+  };
+}
+
+export function resolveSpiritCapture(spiritId: string, offeredItemId: string, harmonyScore = 1, roster: readonly string[] = []): SpiritCaptureResult {
+  const spirit = getMochiSpirit(spiritId);
+  if (!spirit) {
+    return {
+      ok: false,
+      alreadyRostered: false,
+      spiritId,
+      message: 'No Mochirii spirit profile exists for this invitation encounter.',
+      bond: 0,
+      growth: 'seed',
+      source: 'spirit-capture'
+    };
+  }
+
+  if (roster.includes(spirit.id)) {
+    return {
+      ok: true,
+      alreadyRostered: true,
+      spiritId: spirit.id,
+      message: `${spirit.name} already trusts your Mochirii roster and returns to the habitat grove willingly.`,
+      bond: 1,
+      growth: 'seed',
+      source: 'spirit-capture'
+    };
+  }
+
+  const lureOk = offeredItemId === spirit.capture.lureItemId;
+  const harmonyOk = Math.max(0, Math.floor(harmonyScore)) >= spirit.capture.harmonyRequired;
+  const ok = lureOk && harmonyOk;
+
+  return {
+    ok,
+    alreadyRostered: false,
+    spiritId: spirit.id,
+    message: ok
+      ? `${spirit.name} accepts the ${spirit.capture.invitationLabel} and joins your Mochirii roster.`
+      : `${spirit.name} notices the grove, but this invitation needs ${spirit.capture.lureItemId} and harmony ${spirit.capture.harmonyRequired}.`,
+    bond: ok ? 1 : 0,
+    growth: 'seed',
+    source: 'spirit-capture'
   };
 }
 

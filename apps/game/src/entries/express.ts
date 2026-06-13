@@ -37,6 +37,7 @@ const ALPHA_FEATURES = {
     cashout: false
   },
   gameplay: {
+    spiritCapture: true,
     spiritAttunement: true,
     trainingBattles: true,
     raisingCare: true,
@@ -57,6 +58,7 @@ const ALPHA_EDGE_FUNCTIONS = {
 const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
+  'spirit.capture',
   'spirit.attune',
   'spirit.bond',
   'spirit.care',

@@ -5,6 +5,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   growthStageFromBond,
+  resolveSpiritCapture,
   resolveSpiritRaisingAction,
   resolveSpiritTrainingBattle,
   type MochiSpirit
@@ -15,6 +16,11 @@ const ALPHA_PROMPT_MS = 2600;
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   charmListed?: boolean;
+  capture?: {
+    message?: string;
+    roster: string[];
+    spiritId: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -167,6 +173,53 @@ export function CareShrine(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'spirit-care' });
       showAlphaPrompt(player, `Care complete. ${raising?.message || 'Your companion feels steady.'} Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
+    }
+  };
+}
+
+export function HabitatGrove(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('habitat-grove');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const roster = bondedSpirits(player);
+      const targetSpirit = MOCHI_SPIRITS.find((spirit) => !roster.includes(spirit.id)) || MOCHI_SPIRITS[0];
+      const result = resolveSpiritCapture(targetSpirit.id, targetSpirit.capture.lureItemId, targetSpirit.capture.harmonyRequired, roster);
+
+      if (!result.ok) {
+        showAlphaPrompt(player, result.message);
+        return;
+      }
+
+      const nextRoster = roster.includes(targetSpirit.id) ? roster : [...roster, targetSpirit.id];
+      player.setVariable('mochiSocial.spirits.bonded', nextRoster);
+      player.setVariable('mochiSocial.spirits.active', targetSpirit.id);
+      player.setVariable(`mochiSocial.spirit.${targetSpirit.id}.bond`, Math.max(1, result.bond));
+      player.setVariable(`mochiSocial.spirit.${targetSpirit.id}.growth`, result.growth);
+      player.setVariable(`mochiSocial.spirit.${targetSpirit.id}.journalUnlocked`, true);
+      player.setVariable(`mochiSocial.spirit.${targetSpirit.id}.captureEncounter`, targetSpirit.capture.encounterId);
+      player.setVariable(`mochiSocial.spirit.${targetSpirit.id}.captureRarity`, targetSpirit.capture.rarity);
+      if (!player.getVariable<boolean>('mochiSocial.alpha.harmonyTeaReceived')) {
+        player.addItem(ALPHA_ITEMS.harmonyTea, 1);
+        player.setVariable('mochiSocial.alpha.harmonyTeaReceived', true);
+      }
+
+      player.showNotification(`${targetSpirit.name} invited`, { time: 1800, icon: 'habitat-grove' });
+      emitAlphaHudState(player, {
+        capture: {
+          spiritId: targetSpirit.id,
+          roster: nextRoster,
+          message: result.message
+        },
+        spirit: { id: targetSpirit.id, bond: Math.max(1, result.bond), growth: result.growth }
+      });
+      await player.save('auto', { title: 'Mochi Spirit invited from habitat grove' }, { reason: 'auto', source: 'habitat-grove' });
+      showAlphaPrompt(
+        player,
+        `${result.message} This spirit invitation is a Mochirii-original, no-real-value alpha capture loop based on harmony, care, and consent.`
+      );
     }
   };
 }

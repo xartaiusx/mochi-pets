@@ -4,6 +4,7 @@ import {
   MOCHI_SPIRITS,
   growthStageFromBond,
   resolveSpiritAttunement,
+  resolveSpiritCapture,
   resolveSpiritRaisingAction,
   resolveSpiritTrainingBattle
 } from '../src/alpha/content';
@@ -24,6 +25,7 @@ describe('alpha contract', () => {
     expect(MOCHI_SPIRITS.filter((spirit) => spirit.certificateEligible)).toHaveLength(1);
     expect(MOCHI_SPIRITS.filter((spirit) => spirit.certificateEligible).map((spirit) => spirit.id)).toEqual(['lirabao']);
     expect(MOCHI_SPIRITS.every((spirit) => spirit.attunement.label.length > 4)).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.capture.invitationLabel.length > 4)).toBe(true);
     expect(MOCHI_SPIRITS.every((spirit) => spirit.battle.moves.length >= 2)).toBe(true);
     expect(MOCHI_SPIRITS.every((spirit) => spirit.raisingNeeds.length >= 1)).toBe(true);
   });
@@ -41,6 +43,7 @@ describe('alpha contract', () => {
 
   it('validates alpha action envelopes', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
@@ -51,7 +54,20 @@ describe('alpha contract', () => {
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);
   });
 
-  it('resolves original Mochirii attunement, training, raising, and quest content', () => {
+  it('resolves original Mochirii capture, attunement, training, raising, and quest content', () => {
+    const capture = resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, []);
+    expect(capture).toMatchObject({
+      ok: true,
+      alreadyRostered: false,
+      spiritId: 'lirabao',
+      bond: 1,
+      growth: 'seed',
+      source: 'spirit-capture'
+    });
+    expect(capture.message).toContain('Lantern Harmony Invitation');
+    expect(resolveSpiritCapture('aozhen', 'lantern-harmony-tea', 1, []).ok).toBe(false);
+    expect(resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, ['lirabao']).alreadyRostered).toBe(true);
+
     const attunement = resolveSpiritAttunement('lirabao', 'mochirii-guild-seal');
     expect(attunement).toMatchObject({
       ok: true,

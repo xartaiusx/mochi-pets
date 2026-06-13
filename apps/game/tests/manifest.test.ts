@@ -40,6 +40,7 @@ describe('game manifest', () => {
         auctions: false
       },
       gameplay: {
+        spiritCapture: true,
         spiritAttunement: true,
         trainingBattles: true,
         raisingCare: true,

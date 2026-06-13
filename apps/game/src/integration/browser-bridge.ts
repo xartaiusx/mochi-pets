@@ -4,6 +4,7 @@ import {
   MOCHI_SPIRITS,
   growthStageFromBond,
   resolveSpiritAttunement,
+  resolveSpiritCapture,
   resolveSpiritRaisingAction,
   resolveSpiritTrainingBattle
 } from '../alpha/content';
@@ -28,6 +29,8 @@ interface AlphaHudState {
   statusMood: string;
   bond: number;
   growth: string;
+  captureProof: boolean;
+  lastCaptureSpiritId?: string;
   trainingXp: number;
   trainingVictories: number;
   raisingProof: boolean;
@@ -42,6 +45,11 @@ interface AlphaHudState {
 export interface AlphaWorldStatePatch {
   canaryRequested?: boolean;
   charmListed?: boolean;
+  capture?: {
+    message?: string;
+    roster: string[];
+    spiritId: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -97,6 +105,7 @@ function defaultAlphaState(): AlphaHudState {
     statusMood: 'exploring',
     bond: 0,
     growth: 'seed',
+    captureProof: false,
     trainingXp: 0,
     trainingVictories: 0,
     raisingProof: false,
@@ -215,6 +224,7 @@ function createHud() {
       <button type="button" data-alpha-local-action="profile.view" aria-label="Open tester profile">Profile</button>
       <button type="button" data-alpha-local-action="guild.buddy" aria-label="Add local guild buddy proof">Guild</button>
       <button type="button" data-alpha-local-action="status.set" aria-label="Set cozy status mood">Mood</button>
+      <button type="button" data-alpha-action="spirit.capture" aria-label="Invite a Mochi Spirit from the habitat grove">Invite</button>
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
@@ -536,6 +546,18 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     }
   }
 
+  if (patch.capture?.spiritId) {
+    state.captureProof = true;
+    state.lastCaptureSpiritId = patch.capture.spiritId;
+    state.spiritId = patch.capture.spiritId;
+    for (const spiritId of patch.capture.roster || [patch.capture.spiritId]) {
+      if (!state.attunedSpiritIds.includes(spiritId)) {
+        state.attunedSpiritIds.push(spiritId);
+      }
+    }
+    appendUniqueAlphaChat(state, patch.capture.message || `Spirit invitation recorded for ${patch.capture.spiritId}.`);
+  }
+
   if (patch.charmListed) {
     state.charmListed = true;
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
@@ -579,6 +601,16 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     return {
       spiritId,
       offeredItemId: spiritId === 'jintari' ? 'jade-thread-charm' : 'mochirii-guild-seal'
+    };
+  }
+
+  if (type === 'spirit.capture') {
+    const targetSpirit = MOCHI_SPIRITS.find((entry) => !state.attunedSpiritIds.includes(entry.id)) || MOCHI_SPIRITS[0];
+    return {
+      spiritId: targetSpirit.id,
+      offeredItemId: targetSpirit.capture.lureItemId,
+      harmonyScore: targetSpirit.capture.harmonyRequired,
+      roster: state.attunedSpiritIds
     };
   }
 
@@ -686,6 +718,27 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.spiritId = result.spiritId;
       if (!state.attunedSpiritIds.includes(result.spiritId)) {
         state.attunedSpiritIds.push(result.spiritId);
+      }
+      state.bond = Math.max(state.bond, result.bond);
+      state.growth = result.growth;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.capture') {
+    const targetSpirit = MOCHI_SPIRITS.find((entry) => entry.id === String(payload.spiritId || '')) || MOCHI_SPIRITS.find((entry) => !state.attunedSpiritIds.includes(entry.id)) || MOCHI_SPIRITS[0];
+    const result = resolveSpiritCapture(
+      targetSpirit.id,
+      String(payload.offeredItemId || targetSpirit.capture.lureItemId),
+      Number(payload.harmonyScore || targetSpirit.capture.harmonyRequired),
+      state.attunedSpiritIds
+    );
+    if (result.ok) {
+      state.spiritId = targetSpirit.id;
+      state.captureProof = true;
+      state.lastCaptureSpiritId = targetSpirit.id;
+      if (!state.attunedSpiritIds.includes(targetSpirit.id)) {
+        state.attunedSpiritIds.push(targetSpirit.id);
       }
       state.bond = Math.max(state.bond, result.bond);
       state.growth = result.growth;

@@ -1,6 +1,6 @@
 import { defineModule } from '@rpgjs/common';
 import type { RpgServer } from '@rpgjs/server';
-import { CanaryShrine, CareShrine, GuildSealChest, MarketBoard, QuestBoard, SPIRITS, SpiritEvent, TradePost, TrainingRing, WelcomeNpc } from './event';
+import { CanaryShrine, CareShrine, GuildSealChest, HabitatGrove, MarketBoard, QuestBoard, SPIRITS, SpiritEvent, TradePost, TrainingRing, WelcomeNpc } from './event';
 import { player } from './player';
 
 export default defineModule<RpgServer>({
@@ -44,6 +44,12 @@ export default defineModule<RpgServer>({
           x: 768,
           y: 320,
           event: CareShrine()
+        },
+        {
+          id: 'habitat-grove',
+          x: 896,
+          y: 320,
+          event: HabitatGrove()
         },
         {
           id: 'training-ring',

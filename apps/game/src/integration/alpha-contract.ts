@@ -26,6 +26,7 @@ export const ALPHA_FEATURES = {
     cashout: false
   },
   gameplay: {
+    spiritCapture: true,
     spiritAttunement: true,
     trainingBattles: true,
     raisingCare: true,
@@ -56,6 +57,7 @@ export const SERVER_ENV_CONTRACT = [
 export const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
+  'spirit.capture',
   'spirit.attune',
   'spirit.bond',
   'spirit.care',

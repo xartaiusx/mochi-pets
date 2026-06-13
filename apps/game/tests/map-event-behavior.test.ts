@@ -3,6 +3,7 @@ import {
   CanaryShrine,
   CareShrine,
   GuildSealChest,
+  HabitatGrove,
   MarketBoard,
   QuestBoard,
   SPIRITS,
@@ -242,6 +243,37 @@ describe('Mochi town event behavior', () => {
     });
     expect(player.texts.at(-1)).toContain('First Lantern Vow complete');
     expect(player.texts.at(-1)).toContain('no-real-value alpha progress');
+  });
+
+  it('invites Mochi Spirits from the habitat grove as the alpha capture loop', async () => {
+    const player = createFakePlayer();
+
+    await runAction(HabitatGrove(), player);
+
+    expect(player.items.at(-1)?.item.id).toBe('lantern-harmony-tea');
+    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao']);
+    expect(player.variables.get('mochiSocial.spirits.active')).toBe('lirabao');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.captureEncounter')).toBe('court-habitat-lirabao');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.captureRarity')).toBe('common');
+    expect(player.saves.at(-1)?.options.source).toBe('habitat-grove');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        capture: {
+          spiritId: 'lirabao',
+          roster: ['lirabao'],
+          message: 'Lirabao accepts the Lantern Harmony Invitation and joins your Mochirii roster.'
+        },
+        spirit: { id: 'lirabao', bond: 1, growth: 'seed' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Mochirii-original');
+    expect(player.texts.at(-1)).toContain('no-real-value alpha capture loop');
+
+    await runAction(HabitatGrove(), player);
+    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiSocial.spirit.jintari.captureRarity')).toBe('uncommon');
+    expect(player.items.filter((entry) => entry.item.id === 'lantern-harmony-tea')).toHaveLength(1);
   });
 
   it('records no-real-value market, direct trade, and Canary certificate proofs', async () => {

@@ -21,7 +21,7 @@ These notes define the source-master intent for the Mochirii High-Fidelity Wuxia
 ## Asset Intent
 
 - Town ground: calm jade grass, readable path and water edges, distinct blocked decor.
-- Guild landmarks: Sifu Narao, guild seal chest, spirit habitat, training ring, quest board, market board, trade post, and Canary shrine each need a unique silhouette and contact shadow.
+- Guild landmarks: Sifu Narao, guild seal chest, spirit habitat grove, training ring, quest board, market board, trade post, and Canary shrine each need a unique silhouette and contact shadow.
 - Mochi Spirits: Lirabao, Jintari, and Aozhen need distinct color, temperament, care identity, and journal role.
 - HUD: warm panels, high contrast text, clear focus/action states, and no obstruction of prompts.
 

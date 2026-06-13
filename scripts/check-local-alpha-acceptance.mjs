@@ -53,6 +53,7 @@ async function run() {
   assert(manifest.body.chain?.network === 'CANARY', 'Manifest must keep Canary network.');
   assert(manifest.body.market?.fixedPrice === true, 'Manifest must keep fixed-price market enabled.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
+  assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
@@ -60,6 +61,7 @@ async function run() {
   assert(alphaStatus.body.alpha?.stopPoint === 'alpha-rc-ready', 'Alpha status must expose the RC stop point.');
   assert(alphaStatus.body.market?.fixedPrice === true, 'Alpha status must keep fixed-price enabled.');
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
+  assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
@@ -121,6 +123,11 @@ async function run() {
       requestId: `${runId}-emote`,
       type: 'emote.send',
       payload: { emote: 'wave' }
+    },
+    {
+      requestId: `${runId}-capture`,
+      type: 'spirit.capture',
+      payload: { spiritId: 'lirabao', offeredItemId: 'lantern-harmony-tea', harmonyScore: 2, source: 'acceptance-script' }
     },
     {
       requestId: `${runId}-attune`,

@@ -37,6 +37,11 @@ const alphaPromptMs = 2600;
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   charmListed?: boolean;
+  capture?: {
+    message?: string;
+    roster: string[];
+    spiritId: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -77,6 +82,15 @@ type SpiritRaisingNeed = {
   growthHint: string;
 };
 
+type SpiritCaptureProfile = {
+  encounterId: string;
+  invitationLabel: string;
+  lureItemId: string;
+  harmonyRequired: number;
+  rarity: 'common' | 'uncommon' | 'rare';
+  habitatNote: string;
+};
+
 type MochiSpirit = {
   id: string;
   name: string;
@@ -87,6 +101,7 @@ type MochiSpirit = {
   temperament: string;
   guildRelation: string;
   certificateEligible: boolean;
+  capture: SpiritCaptureProfile;
   battle: {
     baseFocus: number;
     moves: SpiritBattleMove[];
@@ -104,6 +119,11 @@ const alphaItems = {
     id: 'jade-thread-charm',
     name: 'Jade Thread Charm',
     description: 'A no-real-value alpha market item for fixed-price and trade testing.'
+  },
+  harmonyTea: {
+    id: 'lantern-harmony-tea',
+    name: 'Lantern Harmony Tea',
+    description: 'A no-real-value spirit invitation lure brewed for Jade Lantern Court encounters.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -123,6 +143,14 @@ const spirits = [
     temperament: 'gentle',
     guildRelation: 'first-bond guide',
     certificateEligible: true,
+    capture: {
+      encounterId: 'court-habitat-lirabao',
+      invitationLabel: 'Lantern Harmony Invitation',
+      lureItemId: 'lantern-harmony-tea',
+      harmonyRequired: 2,
+      rarity: 'common',
+      habitatNote: 'Appears where warm lanterns, quiet friends, and soft tea steam overlap.'
+    },
     battle: {
       baseFocus: 4,
       moves: [
@@ -145,6 +173,14 @@ const spirits = [
     temperament: 'bright',
     guildRelation: 'market-luck scout',
     certificateEligible: false,
+    capture: {
+      encounterId: 'court-habitat-jintari',
+      invitationLabel: 'Goldleaf Ribbon Invitation',
+      lureItemId: 'jade-thread-charm',
+      harmonyRequired: 3,
+      rarity: 'uncommon',
+      habitatNote: 'Appears beside generous trades, guild ribbons, and bright market chatter.'
+    },
     battle: {
       baseFocus: 5,
       moves: [
@@ -166,6 +202,14 @@ const spirits = [
     temperament: 'curious',
     guildRelation: 'wind-message watcher',
     certificateEligible: false,
+    capture: {
+      encounterId: 'court-habitat-aozhen',
+      invitationLabel: 'Skybell Vow Invitation',
+      lureItemId: 'lantern-harmony-tea',
+      harmonyRequired: 4,
+      rarity: 'rare',
+      habitatNote: 'Appears near open air, guild bells, and wayfarers who keep promises.'
+    },
     battle: {
       baseFocus: 6,
       moves: [
@@ -193,6 +237,43 @@ function growthStageFromBond(bond: number): SpiritGrowthStage {
   if (bond >= 5) return 'glow';
   if (bond >= 3) return 'sprout';
   return 'seed';
+}
+
+function resolveSpiritCapture(spiritId: string, offeredItemId: string, harmonyScore = 1, roster: readonly string[] = []) {
+  const spirit = spirits.find((entry) => entry.id === spiritId);
+  if (!spirit) {
+    return {
+      ok: false,
+      alreadyRostered: false,
+      message: 'No Mochirii spirit profile exists for this invitation encounter.',
+      bond: 0,
+      growth: 'seed' as SpiritGrowthStage
+    };
+  }
+
+  if (roster.includes(spirit.id)) {
+    return {
+      ok: true,
+      alreadyRostered: true,
+      message: `${spirit.name} already trusts your Mochirii roster and returns to the habitat grove willingly.`,
+      bond: 1,
+      growth: 'seed' as SpiritGrowthStage
+    };
+  }
+
+  const lureOk = offeredItemId === spirit.capture.lureItemId;
+  const harmonyOk = Math.max(0, Math.floor(harmonyScore)) >= spirit.capture.harmonyRequired;
+  const ok = lureOk && harmonyOk;
+
+  return {
+    ok,
+    alreadyRostered: false,
+    message: ok
+      ? `${spirit.name} accepts the ${spirit.capture.invitationLabel} and joins your Mochirii roster.`
+      : `${spirit.name} notices the grove, but this invitation needs ${spirit.capture.lureItemId} and harmony ${spirit.capture.harmonyRequired}.`,
+    bond: ok ? 1 : 0,
+    growth: 'seed' as SpiritGrowthStage
+  };
 }
 
 function resolveSpiritTrainingBattle(spiritId: string, moveId: string, bond = 1, round = 1) {
@@ -406,6 +487,53 @@ function careShrine(): EventDefinition {
       });
       await actingPlayer.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'spirit-care' });
       showAlphaPrompt(actingPlayer, `Care complete. ${raising?.message || 'Your companion feels steady.'} Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
+    }
+  };
+}
+
+function habitatGrove(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('habitat-grove');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const roster = bondedSpirits(actingPlayer);
+      const targetSpirit = spirits.find((spirit) => !roster.includes(spirit.id)) || spirits[0];
+      const result = resolveSpiritCapture(targetSpirit.id, targetSpirit.capture.lureItemId, targetSpirit.capture.harmonyRequired, roster);
+
+      if (!result.ok) {
+        showAlphaPrompt(actingPlayer, result.message);
+        return;
+      }
+
+      const nextRoster = roster.includes(targetSpirit.id) ? roster : [...roster, targetSpirit.id];
+      actingPlayer.setVariable('mochiSocial.spirits.bonded', nextRoster);
+      actingPlayer.setVariable('mochiSocial.spirits.active', targetSpirit.id);
+      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.bond`, Math.max(1, result.bond));
+      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.growth`, result.growth);
+      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.journalUnlocked`, true);
+      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.captureEncounter`, targetSpirit.capture.encounterId);
+      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.captureRarity`, targetSpirit.capture.rarity);
+      if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.harmonyTeaReceived')) {
+        actingPlayer.addItem(alphaItems.harmonyTea, 1);
+        actingPlayer.setVariable('mochiSocial.alpha.harmonyTeaReceived', true);
+      }
+
+      actingPlayer.showNotification(`${targetSpirit.name} invited`, { time: 1800, icon: 'habitat-grove' });
+      emitAlphaHudState(actingPlayer, {
+        capture: {
+          spiritId: targetSpirit.id,
+          roster: nextRoster,
+          message: result.message
+        },
+        spirit: { id: targetSpirit.id, bond: Math.max(1, result.bond), growth: result.growth }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit invited from habitat grove' }, { reason: 'auto', source: 'habitat-grove' });
+      showAlphaPrompt(
+        actingPlayer,
+        `${result.message} This spirit invitation is a Mochirii-original, no-real-value alpha capture loop based on harmony, care, and consent.`
+      );
     }
   };
 }
@@ -644,6 +772,12 @@ const mainServerModule = defineModule({
           x: 768,
           y: 320,
           event: careShrine()
+        },
+        {
+          id: 'habitat-grove',
+          x: 896,
+          y: 320,
+          event: habitatGrove()
         },
         {
           id: 'training-ring',

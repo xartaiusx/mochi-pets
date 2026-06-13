@@ -17,6 +17,7 @@ Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated 
 - Jintari: goldleaf Mochi Spirit with lucky cord tail and bright guild-market affinity.
 - Aozhen: sky-jade Mochi Spirit with mist crest and scout/journal affinity.
 - Guild seal chest: lacquered chest with jade clasp and gold cord.
+- Habitat grove: spirit invitation grove with jade stepping stones, tea glow, silk lanterns, young bamboo, and spirit motes.
 - Market board: fixed-price test market board with parchment tags and jade pins.
 - Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.
 - Training ring: no-injury spirit training ring with jade floor circle, silk sparring ribbons, lacquer posts, and warm lantern accents.
