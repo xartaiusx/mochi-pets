@@ -81,6 +81,16 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'training-ring',
+            image: '/spritesheets/training-ring.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'quest-board',
+            image: '/spritesheets/quest-board.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'canary-shrine',
             image: '/spritesheets/canary-shrine.png',
             ...SPIRIT_SHEET

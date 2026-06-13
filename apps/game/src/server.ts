@@ -42,11 +42,40 @@ type AlphaHudStatePatch = {
     growth: string;
     id: string;
   };
+  quest?: {
+    completedSteps: string[];
+    id: string;
+    message?: string;
+  };
+  raising?: {
+    message?: string;
+    needId: string;
+    proof: boolean;
+  };
   sealClaimed?: boolean;
+  training?: {
+    message?: string;
+    victories: number;
+    xp: number;
+  };
   tradeProof?: boolean;
 };
 
 type SpiritGrowthStage = 'seed' | 'sprout' | 'glow';
+
+type SpiritBattleMove = {
+  id: string;
+  label: string;
+  power: number;
+  focusCost: number;
+};
+
+type SpiritRaisingNeed = {
+  id: string;
+  label: string;
+  bondDelta: number;
+  growthHint: string;
+};
 
 type MochiSpirit = {
   id: string;
@@ -58,6 +87,11 @@ type MochiSpirit = {
   temperament: string;
   guildRelation: string;
   certificateEligible: boolean;
+  battle: {
+    baseFocus: number;
+    moves: SpiritBattleMove[];
+  };
+  raisingNeeds: SpiritRaisingNeed[];
 };
 
 const alphaItems = {
@@ -88,7 +122,18 @@ const spirits = [
     habitat: 'Jade Lantern Court',
     temperament: 'gentle',
     guildRelation: 'first-bond guide',
-    certificateEligible: true
+    certificateEligible: true,
+    battle: {
+      baseFocus: 4,
+      moves: [
+        { id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 },
+        { id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 }
+      ]
+    },
+    raisingNeeds: [
+      { id: 'jade-brush-groom', label: 'Jade brush grooming', bondDelta: 1, growthHint: 'Smooths the spirit aura after training.' },
+      { id: 'mooncake-share', label: 'Share mooncake', bondDelta: 1, growthHint: 'Restores focus for social play.' }
+    ]
   },
   {
     id: 'jintari',
@@ -99,7 +144,17 @@ const spirits = [
     habitat: 'Jade Lantern Court',
     temperament: 'bright',
     guildRelation: 'market-luck scout',
-    certificateEligible: false
+    certificateEligible: false,
+    battle: {
+      baseFocus: 5,
+      moves: [
+        { id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 },
+        { id: 'lantern-pulse', label: 'Lantern Pulse', power: 5, focusCost: 1 }
+      ]
+    },
+    raisingNeeds: [
+      { id: 'mooncake-share', label: 'Share mooncake', bondDelta: 1, growthHint: 'Restores focus for social play.' }
+    ]
   },
   {
     id: 'aozhen',
@@ -110,14 +165,86 @@ const spirits = [
     habitat: 'Jade Lantern Court',
     temperament: 'curious',
     guildRelation: 'wind-message watcher',
-    certificateEligible: false
+    certificateEligible: false,
+    battle: {
+      baseFocus: 6,
+      moves: [
+        { id: 'skybell-guard', label: 'Skybell Guard', power: 4, focusCost: 1 },
+        { id: 'goldleaf-feint', label: 'Goldleaf Feint', power: 6, focusCost: 2 }
+      ]
+    },
+    raisingNeeds: [
+      { id: 'jade-brush-groom', label: 'Jade brush grooming', bondDelta: 1, growthHint: 'Smooths the spirit aura after training.' }
+    ]
   }
 ] as const satisfies readonly MochiSpirit[];
+
+const quests = [
+  {
+    id: 'first-lantern-vow',
+    title: 'First Lantern Vow',
+    requiredSpiritId: 'lirabao',
+    steps: ['attune-spirit', 'greet-sifu-narao', 'open-journal'],
+    rewardBond: 1
+  }
+] as const;
 
 function growthStageFromBond(bond: number): SpiritGrowthStage {
   if (bond >= 5) return 'glow';
   if (bond >= 3) return 'sprout';
   return 'seed';
+}
+
+function resolveSpiritTrainingBattle(spiritId: string, moveId: string, bond = 1, round = 1) {
+  const spirit = spirits.find((entry) => entry.id === spiritId);
+  const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
+  if (!spirit || !move) {
+    return {
+      ok: false,
+      victory: false,
+      bondDelta: 0,
+      trainingXp: 0,
+      message: 'Training battle could not start because the spirit or move is not in the Mochirii registry.'
+    };
+  }
+
+  const boundedBond = Math.max(0, Math.min(5, Math.floor(bond)));
+  const boundedRound = Math.max(1, Math.min(5, Math.floor(round)));
+  const focusScore = spirit.battle.baseFocus + move.power + boundedBond - move.focusCost;
+  const opponentScore = 8 + boundedRound;
+  const victory = focusScore >= opponentScore;
+
+  return {
+    ok: true,
+    victory,
+    bondDelta: victory ? 1 : 0,
+    trainingXp: victory ? 3 : 1,
+    message: victory
+      ? `${spirit.name} completes a no-injury guild spar with ${move.label}.`
+      : `${spirit.name} practices ${move.label} and learns the training rhythm.`
+  };
+}
+
+function resolveSpiritRaisingAction(spiritId: string, needId: string, currentBond = 1) {
+  const spirit = spirits.find((entry) => entry.id === spiritId);
+  const need = spirit?.raisingNeeds.find((candidate) => candidate.id === needId);
+  const boundedBond = Math.max(0, Math.min(5, Math.floor(currentBond)));
+  if (!spirit || !need) {
+    return {
+      ok: false,
+      bond: boundedBond,
+      growth: growthStageFromBond(boundedBond),
+      message: 'Raising action is not available for this Mochi Spirit.'
+    };
+  }
+
+  const bond = Math.max(0, Math.min(5, boundedBond + need.bondDelta));
+  return {
+    ok: true,
+    bond,
+    growth: growthStageFromBond(bond),
+    message: `${need.label} complete for ${spirit.name}. ${need.growthHint}`
+  };
 }
 
 function showAlphaPrompt(actingPlayer: RpgPlayer, message: string) {
@@ -209,6 +336,10 @@ function bondedSpirits(actingPlayer: RpgPlayer): string[] {
   return Array.isArray(spirits) ? spirits : [];
 }
 
+function activeSpiritId(actingPlayer: RpgPlayer) {
+  return actingPlayer.getVariable<string>('mochiSocial.spirits.active') || bondedSpirits(actingPlayer)[0];
+}
+
 function spiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
@@ -243,22 +374,144 @@ function careShrine(): EventDefinition {
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      const activeSpirit = actingPlayer.getVariable<string>('mochiSocial.spirits.active') || bondedSpirits(actingPlayer)[0];
+      const activeSpirit = activeSpiritId(actingPlayer);
       if (!activeSpirit) {
         showAlphaPrompt(actingPlayer, 'The Jade Lantern Court shrine warms gently. Bond with a Mochi Spirit first, then return to care for it.');
         return;
       }
 
+      const spirit = spirits.find((entry) => entry.id === activeSpirit);
+      const need = spirit?.raisingNeeds[0];
       const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
-      const nextBond = Math.min(5, currentBond + 1);
+      const raising = need ? resolveSpiritRaisingAction(activeSpirit, need.id, currentBond) : null;
+      const nextBond = raising?.ok ? raising.bond : Math.min(5, currentBond + 1);
       const nextGrowth = growthStageFromBond(nextBond);
       actingPlayer.setVariable(bondKey, nextBond);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      if (need) {
+        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.raisingProof`, true);
+        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastCareNeed`, need.id);
+      }
       actingPlayer.showNotification(`Spirit bond ${nextBond}/5`, { time: 1800, icon: 'sifu-narao' });
-      emitAlphaHudState(actingPlayer, { spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth } });
+      emitAlphaHudState(actingPlayer, {
+        raising: need
+          ? {
+              needId: need.id,
+              proof: true,
+              message: raising?.message
+            }
+          : undefined,
+        spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth }
+      });
       await actingPlayer.save('auto', { title: 'Mochi Spirit cared for' }, { reason: 'auto', source: 'spirit-care' });
-      showAlphaPrompt(actingPlayer, `Care complete. Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
+      showAlphaPrompt(actingPlayer, `Care complete. ${raising?.message || 'Your companion feels steady.'} Your companion is now in ${nextGrowth} growth with bond ${nextBond}/5.`);
+    }
+  };
+}
+
+function trainingRing(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('training-ring');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const activeSpirit = activeSpiritId(actingPlayer);
+      if (!activeSpirit) {
+        showAlphaPrompt(actingPlayer, 'Attune with a Mochi Spirit before entering the Jade Lantern Court training ring.');
+        return;
+      }
+
+      const spirit = spirits.find((entry) => entry.id === activeSpirit);
+      const move = spirit?.battle.moves[0];
+      if (!spirit || !move) {
+        showAlphaPrompt(actingPlayer, 'The training ring cannot find a registered Mochirii spirit move for this alpha save.');
+        return;
+      }
+
+      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const xpKey = `mochiSocial.spirit.${activeSpirit}.trainingXp`;
+      const victoryKey = `mochiSocial.spirit.${activeSpirit}.trainingVictories`;
+      const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
+      const currentXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
+      const currentVictories = Number(actingPlayer.getVariable<number>(victoryKey) || 0);
+      const result = resolveSpiritTrainingBattle(activeSpirit, move.id, currentBond, currentVictories + 1);
+      const nextXp = currentXp + result.trainingXp;
+      const nextVictories = currentVictories + (result.victory ? 1 : 0);
+      const nextBond = result.victory ? Math.min(5, currentBond + result.bondDelta) : currentBond;
+      const nextGrowth = growthStageFromBond(nextBond);
+
+      actingPlayer.setVariable(xpKey, nextXp);
+      actingPlayer.setVariable(victoryKey, nextVictories);
+      actingPlayer.setVariable(bondKey, nextBond);
+      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.showNotification('Training spar complete', { time: 1800, icon: 'training-ring' });
+      emitAlphaHudState(actingPlayer, {
+        spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth },
+        training: {
+          xp: nextXp,
+          victories: nextVictories,
+          message: result.message
+        }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit training spar' }, { reason: 'auto', source: 'training-ring' });
+      showAlphaPrompt(actingPlayer, `Training spar complete: ${result.message} Training is no-injury guild practice with no real value.`);
+    }
+  };
+}
+
+function questBoard(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('quest-board');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const quest = quests[0];
+      const activeSpirit = activeSpiritId(actingPlayer);
+      if (!activeSpirit || !bondedSpirits(actingPlayer).includes(quest.requiredSpiritId)) {
+        showAlphaPrompt(actingPlayer, `${quest.title} is posted on the Mochirii quest board. Bond with Lirabao before recording this guild vow.`);
+        return;
+      }
+
+      const stepsKey = `mochiSocial.quest.${quest.id}.steps`;
+      const rewardKey = `mochiSocial.quest.${quest.id}.rewardClaimed`;
+      const completedSteps = actingPlayer.getVariable<string[]>(stepsKey);
+      const nextCompleted = Array.isArray(completedSteps) ? [...completedSteps] : [];
+      const nextStep = quest.steps.find((step) => !nextCompleted.includes(step));
+      if (nextStep) {
+        nextCompleted.push(nextStep);
+      }
+
+      actingPlayer.setVariable('mochiSocial.quest.active', quest.id);
+      actingPlayer.setVariable(stepsKey, nextCompleted);
+
+      const patch: AlphaHudStatePatch = {
+        quest: {
+          id: quest.id,
+          completedSteps: nextCompleted,
+          message: `${quest.title} ${nextCompleted.length}/${quest.steps.length}`
+        }
+      };
+      let prompt = `${quest.title}: ${nextCompleted.length}/${quest.steps.length} guild steps recorded. This is no-real-value alpha quest progress.`;
+
+      if (nextCompleted.length >= quest.steps.length && !actingPlayer.getVariable<boolean>(rewardKey)) {
+        actingPlayer.setVariable(rewardKey, true);
+        const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+        const nextBond = Math.min(5, Number(actingPlayer.getVariable<number>(bondKey) || 1) + quest.rewardBond);
+        const nextGrowth = growthStageFromBond(nextBond);
+        actingPlayer.setVariable(bondKey, nextBond);
+        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+        patch.spirit = { id: activeSpirit, bond: nextBond, growth: nextGrowth };
+        const spiritName = spirits.find((entry) => entry.id === activeSpirit)?.name || activeSpirit;
+        prompt = `${quest.title} complete. Guild reward recorded as no-real-value alpha progress; ${spiritName} is now ${nextGrowth} bond ${nextBond}/5.`;
+      }
+
+      actingPlayer.showNotification(nextCompleted.length >= quest.steps.length ? 'Quest complete' : 'Quest step recorded', { time: 1800, icon: 'quest-board' });
+      emitAlphaHudState(actingPlayer, patch);
+      await actingPlayer.save('auto', { title: 'Mochirii quest board progress' }, { reason: 'auto', source: 'quest-board' });
+      showAlphaPrompt(actingPlayer, prompt);
     }
   };
 }
@@ -391,6 +644,18 @@ const mainServerModule = defineModule({
           x: 768,
           y: 320,
           event: careShrine()
+        },
+        {
+          id: 'training-ring',
+          x: 1024,
+          y: 320,
+          event: trainingRing()
+        },
+        {
+          id: 'quest-board',
+          x: 1024,
+          y: 704,
+          event: questBoard()
         },
         {
           id: 'market-board',

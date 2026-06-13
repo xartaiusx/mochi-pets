@@ -72,6 +72,20 @@ const spriteSpecs = [
     palette: { wood: '#4f806f', roof: '#5d9a88', cloth: '#efe8b6', accent: '#9ed7b7' }
   },
   {
+    id: 'training-ring',
+    role: 'No-injury spirit training ring',
+    prompt: 'Mochirii no-injury spirit training ring with jade floor circle, silk sparring ribbons, lacquer posts, warm lantern accents, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'ring',
+    palette: { wood: '#5f4c45', floor: '#67a98d', ribbon: '#d85f4d', accent: '#f4c46f', light: '#fff0b6' }
+  },
+  {
+    id: 'quest-board',
+    role: 'Roleplay quest board',
+    prompt: 'Mochirii roleplay quest board with layered parchment slips, jade pins, guild ribbons, lacquer frame, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'board',
+    palette: { wood: '#78543f', roof: '#5c8f77', cloth: '#f4e7bd', accent: '#d85f4d' }
+  },
+  {
     id: 'canary-shrine',
     role: 'Enjin Canary preview-stub shrine',
     prompt: 'Canary preview shrine with violet lacquer base, gold crystal, no-real-value staging aura, transparent background, smooth illustrated 2D prop sprite sheet.',
@@ -186,6 +200,7 @@ function drawSpriteFrame(spec, row, col) {
   if (spec.kind === 'spirit') return spiritFrame(spec, row, col, bob);
   if (spec.kind === 'chest') return chestFrame(spec, row, col, bob);
   if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
+  if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
   return shrineFrame(spec, row, col, bob);
 }
 
@@ -314,6 +329,30 @@ function boardFrame(spec, _row, _col, _bob) {
       <path d="M122 242 H137" stroke="#fff6cf" stroke-width="8" stroke-linecap="round"/>
     `}
     <path d="M69 160 C100 173 154 173 187 160" stroke="#fff1b8" stroke-width="8" stroke-opacity="0.26" fill="none"/>
+  `;
+}
+
+function trainingRingFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.34 : 0.2;
+  return `
+    <ellipse cx="128" cy="318" rx="88" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="218" rx="104" ry="66" fill="${spec.palette.light}" opacity="${pulse}"/>
+    <ellipse cx="128" cy="232" rx="88" ry="48" fill="#201d1c"/>
+    <ellipse cx="128" cy="226" rx="76" ry="40" fill="${spec.palette.floor}"/>
+    <ellipse cx="128" cy="226" rx="52" ry="25" fill="none" stroke="#fff4cf" stroke-width="9" stroke-opacity="0.56"/>
+    <path d="M65 205 C94 189 162 189 191 205" stroke="${spec.palette.accent}" stroke-width="10" stroke-linecap="round" opacity="0.84" fill="none"/>
+    <path d="M68 249 C96 269 160 269 188 249" stroke="#2f6b5b" stroke-width="8" stroke-linecap="round" opacity="0.74" fill="none"/>
+    <rect x="54" y="122" width="20" height="166" rx="8" fill="#221f1e"/>
+    <rect x="59" y="130" width="10" height="149" rx="5" fill="${spec.palette.wood}"/>
+    <rect x="182" y="122" width="20" height="166" rx="8" fill="#221f1e"/>
+    <rect x="187" y="130" width="10" height="149" rx="5" fill="${spec.palette.wood}"/>
+    <path d="M64 140 C92 164 164 164 192 140" stroke="${spec.palette.ribbon}" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M70 158 C99 177 157 177 186 158" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <circle cx="64" cy="126" r="16" fill="#221f1e"/>
+    <circle cx="64" cy="126" r="10" fill="${spec.palette.accent}"/>
+    <circle cx="192" cy="126" r="16" fill="#221f1e"/>
+    <circle cx="192" cy="126" r="10" fill="${spec.palette.accent}"/>
+    <path d="M102 207 L119 221 L102 235 M154 207 L137 221 L154 235" stroke="#fff7d4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.78" fill="none"/>
   `;
 }
 

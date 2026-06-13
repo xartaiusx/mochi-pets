@@ -19,6 +19,8 @@ Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated 
 - Guild seal chest: lacquered chest with jade clasp and gold cord.
 - Market board: fixed-price test market board with parchment tags and jade pins.
 - Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.
+- Training ring: no-injury spirit training ring with jade floor circle, silk sparring ribbons, lacquer posts, and warm lantern accents.
+- Quest board: roleplay quest board with layered parchment slips, jade pins, guild ribbons, and lacquer frame.
 - Canary shrine: no-real-value Canary preview shrine with violet lacquer base and gold crystal.
 
 Each source card records role, prompt, dimensions, tool, generated date, and project-authored/generated-for-project status.

@@ -54,7 +54,7 @@ for (const [label, item] of Object.entries(screenshotEvidence)) {
   assert(item.sha256 === item.reportedSha256, `${label} screenshot hash must match visual snapshot report`);
 }
 
-const mapObjects = ['welcome-npc', 'guild-seal-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine'];
+const mapObjects = ['welcome-npc', 'guild-seal-chest', 'care-shrine', 'training-ring', 'quest-board', 'market-board', 'trade-post', 'canary-shrine'];
 for (const id of mapObjects) {
   assert(mapServerSource.includes(`id: '${id}'`), `map server placement missing ${id}`);
 }
@@ -64,8 +64,12 @@ for (const snippet of [
   "this.setGraphic('chest')",
   "this.setGraphic('market-board')",
   "this.setGraphic('trade-post')",
+  "this.setGraphic('training-ring')",
+  "this.setGraphic('quest-board')",
   "this.setGraphic('canary-shrine')",
   "source: 'guild-seal-chest'",
+  "source: 'training-ring'",
+  "source: 'quest-board'",
   "source: 'market-board'",
   "source: 'trade-post'",
   "source: 'canary-shrine'"
@@ -85,6 +89,8 @@ const expectedAssetLedgerEntries = [
   'spirit-aozhen.png',
   'market-board.png',
   'trade-post.png',
+  'training-ring.png',
+  'quest-board.png',
   'canary-shrine.png',
   'hd-source-export.md',
   'project-authored/generated-for-project'
@@ -101,7 +107,7 @@ const visualChecklist = {
   },
   interactableRecognition: {
     status: mapObjects.every((id) => mapServerSource.includes(`id: '${id}'`)) ? 'machine-supported' : 'blocked',
-    records: 'Sifu Narao, guild seal chest, care shrine, market board, trade post, and Canary shrine are present in the stable map-object contract.'
+    records: 'Sifu Narao, guild seal chest, care shrine, training ring, quest board, market board, trade post, and Canary shrine are present in the stable map-object contract.'
   },
   hudContrast: {
     status: Boolean(visualSnapshot.data?.dom?.hud) ? 'machine-supported' : 'blocked',

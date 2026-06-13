@@ -336,6 +336,8 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'spirit-aozhen',
     'market-board',
     'trade-post',
+    'training-ring',
+    'quest-board',
     'canary-shrine'
   ].map((id) => ({
     path: `public/spritesheets/${id}.png`,

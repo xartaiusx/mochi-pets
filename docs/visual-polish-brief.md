@@ -24,7 +24,7 @@ This brief keeps visual work focused on Alpha Preview Ready. It improves the fir
 
 ## Game Visual Direction
 
-- First screen should read as Jade Lantern Court: a social guild town with Sifu Narao, Mochi Spirits, guild seal chest, market board, trade post, and Canary shrine.
+- First screen should read as Jade Lantern Court: a social guild town with Sifu Narao, Mochi Spirits, guild seal chest, training ring, quest board, market board, trade post, and Canary shrine.
 - Use smooth illustrated 2D with soft lantern lighting, jade/lacquer/gold/silk/paper materials, readable silhouettes, and modern polish.
 - Keep collision and map object IDs stable unless tests and docs are updated in the same change.
 - Keep the asset pipeline reproducible through `apps/game/scripts/generate-assets.mjs` and `npm run prepare-assets`.
@@ -34,8 +34,8 @@ This brief keeps visual work focused on Alpha Preview Ready. It improves the fir
 ## HUD Direction
 
 - Top status strip: title, guest/auth state, nearby testers, guild seal state, and no-real-value badge.
-- Spirit card: active Mochi Spirit name, bond, growth, and care prompt.
-- Bottom action bar: profile, guild, mood, care, inspect, wave, list, trade, Canary.
+- Spirit card: active Mochi Spirit name, bond, growth, training, raising, and quest progress.
+- Bottom action bar: profile, guild, mood, attune, care, train, raise, inspect, quest, wave, list, trade, Canary.
 - Side/feed panel: local chat and recent action log.
 - Preserve test hooks: `data-alpha-action`, `data-alpha-local-action`, `data-presence-label`, `data-chat-input`, and `data-alpha-feed`.
 - Canary action copy must say preview stub, request staged, and no real value.

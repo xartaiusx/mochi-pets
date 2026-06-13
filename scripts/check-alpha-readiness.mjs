@@ -109,11 +109,11 @@ const checks = [
   },
   {
     file: 'apps/game/tests/map-object-contract.test.ts',
-    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'guild-seal-chest', 'care-shrine', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Jade Lantern Court', '25 * 18']
+    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'guild-seal-chest', 'care-shrine', 'training-ring', 'quest-board', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Jade Lantern Court', '25 * 18']
   },
   {
     file: 'apps/game/tests/map-event-behavior.test.ts',
-    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochirii Guild Seal', 'spirit-care', 'bond 5/5', 'market-board', 'trade-post', 'no-real-value Enjin Canary certificate request', 'Wallet Daemon services']
+    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochirii Guild Seal', 'spirit-care', 'bond 5/5', 'training-ring', 'quest-board', 'market-board', 'trade-post', 'no-real-value Enjin Canary certificate request', 'Wallet Daemon services']
   },
   {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
@@ -173,7 +173,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
-    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'Jade Lantern Court']
+    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'training-ring', 'quest-board', 'Jade Lantern Court']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',

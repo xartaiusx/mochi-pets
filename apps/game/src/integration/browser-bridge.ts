@@ -47,7 +47,22 @@ export interface AlphaWorldStatePatch {
     growth: string;
     id: string;
   };
+  quest?: {
+    completedSteps: string[];
+    id: string;
+    message?: string;
+  };
+  raising?: {
+    message?: string;
+    needId: string;
+    proof: boolean;
+  };
   sealClaimed?: boolean;
+  training?: {
+    message?: string;
+    victories: number;
+    xp: number;
+  };
   tradeProof?: boolean;
 }
 
@@ -524,6 +539,23 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
   if (patch.charmListed) {
     state.charmListed = true;
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
+  }
+
+  if (patch.training) {
+    state.trainingXp = Math.max(state.trainingXp, Number(patch.training.xp) || 0);
+    state.trainingVictories = Math.max(state.trainingVictories, Number(patch.training.victories) || 0);
+    appendUniqueAlphaChat(state, patch.training.message || `Training ring: ${state.trainingXp} XP, ${state.trainingVictories} spar wins.`);
+  }
+
+  if (patch.raising) {
+    state.raisingProof = patch.raising.proof || state.raisingProof;
+    appendUniqueAlphaChat(state, patch.raising.message || `Raising care recorded: ${patch.raising.needId}.`);
+  }
+
+  if (patch.quest?.id) {
+    state.activeQuestId = patch.quest.id;
+    state.completedQuestSteps = Array.isArray(patch.quest.completedSteps) ? patch.quest.completedSteps.map(String) : state.completedQuestSteps;
+    appendUniqueAlphaChat(state, patch.quest.message || `Quest progress: ${state.completedQuestSteps.length} steps.`);
   }
 
   if (patch.tradeProof) {

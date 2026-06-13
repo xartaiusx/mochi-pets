@@ -4,9 +4,11 @@ import {
   CareShrine,
   GuildSealChest,
   MarketBoard,
+  QuestBoard,
   SPIRITS,
   SpiritEvent,
   TradePost,
+  TrainingRing,
   WelcomeNpc
 } from '../src/modules/main/event';
 
@@ -175,10 +177,71 @@ describe('Mochi town event behavior', () => {
     expect(player.saves.filter((save) => save.options.source === 'spirit-care')).toHaveLength(4);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
-      value: { spirit: { id: 'lirabao', bond: 5, growth: 'glow' } }
+      value: {
+        raising: {
+          needId: 'jade-brush-groom',
+          proof: true,
+          message: 'Jade brush grooming complete for Lirabao. Smooths the spirit aura after training.'
+        },
+        spirit: { id: 'lirabao', bond: 5, growth: 'glow' }
+      }
     });
     expect(player.texts.at(-1)).toContain('Care complete');
     expect(player.texts.at(-1)).toContain('bond 5/5');
+  });
+
+  it('turns training ring and quest board interactions into saved Mochirii alpha progress', async () => {
+    const player = createFakePlayer();
+
+    await runAction(TrainingRing(), player);
+    expect(player.texts.at(-1)).toContain('Attune with a Mochi Spirit');
+
+    await runAction(QuestBoard(), player);
+    expect(player.texts.at(-1)).toContain('Bond with Lirabao');
+
+    await runAction(SpiritEvent(SPIRITS[0]), player);
+    await runAction(TrainingRing(), player);
+
+    expect(player.variables.get('mochiSocial.spirit.lirabao.trainingXp')).toBe(3);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.trainingVictories')).toBe(1);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(2);
+    expect(player.saves.at(-1)?.options.source).toBe('training-ring');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        spirit: { id: 'lirabao', bond: 2, growth: 'seed' },
+        training: {
+          xp: 3,
+          victories: 1,
+          message: 'Lirabao completes a no-injury guild spar with Lantern Pulse.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('no-injury guild practice');
+    expect(player.texts.at(-1)).toContain('no real value');
+
+    await runAction(QuestBoard(), player);
+    await runAction(QuestBoard(), player);
+    await runAction(QuestBoard(), player);
+
+    expect(player.variables.get('mochiSocial.quest.active')).toBe('first-lantern-vow');
+    expect(player.variables.get('mochiSocial.quest.first-lantern-vow.steps')).toEqual(['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    expect(player.variables.get('mochiSocial.quest.first-lantern-vow.rewardClaimed')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(3);
+    expect(player.saves.filter((save) => save.options.source === 'quest-board')).toHaveLength(3);
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        quest: {
+          id: 'first-lantern-vow',
+          completedSteps: ['attune-spirit', 'greet-sifu-narao', 'open-journal'],
+          message: 'First Lantern Vow 3/3'
+        },
+        spirit: { id: 'lirabao', bond: 3, growth: 'sprout' }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('First Lantern Vow complete');
+    expect(player.texts.at(-1)).toContain('no-real-value alpha progress');
   });
 
   it('records no-real-value market, direct trade, and Canary certificate proofs', async () => {

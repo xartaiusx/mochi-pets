@@ -9,6 +9,7 @@ Mochi Social starts as a small multiplayer social RPG that can stand alone on Fl
 - One NPC dialog for social flavor.
 - One guild seal chest that grants a Mochirii Guild Seal, stores a player variable, and triggers a save slot.
 - Three Mochi Spirits: Lirabao, Jintari, and Aozhen, with attunement, bond/care/growth, training battle, raising, journal, and roleplay quest state.
+- One no-injury training ring and one quest board that turn Mochi Spirit progression into in-world saved alpha actions.
 - A compact HUD showing title, connection/auth mode, guild seal state, active spirit state, market/trade proof, and Canary preview status.
 
 ## Agent Priorities

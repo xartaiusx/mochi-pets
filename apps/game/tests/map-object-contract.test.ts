@@ -14,6 +14,8 @@ const expectedPlacements = {
   'spirit-jintari': { x: 512, y: 320 },
   'spirit-aozhen': { x: 640, y: 320 },
   'care-shrine': { x: 768, y: 320 },
+  'training-ring': { x: 1024, y: 320 },
+  'quest-board': { x: 1024, y: 704 },
   'market-board': { x: 1152, y: 704 },
   'trade-post': { x: 1280, y: 704 },
   'canary-shrine': { x: 1408, y: 320 }
@@ -56,16 +58,21 @@ describe('Mochi town map object contract', () => {
       "this.setGraphic('chest')",
       "this.setGraphic('market-board')",
       "this.setGraphic('trade-post')",
+      "this.setGraphic('training-ring')",
+      "this.setGraphic('quest-board')",
       "this.setGraphic('canary-shrine')",
       'Welcome to Mochi Social',
       'Guild Seal added',
       'Bond with a Mochi Spirit first',
       'Care complete',
+      'Training spar complete',
       'test soft currency',
       'Direct trade proof recorded',
       'no-real-value Enjin Canary certificate request',
       "source: 'spirit-bond'",
       "source: 'spirit-care'",
+      "source: 'training-ring'",
+      "source: 'quest-board'",
       "source: 'market-board'",
       "source: 'trade-post'",
       "source: 'canary-shrine'",
@@ -76,6 +83,9 @@ describe('Mochi town map object contract', () => {
       expect(mapEventSource).toContain(snippet);
       expect(runtimeServerSource).toContain(snippet);
     }
+
+    expect(alphaContentSource).toContain('First Lantern Vow');
+    expect(runtimeServerSource).toContain('First Lantern Vow');
   });
 
   it('keeps the companion habitat and collision layer visible in the town map', () => {
