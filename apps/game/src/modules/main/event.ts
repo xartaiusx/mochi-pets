@@ -6,6 +6,7 @@ import {
   MOCHI_SPIRITS,
   growthStageFromBond,
   resolveSpiritCapture,
+  resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritSparLadder,
@@ -22,6 +23,13 @@ type AlphaHudStatePatch = {
     message?: string;
     roster: string[];
     spiritId: string;
+  };
+  journal?: {
+    activeSpiritId?: string;
+    discoveredCount: number;
+    message?: string;
+    proof: boolean;
+    totalCount: number;
   };
   party?: {
     activeSpiritId?: string;
@@ -130,6 +138,12 @@ function partyIds(player: RpgPlayer) {
 function bondMap(player: RpgPlayer, spirits: readonly string[]) {
   return Object.fromEntries(
     spirits.map((spiritId) => [spiritId, Number(player.getVariable<number>(`mochiSocial.spirit.${spiritId}.bond`) || 1)])
+  );
+}
+
+function growthMap(player: RpgPlayer, spirits: readonly string[]) {
+  return Object.fromEntries(
+    spirits.map((spiritId) => [spiritId, player.getVariable<string>(`mochiSocial.spirit.${spiritId}.growth`) || 'seed'])
   );
 }
 
@@ -277,6 +291,39 @@ export function PartyBanner(): EventDefinition {
       });
       await player.save('auto', { title: 'Mochi Spirit party formed' }, { reason: 'auto', source: 'party-banner' });
       showAlphaPrompt(player, `${formation.message} Party formation stays no-injury, social-first, and no-real-value.`);
+    }
+  };
+}
+
+export function JournalPavilion(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('journal-pavilion');
+    },
+
+    async onAction(player: RpgPlayer) {
+      const roster = bondedSpirits(player);
+      const journal = resolveSpiritJournal(roster, activeSpiritId(player), bondMap(player, roster), growthMap(player, roster));
+      if (!journal.ok) {
+        showAlphaPrompt(player, journal.message);
+        return;
+      }
+
+      player.setVariable('mochiSocial.spirits.journalViewed', true);
+      player.setVariable('mochiSocial.spirits.journalDiscovered', journal.records.filter((record) => record.discovered).map((record) => record.spiritId));
+      player.setVariable('mochiSocial.spirits.journalCount', journal.discoveredCount);
+      player.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });
+      emitAlphaHudState(player, {
+        journal: {
+          activeSpiritId: journal.activeSpiritId,
+          discoveredCount: journal.discoveredCount,
+          totalCount: journal.totalCount,
+          proof: true,
+          message: journal.message
+        }
+      });
+      await player.save('auto', { title: 'Mochi Spirit journal reviewed' }, { reason: 'auto', source: 'journal-pavilion' });
+      showAlphaPrompt(player, `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`);
     }
   };
 }

@@ -5,6 +5,7 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritSparLadder,
@@ -19,6 +20,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.chain.network).toBe('CANARY');
     expect(ALPHA_FEATURES.gameplay.partyFormation).toBe(true);
     expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -49,6 +51,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('party.set');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
@@ -60,7 +63,7 @@ describe('alpha contract', () => {
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);
   });
 
-  it('resolves original Mochirii capture, attunement, party, spar, training, raising, and quest content', () => {
+  it('resolves original Mochirii capture, attunement, journal, party, spar, training, raising, and quest content', () => {
     const capture = resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, []);
     expect(capture).toMatchObject({
       ok: true,
@@ -83,6 +86,19 @@ describe('alpha contract', () => {
       source: 'spirit-attune'
     });
     expect(resolveSpiritAttunement('jintari', 'mochirii-guild-seal').ok).toBe(false);
+
+    const journal = resolveSpiritJournal(['lirabao', 'jintari'], 'jintari', { lirabao: 3, jintari: 2 }, { lirabao: 'sprout', jintari: 'seed' });
+    expect(journal).toMatchObject({
+      ok: true,
+      activeSpiritId: 'jintari',
+      discoveredCount: 2,
+      totalCount: 3,
+      source: 'spirit-journal'
+    });
+    expect(journal.records.filter((record) => record.discovered).map((record) => record.spiritId)).toEqual(['lirabao', 'jintari']);
+    expect(journal.records.find((record) => record.spiritId === 'aozhen')?.discovered).toBe(false);
+    expect(journal.message).toContain('Mochirii spirit journal');
+    expect(resolveSpiritJournal([]).ok).toBe(false);
 
     const party = resolveSpiritParty(['lirabao', 'jintari', 'aozhen'], 'jintari');
     expect(party).toMatchObject({

@@ -64,6 +64,7 @@ const ALPHA_ACTION_TYPES = [
   'spirit.attune',
   'spirit.bond',
   'spirit.care',
+  'spirit.journal',
   'party.set',
   'battle.spar_ladder',
   'spirit.train',

@@ -152,6 +152,34 @@ export interface SpiritSparLadderResult {
   source: string;
 }
 
+export interface SpiritJournalRecord {
+  spiritId: string;
+  name: string;
+  title: string;
+  discovered: boolean;
+  affinity: string;
+  temperament: string;
+  habitat: SpiritHabitat;
+  rarity: SpiritEncounterRarity;
+  bond: number;
+  growth: SpiritGrowthStage;
+  role: SpiritBattleRole;
+  certificateEligible: boolean;
+  journalTitle: string;
+  journalSummary: string;
+  unlockHint: string;
+}
+
+export interface SpiritJournalResult {
+  ok: boolean;
+  activeSpiritId?: string;
+  discoveredCount: number;
+  totalCount: number;
+  records: SpiritJournalRecord[];
+  message: string;
+  source: string;
+}
+
 export interface SpiritRaisingResult {
   ok: boolean;
   spiritId: string;
@@ -446,6 +474,7 @@ export const RUNTIME_ASSET_MANIFEST: RuntimeAssetManifest = {
     'spirit-aozhen',
     'habitat-grove',
     'party-banner',
+    'journal-pavilion',
     'market-board',
     'trade-post',
     'training-ring',
@@ -615,6 +644,55 @@ export function resolveSpiritSparLadder(
       ? `${party[0].name}'s party clears the ${opponent.name} spar ladder with calm wuxia teamwork.`
       : `${party[0].name}'s party studies the ${opponent.name} spar ladder rhythm and prepares for another no-injury round.`,
     source: 'battle-spar-ladder'
+  };
+}
+
+export function resolveSpiritJournal(
+  roster: readonly string[],
+  activeSpiritId?: string,
+  bondBySpiritId: Record<string, number> = {},
+  growthBySpiritId: Record<string, SpiritGrowthStage | string> = {}
+): SpiritJournalResult {
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getMochiSpirit(spiritId)));
+  const active = activeSpiritId && knownRoster.includes(activeSpiritId) ? activeSpiritId : knownRoster[0];
+  const records = MOCHI_SPIRITS.map((spirit) => {
+    const discovered = knownRoster.includes(spirit.id);
+    const bond = discovered ? Math.max(1, Math.min(5, Math.floor(bondBySpiritId[spirit.id] || 1))) : 0;
+    const growthCandidate = growthBySpiritId[spirit.id];
+    const growth = discovered && ['seed', 'sprout', 'glow'].includes(String(growthCandidate))
+      ? (growthCandidate as SpiritGrowthStage)
+      : growthStageFromBond(bond);
+    return {
+      spiritId: spirit.id,
+      name: spirit.name,
+      title: spirit.title,
+      discovered,
+      affinity: spirit.affinity,
+      temperament: spirit.temperament,
+      habitat: spirit.habitat,
+      rarity: spirit.capture.rarity,
+      bond,
+      growth,
+      role: spirit.battle.role,
+      certificateEligible: spirit.certificateEligible,
+      journalTitle: spirit.journal.title,
+      journalSummary: spirit.journal.summary,
+      unlockHint: spirit.journal.unlockHint
+    };
+  });
+  const discoveredCount = records.filter((record) => record.discovered).length;
+  const activeRecord = records.find((record) => record.spiritId === active && record.discovered);
+
+  return {
+    ok: discoveredCount > 0,
+    activeSpiritId: active,
+    discoveredCount,
+    totalCount: records.length,
+    records,
+    message: activeRecord
+      ? `Mochirii spirit journal updated: ${discoveredCount}/${records.length} records. ${activeRecord.name} is ${activeRecord.growth} growth, ${activeRecord.rarity} rarity, ${activeRecord.role} role.`
+      : 'Invite a Mochi Spirit before the journal can record a discovered companion.',
+    source: 'spirit-journal'
   };
 }
 

@@ -42,6 +42,13 @@ type AlphaHudStatePatch = {
     roster: string[];
     spiritId: string;
   };
+  journal?: {
+    activeSpiritId?: string;
+    discoveredCount: number;
+    message?: string;
+    proof: boolean;
+    totalCount: number;
+  };
   party?: {
     activeSpiritId?: string;
     message?: string;
@@ -104,6 +111,12 @@ type SpiritCaptureProfile = {
   habitatNote: string;
 };
 
+type SpiritJournalEntry = {
+  title: string;
+  summary: string;
+  unlockHint: string;
+};
+
 type SpiritSparOpponent = {
   id: string;
   name: string;
@@ -125,6 +138,7 @@ type MochiSpirit = {
   guildRelation: string;
   certificateEligible: boolean;
   capture: SpiritCaptureProfile;
+  journal: SpiritJournalEntry;
   battle: {
     role: 'guardian' | 'trickster' | 'scout';
     baseFocus: number;
@@ -175,6 +189,11 @@ const spirits = [
       rarity: 'common',
       habitatNote: 'Appears where warm lanterns, quiet friends, and soft tea steam overlap.'
     },
+    journal: {
+      title: 'First Lantern Bond',
+      summary: 'Lirabao gathers soft lantern warmth into a calm companion glow for new guild wayfarers.',
+      unlockHint: 'Meet Lirabao in the Jade Lantern Court and offer a quiet greeting.'
+    },
     battle: {
       role: 'guardian',
       baseFocus: 4,
@@ -206,6 +225,11 @@ const spirits = [
       rarity: 'uncommon',
       habitatNote: 'Appears beside generous trades, guild ribbons, and bright market chatter.'
     },
+    journal: {
+      title: 'Goldleaf Errand',
+      summary: 'Jintari flickers near market ribbons and nudges guildmates toward generous trades.',
+      unlockHint: 'Find Jintari beside the guild court path.'
+    },
     battle: {
       role: 'trickster',
       baseFocus: 5,
@@ -235,6 +259,11 @@ const spirits = [
       harmonyRequired: 4,
       rarity: 'rare',
       habitatNote: 'Appears near open air, guild bells, and wayfarers who keep promises.'
+    },
+    journal: {
+      title: 'Sky-Jade Whisper',
+      summary: 'Aozhen listens for distant guild bells and carries small hopes between friends.',
+      unlockHint: 'Approach Aozhen where the court opens toward the upper path.'
     },
     battle: {
       role: 'scout',
@@ -396,6 +425,54 @@ function resolveSpiritSparLadder(partyIds: readonly string[], opponentId: string
   };
 }
 
+function resolveSpiritJournal(
+  roster: readonly string[],
+  activeSpiritId?: string,
+  bondBySpiritId: Record<string, number> = {},
+  growthBySpiritId: Record<string, string> = {}
+) {
+  const knownRoster = Array.from(new Set(roster)).filter((spiritId) => Boolean(getSpirit(spiritId)));
+  const active = activeSpiritId && knownRoster.includes(activeSpiritId) ? activeSpiritId : knownRoster[0];
+  const records = spirits.map((spirit) => {
+    const discovered = knownRoster.includes(spirit.id);
+    const bond = discovered ? Math.max(1, Math.min(5, Math.floor(bondBySpiritId[spirit.id] || 1))) : 0;
+    const growthCandidate = growthBySpiritId[spirit.id];
+    const growth = discovered && ['seed', 'sprout', 'glow'].includes(String(growthCandidate))
+      ? growthCandidate as SpiritGrowthStage
+      : growthStageFromBond(bond);
+    return {
+      spiritId: spirit.id,
+      name: spirit.name,
+      title: spirit.title,
+      discovered,
+      affinity: spirit.affinity,
+      temperament: spirit.temperament,
+      habitat: spirit.habitat,
+      rarity: spirit.capture.rarity,
+      bond,
+      growth,
+      role: spirit.battle.role,
+      certificateEligible: spirit.certificateEligible,
+      journalTitle: spirit.journal.title,
+      journalSummary: spirit.journal.summary,
+      unlockHint: spirit.journal.unlockHint
+    };
+  });
+  const discoveredCount = records.filter((record) => record.discovered).length;
+  const activeRecord = records.find((record) => record.spiritId === active && record.discovered);
+
+  return {
+    ok: discoveredCount > 0,
+    activeSpiritId: active,
+    discoveredCount,
+    totalCount: records.length,
+    records,
+    message: activeRecord
+      ? `Mochirii spirit journal updated: ${discoveredCount}/${records.length} records. ${activeRecord.name} is ${activeRecord.growth} growth, ${activeRecord.rarity} rarity, ${activeRecord.role} role.`
+      : 'Invite a Mochi Spirit before the journal can record a discovered companion.'
+  };
+}
+
 function resolveSpiritTrainingBattle(spiritId: string, moveId: string, bond = 1, round = 1) {
   const spirit = spirits.find((entry) => entry.id === spiritId);
   const move = spirit?.battle.moves.find((candidate) => candidate.id === moveId);
@@ -552,6 +629,12 @@ function bondMap(actingPlayer: RpgPlayer, party: readonly string[]) {
   );
 }
 
+function growthMap(actingPlayer: RpgPlayer, party: readonly string[]) {
+  return Object.fromEntries(
+    party.map((spiritId) => [spiritId, actingPlayer.getVariable<string>(`mochiSocial.spirit.${spiritId}.growth`) || 'seed'])
+  );
+}
+
 function spiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
@@ -696,6 +779,39 @@ function partyBanner(): EventDefinition {
       });
       await actingPlayer.save('auto', { title: 'Mochi Spirit party formed' }, { reason: 'auto', source: 'party-banner' });
       showAlphaPrompt(actingPlayer, `${formation.message} Party formation stays no-injury, social-first, and no-real-value.`);
+    }
+  };
+}
+
+function journalPavilion(): EventDefinition {
+  return {
+    onInit() {
+      this.setGraphic('journal-pavilion');
+    },
+
+    async onAction(actingPlayer: RpgPlayer) {
+      const roster = bondedSpirits(actingPlayer);
+      const journal = resolveSpiritJournal(roster, activeSpiritId(actingPlayer), bondMap(actingPlayer, roster), growthMap(actingPlayer, roster));
+      if (!journal.ok) {
+        showAlphaPrompt(actingPlayer, journal.message);
+        return;
+      }
+
+      actingPlayer.setVariable('mochiSocial.spirits.journalViewed', true);
+      actingPlayer.setVariable('mochiSocial.spirits.journalDiscovered', journal.records.filter((record) => record.discovered).map((record) => record.spiritId));
+      actingPlayer.setVariable('mochiSocial.spirits.journalCount', journal.discoveredCount);
+      actingPlayer.showNotification('Journal updated', { time: 1800, icon: 'journal-pavilion' });
+      emitAlphaHudState(actingPlayer, {
+        journal: {
+          activeSpiritId: journal.activeSpiritId,
+          discoveredCount: journal.discoveredCount,
+          totalCount: journal.totalCount,
+          proof: true,
+          message: journal.message
+        }
+      });
+      await actingPlayer.save('auto', { title: 'Mochi Spirit journal reviewed' }, { reason: 'auto', source: 'journal-pavilion' });
+      showAlphaPrompt(actingPlayer, `${journal.message} The journal records habitat, rarity, temperament, role, and care notes as no-real-value alpha lore.`);
     }
   };
 }
@@ -925,6 +1041,12 @@ const mainServerModule = defineModule({
           x: 640,
           y: 704,
           event: guildSealChest()
+        },
+        {
+          id: 'journal-pavilion',
+          x: 768,
+          y: 704,
+          event: journalPavilion()
         },
         {
           id: 'spirit-lirabao',

@@ -57,6 +57,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.sparringLadder === true, 'Manifest must expose Mochi Spirit sparring ladder.');
+  assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
   assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
@@ -67,6 +68,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.sparringLadder === true, 'Alpha status must expose Mochi Spirit sparring ladder.');
+  assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
   assert(alphaStatus.body.gameplay?.roleplayQuests === true, 'Alpha status must expose roleplay quests.');
@@ -142,6 +144,11 @@ async function run() {
       requestId: `${runId}-party`,
       type: 'party.set',
       payload: { partyIds: ['lirabao'], activeSpiritId: 'lirabao', source: 'acceptance-script' }
+    },
+    {
+      requestId: `${runId}-journal`,
+      type: 'spirit.journal',
+      payload: { roster: ['lirabao'], activeSpiritId: 'lirabao', source: 'acceptance-script' }
     },
     {
       requestId: `${runId}-spar`,

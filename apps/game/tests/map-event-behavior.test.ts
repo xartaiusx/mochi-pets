@@ -4,6 +4,7 @@ import {
   CareShrine,
   GuildSealChest,
   HabitatGrove,
+  JournalPavilion,
   MarketBoard,
   PartyBanner,
   QuestBoard,
@@ -342,6 +343,37 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari']);
     expect(player.variables.get('mochiSocial.spirit.jintari.captureRarity')).toBe('uncommon');
     expect(player.items.filter((entry) => entry.item.id === 'lantern-harmony-tea')).toHaveLength(1);
+  });
+
+  it('records discovered Mochi Spirits in the field journal pavilion', async () => {
+    const player = createFakePlayer();
+
+    await runAction(JournalPavilion(), player);
+    expect(player.texts.at(-1)).toContain('Invite a Mochi Spirit before the journal can record');
+
+    await runAction(HabitatGrove(), player);
+    await runAction(HabitatGrove(), player);
+    await runAction(JournalPavilion(), player);
+
+    expect(player.variables.get('mochiSocial.spirits.journalViewed')).toBe(true);
+    expect(player.variables.get('mochiSocial.spirits.journalDiscovered')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiSocial.spirits.journalCount')).toBe(2);
+    expect(player.notifications.at(-1)?.message).toBe('Journal updated');
+    expect(player.saves.at(-1)?.options.source).toBe('journal-pavilion');
+    expect(player.emitted.at(-1)).toEqual({
+      type: 'mochi-social-alpha-state',
+      value: {
+        journal: {
+          activeSpiritId: 'jintari',
+          discoveredCount: 2,
+          totalCount: 3,
+          proof: true,
+          message: 'Mochirii spirit journal updated: 2/3 records. Jintari is seed growth, uncommon rarity, trickster role.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('habitat, rarity, temperament, role, and care notes');
+    expect(player.texts.at(-1)).toContain('no-real-value alpha lore');
   });
 
   it('records no-real-value market, direct trade, and Canary certificate proofs', async () => {

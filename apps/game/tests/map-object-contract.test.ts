@@ -10,6 +10,7 @@ const alphaContentSource = readFileSync('src/alpha/content.ts', 'utf8');
 const expectedPlacements = {
   'welcome-npc': { x: 896, y: 512 },
   'guild-seal-chest': { x: 640, y: 704 },
+  'journal-pavilion': { x: 768, y: 704 },
   'spirit-lirabao': { x: 384, y: 320 },
   'spirit-jintari': { x: 512, y: 320 },
   'spirit-aozhen': { x: 640, y: 320 },
@@ -58,6 +59,7 @@ describe('Mochi town map object contract', () => {
     const requiredSnippets = [
       "this.setGraphic('sifu-narao')",
       "this.setGraphic('chest')",
+      "this.setGraphic('journal-pavilion')",
       "this.setGraphic('habitat-grove')",
       "this.setGraphic('party-banner')",
       "this.setGraphic('market-board')",
@@ -69,6 +71,7 @@ describe('Mochi town map object contract', () => {
       'Guild Seal added',
       'Bond with a Mochi Spirit first',
       'Care complete',
+      'Journal updated',
       'spirit invitation',
       'Party formed',
       'Training spar complete',
@@ -77,6 +80,7 @@ describe('Mochi town map object contract', () => {
       'no-real-value Enjin Canary certificate request',
       "source: 'spirit-bond'",
       "source: 'spirit-care'",
+      "source: 'journal-pavilion'",
       "source: 'habitat-grove'",
       "source: 'party-banner'",
       "source: 'training-ring'",
@@ -93,8 +97,10 @@ describe('Mochi town map object contract', () => {
     }
 
     expect(alphaContentSource).toContain('First Lantern Vow');
+    expect(alphaContentSource).toContain('Mochirii spirit journal updated');
     expect(alphaContentSource).toContain('Jade Echo Apprentice');
     expect(runtimeServerSource).toContain('First Lantern Vow');
+    expect(runtimeServerSource).toContain('Mochirii spirit journal updated');
     expect(runtimeServerSource).toContain('Jade Echo Apprentice');
   });
 

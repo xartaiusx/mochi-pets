@@ -47,6 +47,7 @@ describe('game manifest', () => {
         trainingBattles: true,
         raisingCare: true,
         roleplayQuests: true,
+        spiritJournal: true,
         copiedUpstreamContent: false
       }
     });

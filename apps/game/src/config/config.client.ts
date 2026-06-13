@@ -81,6 +81,11 @@ export default {
             ...SPIRIT_SHEET
           },
           {
+            id: 'journal-pavilion',
+            image: '/spritesheets/journal-pavilion.png',
+            ...SPIRIT_SHEET
+          },
+          {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
             ...SPIRIT_SHEET

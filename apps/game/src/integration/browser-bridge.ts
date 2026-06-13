@@ -5,6 +5,7 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritJournal,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritSparLadder,
@@ -33,6 +34,10 @@ interface AlphaHudState {
   growth: string;
   captureProof: boolean;
   lastCaptureSpiritId?: string;
+  journalProof: boolean;
+  journalDiscoveredCount: number;
+  journalTotal: number;
+  lastJournalSpiritId?: string;
   activePartyId?: string;
   partyIds: string[];
   supportSpiritIds: string[];
@@ -57,6 +62,13 @@ export interface AlphaWorldStatePatch {
     message?: string;
     roster: string[];
     spiritId: string;
+  };
+  journal?: {
+    activeSpiritId?: string;
+    discoveredCount: number;
+    message?: string;
+    proof: boolean;
+    totalCount: number;
   };
   party?: {
     activeSpiritId?: string;
@@ -127,6 +139,9 @@ function defaultAlphaState(): AlphaHudState {
     bond: 0,
     growth: 'seed',
     captureProof: false,
+    journalProof: false,
+    journalDiscoveredCount: 0,
+    journalTotal: MOCHI_SPIRITS.length,
     partyIds: [],
     supportSpiritIds: [],
     sparLadderXp: 0,
@@ -242,6 +257,7 @@ function createHud() {
     <div class="mochi-hud__spirit-card" aria-label="Active Mochi Spirit">
       <span class="mochi-hud__kicker">Active Spirit</span>
       <strong data-spirit-label>Spirit: none</strong>
+      <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
@@ -254,6 +270,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
       <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
+      <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
       <button type="button" data-alpha-action="spirit.raise" aria-label="Raise and groom the active Mochi Spirit">Raise</button>
@@ -284,6 +301,7 @@ function createHud() {
   const guildLabel = hud.querySelector('[data-guild-label]');
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
+  const journalLabel = hud.querySelector('[data-journal-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
@@ -306,6 +324,9 @@ function createHud() {
     }
     if (spiritLabel) {
       spiritLabel.textContent = spirit ? `${spirit.name}: ${state.growth} growth, bond ${state.bond}/5` : 'Spirit: none';
+    }
+    if (journalLabel) {
+      journalLabel.textContent = `Journal: ${state.journalDiscoveredCount}/${state.journalTotal || MOCHI_SPIRITS.length} records`;
     }
     if (partyLabel) {
       partyLabel.textContent = state.partyIds.length
@@ -594,6 +615,14 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.capture.message || `Spirit invitation recorded for ${patch.capture.spiritId}.`);
   }
 
+  if (patch.journal) {
+    state.journalProof = patch.journal.proof || state.journalProof;
+    state.journalDiscoveredCount = Math.max(state.journalDiscoveredCount, Number(patch.journal.discoveredCount) || 0);
+    state.journalTotal = Math.max(1, Number(patch.journal.totalCount) || MOCHI_SPIRITS.length);
+    state.lastJournalSpiritId = patch.journal.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.journal.message || `Mochirii spirit journal ${state.journalDiscoveredCount}/${state.journalTotal}.`);
+  }
+
   if (patch.charmListed) {
     state.charmListed = true;
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
@@ -671,6 +700,16 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       moveId: spirit.battle.moves[0].id,
       bond: state.bond || 1,
       round: Math.max(1, state.trainingVictories + 1)
+    };
+  }
+
+  if (type === 'spirit.journal') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : state.spiritId ? [state.spiritId] : [];
+    return {
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      bondBySpiritId: Object.fromEntries(roster.map((id) => [id, state.bond || 1])),
+      growthBySpiritId: Object.fromEntries(roster.map((id) => [id, state.growth || 'seed']))
     };
   }
 
@@ -820,6 +859,18 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.bond = Math.min(5, state.bond + 1);
     state.growth = growthStageFromBond(state.bond);
     state.chat.push(`Care complete: ${state.growth} bond ${state.bond}`);
+  }
+
+  if (type === 'spirit.journal') {
+    const roster = Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds;
+    const result = resolveSpiritJournal(roster, String(payload.activeSpiritId || state.spiritId || roster[0] || ''), { [state.spiritId || 'lirabao']: state.bond || 1 }, { [state.spiritId || 'lirabao']: state.growth || 'seed' });
+    if (result.ok) {
+      state.journalProof = true;
+      state.journalDiscoveredCount = result.discoveredCount;
+      state.journalTotal = result.totalCount;
+      state.lastJournalSpiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
   }
 
   if (type === 'party.set') {

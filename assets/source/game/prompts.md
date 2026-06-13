@@ -18,6 +18,7 @@ Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated 
 - Aozhen: sky-jade Mochi Spirit with mist crest and scout/journal affinity.
 - Guild seal chest: lacquered chest with jade clasp and gold cord.
 - Habitat grove: spirit invitation grove with jade stepping stones, tea glow, silk lanterns, young bamboo, and spirit motes.
+- Journal pavilion: Mochirii spirit journal pavilion with lacquer reading stand, open silk-paper field journal, jade page weights, and small lanterns.
 - Party banner: Mochi Spirit party formation banner with three jade spirit medallions, lacquer frame, silk tassels, and lantern glow.
 - Market board: fixed-price test market board with parchment tags and jade pins.
 - Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.

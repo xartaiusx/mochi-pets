@@ -29,14 +29,15 @@ This contract tells Codex how to upgrade Mochi Social art without breaking RPGJS
 5. `spirit-aozhen`
 6. guild seal chest
 7. habitat grove
-8. party banner
-9. market board
-10. trade post
-11. training ring
-12. quest board
-13. Canary shrine
-14. town tilesheet and map polish
-15. HUD and action icons
+8. journal pavilion
+9. party banner
+10. market board
+11. trade post
+12. training ring
+13. quest board
+14. Canary shrine
+15. town tilesheet and map polish
+16. HUD and action icons
 
 Each asset gets a source card, runtime export, ledger update, screenshot review, and tests before the next substantial visual pass.
 
