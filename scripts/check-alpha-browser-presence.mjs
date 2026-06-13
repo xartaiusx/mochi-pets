@@ -195,6 +195,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="market.fixed_list"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="trade.direct_offer"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
 
   try {
@@ -213,6 +214,7 @@ async function exerciseAlphaHud(page) {
       const research = document.querySelector('[data-research-label]')?.textContent || '';
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
+      const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const tactic = document.querySelector('[data-tactic-label]')?.textContent || '';
       const loadout = document.querySelector('[data-loadout-label]')?.textContent || '';
@@ -247,6 +249,7 @@ async function exerciseAlphaHud(page) {
         && research.includes('Jade Court Research Folio')
         && compendium.includes('Jade Court Spirit Compendium')
         && provision.includes('Jade Court Provision Satchel')
+        && commission.includes('Jade Court Commission Ledger')
         && technique.includes('Technique:')
         && technique.includes('XP')
         && tactic.includes('Tactic:')
@@ -316,6 +319,11 @@ async function exerciseAlphaHud(page) {
         && state.provisionStockItemIds.includes('lantern-harmony-tea')
         && state.provisionStockItemIds.includes('jade-mooncake-box')
         && state.provisionSatchelClaimed === true
+        && state.commissionProof === true
+        && state.commissionId === 'jade-court-commission-ledger'
+        && state.commissionName === 'Jade Court Commission Ledger'
+        && state.commissionScore >= 24
+        && state.commissionKnotClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
         && state.harmonyFormName === 'Triune Jade Harmony'
@@ -424,6 +432,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Research Folio recorded')
         && chat.includes('Jade Court Spirit Compendium complete')
         && chat.includes('Jade Court Provision Satchel stocked')
+        && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Step Loadout prepared')
         && chat.includes('Jade Heart Trait Attunement')
         && chat.includes('Triune Jade Harmony formed')
@@ -447,6 +456,7 @@ async function exerciseAlphaHud(page) {
       research: document.querySelector('[data-research-label]')?.textContent || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
+      commission: document.querySelector('[data-commission-label]')?.textContent || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
       trait: document.querySelector('[data-trait-label]')?.textContent || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
@@ -478,6 +488,7 @@ async function exerciseAlphaHud(page) {
       research: document.querySelector('[data-research-label]')?.textContent?.trim() || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
+      commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       tactic: document.querySelector('[data-tactic-label]')?.textContent?.trim() || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent?.trim() || '',
@@ -553,6 +564,12 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('lantern-harmony-tea'), 'HUD provision action must stock Lantern Harmony Tea.');
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('jade-mooncake-box'), 'HUD provision action must stock the Jade Mooncake Box.');
   assert(snapshot.state.provisionSatchelClaimed === true, 'HUD provision action must mark the no-real-value satchel proof.');
+  assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
+  assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
+  assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
+  assert(snapshot.state.commissionName === 'Jade Court Commission Ledger', 'HUD commission action must record the commission name.');
+  assert(snapshot.state.commissionScore >= 24, 'HUD commission action must record a passing commission score.');
+  assert(snapshot.state.commissionKnotClaimed === true, 'HUD commission action must mark the no-real-value commission knot proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
   assert(snapshot.state.harmonyFormId === 'triune-jade-harmony', 'HUD harmony action must record the harmony form id.');
@@ -663,6 +680,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Step Loadout prepared')), 'HUD chat state must record the technique loadout action.');
   assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');

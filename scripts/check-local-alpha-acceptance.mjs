@@ -61,6 +61,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
+  assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -91,6 +92,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
+  assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -499,6 +501,28 @@ async function run() {
         routeInviteProof: true,
         careStreak: 1,
         completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-guild-commission`,
+      type: 'guild.commission_complete',
+      payload: {
+        commissionId: 'jade-court-commission-ledger',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        journalDiscoveredCount: 3,
+        questChainProof: true,
+        completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        marketProof: true,
+        tradeProof: true,
+        trainingXp: 3,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance commission proof.'],
         noRealValue: true
       }
     },

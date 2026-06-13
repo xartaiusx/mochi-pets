@@ -2,6 +2,7 @@ import { PrebuiltGui } from '@rpgjs/common';
 import type { EventDefinition, RpgPlayer } from '@rpgjs/server';
 import {
   ALPHA_ITEMS,
+  GUILD_COMMISSIONS,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -27,6 +28,7 @@ import {
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
   resolveSpiritExpedition,
+  resolveGuildCommission,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
@@ -131,6 +133,19 @@ type AlphaHudStatePatch = {
     satchelName: string;
     score: number;
     stockItemIds: string[];
+    title: string;
+  };
+  guildCommission?: {
+    activeSpiritId?: string;
+    commissionId: string;
+    commissionName: string;
+    completedQuestIds: string[];
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
     title: string;
   };
   affinity?: {
@@ -1516,6 +1531,66 @@ export function QuestBoard(): EventDefinition {
 
     async onAction(player: RpgPlayer) {
       const roster = bondedSpirits(player);
+      const completedQuestChainIds = completedQuestIds(player);
+      if (completedQuestChainIds.length >= MOCHI_SPIRIT_QUESTS.length) {
+        if (player.getVariable<boolean>('mochiSocial.guild.commissionKnotClaimed')) {
+          showAlphaPrompt(player, 'Your Jade Court Commission Ledger is already recorded for this alpha save. Guild reputation remains no-real-value.');
+          return;
+        }
+
+        const commission = resolveGuildCommission(
+          {
+            roster,
+            activeSpiritId: activeSpiritId(player),
+            journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || roster.length),
+            questChainProof: true,
+            completedQuestIds: completedQuestChainIds,
+            provisionProof: Boolean(player.getVariable<boolean>('mochiSocial.alpha.provisionSatchelProof')),
+            provisionSatchelId: player.getVariable<string>('mochiSocial.alpha.provisionSatchel'),
+            marketProof: Boolean(player.getVariable<boolean>('mochiSocial.alpha.charmListed')),
+            tradeProof: Boolean(player.getVariable<boolean>('mochiSocial.alpha.tradeProof')),
+            trainingXp: trainingXpTotal(player, roster),
+            profileViewed: Boolean(player.getVariable<boolean>('mochiSocial.social.profileViewed')),
+            guildBuddyProof: Boolean(player.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
+            statusMood: player.getVariable<string>('mochiSocial.social.statusMood'),
+            chatLines: []
+          },
+          GUILD_COMMISSIONS[0].id
+        );
+
+        if (!commission.completed) {
+          showAlphaPrompt(player, commission.message);
+          return;
+        }
+
+        player.setVariable('mochiSocial.guild.commissionProof', true);
+        player.setVariable('mochiSocial.guild.commission', commission.commissionId);
+        player.setVariable('mochiSocial.guild.commissionName', commission.commissionName);
+        player.setVariable('mochiSocial.guild.commissionScore', commission.score);
+        player.setVariable('mochiSocial.guild.commissionCompletedQuests', commission.completedQuestIds);
+        player.addItem(ALPHA_ITEMS.commissionKnot, 1);
+        player.setVariable('mochiSocial.guild.commissionKnotClaimed', true);
+        player.showNotification('Guild commission recorded', { time: 1800, icon: 'quest-board' });
+        emitAlphaHudState(player, {
+          guildCommission: {
+            commissionId: commission.commissionId,
+            commissionName: commission.commissionName,
+            title: commission.title,
+            habitat: commission.habitat,
+            activeSpiritId: commission.activeSpiritId,
+            roster: commission.roster,
+            completedQuestIds: commission.completedQuestIds,
+            score: commission.score,
+            rewardItemId: commission.rewardItemId,
+            proof: true,
+            message: commission.message
+          }
+        });
+        await player.save('auto', { title: 'Mochirii guild commission' }, { reason: 'auto', source: 'quest-board' });
+        showAlphaPrompt(player, `${commission.message} The Jade Court Commission Knot is no-real-value closed-alpha guild reputation proof.`);
+        return;
+      }
+
       const quest = selectQuestBoardQuest(player);
       const requiredSpiritId = quest.requiredSpiritId || activeSpiritId(player);
       const rewardSpiritId = requiredSpiritId && roster.includes(requiredSpiritId) ? requiredSpiritId : activeSpiritId(player);

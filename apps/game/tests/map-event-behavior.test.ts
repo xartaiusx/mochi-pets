@@ -1389,6 +1389,44 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Jade Court Provision Satchel stocked');
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha item preparation proof');
 
+    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
+    player.variables.set('mochiSocial.social.profileViewed', true);
+    player.variables.set('mochiSocial.social.guildBuddyProof', true);
+    player.variables.set('mochiSocial.social.statusMood', 'cozy');
+
+    await runAction(QuestBoard(), player);
+    expect(player.items.at(-1)?.item.id).toBe('jade-court-commission-knot');
+    expect(player.variables.get('mochiSocial.guild.commissionProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.guild.commission')).toBe('jade-court-commission-ledger');
+    expect(player.variables.get('mochiSocial.guild.commissionName')).toBe('Jade Court Commission Ledger');
+    expect(player.variables.get('mochiSocial.guild.commissionScore')).toBe(31);
+    expect(player.variables.get('mochiSocial.guild.commissionCompletedQuests')).toEqual([
+      'first-lantern-vow',
+      'silk-market-kindness',
+      'skybell-spar'
+    ]);
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        guildCommission: {
+          commissionId: 'jade-court-commission-ledger',
+          commissionName: 'Jade Court Commission Ledger',
+          title: 'First Social Commission Ledger',
+          habitat: 'Jade Lantern Court',
+          activeSpiritId: 'aozhen',
+          roster: ['lirabao', 'jintari', 'aozhen'],
+          completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+          score: 31,
+          rewardItemId: 'jade-court-commission-knot',
+          proof: true,
+          message: expect.stringContaining('No-real-value guild reputation')
+        }
+      }
+    });
+    expect(player.saves.at(-1)?.options.source).toBe('quest-board');
+    expect(player.texts.at(-1)).toContain('Jade Court Commission Ledger complete');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha guild reputation proof');
+
     await runAction(CanaryShrine(), player);
     expect(player.items.at(-1)?.item.id).toBe('lirabao-canary-certificate');
     expect(player.variables.get('mochiSocial.alpha.canaryCertificateRequested')).toBe(true);

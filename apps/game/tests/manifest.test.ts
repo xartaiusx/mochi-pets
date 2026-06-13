@@ -48,6 +48,7 @@ describe('game manifest', () => {
         spiritResearch: true,
         spiritCompendium: true,
         itemProvisions: true,
+        guildCommissions: true,
         partyFormation: true,
         partyHarmony: true,
         harmonyTrials: true,

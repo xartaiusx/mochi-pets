@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  GUILD_COMMISSIONS,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -21,6 +22,7 @@ import {
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
   resolveSpiritExpedition,
+  resolveGuildCommission,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
@@ -67,6 +69,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -112,6 +115,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -424,6 +428,52 @@ describe('alpha contract', () => {
       careStreak: 0,
       completedQuestIds: []
     }).stocked).toBe(false);
+
+    expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
+    const commission = resolveGuildCommission({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      questChainProof: true,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      marketProof: true,
+      tradeProof: true,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first social commission.']
+    });
+    expect(commission).toMatchObject({
+      ok: true,
+      completed: true,
+      commissionId: 'jade-court-commission-ledger',
+      commissionName: 'Jade Court Commission Ledger',
+      title: 'First Social Commission Ledger',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      score: 32,
+      requiredScore: 24,
+      rewardItemId: 'jade-court-commission-knot',
+      source: 'guild-commission-ledger'
+    });
+    expect(commission.message).toContain('No-real-value guild reputation');
+    expect(resolveGuildCommission({
+      roster: ['lirabao'],
+      journalDiscoveredCount: 1,
+      questChainProof: false,
+      completedQuestIds: [],
+      provisionProof: false,
+      marketProof: false,
+      tradeProof: false,
+      trainingXp: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).completed).toBe(false);
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

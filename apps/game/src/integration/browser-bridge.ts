@@ -1,5 +1,6 @@
 import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
+  GUILD_COMMISSIONS,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -31,6 +32,7 @@ import {
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
   resolveSpiritExpedition,
+  resolveGuildCommission,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
@@ -121,6 +123,11 @@ interface AlphaHudState {
   provisionScore: number;
   provisionStockItemIds: string[];
   provisionSatchelClaimed: boolean;
+  commissionProof: boolean;
+  commissionId?: string;
+  commissionName: string;
+  commissionScore: number;
+  commissionKnotClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -308,6 +315,19 @@ export interface AlphaWorldStatePatch {
     satchelName: string;
     score: number;
     stockItemIds: string[];
+    title: string;
+  };
+  guildCommission?: {
+    activeSpiritId?: string;
+    commissionId: string;
+    commissionName: string;
+    completedQuestIds: string[];
+    habitat: string;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
     title: string;
   };
   technique?: {
@@ -537,6 +557,10 @@ function defaultAlphaState(): AlphaHudState {
     provisionScore: 0,
     provisionStockItemIds: [],
     provisionSatchelClaimed: false,
+    commissionProof: false,
+    commissionName: 'Pending',
+    commissionScore: 0,
+    commissionKnotClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -709,6 +733,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
+      <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
@@ -741,6 +766,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.research" aria-label="Record the Mochirii spirit research folio">Research</button>
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
+      <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -790,6 +816,7 @@ function createHud() {
   const researchLabel = hud.querySelector('[data-research-label]');
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
+  const commissionLabel = hud.querySelector('[data-commission-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
@@ -866,6 +893,11 @@ function createHud() {
       provisionLabel.textContent = state.provisionProof
         ? `Satchel: ${state.provisionSatchelName}, ${state.provisionStockItemIds.length} items`
         : 'Satchel: pending';
+    }
+    if (commissionLabel) {
+      commissionLabel.textContent = state.commissionProof
+        ? `Commission: ${state.commissionName}, score ${state.commissionScore}`
+        : 'Commission: pending';
     }
     if (techniqueLabel) {
       techniqueLabel.textContent = `Technique: ${state.techniqueMasteryLevel || 'novice'}, ${state.techniqueMasteryXp} XP${state.techniqueMoveId ? ` (${state.techniqueMoveId})` : ''}`;
@@ -1162,7 +1194,7 @@ function readAlphaState(): AlphaHudState {
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
-      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-32).map(String) : []
+      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-48).map(String) : []
     };
   } catch {
     return defaultAlphaState();
@@ -1170,7 +1202,7 @@ function readAlphaState(): AlphaHudState {
 }
 
 function writeAlphaState(state: AlphaHudState) {
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-32) }));
+  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-48) }));
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
 
@@ -1284,6 +1316,18 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.provisionSatchel.completedQuestIds.map(String)]));
     state.spiritId = patch.provisionSatchel.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.provisionSatchel.message || `${state.provisionSatchelName} stocked as no-real-value item proof.`);
+  }
+
+  if (patch.guildCommission) {
+    state.commissionProof = patch.guildCommission.proof || state.commissionProof;
+    state.commissionId = patch.guildCommission.commissionId || state.commissionId;
+    state.commissionName = patch.guildCommission.commissionName || state.commissionName;
+    state.commissionScore = Math.max(state.commissionScore, Number(patch.guildCommission.score) || 0);
+    state.commissionKnotClaimed = state.commissionKnotClaimed || patch.guildCommission.rewardItemId === 'jade-court-commission-knot';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.guildCommission.roster.map(String)]));
+    state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.guildCommission.completedQuestIds.map(String)]));
+    state.spiritId = patch.guildCommission.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.guildCommission.message || `${state.commissionName} recorded as no-real-value guild proof.`);
   }
 
   if (patch.expedition) {
@@ -1631,6 +1675,26 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       routeInviteProof: state.routeInviteProof,
       careStreak: state.raisingCareStreak,
       completedQuestIds: state.completedQuestIds
+    };
+  }
+
+  if (type === 'guild.commission_complete') {
+    return {
+      commissionId: GUILD_COMMISSIONS[0].id,
+      roster: state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      questChainProof: state.questChainProof,
+      completedQuestIds: state.completedQuestIds,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      marketProof: state.charmListed,
+      tradeProof: state.tradeProof,
+      trainingXp: state.trainingXp,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
     };
   }
 
@@ -2078,6 +2142,39 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.provisionScore = result.score;
       state.provisionStockItemIds = result.stockItemIds;
       state.provisionSatchelClaimed = result.rewardItemId === 'jade-court-provision-satchel';
+      state.attunedSpiritIds = result.roster;
+      state.completedQuestIds = result.completedQuestIds;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'guild.commission_complete') {
+    const result = resolveGuildCommission(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
+        completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.commissionId || GUILD_COMMISSIONS[0].id)
+    );
+    if (result.completed) {
+      state.commissionProof = true;
+      state.commissionId = result.commissionId;
+      state.commissionName = result.commissionName;
+      state.commissionScore = result.score;
+      state.commissionKnotClaimed = result.rewardItemId === 'jade-court-commission-knot';
       state.attunedSpiritIds = result.roster;
       state.completedQuestIds = result.completedQuestIds;
       state.spiritId = result.activeSpiritId || state.spiritId;

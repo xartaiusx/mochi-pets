@@ -439,6 +439,56 @@ export interface SpiritProvisionSatchelResult {
   source: string;
 }
 
+export interface GuildCommission {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredRosterCount: number;
+  requiredJournalCount: number;
+  requiredCompletedQuestCount: number;
+  requiredTrainingXp: number;
+  requiredProvisionSatchelId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface GuildCommissionProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  journalDiscoveredCount: number;
+  questChainProof: boolean;
+  completedQuestIds: readonly string[];
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  marketProof: boolean;
+  tradeProof: boolean;
+  trainingXp: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface GuildCommissionResult {
+  ok: boolean;
+  completed: boolean;
+  commissionId: string;
+  commissionName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  roster: string[];
+  completedQuestIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -1203,6 +1253,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Habitat Tassel',
     description: 'A no-real-value habitat bond proof for closed-alpha Mochirii raising and roleplay progression.'
   },
+  commissionKnot: {
+    id: 'jade-court-commission-knot',
+    name: 'Jade Court Commission Knot',
+    description: 'A no-real-value guild commission proof for closed-alpha Mochirii social roleplay progression.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -1444,6 +1499,23 @@ export const SPIRIT_PROVISION_SATCHELS: readonly SpiritProvisionSatchel[] = [
     requiredScore: 24,
     rewardItemId: ALPHA_ITEMS.provisionSatchel.id,
     summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, market listings, direct trades, and quest supplies.'
+  }
+];
+
+export const GUILD_COMMISSIONS: readonly GuildCommission[] = [
+  {
+    id: 'jade-court-commission-ledger',
+    name: 'Jade Court Commission Ledger',
+    title: 'First Social Commission Ledger',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredRosterCount: MOCHI_SPIRITS.length,
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredCompletedQuestCount: MOCHI_SPIRIT_QUESTS.length,
+    requiredTrainingXp: 1,
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredScore: 24,
+    rewardItemId: ALPHA_ITEMS.commissionKnot.id,
+    summary: 'A no-real-value roleplay commission proof for testers who connect the first quest chain, profile, guild buddy, provisions, training, market, and trade loops.'
   }
 ];
 
@@ -2191,6 +2263,87 @@ export function resolveSpiritProvisionSatchel(
       ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market proof, trade proof, and quest supplies. No-real-value item preparation only.`
       : `${satchel.name} needs ${missing.join(', ')} before the first-court provision bag can be stocked.`,
     source: 'item-provision-satchel'
+  };
+}
+
+export function resolveGuildCommission(
+  progress: GuildCommissionProgress,
+  commissionId: string = GUILD_COMMISSIONS[0].id
+): GuildCommissionResult {
+  const commission = GUILD_COMMISSIONS.find((entry) => entry.id === commissionId) || GUILD_COMMISSIONS[0];
+  const knownSpiritIds = new Set<string>(MOCHI_SPIRITS.map((spirit) => spirit.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const completedQuestIds = Array.from(new Set(progress.completedQuestIds.filter(Boolean))).filter((questId) => {
+    return MOCHI_SPIRIT_QUESTS.some((quest) => quest.id === questId);
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const missing: string[] = [];
+
+  if (roster.length < commission.requiredRosterCount) {
+    missing.push(`roster:${roster.length}/${commission.requiredRosterCount}`);
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < commission.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${commission.requiredJournalCount}`);
+  }
+
+  if (!progress.questChainProof || completedQuestIds.length < commission.requiredCompletedQuestCount) {
+    missing.push(`quests:${completedQuestIds.length}/${commission.requiredCompletedQuestCount}`);
+  }
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === commission.requiredProvisionSatchelId;
+  if (!provisionReady) {
+    missing.push(`provision:${commission.requiredProvisionSatchelId}`);
+  }
+
+  if (!progress.marketProof) {
+    missing.push('market-listing');
+  }
+
+  if (!progress.tradeProof) {
+    missing.push('direct-trade');
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < commission.requiredTrainingXp) {
+    missing.push(`training:${trainingXp}/${commission.requiredTrainingXp}`);
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter(Boolean) : [];
+  const score =
+    Math.min(roster.length, commission.requiredRosterCount) * 2 +
+    Math.min(journalCount, commission.requiredJournalCount) +
+    Math.min(completedQuestIds.length, commission.requiredCompletedQuestCount) * 2 +
+    (provisionReady ? 4 : 0) +
+    (progress.marketProof ? 2 : 0) +
+    (progress.tradeProof ? 2 : 0) +
+    Math.min(trainingXp, commission.requiredTrainingXp + 2) +
+    (progress.profileViewed ? 2 : 0) +
+    (progress.guildBuddyProof ? 2 : 0) +
+    (progress.statusMood ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const completed = missing.length === 0 && score >= commission.requiredScore;
+  const activeName = getMochiSpirit(activeSpiritId || '')?.name || 'the first-court roster';
+
+  return {
+    ok: true,
+    completed,
+    commissionId: commission.id,
+    commissionName: commission.name,
+    title: commission.title,
+    habitat: commission.habitat,
+    activeSpiritId,
+    roster,
+    completedQuestIds,
+    score,
+    requiredScore: commission.requiredScore,
+    missing,
+    rewardItemId: commission.rewardItemId,
+    message: completed
+      ? `${commission.name} complete: ${activeName} signs a first social commission with quest, provision, training, market, trade, profile, guild buddy, and status proof. No-real-value guild reputation only.`
+      : `${commission.name} needs ${missing.join(', ')} before the first social commission can be recorded.`,
+    source: 'guild-commission-ledger'
   };
 }
 
