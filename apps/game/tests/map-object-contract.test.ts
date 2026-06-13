@@ -163,6 +163,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Mirror Team Match');
     expect(alphaContentSource).toContain('jade-mirror-match-ribbon');
     expect(alphaContentSource).toContain('battle-team-spar-match');
+    expect(alphaContentSource).toContain('Jade Step Loadout');
+    expect(alphaContentSource).toContain('jade-step-loadout-slip');
+    expect(alphaContentSource).toContain('spirit-technique-loadout');
     expect(alphaContentSource).toContain('Silk Banner Mentor Drill');
     expect(alphaContentSource).toContain('silk-banner-mentor-seal');
     expect(alphaContentSource).toContain('battle-mentor-challenge');
@@ -201,6 +204,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Mirror Team Match');
     expect(runtimeServerSource).toContain('jade-mirror-match-ribbon');
     expect(runtimeServerSource).toContain('battle-team-spar-match');
+    expect(runtimeServerSource).toContain('Jade Step Loadout');
+    expect(runtimeServerSource).toContain('jade-step-loadout-slip');
+    expect(runtimeServerSource).toContain('spirit-technique-loadout');
     expect(runtimeServerSource).toContain('Silk Banner Mentor Drill');
     expect(runtimeServerSource).toContain('silk-banner-mentor-seal');
     expect(runtimeServerSource).toContain('battle-mentor-challenge');

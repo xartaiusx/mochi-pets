@@ -6,6 +6,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_BATTLE_TACTICS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
@@ -14,6 +15,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TECHNIQUE_LOADOUTS,
   growthStageFromBond,
   techniqueMasteryLevelFromXp,
   resolveSpiritAffinityTrial,
@@ -36,6 +38,7 @@ import {
   selectSpiritRaisingNeed,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
+  resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle,
   type MochiSpirit
@@ -158,6 +161,18 @@ type AlphaHudStatePatch = {
     opponentName: string;
     partyIds: string[];
     proof: boolean;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
+  techniqueLoadout?: {
+    loadoutId: string;
+    loadoutName: string;
+    message?: string;
+    moves: string[];
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
     rewardItemId: string;
     score: number;
     title: string;
@@ -351,6 +366,15 @@ function careStreakTotal(player: RpgPlayer, spirits: readonly string[]) {
   return spirits.reduce((total, spiritId) => {
     return Math.max(total, Number(player.getVariable<number>(`mochiSocial.spirit.${spiritId}.careStreak`) || 0));
   }, 0);
+}
+
+function preferredMoveIdBySpiritId() {
+  return Object.fromEntries(
+    MOCHI_SPIRITS.map((spirit) => {
+      const tactic = SPIRIT_BATTLE_TACTICS.find((entry) => entry.preferredRoles.includes(spirit.battle.role));
+      return [spirit.id, tactic?.recommendedMoveId || spirit.battle.moves[0].id];
+    })
+  );
 }
 
 function growthMap(player: RpgPlayer, spirits: readonly string[]) {
@@ -910,8 +934,7 @@ export function TechniqueDojo(): EventDefinition {
       player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, technique.masteryLevel);
       player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
       player.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.focusScore`, technique.focusScore);
-      player.showNotification('Technique refined', { time: 1800, icon: 'technique-dojo' });
-      emitAlphaHudState(player, {
+      const patch: AlphaHudStatePatch = {
         technique: {
           spiritId: activeSpirit,
           moveId: move.id,
@@ -921,9 +944,60 @@ export function TechniqueDojo(): EventDefinition {
           proof: true,
           message: technique.message
         }
-      });
-      await player.save('auto', { title: 'Mochi Spirit technique practice' }, { reason: 'auto', source: 'technique-dojo' });
-      showAlphaPrompt(player, `${technique.message} Technique mastery is no-injury alpha progression with no real value.`);
+      };
+      let notification = 'Technique refined';
+      let saveTitle = 'Mochi Spirit technique practice';
+      let prompt = `${technique.message} Technique mastery is no-injury alpha progression with no real value.`;
+      const loadoutParty = partyIds(player);
+
+      if (loadoutParty.length >= MOCHI_SPIRITS.length) {
+        const loadout = resolveSpiritTechniqueLoadout(
+          {
+            partyIds: loadoutParty,
+            preferredMoveIdBySpiritId: preferredMoveIdBySpiritId(),
+            techniqueProof: true,
+            tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+            tacticId: player.getVariable<string>('mochiSocial.battle.lastTacticScroll'),
+            techniqueMasteryXp: Math.max(technique.masteryXp, techniqueMasteryXpTotal(player, loadoutParty)),
+            routeMasteryProof: Boolean(player.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
+            journalProof: Boolean(player.getVariable<boolean>('mochiSocial.spirits.journalProof')),
+            journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0)
+          },
+          SPIRIT_TECHNIQUE_LOADOUTS[0].id
+        );
+
+        if (loadout.prepared) {
+          player.setVariable('mochiSocial.battle.techniqueLoadoutProof', true);
+          player.setVariable('mochiSocial.battle.techniqueLoadout', loadout.loadoutId);
+          player.setVariable('mochiSocial.battle.techniqueLoadoutName', loadout.loadoutName);
+          player.setVariable('mochiSocial.battle.techniqueLoadoutScore', loadout.score);
+          player.setVariable('mochiSocial.battle.techniqueLoadoutMoves', loadout.moves.map((entry) => `${entry.spiritId}:${entry.moveId}`));
+          if (!player.getVariable<boolean>('mochiSocial.battle.loadoutSlipClaimed')) {
+            player.addItem(ALPHA_ITEMS.loadoutSlip, 1);
+            player.setVariable('mochiSocial.battle.loadoutSlipClaimed', true);
+          }
+          patch.techniqueLoadout = {
+            loadoutId: loadout.loadoutId,
+            loadoutName: loadout.loadoutName,
+            title: loadout.title,
+            partyIds: loadout.partyIds,
+            moves: loadout.moves.map((entry) => `${entry.spiritId}:${entry.moveId}`),
+            score: loadout.score,
+            requiredScore: loadout.requiredScore,
+            rewardItemId: loadout.rewardItemId,
+            proof: true,
+            message: loadout.message
+          };
+          notification = 'Loadout prepared';
+          saveTitle = 'Mochi Spirit technique loadout';
+          prompt = `${technique.message} ${loadout.message} The Jade Step Loadout Slip is no-real-value closed-alpha move preparation proof.`;
+        }
+      }
+
+      player.showNotification(notification, { time: 1800, icon: 'technique-dojo' });
+      emitAlphaHudState(player, patch);
+      await player.save('auto', { title: saveTitle }, { reason: 'auto', source: 'technique-dojo' });
+      showAlphaPrompt(player, prompt);
     }
   };
 }

@@ -986,6 +986,56 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no real value');
   });
 
+  it('records the Jade Step technique loadout at the Mochirii dojo after party preparation', async () => {
+    const player = createFakePlayer();
+    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirits.active', 'lirabao');
+    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
+    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 10);
+    player.variables.set('mochiSocial.spirits.journalProof', true);
+    player.variables.set('mochiSocial.spirits.journalCount', 3);
+    player.variables.set('mochiSocial.world.routeMasteryProof', true);
+    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
+    player.variables.set('mochiSocial.battle.lastTacticScroll', 'goldleaf-opening');
+
+    await runAction(TechniqueDojo(), player);
+
+    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.battle.techniqueLoadout')).toBe('jade-step-loadout');
+    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutName')).toBe('Jade Step Loadout');
+    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutScore')).toBe(25);
+    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutMoves')).toEqual([
+      'lirabao:lantern-pulse',
+      'jintari:goldleaf-feint',
+      'aozhen:skybell-guard'
+    ]);
+    expect(player.variables.get('mochiSocial.battle.loadoutSlipClaimed')).toBe(true);
+    expect(player.items.at(-1)?.item.id).toBe('jade-step-loadout-slip');
+    expect(player.notifications.at(-1)?.message).toBe('Loadout prepared');
+    expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit technique loadout' });
+    expect(player.saves.at(-1)?.options.source).toBe('technique-dojo');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        techniqueLoadout: {
+          loadoutId: 'jade-step-loadout',
+          loadoutName: 'Jade Step Loadout',
+          title: 'First Three-Spirit Move Loadout',
+          partyIds: ['lirabao', 'jintari', 'aozhen'],
+          moves: ['lirabao:lantern-pulse', 'jintari:goldleaf-feint', 'aozhen:skybell-guard'],
+          score: 25,
+          requiredScore: 22,
+          rewardItemId: 'jade-step-loadout-slip',
+          proof: true,
+          message: 'Jade Step Loadout prepared: Lirabao:Lantern Pulse, Jintari:Goldleaf Feint, Aozhen:Skybell Guard are set as no-injury Mochirii party moves for closed-alpha battles.'
+        }
+      }
+    });
+    expect(player.texts.at(-1)).toContain('Jade Step Loadout prepared');
+    expect(player.texts.at(-1)).toContain('no-real-value closed-alpha move preparation proof');
+  });
+
   it('records no-injury battle tactic scroll planning before affinity trials', async () => {
     const player = createFakePlayer();
 

@@ -14,6 +14,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TECHNIQUE_LOADOUTS,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
   resolveSpiritRouteMastery,
@@ -39,6 +40,7 @@ import {
   resolveSpiritRouteInvitation,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
+  resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTrainingBattle
 } from '../alpha/content';
@@ -114,6 +116,12 @@ interface AlphaHudState {
   tacticStance?: string;
   tacticFocusScore: number;
   tacticMasteryXp: number;
+  techniqueLoadoutProof: boolean;
+  techniqueLoadoutId?: string;
+  techniqueLoadoutName: string;
+  techniqueLoadoutScore: number;
+  techniqueLoadoutMoves: string[];
+  loadoutSlipClaimed: boolean;
   affinityProof: boolean;
   affinityTrialWins: number;
   lastAffinityTrialId?: string;
@@ -327,6 +335,18 @@ export interface AlphaWorldStatePatch {
     score: number;
     title: string;
   };
+  techniqueLoadout?: {
+    loadoutId: string;
+    loadoutName: string;
+    message?: string;
+    moves: string[];
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
@@ -451,6 +471,11 @@ function defaultAlphaState(): AlphaHudState {
     tacticProof: false,
     tacticFocusScore: 0,
     tacticMasteryXp: 0,
+    techniqueLoadoutProof: false,
+    techniqueLoadoutName: 'Unprepared',
+    techniqueLoadoutScore: 0,
+    techniqueLoadoutMoves: [],
+    loadoutSlipClaimed: false,
     affinityProof: false,
     affinityTrialWins: 0,
     affinityAdvantage: false,
@@ -606,6 +631,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
+      <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
@@ -637,6 +663,7 @@ function createHud() {
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="battle.tactic_scroll" aria-label="Study a no-injury Mochirii tactic scroll">Tactic</button>
+      <button type="button" data-alpha-action="spirit.technique_loadout" aria-label="Prepare the three-spirit Mochirii move loadout">Moves</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
@@ -679,6 +706,7 @@ function createHud() {
   const researchLabel = hud.querySelector('[data-research-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
+  const loadoutLabel = hud.querySelector('[data-loadout-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
@@ -749,6 +777,11 @@ function createHud() {
       tacticLabel.textContent = state.tacticProof
         ? `Tactic: ${state.lastTacticId || 'studied'}, ${state.tacticMasteryXp} XP${state.tacticStance ? ` (${state.tacticStance})` : ''}`
         : 'Tactic: not set';
+    }
+    if (loadoutLabel) {
+      loadoutLabel.textContent = state.techniqueLoadoutProof
+        ? `Loadout: ${state.techniqueLoadoutName}, score ${state.techniqueLoadoutScore}`
+        : 'Loadout: pending';
     }
     if (affinityLabel) {
       affinityLabel.textContent = state.affinityProof
@@ -1181,6 +1214,18 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.techniqueMoveId = patch.tactic.moveId || state.techniqueMoveId;
     state.spiritId = patch.tactic.spiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.tactic.message || `Battle tactic ${state.lastTacticId || 'studied'} ${state.tacticMasteryXp} XP.`);
+  }
+
+  if (patch.techniqueLoadout) {
+    state.techniqueLoadoutProof = patch.techniqueLoadout.proof || state.techniqueLoadoutProof;
+    state.techniqueLoadoutId = patch.techniqueLoadout.loadoutId || state.techniqueLoadoutId;
+    state.techniqueLoadoutName = patch.techniqueLoadout.loadoutName || state.techniqueLoadoutName;
+    state.techniqueLoadoutScore = Math.max(state.techniqueLoadoutScore, Number(patch.techniqueLoadout.score) || 0);
+    state.techniqueLoadoutMoves = Array.isArray(patch.techniqueLoadout.moves) ? patch.techniqueLoadout.moves.map(String) : state.techniqueLoadoutMoves;
+    state.loadoutSlipClaimed = state.loadoutSlipClaimed || patch.techniqueLoadout.rewardItemId === 'jade-step-loadout-slip';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.techniqueLoadout.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    appendUniqueAlphaChat(state, patch.techniqueLoadout.message || `${state.techniqueLoadoutName} recorded as no-real-value move loadout proof.`);
   }
 
   if (patch.rank) {
@@ -1911,6 +1956,42 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       if (!state.attunedSpiritIds.includes(result.spiritId)) {
         state.attunedSpiritIds.push(result.spiritId);
       }
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.technique_loadout') {
+    const preferredMoveIdBySpiritId = Object.fromEntries(
+      MOCHI_SPIRITS.map((spirit) => {
+        const tacticMove = SPIRIT_BATTLE_TACTICS.find((tactic) => tactic.preferredRoles.includes(spirit.battle.role))?.recommendedMoveId;
+        return [spirit.id, tacticMove || spirit.battle.moves[0].id];
+      })
+    );
+    const result = resolveSpiritTechniqueLoadout(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        preferredMoveIdBySpiritId,
+        techniqueProof: Boolean(payload.techniqueProof ?? state.techniqueProof),
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        tacticId: String(payload.tacticId || state.lastTacticId || ''),
+        techniqueMasteryXp: Number(payload.techniqueMasteryXp ?? state.techniqueMasteryXp ?? 0),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        journalProof: Boolean(payload.journalProof ?? state.journalProof),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0)
+      },
+      String(payload.loadoutId || SPIRIT_TECHNIQUE_LOADOUTS[0].id)
+    );
+    if (result.prepared) {
+      state.techniqueLoadoutProof = true;
+      state.techniqueLoadoutId = result.loadoutId;
+      state.techniqueLoadoutName = result.loadoutName;
+      state.techniqueLoadoutScore = result.score;
+      state.techniqueLoadoutMoves = result.moves.map((move) => `${move.spiritId}:${move.moveId}`);
+      state.loadoutSlipClaimed = result.rewardItemId === 'jade-step-loadout-slip';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
     }
     state.chat.push(result.message);
   }

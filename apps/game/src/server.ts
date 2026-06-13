@@ -121,6 +121,18 @@ type AlphaHudStatePatch = {
     score: number;
     title: string;
   };
+  techniqueLoadout?: {
+    loadoutId: string;
+    loadoutName: string;
+    message?: string;
+    moves: string[];
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
@@ -530,6 +542,40 @@ type SpiritTeamSparMatchProgress = {
   chatLines: readonly string[];
 };
 
+type SpiritTechniqueLoadoutMove = {
+  spiritId: string;
+  spiritName: string;
+  role: SpiritBattleRole;
+  moveId: string;
+  moveLabel: string;
+  affinity: string;
+  focusCost: number;
+};
+
+type SpiritTechniqueLoadout = {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredTechniqueXp: number;
+  requiredTacticId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type SpiritTechniqueLoadoutProgress = {
+  partyIds: readonly string[];
+  preferredMoveIdBySpiritId?: Record<string, string>;
+  techniqueProof: boolean;
+  tacticProof: boolean;
+  tacticId?: string;
+  techniqueMasteryXp: number;
+  routeMasteryProof: boolean;
+  journalProof: boolean;
+  journalDiscoveredCount: number;
+};
+
 type SpiritMentorChallenge = {
   id: string;
   name: string;
@@ -646,6 +692,11 @@ const alphaItems = {
     id: 'silk-banner-mentor-seal',
     name: 'Silk Banner Mentor Seal',
     description: 'A no-real-value mentor challenge proof for closed-alpha Mochirii battle readiness.'
+  },
+  loadoutSlip: {
+    id: 'jade-step-loadout-slip',
+    name: 'Jade Step Loadout Slip',
+    description: 'A no-real-value technique loadout proof for closed-alpha Mochirii party battles.'
   },
   certificate: {
     id: 'lirabao-canary-certificate',
@@ -1016,6 +1067,20 @@ const teamSparMatches: readonly SpiritTeamSparMatch[] = [
     requiredScore: 30,
     rewardItemId: alphaItems.teamMatchRibbon.id,
     summary: 'A no-injury full-party battle match for testers who have proven route mastery, growth, harmony, concord, tactics, quests, and local social coordination.'
+  }
+];
+
+const techniqueLoadouts: readonly SpiritTechniqueLoadout[] = [
+  {
+    id: 'jade-step-loadout',
+    name: 'Jade Step Loadout',
+    title: 'First Three-Spirit Move Loadout',
+    requiredSpiritIds: spirits.map((spirit) => spirit.id),
+    requiredTechniqueXp: 7,
+    requiredTacticId: battleTactics[1].id,
+    requiredScore: 22,
+    rewardItemId: alphaItems.loadoutSlip.id,
+    summary: 'A no-real-value battle preparation proof that assigns one original Mochirii move to each first-court spirit before team trials.'
   }
 ];
 
@@ -2071,6 +2136,93 @@ function resolveSpiritBattleTactic(spiritId: string, moveId: string, tacticId = 
   };
 }
 
+function resolveSpiritTechniqueLoadout(
+  progress: SpiritTechniqueLoadoutProgress,
+  loadoutId: string = techniqueLoadouts[0].id
+) {
+  const loadout = techniqueLoadouts.find((entry) => entry.id === loadoutId) || techniqueLoadouts[0];
+  const requiredSpiritIds = new Set(loadout.requiredSpiritIds);
+  const party = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getSpirit(spiritId));
+  });
+  const missing: string[] = [];
+
+  for (const spiritId of loadout.requiredSpiritIds) {
+    if (!party.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  if (!progress.techniqueProof) {
+    missing.push('technique');
+  }
+
+  const tacticReady = progress.tacticProof && progress.tacticId === loadout.requiredTacticId;
+  if (!tacticReady) {
+    missing.push(`tactic:${loadout.requiredTacticId}`);
+  }
+
+  const techniqueXp = Math.max(0, Math.floor(progress.techniqueMasteryXp || 0));
+  if (techniqueXp < loadout.requiredTechniqueXp) {
+    missing.push(`technique-xp:${techniqueXp}/${loadout.requiredTechniqueXp}`);
+  }
+
+  if (!progress.routeMasteryProof) {
+    missing.push('route-mastery');
+  }
+
+  if (!progress.journalProof || progress.journalDiscoveredCount < loadout.requiredSpiritIds.length) {
+    missing.push(`journal:${Math.max(0, Math.floor(progress.journalDiscoveredCount || 0))}/${loadout.requiredSpiritIds.length}`);
+  }
+
+  const preferredMoveIdBySpiritId = progress.preferredMoveIdBySpiritId || {};
+  const moves = party.map((spiritId): SpiritTechniqueLoadoutMove => {
+    const spirit = getSpirit(spiritId) as MochiSpirit;
+    const selectedMove =
+      spirit.battle.moves.find((move) => move.id === preferredMoveIdBySpiritId[spirit.id]) ||
+      spirit.battle.moves.find((move) => move.id === battleTactics.find((tactic) => tactic.preferredRoles.includes(spirit.battle.role))?.recommendedMoveId) ||
+      spirit.battle.moves[0];
+
+    return {
+      spiritId: spirit.id,
+      spiritName: spirit.name,
+      role: spirit.battle.role,
+      moveId: selectedMove.id,
+      moveLabel: selectedMove.label,
+      affinity: selectedMove.affinity,
+      focusCost: selectedMove.focusCost
+    };
+  });
+
+  const score =
+    Math.min(party.length, loadout.requiredSpiritIds.length) * 3 +
+    (progress.techniqueProof ? 4 : 0) +
+    (tacticReady ? 4 : 0) +
+    Math.min(4, Math.floor(techniqueXp / 5)) +
+    (progress.routeMasteryProof ? 3 : 0) +
+    (progress.journalProof ? 2 : 0);
+  const prepared = missing.length === 0 && score >= loadout.requiredScore;
+  const moveSummary = moves.map((move) => `${move.spiritName}:${move.moveLabel}`).join(', ');
+
+  return {
+    ok: true,
+    prepared,
+    loadoutId: loadout.id,
+    loadoutName: loadout.name,
+    title: loadout.title,
+    partyIds: party,
+    moves,
+    score,
+    requiredScore: loadout.requiredScore,
+    missing,
+    rewardItemId: loadout.rewardItemId,
+    message: prepared
+      ? `${loadout.name} prepared: ${moveSummary} are set as no-injury Mochirii party moves for closed-alpha battles.`
+      : `${loadout.name} needs ${missing.join(', ')} before party moves can be locked for battle practice.`,
+    source: 'spirit-technique-loadout'
+  };
+}
+
 function resolveGuildRankTrial(progress: GuildRankTrialProgress, trialId: string = guildRankTrials[0].id) {
   const trial = guildRankTrials.find((entry) => entry.id === trialId) || guildRankTrials[0];
   const roster = Array.from(new Set(progress.roster || [])).filter((spiritId) => Boolean(getSpirit(spiritId)));
@@ -2363,6 +2515,15 @@ function careStreakTotal(actingPlayer: RpgPlayer, party: readonly string[]) {
   return party.reduce((total, spiritId) => {
     return Math.max(total, Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.careStreak`) || 0));
   }, 0);
+}
+
+function preferredMoveIdBySpiritId() {
+  return Object.fromEntries(
+    spirits.map((spirit) => {
+      const tactic = battleTactics.find((entry) => entry.preferredRoles.includes(spirit.battle.role));
+      return [spirit.id, tactic?.recommendedMoveId || spirit.battle.moves[0].id];
+    })
+  );
 }
 
 function growthMap(actingPlayer: RpgPlayer, party: readonly string[]) {
@@ -2925,8 +3086,7 @@ function techniqueDojo(): EventDefinition {
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, technique.masteryLevel);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
       actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.focusScore`, technique.focusScore);
-      actingPlayer.showNotification('Technique refined', { time: 1800, icon: 'technique-dojo' });
-      emitAlphaHudState(actingPlayer, {
+      const patch: AlphaHudStatePatch = {
         technique: {
           spiritId: activeSpirit,
           moveId: move.id,
@@ -2936,9 +3096,60 @@ function techniqueDojo(): EventDefinition {
           proof: true,
           message: technique.message
         }
-      });
-      await actingPlayer.save('auto', { title: 'Mochi Spirit technique practice' }, { reason: 'auto', source: 'technique-dojo' });
-      showAlphaPrompt(actingPlayer, `${technique.message} Technique mastery is no-injury alpha progression with no real value.`);
+      };
+      let notification = 'Technique refined';
+      let saveTitle = 'Mochi Spirit technique practice';
+      let prompt = `${technique.message} Technique mastery is no-injury alpha progression with no real value.`;
+      const loadoutParty = partyIds(actingPlayer);
+
+      if (loadoutParty.length >= spirits.length) {
+        const loadout = resolveSpiritTechniqueLoadout(
+          {
+            partyIds: loadoutParty,
+            preferredMoveIdBySpiritId: preferredMoveIdBySpiritId(),
+            techniqueProof: true,
+            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+            tacticId: actingPlayer.getVariable<string>('mochiSocial.battle.lastTacticScroll'),
+            techniqueMasteryXp: Math.max(technique.masteryXp, techniqueMasteryXpTotal(actingPlayer, loadoutParty)),
+            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
+            journalProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.journalProof')),
+            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0)
+          },
+          techniqueLoadouts[0].id
+        );
+
+        if (loadout.prepared) {
+          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutProof', true);
+          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadout', loadout.loadoutId);
+          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutName', loadout.loadoutName);
+          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutScore', loadout.score);
+          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutMoves', loadout.moves.map((entry) => `${entry.spiritId}:${entry.moveId}`));
+          if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.loadoutSlipClaimed')) {
+            actingPlayer.addItem(alphaItems.loadoutSlip, 1);
+            actingPlayer.setVariable('mochiSocial.battle.loadoutSlipClaimed', true);
+          }
+          patch.techniqueLoadout = {
+            loadoutId: loadout.loadoutId,
+            loadoutName: loadout.loadoutName,
+            title: loadout.title,
+            partyIds: loadout.partyIds,
+            moves: loadout.moves.map((entry) => `${entry.spiritId}:${entry.moveId}`),
+            score: loadout.score,
+            requiredScore: loadout.requiredScore,
+            rewardItemId: loadout.rewardItemId,
+            proof: true,
+            message: loadout.message
+          };
+          notification = 'Loadout prepared';
+          saveTitle = 'Mochi Spirit technique loadout';
+          prompt = `${technique.message} ${loadout.message} The Jade Step Loadout Slip is no-real-value closed-alpha move preparation proof.`;
+        }
+      }
+
+      actingPlayer.showNotification(notification, { time: 1800, icon: 'technique-dojo' });
+      emitAlphaHudState(actingPlayer, patch);
+      await actingPlayer.save('auto', { title: saveTitle }, { reason: 'auto', source: 'technique-dojo' });
+      showAlphaPrompt(actingPlayer, prompt);
     }
   };
 }

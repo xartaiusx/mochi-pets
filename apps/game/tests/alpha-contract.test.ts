@@ -12,6 +12,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TECHNIQUE_LOADOUTS,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -33,6 +34,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritResearchFolio,
   resolveSpiritTeamSparMatch,
+  resolveSpiritTechniqueLoadout,
   selectSpiritRaisingNeed,
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
@@ -50,6 +52,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.techniqueLoadouts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
@@ -102,6 +105,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.technique_loadout');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
     expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
@@ -594,6 +598,49 @@ describe('alpha contract', () => {
     expect(spar.victory).toBe(true);
     expect(spar.trainingXp).toBeGreaterThan(0);
     expect(spar.message).toContain('spar ladder');
+
+    expect(SPIRIT_TECHNIQUE_LOADOUTS.map((loadout) => loadout.id)).toEqual(['jade-step-loadout']);
+    const loadout = resolveSpiritTechniqueLoadout({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      preferredMoveIdBySpiritId: {
+        lirabao: 'lantern-pulse',
+        jintari: 'goldleaf-feint',
+        aozhen: 'skybell-guard'
+      },
+      techniqueProof: true,
+      tacticProof: true,
+      tacticId: 'goldleaf-opening',
+      techniqueMasteryXp: 17,
+      routeMasteryProof: true,
+      journalProof: true,
+      journalDiscoveredCount: 3
+    });
+    expect(loadout).toMatchObject({
+      ok: true,
+      prepared: true,
+      loadoutId: 'jade-step-loadout',
+      loadoutName: 'Jade Step Loadout',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 25,
+      requiredScore: 22,
+      rewardItemId: 'jade-step-loadout-slip',
+      source: 'spirit-technique-loadout'
+    });
+    expect(loadout.moves.map((move) => [move.spiritId, move.moveId])).toEqual([
+      ['lirabao', 'lantern-pulse'],
+      ['jintari', 'goldleaf-feint'],
+      ['aozhen', 'skybell-guard']
+    ]);
+    expect(loadout.message).toContain('no-injury Mochirii party moves');
+    expect(resolveSpiritTechniqueLoadout({
+      partyIds: ['lirabao'],
+      techniqueProof: false,
+      tacticProof: false,
+      techniqueMasteryXp: 0,
+      routeMasteryProof: false,
+      journalProof: false,
+      journalDiscoveredCount: 0
+    }).prepared).toBe(false);
 
     const battleRound = resolveSpiritBattleRound({
       partyIds: ['lirabao', 'jintari', 'aozhen'],

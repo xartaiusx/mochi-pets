@@ -70,6 +70,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritJournal === true, 'Manifest must expose Mochi Spirit journal.');
   assert(manifest.body.gameplay?.techniqueMastery === true, 'Manifest must expose Mochi Spirit technique mastery.');
   assert(manifest.body.gameplay?.battleTactics === true, 'Manifest must expose Mochi Spirit battle tactics.');
+  assert(manifest.body.gameplay?.techniqueLoadouts === true, 'Manifest must expose Mochi Spirit technique loadouts.');
   assert(manifest.body.gameplay?.guildRankTrials === true, 'Manifest must expose Mochirii guild rank trials.');
   assert(manifest.body.gameplay?.spiritGrowthRites === true, 'Manifest must expose Mochi Spirit growth rites.');
   assert(manifest.body.gameplay?.affinityTrials === true, 'Manifest must expose Mochi Spirit affinity trials.');
@@ -96,6 +97,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritJournal === true, 'Alpha status must expose Mochi Spirit journal.');
   assert(alphaStatus.body.gameplay?.techniqueMastery === true, 'Alpha status must expose Mochi Spirit technique mastery.');
   assert(alphaStatus.body.gameplay?.battleTactics === true, 'Alpha status must expose Mochi Spirit battle tactics.');
+  assert(alphaStatus.body.gameplay?.techniqueLoadouts === true, 'Alpha status must expose Mochi Spirit technique loadouts.');
   assert(alphaStatus.body.gameplay?.guildRankTrials === true, 'Alpha status must expose Mochirii guild rank trials.');
   assert(alphaStatus.body.gameplay?.spiritGrowthRites === true, 'Alpha status must expose Mochi Spirit growth rites.');
   assert(alphaStatus.body.gameplay?.affinityTrials === true, 'Alpha status must expose Mochi Spirit affinity trials.');
@@ -258,7 +260,28 @@ async function run() {
     {
       requestId: `${runId}-tactic`,
       type: 'battle.tactic_scroll',
-      payload: { spiritId: 'lirabao', moveId: 'lantern-pulse', tacticId: 'lantern-anchor', currentMasteryXp: 7, bond: 3, noInjury: true }
+      payload: { spiritId: 'jintari', moveId: 'goldleaf-feint', tacticId: 'goldleaf-opening', currentMasteryXp: 10, bond: 3, noInjury: true }
+    },
+    {
+      requestId: `${runId}-technique-loadout`,
+      type: 'spirit.technique_loadout',
+      payload: {
+        loadoutId: 'jade-step-loadout',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        preferredMoveIdBySpiritId: {
+          lirabao: 'lantern-pulse',
+          jintari: 'goldleaf-feint',
+          aozhen: 'skybell-guard'
+        },
+        techniqueProof: true,
+        tacticProof: true,
+        tacticId: 'goldleaf-opening',
+        techniqueMasteryXp: 17,
+        routeMasteryProof: true,
+        journalProof: true,
+        journalDiscoveredCount: 3,
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-rank`,
