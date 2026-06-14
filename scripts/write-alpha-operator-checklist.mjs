@@ -523,7 +523,7 @@ function buildProviderActionQueue() {
       provider: 'GitHub',
       title: 'Sync the local game branch and verify PR checks.',
       blocker: `${gitState.ahead || 0} local commit(s) ahead of ${upstream}; remote PR checks cannot prove this HEAD.`,
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
+      approvalText: `Proceed with public-repo sync: push ${root} branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
       noCostFallback: 'Keep the branch local only if intentionally avoiding a sync; github.local-branch-sync remains red until pushed.'
     });
   }
@@ -536,7 +536,7 @@ function buildProviderActionQueue() {
       provider: 'GitHub',
       title: 'Sync the local Mochirii site branch and verify PR checks.',
       blocker: `${siteGitState.ahead || 0} local site commit(s) ahead of ${siteUpstream}; remote PR checks cannot prove this HEAD.`,
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
+      approvalText: `Proceed with public-repo sync: push ${siteRepoPath} branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
       noCostFallback: 'Keep the site branch local only if intentionally avoiding a sync; github.site-local-branch-sync remains red until pushed.'
     });
   }

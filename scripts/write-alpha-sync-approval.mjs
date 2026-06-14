@@ -313,7 +313,7 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       exactAction: `git push origin ${branch}`,
       costRisk: 'No separate approval required under current user policy for public-repo commits/pushes; verify the resulting PR checks afterward.',
       noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
+      approvalText: `Proceed with public-repo sync: push ${root} branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
       requiresApproval: false
     },
     {
@@ -323,10 +323,10 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       currentlyRequired: siteSyncNeeded,
       requirementReason: siteSyncNeeded ? `Mochirii branch is ahead ${currentSiteGitState.ahead} / behind ${currentSiteGitState.behind} or has local state that remote PR checks cannot prove.` : 'Mochirii site branch is already synced and clean.',
       action: 'Push local Mochirii site branch to origin and verify GitHub Actions/PR checks.',
-      exactAction: `git -C C:\\Users\\xtyty\\Documents\\Mochirii push origin ${siteBranch}`,
+      exactAction: `git -C "${siteRepoPath}" push origin ${siteBranch}`,
       costRisk: 'No separate approval required under current user policy for public-repo commits/pushes; verify the resulting PR checks afterward.',
       noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.site-local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
+      approvalText: `Proceed with public-repo sync: push ${siteRepoPath} branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
       requiresApproval: false
     },
     {
@@ -549,7 +549,7 @@ function renderMarkdown(report) {
     ? `Suggested combined public-repo sync command note:
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and push C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}; then verify GitHub Actions/PR checks for both Mochi Social and Mochirii.
+Push ${root} branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and push ${siteRepoPath} branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}; then verify GitHub Actions/PR checks for both Mochi Social and Mochirii.
 \`\`\`
 
 `
@@ -684,14 +684,14 @@ ${actionMatrix}
 ${combinedGitHubSyncApproval}Public-repo sync note for the GitHub game branch:
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochi Social.
+Push ${root} branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
 Public-repo sync note for the Mochirii site branch:
 
 ${siteSyncAction?.currentlyRequired ? '' : 'No Mochirii site push is required right now because the site branch is already synced.\n\n'}
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochirii.
+Push ${siteRepoPath} branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 Suggested explicit approval text for hosted/provider gates:

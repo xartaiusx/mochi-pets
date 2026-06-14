@@ -267,11 +267,11 @@ ${failures}
 ## Next Actions
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${summaryReport.git.branch || '<game-branch>'} to ${summaryReport.git.upstream || '<game-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
+Push ${root} branch ${summaryReport.git.branch || '<game-branch>'} to ${summaryReport.git.upstream || '<game-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Mochirii branch ${summaryReport.siteGit.branch || '<site-branch>'} to ${summaryReport.siteGit.upstream || '<site-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
+Push ${siteRepoPath} branch ${summaryReport.siteGit.branch || '<site-branch>'} to ${summaryReport.siteGit.upstream || '<site-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 \`\`\`text
