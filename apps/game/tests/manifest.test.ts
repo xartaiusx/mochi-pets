@@ -60,6 +60,7 @@ describe('game manifest', () => {
         itemProvisions: true,
         guildCommissions: true,
         socialRallies: true,
+        spiritStoryChapters: true,
         wayfarerChronicles: true,
         guildAscensionTrials: true,
         partyFormation: true,

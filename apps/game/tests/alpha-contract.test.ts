@@ -5,6 +5,7 @@ import {
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
+  MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_BOND_MILESTONES,
@@ -49,6 +50,7 @@ import {
   resolveGuildAscensionTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMochiStoryChapter,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritNurtureRite,
@@ -116,6 +118,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
     expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildAscensionTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
@@ -181,6 +184,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
+    expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.wayfarer_chronicle');
     expect(ALPHA_ACTION_TYPES).toContain('guild.ascension_trial');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
@@ -1151,6 +1155,80 @@ describe('alpha contract', () => {
     expect(missingRally.rallied).toBe(false);
     expect(missingRally.missing).toContain('presence:1/2');
 
+    expect(MOCHI_STORY_CHAPTERS.map((chapter) => chapter.id)).toEqual(['jade-scroll-story-chapter']);
+    const storyChapter = resolveMochiStoryChapter({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      rallyProof: true,
+      rallyId: 'jade-courtyard-rally',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first story chapter.']
+    });
+    expect(storyChapter).toMatchObject({
+      ok: true,
+      recorded: true,
+      chapterId: 'jade-scroll-story-chapter',
+      chapterName: 'Jade Scroll Story Chapter',
+      title: 'First-Court Roleplay Chapter',
+      narratorName: 'Sifu Narao',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      localPresenceCount: 2,
+      score: 56,
+      requiredScore: 42,
+      rewardItemId: 'jade-scroll-story-chapter',
+      source: 'story-chapter'
+    });
+    expect(storyChapter.message).toContain('No real value');
+    const missingStoryChapter = resolveMochiStoryChapter({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 1,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      tournamentProof: false,
+      tournamentId: 'jade-banner-tournament',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      rallyProof: true,
+      rallyId: 'jade-courtyard-rally',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first story chapter.']
+    });
+    expect(missingStoryChapter.recorded).toBe(false);
+    expect(missingStoryChapter.missing).toContain('presence:1/2');
+    expect(missingStoryChapter.missing).toContain('tournament:jade-banner-tournament');
+
     expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
     const chronicle = resolveGuildWayfarerChronicle({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -1181,6 +1259,7 @@ describe('alpha contract', () => {
       teamSparMatchProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1202,8 +1281,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 94,
-      requiredScore: 55,
+      score: 97,
+      requiredScore: 58,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1237,6 +1316,7 @@ describe('alpha contract', () => {
       teamSparMatchProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1260,6 +1340,7 @@ describe('alpha contract', () => {
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1289,8 +1370,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 62,
-      requiredScore: 47,
+      score: 65,
+      requiredScore: 50,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -1303,6 +1384,7 @@ describe('alpha contract', () => {
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,

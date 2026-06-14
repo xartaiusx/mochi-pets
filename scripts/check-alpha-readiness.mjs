@@ -72,8 +72,44 @@ const checks = [
     includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['Jade Scroll Story Chapter proof', 'story-chapter', 'story, chronicle']
+  },
+  {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Scroll Story Chapter proof', 'story-chapter']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Scroll Story Chapter contribution', 'content-only Jade Scroll Story Chapter proof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Scroll Story Chapter proof', 'story']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Scroll Story Chapter proof', 'record the Jade Scroll Story Chapter']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Scroll Story Chapter', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Scroll Story Chapter', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/site-integration.md',
@@ -116,6 +152,10 @@ const checks = [
     includes: ['spiritTournamentBrackets: true', "'battle.tournament_bracket'"]
   },
   {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
+  },
+  {
     file: 'apps/game/src/integration/enjin-canary.ts',
     includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
@@ -148,12 +188,20 @@ const checks = [
     includes: ['SPIRIT_TOURNAMENT_BRACKETS', 'resolveSpiritTournamentBracket', 'data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament']
   },
   {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['MOCHI_STORY_CHAPTERS', 'resolveMochiStoryChapter', 'data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter']
+  },
+  {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['cloudbell-reed-bank', 'aozhen', 'Moonbridge Goldleaf Accord', 'Cloudbell Skyvow Accord', 'jade-field-accord-talisman', 'resolveSpiritFieldAccord', 'spirit-field-accord', 'Jade Cloudbell Circuit', 'cloudbell-route-knot', 'resolveSpiritRouteMastery', 'world-route-mastery', 'Jade Court Habitat Bond', 'jade-court-habitat-tassel', 'resolveSpiritHabitatBond', 'spirit-habitat-bond', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'resolveSpiritSanctuaryRite', 'spirit-sanctuary-rite', 'Jade Court Research Folio', 'jade-court-research-folio', 'resolveSpiritResearchFolio', 'spirit-research-folio', 'Jade Court Spirit Compendium', 'jade-court-compendium-seal', 'resolveSpiritCompendiumCompletion', 'spirit-compendium', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'resolveSpiritRosterArchive', 'spirit-roster-archive', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'resolveSpiritCareCycle', 'spirit-care-cycle', 'Jade Temperament Concord', 'jade-temperament-charm', 'resolveSpiritTemperamentConcord', 'spirit-temperament-concord', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'resolveSpiritFieldAlmanac', 'spirit-field-almanac', 'Jade Court Provision Satchel', 'jade-court-provision-satchel', 'Jade Mooncake Box', 'jade-mooncake-box', 'resolveSpiritProvisionSatchel', 'item-provision-satchel', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'resolveGuildSocialRally', 'guild-social-rally', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'resolveGuildWayfarerChronicle', 'guild-wayfarer-chronicle', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'resolveGuildAscensionTrial', 'guild-ascension-trial', 'Jade Step Loadout', 'jade-step-loadout-slip', 'resolveSpiritTechniqueLoadout', 'spirit-technique-loadout', 'Jade Heart Trait Attunement', 'jade-heart-trait-thread', 'resolveSpiritTraitAttunement', 'spirit-trait-attunement', 'Jade Mirror Condition Weave', 'jade-mirror-condition-charm', 'Lantern Ward', 'Goldleaf Tempo', 'Skybell Guard', 'resolveSpiritConditionWeave', 'battle-condition-weave', 'Silk Banner Mentor Drill', 'silk-banner-mentor-seal', 'resolveSpiritMentorChallenge', 'battle-mentor-challenge', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof', 'Silk Market Kindness', 'Skybell Spar', 'selectMochiSpiritQuest', 'resolveMochiSpiritQuestProgress', 'quest-chain']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Cloudbell Patrol', 'jade-route-patrol-pennant', 'resolveSpiritRoutePatrol', 'world-route-patrol']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Scroll Story Chapter', 'jade-scroll-story-chapter', 'resolveMochiStoryChapter', 'story-chapter', 'storyChapterProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -216,6 +264,10 @@ const checks = [
     includes: ['spiritTournamentBrackets: true', 'battle.tournament_bracket']
   },
   {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritStoryChapters: true', 'story.chapter_complete']
+  },
+  {
     file: 'apps/game/tests/enjin-canary.test.ts',
     includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update', 'submits hot-to-cold certificate proof', 'submits fixed listing proof', 'polls Enjin finality']
   },
@@ -272,6 +324,10 @@ const checks = [
     includes: ['battle.tournament_bracket', 'jade-banner-tournament', 'spiritTournamentBrackets', 'Jade Banner Tournament', 'tournamentProof']
   },
   {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['story.chapter_complete', 'jade-scroll-story-chapter', 'spiritStoryChapters', 'Jade Scroll Story Chapter', 'storyChapterProof']
+  },
+  {
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'simulated testers', 'HTTP alpha contract load smoke']
   },
@@ -302,6 +358,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament cleared']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter recorded']
   },
   {
     file: 'scripts/check-alpha-visual-snapshot.mjs',
@@ -370,6 +430,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'battle-tournament-bracket', 'tournament bracket']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter', 'jade-scroll-story-chapter', 'story-chapter', 'story chapter']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',

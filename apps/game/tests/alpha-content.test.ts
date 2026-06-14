@@ -3,6 +3,7 @@ import {
   ALPHA_ITEMS,
   GUILD_ASCENSION_TRIALS,
   GUILD_WAYFARER_CHRONICLES,
+  MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BOND_MILESTONES,
@@ -28,6 +29,7 @@ import {
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMochiStoryChapter,
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleRound,
@@ -1010,6 +1012,43 @@ describe('Mochi Spirits alpha content contract', () => {
       rewardItemId: ALPHA_ITEMS.rallyKnot.id
     });
 
+    expect(MOCHI_STORY_CHAPTERS.map((chapter) => chapter.id)).toEqual(['jade-scroll-story-chapter']);
+    const storyChapter = resolveMochiStoryChapter({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      completedQuestIds,
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      rallyProof: true,
+      rallyId: 'jade-courtyard-rally',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Story chapter ready.']
+    });
+    expect(storyChapter).toMatchObject({
+      recorded: true,
+      chapterId: 'jade-scroll-story-chapter',
+      chapterName: 'Jade Scroll Story Chapter',
+      score: 56,
+      requiredScore: 42,
+      rewardItemId: ALPHA_ITEMS.storyScroll.id,
+      source: 'story-chapter'
+    });
+    expect(storyChapter.message).toContain('No real value');
+
     expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
     const blockedChronicle = resolveGuildWayfarerChronicle({
       roster: fullRoster,
@@ -1040,6 +1079,7 @@ describe('Mochi Spirits alpha content contract', () => {
       teamSparMatchProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1086,6 +1126,7 @@ describe('Mochi Spirits alpha content contract', () => {
       teamSparMatchProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1101,8 +1142,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 94,
-      requiredScore: 55,
+      score: 97,
+      requiredScore: 58,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1117,6 +1158,7 @@ describe('Mochi Spirits alpha content contract', () => {
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1150,6 +1192,7 @@ describe('Mochi Spirits alpha content contract', () => {
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
+      storyChapterProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1173,8 +1216,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 62,
-      requiredScore: 47,
+      score: 65,
+      requiredScore: 50,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });

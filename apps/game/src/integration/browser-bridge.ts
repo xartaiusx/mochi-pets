@@ -5,6 +5,7 @@ import {
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
+  MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
@@ -58,6 +59,7 @@ import {
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMochiStoryChapter,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
@@ -254,6 +256,14 @@ interface AlphaHudState {
   rallyScore: number;
   rallyPresenceCount: number;
   rallyKnotClaimed: boolean;
+  storyChapterProof: boolean;
+  storyChapterId?: string;
+  storyChapterName: string;
+  storyChapterScore: number;
+  storyChapterRequiredScore: number;
+  storyChapterRouteIds: string[];
+  storyChapterQuestIds: string[];
+  storyScrollClaimed: boolean;
   wayfarerChronicleProof: boolean;
   wayfarerChronicleId?: string;
   wayfarerChronicleName: string;
@@ -845,6 +855,13 @@ function defaultAlphaState(): AlphaHudState {
     rallyScore: 0,
     rallyPresenceCount: 1,
     rallyKnotClaimed: false,
+    storyChapterProof: false,
+    storyChapterName: 'Unrecorded',
+    storyChapterScore: 0,
+    storyChapterRequiredScore: 0,
+    storyChapterRouteIds: [],
+    storyChapterQuestIds: [],
+    storyScrollClaimed: false,
     wayfarerChronicleProof: false,
     wayfarerChronicleName: 'Unchronicled',
     wayfarerChronicleScore: 0,
@@ -1054,6 +1071,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
+      <span class="mochi-hud__hint" data-story-label>Story: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
       <span class="mochi-hud__hint" data-ascension-label>Ascension: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
@@ -1102,6 +1120,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
+      <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
       <button type="button" data-alpha-action="guild.ascension_trial" aria-label="Record the no-real-value Jade Court Ascension Trial">Ascend</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
@@ -1169,6 +1188,7 @@ function createHud() {
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
+  const storyLabel = hud.querySelector('[data-story-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
   const ascensionLabel = hud.querySelector('[data-ascension-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
@@ -1239,6 +1259,11 @@ function createHud() {
       routePatrolLabel.textContent = state.routePatrolProof
         ? `Route Patrol: ${state.routePatrolName}, score ${state.routePatrolScore}/${state.routePatrolRequiredScore}`
         : 'Route Patrol: pending';
+    }
+    if (storyLabel) {
+      storyLabel.textContent = state.storyChapterProof
+        ? `Story: ${state.storyChapterName}, score ${state.storyChapterScore}/${state.storyChapterRequiredScore}`
+        : 'Story: pending';
     }
     if (chronicleLabel) {
       chronicleLabel.textContent = state.wayfarerChronicleProof
@@ -1639,6 +1664,8 @@ function readAlphaState(): AlphaHudState {
       routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
       nurtureRiteRosterIds: Array.isArray(parsed?.nurtureRiteRosterIds) ? parsed.nurtureRiteRosterIds.map(String) : [],
       nurtureRiteCaredSpiritIds: Array.isArray(parsed?.nurtureRiteCaredSpiritIds) ? parsed.nurtureRiteCaredSpiritIds.map(String) : [],
+      storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
+      storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       tournamentPartyIds: Array.isArray(parsed?.tournamentPartyIds) ? parsed.tournamentPartyIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
@@ -2422,6 +2449,36 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'story.chapter_complete') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      chapterId: MOCHI_STORY_CHAPTERS[0].id,
+      roster: state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean),
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      completedQuestIds: state.completedQuestIds,
+      discoveredRoutes: state.discoveredRouteIds,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      localPresenceCount: presenceCount,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      routeWaystoneProof: state.routeWaystoneProof,
+      routeWaystoneId: state.routeWaystoneId,
+      nurtureRiteProof: state.nurtureRiteProof,
+      nurtureRiteId: state.nurtureRiteId,
+      tournamentProof: state.tournamentProof,
+      tournamentId: state.tournamentId,
+      commissionProof: state.commissionProof,
+      commissionId: state.commissionId,
+      rallyProof: state.rallyProof,
+      rallyId: state.rallyId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      emoteProof: state.emoteProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.wayfarer_chronicle') {
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
     return {
@@ -2444,6 +2501,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       nurtureRiteProof: state.nurtureRiteProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
+      storyChapterProof: state.storyChapterProof,
       techniqueLoadoutProof: state.techniqueLoadoutProof,
       traitAttunementProof: state.traitAttunementProof,
       conditionWeaveProof: state.conditionWeaveProof,
@@ -2475,6 +2533,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
       localPresenceCount: presenceCount,
       wayfarerChronicleProof: state.wayfarerChronicleProof,
+      storyChapterProof: state.storyChapterProof,
       routePatrolProof: state.routePatrolProof,
       mentorChallengeProof: state.mentorChallengeProof,
       battleRoundProof: state.battleRoundProof,
@@ -3455,6 +3514,50 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'story.chapter_complete') {
+    const result = resolveMochiStoryChapter(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
+        routeWaystoneId: String(payload.routeWaystoneId || state.routeWaystoneId || ''),
+        nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
+        nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
+        tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
+        tournamentId: String(payload.tournamentId || state.tournamentId || ''),
+        commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
+        commissionId: String(payload.commissionId || state.commissionId || ''),
+        rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
+        rallyId: String(payload.rallyId || state.rallyId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        emoteProof: Boolean(payload.emoteProof ?? state.emoteProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.chapterId || MOCHI_STORY_CHAPTERS[0].id)
+    );
+    if (result.recorded) {
+      state.storyChapterProof = true;
+      state.storyChapterId = result.chapterId;
+      state.storyChapterName = result.chapterName;
+      state.storyChapterScore = result.score;
+      state.storyChapterRequiredScore = result.requiredScore;
+      state.storyChapterRouteIds = result.routeIds;
+      state.storyChapterQuestIds = result.completedQuestIds;
+      state.storyScrollClaimed = result.rewardItemId === 'jade-scroll-story-chapter';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.completedQuestIds = Array.from(new Set([...state.completedQuestIds, ...result.completedQuestIds]));
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.wayfarer_chronicle') {
     const result = resolveGuildWayfarerChronicle(
       {
@@ -3476,6 +3579,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
+        storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
         traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
         conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
@@ -3522,6 +3626,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
+        storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
