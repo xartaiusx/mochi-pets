@@ -36,7 +36,7 @@ const checks = [
     label: 'Habitat care loop prompt',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK),
-    expectedEvidence: 'Rendered prompt/status confirms companion care, bond, and growth feedback after holding the Action key briefly.'
+    expectedEvidence: 'Rendered prompt/status confirms companion care, bond, growth, and the current/next bond milestone after holding the Action key briefly.'
   }
 ];
 
