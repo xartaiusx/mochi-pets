@@ -58,7 +58,7 @@ Each asset gets a source card, runtime export, ledger update, screenshot review,
 
 ## Clean-Room Guardrail
 
-Use `npm run clean-room-scan` with a private denylist supplied by `MOCHI_SOCIAL_CLEAN_ROOM_DENYLIST` or `.local/clean-room-denylist.txt`. The committed repo stores the scanner and instructions only; private restricted literals stay outside Git.
+Use `npm run clean-room-scan` for built-in clean-room fingerprints, runtime asset ledger coverage, and a private denylist supplied by `MOCHI_SOCIAL_CLEAN_ROOM_DENYLIST` or `.local/clean-room-denylist.txt`. The committed repo stores the scanner and instructions only; private restricted literals stay outside Git.
 
 ## Rejection Conditions
 
