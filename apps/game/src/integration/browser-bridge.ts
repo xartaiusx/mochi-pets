@@ -18,6 +18,7 @@ import {
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_CRAFT_WRITS,
+  SPIRIT_DOJO_LADDERS,
   SPIRIT_ENCOUNTER_ATLASES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
@@ -66,6 +67,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritCraftWrit,
+  resolveSpiritDojoLadder,
   resolveSpiritEncounterAtlas,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
@@ -460,6 +462,14 @@ interface AlphaHudState {
   mentorChallengeName: string;
   mentorChallengeScore: number;
   mentorSealClaimed: boolean;
+  dojoLadderProof: boolean;
+  dojoLadderId?: string;
+  dojoLadderName: string;
+  dojoLadderScore: number;
+  dojoLadderRequiredScore: number;
+  dojoLadderPartyIds: string[];
+  dojoLadderOpponentIds: string[];
+  dojoLadderSealClaimed: boolean;
   tournamentProof: boolean;
   tournamentId?: string;
   tournamentName: string;
@@ -790,6 +800,19 @@ export interface AlphaWorldStatePatch {
   mentorChallenge?: {
     challengeId: string;
     challengeName: string;
+    mentorName: string;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
+  dojoLadder?: {
+    clearedOpponentIds: string[];
+    ladderId: string;
+    ladderName: string;
     mentorName: string;
     message?: string;
     partyIds: string[];
@@ -1153,6 +1176,13 @@ function defaultAlphaState(): AlphaHudState {
     mentorChallengeName: 'Unchallenged',
     mentorChallengeScore: 0,
     mentorSealClaimed: false,
+    dojoLadderProof: false,
+    dojoLadderName: 'Pending',
+    dojoLadderScore: 0,
+    dojoLadderRequiredScore: 0,
+    dojoLadderPartyIds: [],
+    dojoLadderOpponentIds: [],
+    dojoLadderSealClaimed: false,
     tournamentProof: false,
     tournamentName: 'Pending',
     tournamentScore: 0,
@@ -1339,6 +1369,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-harmony-trial-label>Concord: pending</span>
       <span class="mochi-hud__hint" data-team-match-label>Team Match: pending</span>
       <span class="mochi-hud__hint" data-mentor-label>Mentor: pending</span>
+      <span class="mochi-hud__hint" data-dojo-ladder-label>Dojo Ladder: pending</span>
       <span class="mochi-hud__hint" data-tournament-label>Tournament: pending</span>
       <span class="mochi-hud__hint" data-rival-circle-label>Rival: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
@@ -1358,6 +1389,7 @@ function createHud() {
       <button type="button" data-alpha-action="battle.harmony_trial" aria-label="Clear the no-injury social harmony battle trial">Concord</button>
       <button type="button" data-alpha-action="battle.team_spar_match" aria-label="Clear the no-injury full-party team spar match">Match</button>
       <button type="button" data-alpha-action="battle.mentor_challenge" aria-label="Clear the no-injury Mochirii mentor challenge">Mentor</button>
+      <button type="button" data-alpha-action="battle.dojo_ladder" aria-label="Clear the no-injury Jade Dojo Ladder">Ladder</button>
       <button type="button" data-alpha-action="battle.tournament_bracket" aria-label="Clear the no-injury Jade Banner Tournament bracket">Bracket</button>
       <button type="button" data-alpha-action="battle.rival_circle" aria-label="Clear the no-injury Jade Rival Circle">Rival</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
@@ -1480,6 +1512,7 @@ function createHud() {
   const harmonyTrialLabel = hud.querySelector('[data-harmony-trial-label]');
   const teamMatchLabel = hud.querySelector('[data-team-match-label]');
   const mentorLabel = hud.querySelector('[data-mentor-label]');
+  const dojoLadderLabel = hud.querySelector('[data-dojo-ladder-label]');
   const tournamentLabel = hud.querySelector('[data-tournament-label]');
   const rivalCircleLabel = hud.querySelector('[data-rival-circle-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
@@ -1736,6 +1769,11 @@ function createHud() {
       mentorLabel.textContent = state.mentorChallengeProof
         ? `Mentor: ${state.mentorChallengeName}, score ${state.mentorChallengeScore}`
         : 'Mentor: pending';
+    }
+    if (dojoLadderLabel) {
+      dojoLadderLabel.textContent = state.dojoLadderProof
+        ? `Dojo Ladder: ${state.dojoLadderName}, ${state.dojoLadderOpponentIds.length} clears, score ${state.dojoLadderScore}/${state.dojoLadderRequiredScore}`
+        : 'Dojo Ladder: pending';
     }
     if (tournamentLabel) {
       tournamentLabel.textContent = state.tournamentProof
@@ -2035,6 +2073,8 @@ function readAlphaState(): AlphaHudState {
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
       insigniaCasePartyIds: Array.isArray(parsed?.insigniaCasePartyIds) ? parsed.insigniaCasePartyIds.map(String) : [],
+      dojoLadderPartyIds: Array.isArray(parsed?.dojoLadderPartyIds) ? parsed.dojoLadderPartyIds.map(String) : [],
+      dojoLadderOpponentIds: Array.isArray(parsed?.dojoLadderOpponentIds) ? parsed.dojoLadderOpponentIds.map(String) : [],
       tournamentPartyIds: Array.isArray(parsed?.tournamentPartyIds) ? parsed.tournamentPartyIds.map(String) : [],
       rivalCirclePartyIds: Array.isArray(parsed?.rivalCirclePartyIds) ? parsed.rivalCirclePartyIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
@@ -2412,6 +2452,20 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.mentorChallenge.partyIds.map(String)]));
     state.supportSpiritIds = state.partyIds.slice(1);
     appendUniqueAlphaChat(state, patch.mentorChallenge.message || `${state.mentorChallengeName} recorded as no-real-value mentor challenge proof.`);
+  }
+
+  if (patch.dojoLadder) {
+    state.dojoLadderProof = patch.dojoLadder.proof || state.dojoLadderProof;
+    state.dojoLadderId = patch.dojoLadder.ladderId || state.dojoLadderId;
+    state.dojoLadderName = patch.dojoLadder.ladderName || state.dojoLadderName;
+    state.dojoLadderScore = Math.max(state.dojoLadderScore, Number(patch.dojoLadder.score) || 0);
+    state.dojoLadderRequiredScore = Math.max(state.dojoLadderRequiredScore, Number(patch.dojoLadder.requiredScore) || 0);
+    state.dojoLadderPartyIds = Array.isArray(patch.dojoLadder.partyIds) ? patch.dojoLadder.partyIds.map(String) : state.dojoLadderPartyIds;
+    state.dojoLadderOpponentIds = Array.isArray(patch.dojoLadder.clearedOpponentIds) ? patch.dojoLadder.clearedOpponentIds.map(String) : state.dojoLadderOpponentIds;
+    state.dojoLadderSealClaimed = state.dojoLadderSealClaimed || patch.dojoLadder.rewardItemId === 'jade-dojo-ladder-seal';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...state.dojoLadderPartyIds]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    appendUniqueAlphaChat(state, patch.dojoLadder.message || `${state.dojoLadderName} recorded as no-real-value dojo ladder proof.`);
   }
 
   if (patch.training) {
@@ -3258,6 +3312,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       harmonyTrialProof: state.harmonyTrialProof,
       teamSparMatchProof: state.teamSparMatchProof,
       mentorChallengeProof: state.mentorChallengeProof,
+      dojoLadderProof: state.dojoLadderProof,
       tournamentProof: state.tournamentProof,
       battleRoundProof: state.battleRoundProof,
       battleRoundVictory: state.battleRoundVictory,
@@ -3292,6 +3347,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       rivalCircleProof: state.rivalCircleProof,
       routePatrolProof: state.routePatrolProof,
       mentorChallengeProof: state.mentorChallengeProof,
+      dojoLadderProof: state.dojoLadderProof,
       battleRoundProof: state.battleRoundProof,
       battleRoundVictory: state.battleRoundVictory,
       battleRoundFocusScore: state.battleRoundFocusScore,
@@ -3576,11 +3632,45 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'battle.dojo_ladder') {
+    const ladder = SPIRIT_DOJO_LADDERS[0];
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    return {
+      ladderId: ladder.id,
+      partyIds,
+      clearedOpponentIds: [...ladder.requiredOpponentIds],
+      sparLadderWins: Math.max(state.sparLadderWins || 0, ladder.requiredSparWins),
+      sparLadderXp: Math.max(state.sparLadderXp || 0, ladder.requiredSparLadderXp),
+      trainingXp: Math.max(state.trainingXp || 0, ladder.requiredTrainingXp),
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      techniqueCodexProof: state.techniqueCodexProof,
+      techniqueCodexId: state.techniqueCodexId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      affinityMatrixProof: state.affinityMatrixProof,
+      affinityMatrixId: state.affinityMatrixId,
+      mentorChallengeProof: state.mentorChallengeProof,
+      mentorChallengeId: state.mentorChallengeId,
+      teamSparMatchProof: state.teamSparMatchProof,
+      teamSparMatchId: state.teamSparMatchId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'battle.tournament_bracket') {
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
     return {
       bracketId: SPIRIT_TOURNAMENT_BRACKETS[0].id,
       partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      dojoLadderProof: state.dojoLadderProof,
+      dojoLadderId: state.dojoLadderId,
+      dojoLadderScore: state.dojoLadderScore,
       mentorChallengeProof: state.mentorChallengeProof,
       mentorChallengeId: state.mentorChallengeId,
       mentorChallengeScore: state.mentorChallengeScore,
@@ -3614,6 +3704,9 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       tournamentProof: state.tournamentProof,
       tournamentId: state.tournamentId,
       tournamentScore: state.tournamentScore,
+      dojoLadderProof: state.dojoLadderProof,
+      dojoLadderId: state.dojoLadderId,
+      dojoLadderScore: state.dojoLadderScore,
       mentorChallengeProof: state.mentorChallengeProof,
       mentorChallengeId: state.mentorChallengeId,
       mentorChallengeScore: state.mentorChallengeScore,
@@ -4900,6 +4993,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         harmonyTrialProof: Boolean(payload.harmonyTrialProof ?? state.harmonyTrialProof),
         teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
         tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
         battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
@@ -4949,6 +5043,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
         battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
         battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
@@ -5547,10 +5642,62 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'battle.dojo_ladder') {
+    const result = resolveSpiritDojoLadder(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        clearedOpponentIds: Array.isArray(payload.clearedOpponentIds) ? payload.clearedOpponentIds.map(String) : state.dojoLadderOpponentIds,
+        sparLadderWins: Number(payload.sparLadderWins ?? state.sparLadderWins ?? 0),
+        sparLadderXp: Number(payload.sparLadderXp ?? state.sparLadderXp ?? 0),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
+        techniqueCodexId: String(payload.techniqueCodexId || state.techniqueCodexId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
+        affinityMatrixId: String(payload.affinityMatrixId || state.affinityMatrixId || ''),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        mentorChallengeId: String(payload.mentorChallengeId || state.mentorChallengeId || ''),
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
+        teamSparMatchId: String(payload.teamSparMatchId || state.teamSparMatchId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.ladderId || SPIRIT_DOJO_LADDERS[0].id)
+    );
+    if (result.cleared) {
+      state.dojoLadderProof = true;
+      state.dojoLadderId = result.ladderId;
+      state.dojoLadderName = result.ladderName;
+      state.dojoLadderScore = result.score;
+      state.dojoLadderRequiredScore = result.requiredScore;
+      state.dojoLadderPartyIds = result.partyIds;
+      state.dojoLadderOpponentIds = result.clearedOpponentIds;
+      state.dojoLadderSealClaimed = result.rewardItemId === 'jade-dojo-ladder-seal';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
+      state.sparLadderWins = Math.max(state.sparLadderWins, SPIRIT_DOJO_LADDERS[0].requiredSparWins);
+      state.sparLadderXp = Math.max(state.sparLadderXp, SPIRIT_DOJO_LADDERS[0].requiredSparLadderXp);
+      state.trainingXp = Math.max(state.trainingXp, SPIRIT_DOJO_LADDERS[0].requiredTrainingXp);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'battle.tournament_bracket') {
     const result = resolveSpiritTournamentBracket(
       {
         partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
+        dojoLadderId: String(payload.dojoLadderId || state.dojoLadderId || ''),
+        dojoLadderScore: Number(payload.dojoLadderScore ?? state.dojoLadderScore ?? 0),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
         mentorChallengeId: String(payload.mentorChallengeId || state.mentorChallengeId || ''),
         mentorChallengeScore: Number(payload.mentorChallengeScore ?? state.mentorChallengeScore ?? 0),
@@ -5600,6 +5747,9 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
         tournamentId: String(payload.tournamentId || state.tournamentId || ''),
         tournamentScore: Number(payload.tournamentScore ?? state.tournamentScore ?? 0),
+        dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
+        dojoLadderId: String(payload.dojoLadderId || state.dojoLadderId || ''),
+        dojoLadderScore: Number(payload.dojoLadderScore ?? state.dojoLadderScore ?? 0),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
         mentorChallengeId: String(payload.mentorChallengeId || state.mentorChallengeId || ''),
         mentorChallengeScore: Number(payload.mentorChallengeScore ?? state.mentorChallengeScore ?? 0),

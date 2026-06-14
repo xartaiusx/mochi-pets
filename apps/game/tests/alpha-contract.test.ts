@@ -19,6 +19,7 @@ import {
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_CRAFT_WRITS,
+  SPIRIT_DOJO_LADDERS,
   SPIRIT_ENCOUNTER_ATLASES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_FIELD_ACCORDS,
@@ -56,6 +57,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritCraftWrit,
+  resolveSpiritDojoLadder,
   resolveSpiritEncounterAtlas,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
@@ -164,6 +166,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
     expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.dojoLadders).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
@@ -246,6 +249,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
     expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.dojo_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
     expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
@@ -1887,6 +1891,7 @@ describe('alpha contract', () => {
       harmonyTrialProof: true,
       teamSparMatchProof: true,
       mentorChallengeProof: true,
+      dojoLadderProof: true,
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
@@ -1911,7 +1916,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 127,
+      score: 130,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1954,6 +1959,7 @@ describe('alpha contract', () => {
       harmonyTrialProof: true,
       teamSparMatchProof: true,
       mentorChallengeProof: true,
+      dojoLadderProof: true,
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
@@ -1984,6 +1990,7 @@ describe('alpha contract', () => {
       exchangeAccordProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
+      dojoLadderProof: true,
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
@@ -2019,7 +2026,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 92,
+      score: 95,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2037,6 +2044,7 @@ describe('alpha contract', () => {
       exchangeAccordProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
+      dojoLadderProof: true,
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
@@ -2493,9 +2501,74 @@ describe('alpha contract', () => {
       guildBuddyProof: false
     }).cleared).toBe(false);
 
+    expect(SPIRIT_DOJO_LADDERS.map((ladder) => ladder.id)).toEqual(['jade-dojo-ladder']);
+    const dojoLadder = resolveSpiritDojoLadder({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedOpponentIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+      sparLadderWins: 2,
+      sparLadderXp: 5,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the dojo ladder.']
+    });
+    expect(dojoLadder).toMatchObject({
+      ok: true,
+      cleared: true,
+      ladderId: 'jade-dojo-ladder',
+      ladderName: 'Jade Dojo Ladder',
+      title: 'First No-Injury Dojo Ladder',
+      mentorName: 'Sifu Narao',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedOpponentIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+      score: 56,
+      requiredScore: 44,
+      rewardItemId: 'jade-dojo-ladder-seal',
+      source: 'battle-dojo-ladder'
+    });
+    expect(dojoLadder.message).toContain('No real value');
+    expect(resolveSpiritDojoLadder({
+      partyIds: ['aozhen', 'lirabao'],
+      clearedOpponentIds: ['jade-echo-apprentice'],
+      sparLadderWins: 1,
+      sparLadderXp: 3,
+      trainingXp: 1,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      techniqueCodexProof: false,
+      conditionWeaveProof: false,
+      affinityMatrixProof: false,
+      mentorChallengeProof: false,
+      teamSparMatchProof: false,
+      profileViewed: false,
+      guildBuddyProof: false,
+      statusMood: 'exploring',
+      chatLines: []
+    }).cleared).toBe(false);
+
     expect(SPIRIT_TOURNAMENT_BRACKETS.map((bracket) => bracket.id)).toEqual(['jade-banner-tournament']);
     const tournament = resolveSpiritTournamentBracket({
       partyIds: ['aozhen', 'lirabao', 'jintari'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
       mentorChallengeProof: true,
       mentorChallengeId: 'silk-banner-mentor-drill',
       mentorChallengeScore: mentor.score,
@@ -2528,7 +2601,7 @@ describe('alpha contract', () => {
       hostName: 'Jade Banner Marshal',
       partyIds: ['aozhen', 'lirabao', 'jintari'],
       localPresenceCount: 2,
-      score: 52,
+      score: 57,
       requiredScore: 38,
       rewardItemId: 'jade-banner-tournament-pennant',
       source: 'battle-tournament-bracket'
@@ -2536,6 +2609,8 @@ describe('alpha contract', () => {
     expect(tournament.message).toContain('No real value');
     expect(resolveSpiritTournamentBracket({
       partyIds: ['aozhen'],
+      dojoLadderProof: false,
+      dojoLadderScore: 0,
       mentorChallengeProof: false,
       mentorChallengeScore: 0,
       teamSparMatchProof: false,
@@ -2561,6 +2636,9 @@ describe('alpha contract', () => {
       tournamentProof: true,
       tournamentId: 'jade-banner-tournament',
       tournamentScore: tournament.score,
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
       mentorChallengeProof: true,
       mentorChallengeId: 'silk-banner-mentor-drill',
       mentorChallengeScore: mentor.score,
@@ -2593,7 +2671,7 @@ describe('alpha contract', () => {
       rivalName: 'Qinghei Banner Circle',
       partyIds: ['aozhen', 'lirabao', 'jintari'],
       localPresenceCount: 2,
-      score: 58,
+      score: 63,
       requiredScore: 46,
       rewardItemId: 'jade-rival-circle-mark',
       source: 'battle-rival-circle'
@@ -2603,6 +2681,8 @@ describe('alpha contract', () => {
       partyIds: ['aozhen', 'lirabao'],
       tournamentProof: false,
       tournamentScore: 0,
+      dojoLadderProof: false,
+      dojoLadderScore: 0,
       mentorChallengeProof: false,
       mentorChallengeScore: 0,
       teamSparMatchProof: false,

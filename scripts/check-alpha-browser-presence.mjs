@@ -216,6 +216,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.lineage_register"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.dojo_ladder"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
@@ -262,6 +263,7 @@ async function exerciseAlphaHud(page) {
       const bloomAscendance = document.querySelector('[data-bloom-ascendance-label]')?.textContent || '';
       const captureRite = document.querySelector('[data-capture-rite-label]')?.textContent || '';
       const lineageRegister = document.querySelector('[data-lineage-register-label]')?.textContent || '';
+      const dojoLadder = document.querySelector('[data-dojo-ladder-label]')?.textContent || '';
       const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
       const rivalCircle = document.querySelector('[data-rival-circle-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
@@ -326,6 +328,7 @@ async function exerciseAlphaHud(page) {
         && bloomAscendance.includes('Jade Bloom Ascendance')
         && captureRite.includes('Jade Capture Rite')
         && lineageRegister.includes('Jade Lineage Register')
+        && dojoLadder.includes('Jade Dojo Ladder')
         && tournament.includes('Jade Banner Tournament')
         && rivalCircle.includes('Jade Rival Circle')
         && commission.includes('Jade Court Commission Ledger')
@@ -629,6 +632,19 @@ async function exerciseAlphaHud(page) {
         && Array.isArray(state.lineageRegisterMilestoneLabels)
         && state.lineageRegisterMilestoneLabels.includes('Moonwell Bloom Form')
         && state.lineageRegisterSealClaimed === true
+        && state.dojoLadderProof === true
+        && state.dojoLadderId === 'jade-dojo-ladder'
+        && state.dojoLadderName === 'Jade Dojo Ladder'
+        && state.dojoLadderScore >= 44
+        && state.dojoLadderRequiredScore === 44
+        && Array.isArray(state.dojoLadderPartyIds)
+        && state.dojoLadderPartyIds.includes('lirabao')
+        && state.dojoLadderPartyIds.includes('jintari')
+        && state.dojoLadderPartyIds.includes('aozhen')
+        && Array.isArray(state.dojoLadderOpponentIds)
+        && state.dojoLadderOpponentIds.includes('jade-echo-apprentice')
+        && state.dojoLadderOpponentIds.includes('silk-river-disciple')
+        && state.dojoLadderSealClaimed === true
         && state.tournamentProof === true
         && state.tournamentId === 'jade-banner-tournament'
         && state.tournamentName === 'Jade Banner Tournament'
@@ -958,6 +974,7 @@ async function exerciseAlphaHud(page) {
       nursery: document.querySelector('[data-nursery-grove-label]')?.textContent || '',
       bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent || '',
       lineageRegister: document.querySelector('[data-lineage-register-label]')?.textContent || '',
+      dojoLadder: document.querySelector('[data-dojo-ladder-label]')?.textContent || '',
       tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
       rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
@@ -1019,6 +1036,7 @@ async function exerciseAlphaHud(page) {
     nursery: document.querySelector('[data-nursery-grove-label]')?.textContent?.trim() || '',
     bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent?.trim() || '',
     lineageRegister: document.querySelector('[data-lineage-register-label]')?.textContent?.trim() || '',
+    dojoLadder: document.querySelector('[data-dojo-ladder-label]')?.textContent?.trim() || '',
     tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
     rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
@@ -1343,6 +1361,18 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.lineageRegisterCaredSpiritIds) && snapshot.state.lineageRegisterCaredSpiritIds.includes('aozhen'), 'HUD lineage register action must record Aozhen care proof.');
   assert(Array.isArray(snapshot.state.lineageRegisterMilestoneLabels) && snapshot.state.lineageRegisterMilestoneLabels.includes('Moonwell Bloom Form'), 'HUD lineage register action must record the raising milestone label.');
   assert(snapshot.state.lineageRegisterSealClaimed === true, 'HUD lineage register action must mark the no-real-value lineage seal proof.');
+  assert(snapshot.dojoLadder.includes('Jade Dojo Ladder'), 'HUD dojo ladder label must show the cleared no-injury dojo ladder.');
+  assert(snapshot.state.dojoLadderProof === true, 'HUD dojo ladder action must record dojo ladder proof.');
+  assert(snapshot.state.dojoLadderId === 'jade-dojo-ladder', 'HUD dojo ladder action must record the dojo ladder id.');
+  assert(snapshot.state.dojoLadderName === 'Jade Dojo Ladder', 'HUD dojo ladder action must record the dojo ladder name.');
+  assert(snapshot.state.dojoLadderScore >= 44, 'HUD dojo ladder action must record a passing dojo ladder score.');
+  assert(snapshot.state.dojoLadderRequiredScore === 44, 'HUD dojo ladder action must record the dojo ladder requirement.');
+  assert(Array.isArray(snapshot.state.dojoLadderPartyIds) && snapshot.state.dojoLadderPartyIds.includes('lirabao'), 'HUD dojo ladder action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.dojoLadderPartyIds) && snapshot.state.dojoLadderPartyIds.includes('jintari'), 'HUD dojo ladder action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.dojoLadderPartyIds) && snapshot.state.dojoLadderPartyIds.includes('aozhen'), 'HUD dojo ladder action must record Aozhen party proof.');
+  assert(Array.isArray(snapshot.state.dojoLadderOpponentIds) && snapshot.state.dojoLadderOpponentIds.includes('jade-echo-apprentice'), 'HUD dojo ladder action must record the Jade Echo Apprentice clear.');
+  assert(Array.isArray(snapshot.state.dojoLadderOpponentIds) && snapshot.state.dojoLadderOpponentIds.includes('silk-river-disciple'), 'HUD dojo ladder action must record the Silk River Disciple clear.');
+  assert(snapshot.state.dojoLadderSealClaimed === true, 'HUD dojo ladder action must mark the no-real-value dojo ladder seal proof.');
   assert(snapshot.tournament.includes('Jade Banner Tournament'), 'HUD tournament label must show the cleared no-injury battle bracket.');
   assert(snapshot.state.tournamentProof === true, 'HUD tournament action must record tournament proof.');
   assert(snapshot.state.tournamentId === 'jade-banner-tournament', 'HUD tournament action must record the tournament id.');

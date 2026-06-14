@@ -90,6 +90,7 @@ async function run() {
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
   assert(manifest.body.gameplay?.teamSparMatches === true, 'Manifest must expose Mochi Spirit team spar matches.');
   assert(manifest.body.gameplay?.mentorChallenges === true, 'Manifest must expose Mochi Spirit mentor challenges.');
+  assert(manifest.body.gameplay?.dojoLadders === true, 'Manifest must expose Mochi Spirit dojo ladders.');
   assert(manifest.body.gameplay?.spiritTournamentBrackets === true, 'Manifest must expose Mochi Spirit tournament brackets.');
   assert(manifest.body.gameplay?.battleRoundTranscripts === true, 'Manifest must expose Mochi Spirit battle round transcripts.');
   assert(manifest.body.gameplay?.conditionWeaves === true, 'Manifest must expose Mochi Spirit condition weaves.');
@@ -149,6 +150,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
   assert(alphaStatus.body.gameplay?.teamSparMatches === true, 'Alpha status must expose Mochi Spirit team spar matches.');
   assert(alphaStatus.body.gameplay?.mentorChallenges === true, 'Alpha status must expose Mochi Spirit mentor challenges.');
+  assert(alphaStatus.body.gameplay?.dojoLadders === true, 'Alpha status must expose Mochi Spirit dojo ladders.');
   assert(alphaStatus.body.gameplay?.spiritTournamentBrackets === true, 'Alpha status must expose Mochi Spirit tournament brackets.');
   assert(alphaStatus.body.gameplay?.battleRoundTranscripts === true, 'Alpha status must expose Mochi Spirit battle round transcripts.');
   assert(alphaStatus.body.gameplay?.conditionWeaves === true, 'Alpha status must expose Mochi Spirit condition weaves.');
@@ -1147,11 +1149,46 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-dojo-ladder`,
+      type: 'battle.dojo_ladder',
+      payload: {
+        ladderId: 'jade-dojo-ladder',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        clearedOpponentIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+        sparLadderWins: 2,
+        sparLadderXp: 5,
+        trainingXp: 3,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 31,
+        battleRoundOpponentScore: 18,
+        techniqueCodexProof: true,
+        techniqueCodexId: 'jade-technique-codex',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
+        mentorChallengeProof: true,
+        mentorChallengeId: 'silk-banner-mentor-drill',
+        teamSparMatchProof: true,
+        teamSparMatchId: 'jade-mirror-team-match',
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-dojo-ladder-seal',
+        chatLines: ['Local acceptance dojo ladder proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-tournament-bracket`,
       type: 'battle.tournament_bracket',
       payload: {
         bracketId: 'jade-banner-tournament',
         partyIds: ['lirabao', 'jintari', 'aozhen'],
+        dojoLadderProof: true,
+        dojoLadderId: 'jade-dojo-ladder',
+        dojoLadderScore: 56,
         mentorChallengeProof: true,
         mentorChallengeId: 'silk-banner-mentor-drill',
         mentorChallengeScore: 28,
@@ -1187,7 +1224,10 @@ async function run() {
         partyIds: ['lirabao', 'jintari', 'aozhen'],
         tournamentProof: true,
         tournamentId: 'jade-banner-tournament',
-        tournamentScore: 52,
+        tournamentScore: 57,
+        dojoLadderProof: true,
+        dojoLadderId: 'jade-dojo-ladder',
+        dojoLadderScore: 56,
         mentorChallengeProof: true,
         mentorChallengeId: 'silk-banner-mentor-drill',
         mentorChallengeScore: 28,
@@ -1380,6 +1420,7 @@ async function run() {
         harmonyTrialProof: true,
         teamSparMatchProof: true,
         mentorChallengeProof: true,
+        dojoLadderProof: true,
         tournamentProof: true,
         battleRoundProof: true,
         battleRoundVictory: true,
@@ -1413,6 +1454,7 @@ async function run() {
         insigniaCaseProof: true,
         routePatrolProof: true,
         mentorChallengeProof: true,
+        dojoLadderProof: true,
         tournamentProof: true,
         rivalCircleProof: true,
         battleRoundProof: true,
@@ -1744,9 +1786,30 @@ async function run() {
   assert(affinityMatrix?.payload?.battleRoundVictory === true, 'Affinity matrix ledger entry must preserve no-injury battle victory proof.');
   assert(affinityMatrix?.payload?.rewardItemId === 'jade-affinity-matrix-seal', 'Affinity matrix ledger entry must preserve the no-real-value matrix seal proof.');
   assert(affinityMatrix?.payload?.noRealValue === true, 'Affinity matrix ledger entry must remain no-real-value.');
+  const dojoLadder = entriesById.get(`${runId}-dojo-ladder`);
+  assert(dojoLadder?.payload?.ladderId === 'jade-dojo-ladder', 'Dojo ladder ledger entry must preserve the Jade Dojo Ladder id.');
+  assert(Array.isArray(dojoLadder?.payload?.partyIds) && dojoLadder.payload.partyIds.length === 3, 'Dojo ladder ledger entry must preserve full-party proof.');
+  assert(Array.isArray(dojoLadder?.payload?.clearedOpponentIds) && dojoLadder.payload.clearedOpponentIds.includes('jade-echo-apprentice') && dojoLadder.payload.clearedOpponentIds.includes('silk-river-disciple'), 'Dojo ladder ledger entry must preserve both cleared spar opponent ids.');
+  assert(dojoLadder?.payload?.sparLadderWins >= 2, 'Dojo ladder ledger entry must preserve two spar ladder wins.');
+  assert(dojoLadder?.payload?.sparLadderXp >= 5, 'Dojo ladder ledger entry must preserve spar ladder XP proof.');
+  assert(dojoLadder?.payload?.trainingXp >= 3, 'Dojo ladder ledger entry must preserve training XP proof.');
+  assert(dojoLadder?.payload?.battleRoundVictory === true, 'Dojo ladder ledger entry must preserve no-injury battle victory proof.');
+  assert(dojoLadder?.payload?.techniqueCodexProof === true, 'Dojo ladder ledger entry must preserve technique codex proof.');
+  assert(dojoLadder?.payload?.techniqueCodexId === 'jade-technique-codex', 'Dojo ladder ledger entry must preserve the technique codex id.');
+  assert(dojoLadder?.payload?.conditionWeaveProof === true, 'Dojo ladder ledger entry must preserve condition weave proof.');
+  assert(dojoLadder?.payload?.conditionWeaveId === 'jade-mirror-condition-weave', 'Dojo ladder ledger entry must preserve the condition weave id.');
+  assert(dojoLadder?.payload?.affinityMatrixProof === true, 'Dojo ladder ledger entry must preserve affinity matrix proof.');
+  assert(dojoLadder?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Dojo ladder ledger entry must preserve the affinity matrix id.');
+  assert(dojoLadder?.payload?.mentorChallengeProof === true, 'Dojo ladder ledger entry must preserve mentor challenge proof.');
+  assert(dojoLadder?.payload?.teamSparMatchProof === true, 'Dojo ladder ledger entry must preserve team spar match proof.');
+  assert(dojoLadder?.payload?.rewardItemId === 'jade-dojo-ladder-seal', 'Dojo ladder ledger entry must preserve the no-real-value dojo ladder seal proof.');
+  assert(dojoLadder?.payload?.noRealValue === true, 'Dojo ladder ledger entry must remain no-real-value.');
   const tournament = entriesById.get(`${runId}-tournament-bracket`);
   assert(tournament?.payload?.bracketId === 'jade-banner-tournament', 'Tournament ledger entry must preserve the Jade Banner Tournament id.');
   assert(Array.isArray(tournament?.payload?.partyIds) && tournament.payload.partyIds.length === 3, 'Tournament ledger entry must preserve full-party proof.');
+  assert(tournament?.payload?.dojoLadderProof === true, 'Tournament ledger entry must preserve dojo ladder proof.');
+  assert(tournament?.payload?.dojoLadderId === 'jade-dojo-ladder', 'Tournament ledger entry must preserve the dojo ladder id.');
+  assert(tournament?.payload?.dojoLadderScore === 56, 'Tournament ledger entry must preserve the dojo ladder score.');
   assert(tournament?.payload?.mentorChallengeProof === true, 'Tournament ledger entry must preserve mentor challenge proof.');
   assert(tournament?.payload?.mentorChallengeId === 'silk-banner-mentor-drill', 'Tournament ledger entry must preserve the mentor challenge id.');
   assert(tournament?.payload?.teamSparMatchProof === true, 'Tournament ledger entry must preserve team spar match proof.');
@@ -1767,6 +1830,9 @@ async function run() {
   assert(Array.isArray(rivalCircle?.payload?.partyIds) && rivalCircle.payload.partyIds.length === 3, 'Rival circle ledger entry must preserve full-party proof.');
   assert(rivalCircle?.payload?.tournamentProof === true, 'Rival circle ledger entry must preserve tournament proof.');
   assert(rivalCircle?.payload?.tournamentId === 'jade-banner-tournament', 'Rival circle ledger entry must preserve tournament id.');
+  assert(rivalCircle?.payload?.dojoLadderProof === true, 'Rival circle ledger entry must preserve dojo ladder proof.');
+  assert(rivalCircle?.payload?.dojoLadderId === 'jade-dojo-ladder', 'Rival circle ledger entry must preserve dojo ladder id.');
+  assert(rivalCircle?.payload?.dojoLadderScore === 56, 'Rival circle ledger entry must preserve dojo ladder score.');
   assert(rivalCircle?.payload?.mentorChallengeProof === true, 'Rival circle ledger entry must preserve mentor proof.');
   assert(rivalCircle?.payload?.teamSparMatchProof === true, 'Rival circle ledger entry must preserve team match proof.');
   assert(rivalCircle?.payload?.conditionWeaveProof === true, 'Rival circle ledger entry must preserve condition weave proof.');
@@ -1824,6 +1890,7 @@ async function run() {
   assert(chronicle?.payload?.lineageRegisterProof === true, 'Wayfarer chronicle ledger entry must preserve lineage register proof.');
   assert(chronicle?.payload?.exchangeAccordProof === true, 'Wayfarer chronicle ledger entry must preserve exchange accord proof.');
   assert(chronicle?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Wayfarer chronicle ledger entry must preserve the exchange accord id.');
+  assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.affinityMatrixProof === true, 'Wayfarer chronicle ledger entry must preserve affinity matrix proof.');
   assert(chronicle?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Wayfarer chronicle ledger entry must preserve the affinity matrix id.');
@@ -1846,6 +1913,7 @@ async function run() {
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');
+  assert(ascension?.payload?.dojoLadderProof === true, 'Ascension trial ledger entry must preserve dojo ladder proof.');
   assert(ascension?.payload?.tournamentProof === true, 'Ascension trial ledger entry must preserve tournament proof.');
   assert(ascension?.payload?.rivalCircleProof === true, 'Ascension trial ledger entry must preserve rival circle proof.');
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');

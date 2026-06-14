@@ -30,6 +30,10 @@ const checks = [
     includes: ['spirit.lineage_register', 'spiritLineageRegisters: true', 'Jade Lineage Register label/state', 'Jade Lineage Register Seal payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['battle.dojo_ladder', 'dojoLadders: true', 'Jade Dojo Ladder label/state', 'Jade Dojo Ladder Seal payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -52,6 +56,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Lineage Register proof', 'Jade Lineage Register Seal', 'Lineage proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder Seal', 'Dojo ladder proof is no-real-value']
   },
   {
     file: 'docs/no-cost-operations.md',
@@ -92,6 +100,10 @@ const checks = [
     includes: ['Jade Lineage Register proof', 'Jade Lineage Register', 'Record Jade Lineage Register proof']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder', 'clear the Jade Dojo Ladder', 'no-real-value Jade Dojo Ladder']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
@@ -106,6 +118,10 @@ const checks = [
   {
     file: 'docs/alpha-acceptance.md',
     includes: ['spirit.lineage_register', 'Jade Lineage Register', 'Jade Lineage Register Seal', 'lineageRegisterProof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['battle.dojo_ladder', 'Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'dojoLadderProof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -126,6 +142,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['lineage-register', 'record the Jade Lineage Register proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['dojo-ladder', 'clear the Jade Dojo Ladder proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -152,6 +172,10 @@ const checks = [
     includes: ['Jade Technique Codex contribution', 'content-only Jade Technique Codex Seal proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Dojo Ladder contribution', 'content-only Jade Dojo Ladder Seal proof']
+  },
+  {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Scroll Story Chapter proof', 'story']
   },
@@ -164,6 +188,10 @@ const checks = [
     includes: ['Jade Technique Codex proof', 'technique codex']
   },
   {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Dojo Ladder proof', 'ladder', 'content-only']
+  },
+  {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
   },
@@ -174,6 +202,10 @@ const checks = [
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Technique Codex move-library proof', 'battle.technique_codex']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder proof', 'battle.dojo_ladder']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -196,6 +228,10 @@ const checks = [
     includes: ['Jade Technique Codex', 'Jade Technique Codex Seal', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Rival Circle', 'Content-only HUD and ledger proofs']
   },
@@ -206,6 +242,10 @@ const checks = [
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Technique Codex', 'Jade Technique Codex Seal', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -585,6 +625,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['dojoLadders: true', "'battle.dojo_ladder'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
   },
   {
@@ -670,6 +714,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_CAPTURE_RITES', 'resolveSpiritCaptureRite', 'data-alpha-action="spirit.capture_rite"', 'data-capture-rite-label', 'captureRiteProof', 'captureRiteClaimed', 'Jade Capture Rite']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_DOJO_LADDERS', 'resolveSpiritDojoLadder', 'data-alpha-action="battle.dojo_ladder"', 'data-dojo-ladder-label', 'dojoLadderProof', 'dojoLadderSealClaimed', 'Jade Dojo Ladder']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -765,6 +813,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_DOJO_LADDERS', 'resolveSpiritDojoLadder', 'Jade Dojo Ladder', 'jade-dojo-ladder-seal', 'battle-dojo-ladder', 'dojoLadderProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof']
   },
   {
@@ -845,6 +897,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['dojoLadders: true', 'battle.dojo_ladder']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
   },
   {
@@ -866,6 +922,10 @@ const checks = [
   {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['spiritBloomAscendances: true']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['dojoLadders: true']
   },
   {
     file: 'apps/game/tests/map-object-contract.test.ts',
@@ -946,6 +1006,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.dojo_ladder', 'jade-dojo-ladder', 'dojoLadders === true', 'dojoLadderProof', 'jade-dojo-ladder-seal']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -1030,6 +1094,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.capture_rite"', 'data-capture-rite-label', 'captureRiteProof', 'captureRiteClaimed', 'Jade Capture Rite recorded']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.dojo_ladder"', 'data-dojo-ladder-label', 'dojoLadderProof', 'dojoLadderSealClaimed', 'Jade Dojo Ladder']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1146,6 +1214,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['lineageRegisterProof', 'lineageRegisterSealClaimed', 'Jade Lineage Register', 'jade-lineage-register-seal', 'spirit-lineage-register', 'lineage register']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['dojoLadderProof', 'dojoLadderSealClaimed', 'Jade Dojo Ladder', 'jade-dojo-ladder-seal', 'battle-dojo-ladder', 'dojo ladder']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
