@@ -43,6 +43,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_SIFU_COUNCILS,
+  SPIRIT_SUMMIT_CIRCUITS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_CODEXES,
@@ -101,6 +102,7 @@ import {
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritSifuCouncil,
+  resolveSpiritSummitCircuit,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueCodex,
@@ -172,6 +174,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.sifuCouncils).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.summitCircuits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
@@ -254,6 +257,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
     expect(ALPHA_ACTION_TYPES).toContain('battle.dojo_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('battle.sifu_council');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.summit_circuit');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
     expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
@@ -1898,6 +1902,7 @@ describe('alpha contract', () => {
       dojoLadderProof: true,
       tournamentProof: true,
       sifuCouncilProof: true,
+      summitCircuitProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -1921,7 +1926,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 133,
+      score: 136,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1967,6 +1972,7 @@ describe('alpha contract', () => {
       dojoLadderProof: true,
       tournamentProof: true,
       sifuCouncilProof: true,
+      summitCircuitProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -1999,6 +2005,7 @@ describe('alpha contract', () => {
       dojoLadderProof: true,
       tournamentProof: true,
       sifuCouncilProof: true,
+      summitCircuitProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2033,7 +2040,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 98,
+      score: 101,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2054,6 +2061,7 @@ describe('alpha contract', () => {
       dojoLadderProof: true,
       tournamentProof: true,
       sifuCouncilProof: true,
+      summitCircuitProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2779,6 +2787,114 @@ describe('alpha contract', () => {
       profileViewed: false,
       guildBuddyProof: false
     }).cleared).toBe(false);
+
+    expect(SPIRIT_SUMMIT_CIRCUITS.map((circuit) => circuit.id)).toEqual(['jade-summit-circuit']);
+    const missingSummitCircuit = resolveSpiritSummitCircuit({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: false,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      harmonyTrialProof: false,
+      harmonyTrialId: 'jade-echo-concord',
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      guildRankProof: true,
+      growthRiteProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the summit circuit.']
+    });
+    expect(missingSummitCircuit).toMatchObject({
+      ok: true,
+      cleared: false,
+      circuitId: 'jade-summit-circuit',
+      missing: ['summit-seal:sifu-council-seal', 'sifu-council:jade-sifu-council', 'concord:jade-echo-concord']
+    });
+    const summitCircuit = resolveSpiritSummitCircuit({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: true,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      guildRankProof: true,
+      growthRiteProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the summit circuit.']
+    });
+    expect(summitCircuit).toMatchObject({
+      ok: true,
+      cleared: true,
+      circuitId: 'jade-summit-circuit',
+      circuitName: 'Jade Summit Circuit',
+      title: 'First Summit Battle Circuit',
+      hostName: 'Circuit Marshal Yunxi',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
+      localPresenceCount: 2,
+      score: 92,
+      requiredScore: 76,
+      rewardItemId: 'jade-summit-circuit-laurel',
+      source: 'battle-summit-circuit'
+    });
+    expect(summitCircuit.message).toContain('No real value');
 
     expect(SPIRIT_TRAIT_ATTUNEMENTS.map((trait) => trait.id)).toEqual(['jade-heart-trait']);
     const trait = resolveSpiritTraitAttunement({

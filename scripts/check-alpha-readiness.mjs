@@ -38,6 +38,10 @@ const checks = [
     includes: ['battle.sifu_council', 'sifuCouncils: true', 'Jade Sifu Council label/state', 'Jade Sifu Council Crest payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['battle.summit_circuit', 'summitCircuits: true', 'Jade Summit Circuit label/state', 'Jade Summit Circuit Laurel payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -68,6 +72,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Sifu Council proof', 'Jade Sifu Council Crest', 'Sifu council proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Summit Circuit proof', 'Jade Summit Circuit Laurel', 'Summit circuit proof is no-real-value']
   },
   {
     file: 'docs/no-cost-operations.md',
@@ -116,6 +124,10 @@ const checks = [
     includes: ['Jade Sifu Council proof', 'Jade Sifu Council', 'clear the Jade Sifu Council', 'no-real-value Jade Sifu Council']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Summit Circuit proof', 'Jade Summit Circuit', 'clear the Jade Summit Circuit', 'no-real-value Jade Summit Circuit']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
@@ -144,6 +156,10 @@ const checks = [
     includes: ['battle.sifu_council', 'Jade Sifu Council', 'Jade Sifu Council Crest', 'sifuCouncilProof']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['battle.summit_circuit', 'Jade Summit Circuit', 'Jade Summit Circuit Laurel', 'summitCircuitProof']
+  },
+  {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
   },
@@ -162,6 +178,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['sifu-council', 'clear the Jade Sifu Council proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['summit-circuit', 'clear the Jade Summit Circuit proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -200,12 +220,16 @@ const checks = [
     includes: ['Jade Sifu Council contribution', 'content-only Jade Sifu Council Crest proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Summit Circuit contribution', 'content-only Jade Summit Circuit Laurel proof']
+  },
+  {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Scroll Story Chapter proof', 'story']
   },
   {
     file: 'docs/visual-polish-brief.md',
-    includes: ['Jade Rival Circle proof', 'rival, commission']
+    includes: ['Jade Rival Circle proof', 'rival, summit']
   },
   {
     file: 'docs/visual-polish-brief.md',
@@ -218,6 +242,10 @@ const checks = [
   {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Sifu Council proof', 'council', 'content-only']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Summit Circuit proof', 'summit', 'content-only']
   },
   {
     file: 'docs/implementation-brief.md',
@@ -238,6 +266,10 @@ const checks = [
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Sifu Council', 'Jade Sifu Council proof', 'battle.sifu_council']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Summit Circuit', 'Jade Summit Circuit proof', 'battle.summit_circuit']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -268,6 +300,10 @@ const checks = [
     includes: ['Jade Sifu Council', 'Jade Sifu Council Crest', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Summit Circuit', 'Jade Summit Circuit Laurel', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Rival Circle', 'Content-only HUD and ledger proofs']
   },
@@ -286,6 +322,10 @@ const checks = [
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Sifu Council', 'Jade Sifu Council Crest', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Summit Circuit', 'Jade Summit Circuit Laurel', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -673,6 +713,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['summitCircuits: true', "'battle.summit_circuit'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
   },
   {
@@ -777,6 +821,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_SUMMIT_CIRCUITS', 'resolveSpiritSummitCircuit', 'data-alpha-action="battle.summit_circuit"', 'data-summit-circuit-label', 'summitCircuitProof', 'summitCircuitLaurelClaimed', 'Jade Summit Circuit']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['MOCHI_STORY_CHAPTERS', 'resolveMochiStoryChapter', 'data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter']
   },
   {
@@ -872,6 +920,10 @@ const checks = [
     includes: ['SPIRIT_SIFU_COUNCILS', 'resolveSpiritSifuCouncil', 'Jade Sifu Council', 'jade-sifu-council-crest', 'battle-sifu-council', 'sifuCouncilProof']
   },
   {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_SUMMIT_CIRCUITS', 'resolveSpiritSummitCircuit', 'Jade Summit Circuit', 'jade-summit-circuit-laurel', 'battle-summit-circuit', 'summitCircuitProof']
+  },
+  {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
     includes: ['Mochi Social browser bridge auth check passed', 'payload.accessToken', 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'postToParent(BRIDGE_EVENTS.authState', 'refreshToken', 'SUPABASE_SERVICE_ROLE_KEY', 'ENJIN_PLATFORM_TOKEN']
   },
@@ -957,6 +1009,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['summitCircuits: true', 'battle.summit_circuit']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
   },
   {
@@ -994,6 +1050,10 @@ const checks = [
   {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['sifuCouncils: true']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['summitCircuits: true']
   },
   {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
@@ -1082,6 +1142,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.sifu_council', 'jade-sifu-council', 'sifuCouncils === true', 'sifuCouncilProof', 'jade-sifu-council-crest']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.summit_circuit', 'jade-summit-circuit', 'summitCircuits === true', 'summitCircuitProof', 'jade-summit-circuit-laurel']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -1174,6 +1238,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.sifu_council"', 'data-sifu-council-label', 'sifuCouncilProof', 'sifuCouncilCrestClaimed', 'Jade Sifu Council cleared']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.summit_circuit"', 'data-summit-circuit-label', 'summitCircuitProof', 'summitCircuitLaurelClaimed', 'Jade Summit Circuit cleared']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1298,6 +1366,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['sifuCouncilProof', 'sifuCouncilCrestClaimed', 'Jade Sifu Council', 'jade-sifu-council-crest', 'battle-sifu-council', 'sifu council']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['summitCircuitProof', 'summitCircuitLaurelClaimed', 'Jade Summit Circuit', 'jade-summit-circuit-laurel', 'battle-summit-circuit', 'summit circuit']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

@@ -1772,6 +1772,7 @@ export interface GuildWayfarerChronicleProgress {
   mentorChallengeProof: boolean;
   dojoLadderProof: boolean;
   sifuCouncilProof: boolean;
+  summitCircuitProof: boolean;
   tournamentProof: boolean;
   storyChapterProof: boolean;
   insigniaCaseProof: boolean;
@@ -1834,6 +1835,7 @@ export interface GuildAscensionTrialProgress {
   mentorChallengeProof: boolean;
   dojoLadderProof: boolean;
   sifuCouncilProof: boolean;
+  summitCircuitProof: boolean;
   tournamentProof: boolean;
   storyChapterProof: boolean;
   insigniaCaseProof: boolean;
@@ -2183,6 +2185,91 @@ export interface SpiritSifuCouncilResult {
   hostName: string;
   partyIds: string[];
   clearedCouncilMemberIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
+export interface SpiritSummitCircuit {
+  id: string;
+  name: string;
+  title: string;
+  hostName: string;
+  requiredSpiritIds: readonly string[];
+  requiredSummitSealIds: readonly string[];
+  requiredDojoLadderId: string;
+  requiredTournamentBracketId: string;
+  requiredRivalCircleId: string;
+  requiredSifuCouncilId: string;
+  requiredTechniqueCodexId: string;
+  requiredConditionWeaveId: string;
+  requiredAffinityMatrixId: string;
+  requiredHarmonyFormId: string;
+  requiredHarmonyTrialId: string;
+  requiredTeamMatchId: string;
+  requiredMentorChallengeId: string;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritSummitCircuitProgress {
+  partyIds: readonly string[];
+  summitSealIds: readonly string[];
+  dojoLadderProof: boolean;
+  dojoLadderId?: string;
+  dojoLadderScore?: number;
+  tournamentProof: boolean;
+  tournamentId?: string;
+  tournamentScore?: number;
+  rivalCircleProof: boolean;
+  rivalCircleId?: string;
+  rivalCircleScore?: number;
+  sifuCouncilProof: boolean;
+  sifuCouncilId?: string;
+  sifuCouncilScore?: number;
+  techniqueCodexProof: boolean;
+  techniqueCodexId?: string;
+  conditionWeaveProof: boolean;
+  conditionWeaveId?: string;
+  affinityMatrixProof: boolean;
+  affinityMatrixId?: string;
+  harmonyFormProof: boolean;
+  harmonyFormId?: string;
+  harmonyTrialProof: boolean;
+  harmonyTrialId?: string;
+  teamSparMatchProof: boolean;
+  teamSparMatchId?: string;
+  mentorChallengeProof: boolean;
+  mentorChallengeId?: string;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore: number;
+  battleRoundOpponentScore: number;
+  guildRankProof: boolean;
+  growthRiteProof: boolean;
+  routePatrolProof: boolean;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritSummitCircuitResult {
+  ok: boolean;
+  cleared: boolean;
+  circuitId: string;
+  circuitName: string;
+  title: string;
+  hostName: string;
+  partyIds: string[];
+  summitSealIds: string[];
   localPresenceCount: number;
   score: number;
   requiredScore: number;
@@ -3353,6 +3440,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Sifu Council Crest',
     description: 'A no-real-value guild-leader council proof for closed-alpha Mochirii battle mastery, social witness, and safe rival readiness.'
   },
+  summitCircuitLaurel: {
+    id: 'jade-summit-circuit-laurel',
+    name: 'Jade Summit Circuit Laurel',
+    description: 'A no-real-value summit circuit proof for closed-alpha Mochirii dojo, tournament, rival, council, harmony, and social battle readiness.'
+  },
   loadoutSlip: {
     id: 'jade-step-loadout-slip',
     name: 'Jade Step Loadout Slip',
@@ -4236,6 +4328,32 @@ export const SPIRIT_SIFU_COUNCILS: readonly SpiritSifuCouncil[] = [
     requiredScore: 62,
     rewardItemId: ALPHA_ITEMS.sifuCouncilCrest.id,
     summary: 'A no-injury guild-leader council proof for testers who clear original Mochirii dojo, tournament, rival, technique, condition, affinity, mentor, route, and social witness readiness.'
+  }
+];
+
+export const SPIRIT_SUMMIT_CIRCUITS: readonly SpiritSummitCircuit[] = [
+  {
+    id: 'jade-summit-circuit',
+    name: 'Jade Summit Circuit',
+    title: 'First Summit Battle Circuit',
+    hostName: 'Circuit Marshal Yunxi',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredSummitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
+    requiredDojoLadderId: SPIRIT_DOJO_LADDERS[0].id,
+    requiredTournamentBracketId: SPIRIT_TOURNAMENT_BRACKETS[0].id,
+    requiredRivalCircleId: SPIRIT_RIVAL_CIRCLES[0].id,
+    requiredSifuCouncilId: SPIRIT_SIFU_COUNCILS[0].id,
+    requiredTechniqueCodexId: 'jade-technique-codex',
+    requiredConditionWeaveId: 'jade-mirror-condition-weave',
+    requiredAffinityMatrixId: 'jade-affinity-matrix',
+    requiredHarmonyFormId: SPIRIT_HARMONY_FORMS[0].id,
+    requiredHarmonyTrialId: SPIRIT_HARMONY_TRIALS[0].id,
+    requiredTeamMatchId: SPIRIT_TEAM_SPAR_MATCHES[0].id,
+    requiredMentorChallengeId: SPIRIT_MENTOR_CHALLENGES[0].id,
+    requiredPresenceCount: 2,
+    requiredScore: 76,
+    rewardItemId: ALPHA_ITEMS.summitCircuitLaurel.id,
+    summary: 'A no-injury summit battle circuit for testers who unify original Mochirii dojo, tournament, rival, sifu council, harmony, team match, route, rank, growth, and social proof.'
   }
 ];
 
@@ -7234,6 +7352,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.mentorChallengeProof) missing.push('mentor');
   if (!progress.dojoLadderProof) missing.push('dojo-ladder');
   if (!progress.sifuCouncilProof) missing.push('sifu-council');
+  if (!progress.summitCircuitProof) missing.push('summit-circuit');
   if (!progress.tournamentProof) missing.push('tournament');
   if (!progress.storyChapterProof) missing.push('story');
   if (!progress.insigniaCaseProof) missing.push('insignia');
@@ -7285,6 +7404,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.mentorChallengeProof ? 2 : 0) +
     (progress.dojoLadderProof ? 3 : 0) +
     (progress.sifuCouncilProof ? 3 : 0) +
+    (progress.summitCircuitProof ? 3 : 0) +
     (progress.tournamentProof ? 3 : 0) +
     (progress.storyChapterProof ? 3 : 0) +
     (progress.insigniaCaseProof ? 3 : 0) +
@@ -7315,7 +7435,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -7353,6 +7473,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.mentorChallengeProof) missing.push('mentor');
   if (!progress.dojoLadderProof) missing.push('dojo-ladder');
   if (!progress.sifuCouncilProof) missing.push('sifu-council');
+  if (!progress.summitCircuitProof) missing.push('summit-circuit');
   if (!progress.tournamentProof) missing.push('tournament');
   if (!progress.storyChapterProof) missing.push('story');
   if (!progress.insigniaCaseProof) missing.push('insignia');
@@ -7389,6 +7510,7 @@ export function resolveGuildAscensionTrial(
     (progress.mentorChallengeProof ? 4 : 0) +
     (progress.dojoLadderProof ? 3 : 0) +
     (progress.sifuCouncilProof ? 3 : 0) +
+    (progress.summitCircuitProof ? 3 : 0) +
     (progress.tournamentProof ? 3 : 0) +
     (progress.storyChapterProof ? 3 : 0) +
     (progress.insigniaCaseProof ? 3 : 0) +
@@ -7426,7 +7548,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, bloom ascendance, technique codex, exchange accord, affinity matrix, route patrol, mentor, dojo ladder, sifu council, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, bloom ascendance, technique codex, exchange accord, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };
@@ -7976,6 +8098,127 @@ export function resolveSpiritSifuCouncil(
       ? `${council.name} cleared: ${council.hostName} records ${partyNames} before ${memberNames} with dojo ladder, tournament, rival, technique, condition, affinity, route, rank, battle transcript, and two-tester social proof. No real value.`
       : `${council.name} needs ${missing.join(', ')} before the guild-leader council can be recorded.`,
     source: 'battle-sifu-council'
+  };
+}
+
+export function resolveSpiritSummitCircuit(
+  progress: SpiritSummitCircuitProgress,
+  circuitId: string = SPIRIT_SUMMIT_CIRCUITS[0].id
+): SpiritSummitCircuitResult {
+  const circuit = SPIRIT_SUMMIT_CIRCUITS.find((entry) => entry.id === circuitId) || SPIRIT_SUMMIT_CIRCUITS[0];
+  const requiredSpiritIds = new Set(circuit.requiredSpiritIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const summitSealIds = Array.from(new Set(progress.summitSealIds.filter(Boolean))).filter((sealId) => {
+    return circuit.requiredSummitSealIds.includes(sealId);
+  });
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const focusScore = Math.max(0, Math.floor(progress.battleRoundFocusScore || 0));
+  const opponentScore = Math.max(0, Math.floor(progress.battleRoundOpponentScore || 0));
+  const battleRoundReady =
+    progress.battleRoundProof &&
+    progress.battleRoundVictory &&
+    focusScore > 0 &&
+    opponentScore > 0 &&
+    focusScore > opponentScore;
+  const dojoReady = progress.dojoLadderProof && progress.dojoLadderId === circuit.requiredDojoLadderId;
+  const tournamentReady = progress.tournamentProof && progress.tournamentId === circuit.requiredTournamentBracketId;
+  const rivalReady = progress.rivalCircleProof && progress.rivalCircleId === circuit.requiredRivalCircleId;
+  const sifuReady = progress.sifuCouncilProof && progress.sifuCouncilId === circuit.requiredSifuCouncilId;
+  const techniqueReady = progress.techniqueCodexProof && progress.techniqueCodexId === circuit.requiredTechniqueCodexId;
+  const conditionReady = progress.conditionWeaveProof && progress.conditionWeaveId === circuit.requiredConditionWeaveId;
+  const affinityReady = progress.affinityMatrixProof && progress.affinityMatrixId === circuit.requiredAffinityMatrixId;
+  const harmonyReady = progress.harmonyFormProof && progress.harmonyFormId === circuit.requiredHarmonyFormId;
+  const concordReady = progress.harmonyTrialProof && progress.harmonyTrialId === circuit.requiredHarmonyTrialId;
+  const teamReady = progress.teamSparMatchProof && progress.teamSparMatchId === circuit.requiredTeamMatchId;
+  const mentorReady = progress.mentorChallengeProof && progress.mentorChallengeId === circuit.requiredMentorChallengeId;
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of circuit.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  for (const sealId of circuit.requiredSummitSealIds) {
+    if (!summitSealIds.includes(sealId)) missing.push(`summit-seal:${sealId}`);
+  }
+
+  if (localPresenceCount < circuit.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${circuit.requiredPresenceCount}`);
+  if (!dojoReady) missing.push(`dojo-ladder:${circuit.requiredDojoLadderId}`);
+  if (!tournamentReady) missing.push(`tournament:${circuit.requiredTournamentBracketId}`);
+  if (!rivalReady) missing.push(`rival:${circuit.requiredRivalCircleId}`);
+  if (!sifuReady) missing.push(`sifu-council:${circuit.requiredSifuCouncilId}`);
+  if (!techniqueReady) missing.push(`technique-codex:${circuit.requiredTechniqueCodexId}`);
+  if (!conditionReady) missing.push(`condition:${circuit.requiredConditionWeaveId}`);
+  if (!affinityReady) missing.push(`affinity-matrix:${circuit.requiredAffinityMatrixId}`);
+  if (!harmonyReady) missing.push(`harmony:${circuit.requiredHarmonyFormId}`);
+  if (!concordReady) missing.push(`concord:${circuit.requiredHarmonyTrialId}`);
+  if (!teamReady) missing.push(`team-match:${circuit.requiredTeamMatchId}`);
+  if (!mentorReady) missing.push(`mentor:${circuit.requiredMentorChallengeId}`);
+  if (!battleRoundReady) missing.push('battle-round');
+  if (!progress.guildRankProof) missing.push('rank');
+  if (!progress.growthRiteProof) missing.push('growth');
+  if (!progress.routePatrolProof) missing.push('route-patrol');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const dojoScore = Math.max(0, Math.floor(progress.dojoLadderScore || 0));
+  const tournamentScore = Math.max(0, Math.floor(progress.tournamentScore || 0));
+  const rivalScore = Math.max(0, Math.floor(progress.rivalCircleScore || 0));
+  const sifuScore = Math.max(0, Math.floor(progress.sifuCouncilScore || 0));
+  const score =
+    Math.min(partyIds.length, circuit.requiredSpiritIds.length) * 3 +
+    Math.min(summitSealIds.length, circuit.requiredSummitSealIds.length) * 4 +
+    Math.min(localPresenceCount, circuit.requiredPresenceCount) * 3 +
+    (dojoReady ? 3 : 0) +
+    (tournamentReady ? 4 : 0) +
+    (rivalReady ? 4 : 0) +
+    (sifuReady ? 5 : 0) +
+    (techniqueReady ? 3 : 0) +
+    (conditionReady ? 3 : 0) +
+    (affinityReady ? 3 : 0) +
+    (harmonyReady ? 3 : 0) +
+    (concordReady ? 3 : 0) +
+    (teamReady ? 3 : 0) +
+    (mentorReady ? 3 : 0) +
+    (battleRoundReady ? 4 : 0) +
+    (progress.guildRankProof ? 2 : 0) +
+    (progress.growthRiteProof ? 2 : 0) +
+    (progress.routePatrolProof ? 2 : 0) +
+    Math.min(2, Math.floor(dojoScore / 22)) +
+    Math.min(2, Math.floor(tournamentScore / 25)) +
+    Math.min(3, Math.floor(rivalScore / 21)) +
+    Math.min(3, Math.floor(sifuScore / 24)) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const cleared = missing.length === 0 && score >= circuit.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    circuitId: circuit.id,
+    circuitName: circuit.name,
+    title: circuit.title,
+    hostName: circuit.hostName,
+    partyIds,
+    summitSealIds,
+    localPresenceCount,
+    score,
+    requiredScore: circuit.requiredScore,
+    missing,
+    rewardItemId: circuit.rewardItemId,
+    message: cleared
+      ? `${circuit.name} cleared: ${circuit.hostName} records ${partyNames} with dojo, tournament, rival, sifu council, harmony, team match, mentor, rank, growth, route patrol, no-injury battle, and two-tester social proof. No real value.`
+      : `${circuit.name} needs ${missing.join(', ')} before the summit battle circuit can be recorded.`,
+    source: 'battle-summit-circuit'
   };
 }
 

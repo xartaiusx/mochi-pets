@@ -220,6 +220,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.sifu_council"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.summit_circuit"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="story.chapter_complete"]', { timeout: timeoutMs });
@@ -268,6 +269,7 @@ async function exerciseAlphaHud(page) {
       const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
       const rivalCircle = document.querySelector('[data-rival-circle-label]')?.textContent || '';
       const sifuCouncil = document.querySelector('[data-sifu-council-label]')?.textContent || '';
+      const summitCircuit = document.querySelector('[data-summit-circuit-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const story = document.querySelector('[data-story-label]')?.textContent || '';
@@ -334,6 +336,7 @@ async function exerciseAlphaHud(page) {
         && tournament.includes('Jade Banner Tournament')
         && rivalCircle.includes('Jade Rival Circle')
         && sifuCouncil.includes('Jade Sifu Council')
+        && summitCircuit.includes('Jade Summit Circuit')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && story.includes('Jade Scroll Story Chapter')
@@ -684,6 +687,21 @@ async function exerciseAlphaHud(page) {
         && state.sifuCouncilMemberIds.includes('warden-meilin')
         && state.sifuCouncilMemberIds.includes('keeper-haoran')
         && state.sifuCouncilCrestClaimed === true
+        && state.summitCircuitProof === true
+        && state.summitCircuitId === 'jade-summit-circuit'
+        && state.summitCircuitName === 'Jade Summit Circuit'
+        && state.summitCircuitScore >= 76
+        && state.summitCircuitRequiredScore === 76
+        && Array.isArray(state.summitCircuitPartyIds)
+        && state.summitCircuitPartyIds.includes('lirabao')
+        && state.summitCircuitPartyIds.includes('jintari')
+        && state.summitCircuitPartyIds.includes('aozhen')
+        && Array.isArray(state.summitCircuitSealIds)
+        && state.summitCircuitSealIds.includes('jade-dojo-seal')
+        && state.summitCircuitSealIds.includes('banner-ring-seal')
+        && state.summitCircuitSealIds.includes('qinghei-rival-seal')
+        && state.summitCircuitSealIds.includes('sifu-council-seal')
+        && state.summitCircuitLaurelClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -995,6 +1013,7 @@ async function exerciseAlphaHud(page) {
       tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
       rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
       sifuCouncil: document.querySelector('[data-sifu-council-label]')?.textContent || '',
+      summitCircuit: document.querySelector('[data-summit-circuit-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       story: document.querySelector('[data-story-label]')?.textContent || '',
@@ -1058,6 +1077,7 @@ async function exerciseAlphaHud(page) {
     tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
     rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent?.trim() || '',
     sifuCouncil: document.querySelector('[data-sifu-council-label]')?.textContent?.trim() || '',
+    summitCircuit: document.querySelector('[data-summit-circuit-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       story: document.querySelector('[data-story-label]')?.textContent?.trim() || '',
@@ -1427,6 +1447,20 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.sifuCouncilMemberIds) && snapshot.state.sifuCouncilMemberIds.includes('warden-meilin'), 'HUD sifu council action must record Warden Meilin council proof.');
   assert(Array.isArray(snapshot.state.sifuCouncilMemberIds) && snapshot.state.sifuCouncilMemberIds.includes('keeper-haoran'), 'HUD sifu council action must record Keeper Haoran council proof.');
   assert(snapshot.state.sifuCouncilCrestClaimed === true, 'HUD sifu council action must mark the no-real-value sifu council crest proof.');
+  assert(snapshot.summitCircuit.includes('Jade Summit Circuit'), 'HUD summit circuit label must show the cleared no-injury summit circuit.');
+  assert(snapshot.state.summitCircuitProof === true, 'HUD summit circuit action must record summit circuit proof.');
+  assert(snapshot.state.summitCircuitId === 'jade-summit-circuit', 'HUD summit circuit action must record the circuit id.');
+  assert(snapshot.state.summitCircuitName === 'Jade Summit Circuit', 'HUD summit circuit action must record the circuit name.');
+  assert(snapshot.state.summitCircuitScore >= 76, 'HUD summit circuit action must record a passing summit score.');
+  assert(snapshot.state.summitCircuitRequiredScore === 76, 'HUD summit circuit action must record the summit requirement.');
+  assert(Array.isArray(snapshot.state.summitCircuitPartyIds) && snapshot.state.summitCircuitPartyIds.includes('lirabao'), 'HUD summit circuit action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.summitCircuitPartyIds) && snapshot.state.summitCircuitPartyIds.includes('jintari'), 'HUD summit circuit action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.summitCircuitPartyIds) && snapshot.state.summitCircuitPartyIds.includes('aozhen'), 'HUD summit circuit action must record Aozhen party proof.');
+  assert(Array.isArray(snapshot.state.summitCircuitSealIds) && snapshot.state.summitCircuitSealIds.includes('jade-dojo-seal'), 'HUD summit circuit action must record dojo seal proof.');
+  assert(Array.isArray(snapshot.state.summitCircuitSealIds) && snapshot.state.summitCircuitSealIds.includes('banner-ring-seal'), 'HUD summit circuit action must record tournament seal proof.');
+  assert(Array.isArray(snapshot.state.summitCircuitSealIds) && snapshot.state.summitCircuitSealIds.includes('qinghei-rival-seal'), 'HUD summit circuit action must record rival seal proof.');
+  assert(Array.isArray(snapshot.state.summitCircuitSealIds) && snapshot.state.summitCircuitSealIds.includes('sifu-council-seal'), 'HUD summit circuit action must record council seal proof.');
+  assert(snapshot.state.summitCircuitLaurelClaimed === true, 'HUD summit circuit action must mark the no-real-value summit laurel proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -1652,6 +1686,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');
   assert(chat.some((line) => String(line).includes('Jade Rival Circle cleared')), 'HUD chat state must record the rival circle action.');
   assert(chat.some((line) => String(line).includes('Jade Sifu Council cleared')), 'HUD chat state must record the sifu council action.');
+  assert(chat.some((line) => String(line).includes('Jade Summit Circuit cleared')), 'HUD chat state must record the summit circuit action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Insignia Case sealed')), 'HUD chat state must record the insignia case action.');
