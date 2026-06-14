@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   GUILD_ASCENSION_TRIALS,
   GUILD_COMMISSIONS,
+  GUILD_INSIGNIA_CASES,
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
@@ -48,6 +49,7 @@ import {
   resolveSpiritFieldAlmanac,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
+  resolveGuildInsigniaCase,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
   resolveMochiStoryChapter,
@@ -119,6 +121,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildInsigniaCases).toBe(true);
     expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildAscensionTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
@@ -185,6 +188,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.insignia_case');
     expect(ALPHA_ACTION_TYPES).toContain('guild.wayfarer_chronicle');
     expect(ALPHA_ACTION_TYPES).toContain('guild.ascension_trial');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
@@ -1229,6 +1233,75 @@ describe('alpha contract', () => {
     expect(missingStoryChapter.missing).toContain('presence:1/2');
     expect(missingStoryChapter.missing).toContain('tournament:jade-banner-tournament');
 
+    expect(GUILD_INSIGNIA_CASES.map((entry) => entry.id)).toEqual(['jade-insignia-case']);
+    const insigniaCase = resolveGuildInsigniaCase({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      guildRankProof: true,
+      guildRankId: 'jade-court-initiate',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      storyChapterProof: true,
+      storyChapterId: 'jade-scroll-story-chapter',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first insignia case.']
+    });
+    expect(insigniaCase).toMatchObject({
+      ok: true,
+      completed: true,
+      caseId: 'jade-insignia-case',
+      caseName: 'Jade Insignia Case',
+      title: 'First-Court Progression Case',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 44,
+      requiredScore: 34,
+      rewardItemId: 'jade-insignia-case',
+      source: 'guild-insignia-case'
+    });
+    expect(insigniaCase.message).toContain('No real value');
+    const missingInsigniaCase = resolveGuildInsigniaCase({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 1,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      guildRankProof: true,
+      guildRankId: 'jade-court-initiate',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      storyChapterProof: false,
+      storyChapterId: 'jade-scroll-story-chapter',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first insignia case.']
+    });
+    expect(missingInsigniaCase.completed).toBe(false);
+    expect(missingInsigniaCase.missing).toContain('presence:1/2');
+    expect(missingInsigniaCase.missing).toContain('story:jade-scroll-story-chapter');
+
     expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
     const chronicle = resolveGuildWayfarerChronicle({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -1260,6 +1333,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1281,8 +1355,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 97,
-      requiredScore: 58,
+      score: 100,
+      requiredScore: 61,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1317,6 +1391,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1341,6 +1416,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1370,8 +1446,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 65,
-      requiredScore: 50,
+      score: 68,
+      requiredScore: 53,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -1385,6 +1461,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,

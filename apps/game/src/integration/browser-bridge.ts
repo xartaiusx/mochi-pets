@@ -2,6 +2,7 @@ import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
   GUILD_ASCENSION_TRIALS,
   GUILD_COMMISSIONS,
+  GUILD_INSIGNIA_CASES,
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
@@ -56,6 +57,7 @@ import {
   resolveSpiritFieldAlmanac,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
+  resolveGuildInsigniaCase,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
@@ -264,6 +266,14 @@ interface AlphaHudState {
   storyChapterRouteIds: string[];
   storyChapterQuestIds: string[];
   storyScrollClaimed: boolean;
+  insigniaCaseProof: boolean;
+  insigniaCaseId?: string;
+  insigniaCaseName: string;
+  insigniaCaseScore: number;
+  insigniaCaseRequiredScore: number;
+  insigniaCaseSpiritIds: string[];
+  insigniaCasePartyIds: string[];
+  insigniaCaseClaimed: boolean;
   wayfarerChronicleProof: boolean;
   wayfarerChronicleId?: string;
   wayfarerChronicleName: string;
@@ -862,6 +872,13 @@ function defaultAlphaState(): AlphaHudState {
     storyChapterRouteIds: [],
     storyChapterQuestIds: [],
     storyScrollClaimed: false,
+    insigniaCaseProof: false,
+    insigniaCaseName: 'Unsealed',
+    insigniaCaseScore: 0,
+    insigniaCaseRequiredScore: 0,
+    insigniaCaseSpiritIds: [],
+    insigniaCasePartyIds: [],
+    insigniaCaseClaimed: false,
     wayfarerChronicleProof: false,
     wayfarerChronicleName: 'Unchronicled',
     wayfarerChronicleScore: 0,
@@ -1072,6 +1089,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-story-label>Story: pending</span>
+      <span class="mochi-hud__hint" data-insignia-label>Insignia: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
       <span class="mochi-hud__hint" data-ascension-label>Ascension: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
@@ -1121,6 +1139,7 @@ function createHud() {
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
+      <button type="button" data-alpha-action="guild.insignia_case" aria-label="Seal the no-real-value Jade Insignia Case">Insignia</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
       <button type="button" data-alpha-action="guild.ascension_trial" aria-label="Record the no-real-value Jade Court Ascension Trial">Ascend</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
@@ -1189,6 +1208,7 @@ function createHud() {
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const storyLabel = hud.querySelector('[data-story-label]');
+  const insigniaLabel = hud.querySelector('[data-insignia-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
   const ascensionLabel = hud.querySelector('[data-ascension-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
@@ -1264,6 +1284,11 @@ function createHud() {
       storyLabel.textContent = state.storyChapterProof
         ? `Story: ${state.storyChapterName}, score ${state.storyChapterScore}/${state.storyChapterRequiredScore}`
         : 'Story: pending';
+    }
+    if (insigniaLabel) {
+      insigniaLabel.textContent = state.insigniaCaseProof
+        ? `Insignia: ${state.insigniaCaseName}, score ${state.insigniaCaseScore}/${state.insigniaCaseRequiredScore}`
+        : 'Insignia: pending';
     }
     if (chronicleLabel) {
       chronicleLabel.textContent = state.wayfarerChronicleProof
@@ -1666,6 +1691,8 @@ function readAlphaState(): AlphaHudState {
       nurtureRiteCaredSpiritIds: Array.isArray(parsed?.nurtureRiteCaredSpiritIds) ? parsed.nurtureRiteCaredSpiritIds.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
+      insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
+      insigniaCasePartyIds: Array.isArray(parsed?.insigniaCasePartyIds) ? parsed.insigniaCasePartyIds.map(String) : [],
       tournamentPartyIds: Array.isArray(parsed?.tournamentPartyIds) ? parsed.tournamentPartyIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
@@ -2479,6 +2506,35 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'guild.insignia_case') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      caseId: GUILD_INSIGNIA_CASES[0].id,
+      roster: state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean),
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      localPresenceCount: presenceCount,
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId,
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId,
+      guildRankProof: state.guildRankProof,
+      guildRankId: state.guildRankId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      tournamentProof: state.tournamentProof,
+      tournamentId: state.tournamentId,
+      storyChapterProof: state.storyChapterProof,
+      storyChapterId: state.storyChapterId,
+      harmonyFormProof: state.harmonyFormProof,
+      harmonyFormId: state.harmonyFormId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      emoteProof: state.emoteProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.wayfarer_chronicle') {
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
     return {
@@ -2502,6 +2558,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       storyChapterProof: state.storyChapterProof,
+      insigniaCaseProof: state.insigniaCaseProof,
       techniqueLoadoutProof: state.techniqueLoadoutProof,
       traitAttunementProof: state.traitAttunementProof,
       conditionWeaveProof: state.conditionWeaveProof,
@@ -2534,6 +2591,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       localPresenceCount: presenceCount,
       wayfarerChronicleProof: state.wayfarerChronicleProof,
       storyChapterProof: state.storyChapterProof,
+      insigniaCaseProof: state.insigniaCaseProof,
       routePatrolProof: state.routePatrolProof,
       mentorChallengeProof: state.mentorChallengeProof,
       battleRoundProof: state.battleRoundProof,
@@ -3558,6 +3616,53 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'guild.insignia_case') {
+    const result = resolveGuildInsigniaCase(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        guildRankProof: Boolean(payload.guildRankProof ?? state.guildRankProof),
+        guildRankId: String(payload.guildRankId || state.guildRankId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
+        tournamentId: String(payload.tournamentId || state.tournamentId || ''),
+        storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
+        storyChapterId: String(payload.storyChapterId || state.storyChapterId || ''),
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        harmonyFormId: String(payload.harmonyFormId || state.harmonyFormId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        emoteProof: Boolean(payload.emoteProof ?? state.emoteProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.caseId || GUILD_INSIGNIA_CASES[0].id)
+    );
+    if (result.completed) {
+      state.insigniaCaseProof = true;
+      state.insigniaCaseId = result.caseId;
+      state.insigniaCaseName = result.caseName;
+      state.insigniaCaseScore = result.score;
+      state.insigniaCaseRequiredScore = result.requiredScore;
+      state.insigniaCaseSpiritIds = result.roster;
+      state.insigniaCasePartyIds = result.partyIds;
+      state.insigniaCaseClaimed = result.rewardItemId === 'jade-insignia-case';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.partyIds[0] || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.wayfarer_chronicle') {
     const result = resolveGuildWayfarerChronicle(
       {
@@ -3580,6 +3685,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
+        insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
         traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
         conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
@@ -3627,6 +3733,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
+        insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),

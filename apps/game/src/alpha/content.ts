@@ -1210,6 +1210,61 @@ export interface MochiStoryChapterResult {
   source: string;
 }
 
+export interface GuildInsigniaCase {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritCount: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface GuildInsigniaCaseProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  localPresenceCount: number;
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  guildRankProof: boolean;
+  guildRankId?: string;
+  growthRiteProof: boolean;
+  growthRiteId?: string;
+  tournamentProof: boolean;
+  tournamentId?: string;
+  storyChapterProof: boolean;
+  storyChapterId?: string;
+  harmonyFormProof: boolean;
+  harmonyFormId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  emoteProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface GuildInsigniaCaseResult {
+  ok: boolean;
+  completed: boolean;
+  caseId: string;
+  caseName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  partyIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildWayfarerChronicle {
   id: string;
   name: string;
@@ -1254,6 +1309,7 @@ export interface GuildWayfarerChronicleProgress {
   mentorChallengeProof: boolean;
   tournamentProof: boolean;
   storyChapterProof: boolean;
+  insigniaCaseProof: boolean;
   battleRoundProof: boolean;
   battleRoundVictory: boolean;
   questChainProof: boolean;
@@ -1306,6 +1362,7 @@ export interface GuildAscensionTrialProgress {
   mentorChallengeProof: boolean;
   tournamentProof: boolean;
   storyChapterProof: boolean;
+  insigniaCaseProof: boolean;
   battleRoundProof: boolean;
   battleRoundVictory: boolean;
   battleRoundFocusScore?: number;
@@ -2321,6 +2378,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Scroll Story Chapter',
     description: 'A no-real-value roleplay chapter proof for closed-alpha Mochirii quests, care, routes, guild rally, and tournament readiness.'
   },
+  insigniaCase: {
+    id: 'jade-insignia-case',
+    name: 'Jade Insignia Case',
+    description: 'A no-real-value progression case for closed-alpha Mochirii route, rank, growth, harmony, tournament, story, and social proofs.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2934,7 +2996,7 @@ export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
     requiredJournalCount: MOCHI_SPIRITS.length,
     requiredQuestCount: MOCHI_SPIRIT_QUESTS.length,
     requiredPresenceCount: 2,
-    requiredScore: 58,
+    requiredScore: 61,
     rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
     summary: 'A no-real-value alpha passport proof for testers who complete the first-court capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
   }
@@ -2948,7 +3010,7 @@ export const GUILD_ASCENSION_TRIALS: readonly GuildAscensionTrial[] = [
     habitat: SPIRIT_HABITATS.jadeLanternCourt,
     requiredSpiritCount: MOCHI_SPIRITS.length,
     requiredPresenceCount: 2,
-    requiredScore: 50,
+    requiredScore: 53,
     rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
     summary: 'A no-real-value guild capstone for testers who complete the first Mochirii chronicle, social party proof, no-injury battle proof, route patrol, and Canary preview.'
   }
@@ -3053,6 +3115,20 @@ export const MOCHI_STORY_CHAPTERS: readonly MochiStoryChapter[] = [
     requiredScore: 42,
     rewardItemId: ALPHA_ITEMS.storyScroll.id,
     summary: 'A no-real-value first-court roleplay chapter for testers who connect spirit care, route discovery, guild social play, safe battle, and quest vows into one Mochirii story record.'
+  }
+];
+
+export const GUILD_INSIGNIA_CASES: readonly GuildInsigniaCase[] = [
+  {
+    id: 'jade-insignia-case',
+    name: 'Jade Insignia Case',
+    title: 'First-Court Progression Case',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritCount: MOCHI_SPIRITS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 34,
+    rewardItemId: ALPHA_ITEMS.insigniaCase.id,
+    summary: 'A no-real-value Mochirii progression case for testers who gather route, rank, growth, harmony, tournament, story, and social proofs into one closed-alpha milestone.'
   }
 ];
 
@@ -5036,6 +5112,76 @@ export function resolveMochiStoryChapter(
   };
 }
 
+export function resolveGuildInsigniaCase(
+  progress: GuildInsigniaCaseProgress,
+  caseId: string = GUILD_INSIGNIA_CASES[0].id
+): GuildInsigniaCaseResult {
+  const insigniaCase = GUILD_INSIGNIA_CASES.find((entry) => entry.id === caseId) || GUILD_INSIGNIA_CASES[0];
+  const knownSpiritIds = new Set<string>(MOCHI_SPIRITS.map((spirit) => spirit.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (roster.length < insigniaCase.requiredSpiritCount) missing.push(`roster:${roster.length}/${insigniaCase.requiredSpiritCount}`);
+  if (partyIds.length < insigniaCase.requiredSpiritCount) missing.push(`party:${partyIds.length}/${insigniaCase.requiredSpiritCount}`);
+  if (localPresenceCount < insigniaCase.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${insigniaCase.requiredPresenceCount}`);
+  if (!progress.routeMasteryProof || progress.routeMasteryId !== SPIRIT_ROUTE_MASTERIES[0].id) missing.push(`route-mastery:${SPIRIT_ROUTE_MASTERIES[0].id}`);
+  if (!progress.routePatrolProof || progress.routePatrolId !== SPIRIT_ROUTE_PATROLS[0].id) missing.push(`route-patrol:${SPIRIT_ROUTE_PATROLS[0].id}`);
+  if (!progress.guildRankProof || progress.guildRankId !== GUILD_RANK_TRIALS[0].id) missing.push(`rank:${GUILD_RANK_TRIALS[0].id}`);
+  if (!progress.growthRiteProof || progress.growthRiteId !== SPIRIT_GROWTH_RITES[0].id) missing.push(`growth:${SPIRIT_GROWTH_RITES[0].id}`);
+  if (!progress.tournamentProof || progress.tournamentId !== SPIRIT_TOURNAMENT_BRACKETS[0].id) missing.push(`tournament:${SPIRIT_TOURNAMENT_BRACKETS[0].id}`);
+  if (!progress.storyChapterProof || progress.storyChapterId !== MOCHI_STORY_CHAPTERS[0].id) missing.push(`story:${MOCHI_STORY_CHAPTERS[0].id}`);
+  if (!progress.harmonyFormProof || progress.harmonyFormId !== SPIRIT_HARMONY_FORMS[0].id) missing.push(`harmony:${SPIRIT_HARMONY_FORMS[0].id}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!progress.emoteProof) missing.push('emote');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(roster.length, insigniaCase.requiredSpiritCount) * 2 +
+    Math.min(partyIds.length, insigniaCase.requiredSpiritCount) * 2 +
+    Math.min(localPresenceCount, insigniaCase.requiredPresenceCount) * 2 +
+    (progress.routeMasteryProof && progress.routeMasteryId === SPIRIT_ROUTE_MASTERIES[0].id ? 3 : 0) +
+    (progress.routePatrolProof && progress.routePatrolId === SPIRIT_ROUTE_PATROLS[0].id ? 3 : 0) +
+    (progress.guildRankProof && progress.guildRankId === GUILD_RANK_TRIALS[0].id ? 3 : 0) +
+    (progress.growthRiteProof && progress.growthRiteId === SPIRIT_GROWTH_RITES[0].id ? 3 : 0) +
+    (progress.tournamentProof && progress.tournamentId === SPIRIT_TOURNAMENT_BRACKETS[0].id ? 4 : 0) +
+    (progress.storyChapterProof && progress.storyChapterId === MOCHI_STORY_CHAPTERS[0].id ? 4 : 0) +
+    (progress.harmonyFormProof && progress.harmonyFormId === SPIRIT_HARMONY_FORMS[0].id ? 3 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (progress.emoteProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const completed = missing.length === 0 && score >= insigniaCase.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    completed,
+    caseId: insigniaCase.id,
+    caseName: insigniaCase.name,
+    title: insigniaCase.title,
+    habitat: insigniaCase.habitat,
+    roster,
+    partyIds,
+    localPresenceCount,
+    score,
+    requiredScore: insigniaCase.requiredScore,
+    missing,
+    rewardItemId: insigniaCase.rewardItemId,
+    message: completed
+      ? `${insigniaCase.name} sealed: ${partyNames} carry route, rank, growth, harmony, tournament, story, and social insignia for closed-alpha Mochirii progression. No real value.`
+      : `${insigniaCase.name} needs ${missing.join(', ')} before the progression case can be sealed.`,
+    source: 'guild-insignia-case'
+  };
+}
+
 export function resolveGuildWayfarerChronicle(
   progress: GuildWayfarerChronicleProgress,
   chronicleId: string = GUILD_WAYFARER_CHRONICLES[0].id
@@ -5083,6 +5229,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.mentorChallengeProof) missing.push('mentor');
   if (!progress.tournamentProof) missing.push('tournament');
   if (!progress.storyChapterProof) missing.push('story');
+  if (!progress.insigniaCaseProof) missing.push('insignia');
   if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
   if (!progress.marketProof) missing.push('market');
   if (!progress.tradeProof) missing.push('trade');
@@ -5122,6 +5269,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.mentorChallengeProof ? 2 : 0) +
     (progress.tournamentProof ? 3 : 0) +
     (progress.storyChapterProof ? 3 : 0) +
+    (progress.insigniaCaseProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory ? 2 : 0) +
     (progress.marketProof ? 1 : 0) +
     (progress.tradeProof ? 1 : 0) +
@@ -5149,7 +5297,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, nurturing, tournament battles, story vows, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, nurturing, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -5180,6 +5328,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.mentorChallengeProof) missing.push('mentor');
   if (!progress.tournamentProof) missing.push('tournament');
   if (!progress.storyChapterProof) missing.push('story');
+  if (!progress.insigniaCaseProof) missing.push('insignia');
   if (!progress.battleRoundProof || !progress.battleRoundVictory || !scoreLeadReady) missing.push('battle-round');
   if (!progress.conditionWeaveProof) missing.push('condition-weave');
   if (!progress.harmonyFormProof) missing.push('harmony');
@@ -5205,6 +5354,7 @@ export function resolveGuildAscensionTrial(
     (progress.mentorChallengeProof ? 4 : 0) +
     (progress.tournamentProof ? 3 : 0) +
     (progress.storyChapterProof ? 3 : 0) +
+    (progress.insigniaCaseProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory && scoreLeadReady ? 4 : 0) +
     (progress.conditionWeaveProof ? 3 : 0) +
     (progress.harmonyFormProof ? 2 : 0) +

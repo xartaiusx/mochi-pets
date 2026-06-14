@@ -112,6 +112,42 @@ const checks = [
     includes: ['Jade Scroll Story Chapter', 'Content-only HUD and ledger proofs']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['Jade Insignia Case proof', 'guild-insignia-case', 'story, insignia case, chronicle']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Insignia Case proof', 'guild-insignia-case']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Insignia Case', 'Jade Insignia Case proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Insignia Case contribution', 'content-only Jade Insignia Case proof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Insignia Case proof', 'insignia case']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Insignia Case', 'Jade Insignia Case proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Insignia Case proof', 'seal the Jade Insignia Case']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Insignia Case', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Insignia Case', 'Content-only HUD and ledger proofs']
+  },
+  {
     file: 'docs/site-integration.md',
     includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
   },
@@ -156,6 +192,14 @@ const checks = [
     includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
   },
   {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
+  },
+  {
     file: 'apps/game/src/integration/enjin-canary.ts',
     includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
@@ -192,6 +236,10 @@ const checks = [
     includes: ['MOCHI_STORY_CHAPTERS', 'resolveMochiStoryChapter', 'data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter']
   },
   {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['GUILD_INSIGNIA_CASES', 'resolveGuildInsigniaCase', 'data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case']
+  },
+  {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['cloudbell-reed-bank', 'aozhen', 'Moonbridge Goldleaf Accord', 'Cloudbell Skyvow Accord', 'jade-field-accord-talisman', 'resolveSpiritFieldAccord', 'spirit-field-accord', 'Jade Cloudbell Circuit', 'cloudbell-route-knot', 'resolveSpiritRouteMastery', 'world-route-mastery', 'Jade Court Habitat Bond', 'jade-court-habitat-tassel', 'resolveSpiritHabitatBond', 'spirit-habitat-bond', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'resolveSpiritSanctuaryRite', 'spirit-sanctuary-rite', 'Jade Court Research Folio', 'jade-court-research-folio', 'resolveSpiritResearchFolio', 'spirit-research-folio', 'Jade Court Spirit Compendium', 'jade-court-compendium-seal', 'resolveSpiritCompendiumCompletion', 'spirit-compendium', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'resolveSpiritRosterArchive', 'spirit-roster-archive', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'resolveSpiritCareCycle', 'spirit-care-cycle', 'Jade Temperament Concord', 'jade-temperament-charm', 'resolveSpiritTemperamentConcord', 'spirit-temperament-concord', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'resolveSpiritFieldAlmanac', 'spirit-field-almanac', 'Jade Court Provision Satchel', 'jade-court-provision-satchel', 'Jade Mooncake Box', 'jade-mooncake-box', 'resolveSpiritProvisionSatchel', 'item-provision-satchel', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'resolveGuildSocialRally', 'guild-social-rally', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'resolveGuildWayfarerChronicle', 'guild-wayfarer-chronicle', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'resolveGuildAscensionTrial', 'guild-ascension-trial', 'Jade Step Loadout', 'jade-step-loadout-slip', 'resolveSpiritTechniqueLoadout', 'spirit-technique-loadout', 'Jade Heart Trait Attunement', 'jade-heart-trait-thread', 'resolveSpiritTraitAttunement', 'spirit-trait-attunement', 'Jade Mirror Condition Weave', 'jade-mirror-condition-charm', 'Lantern Ward', 'Goldleaf Tempo', 'Skybell Guard', 'resolveSpiritConditionWeave', 'battle-condition-weave', 'Silk Banner Mentor Drill', 'silk-banner-mentor-seal', 'resolveSpiritMentorChallenge', 'battle-mentor-challenge', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof', 'Silk Market Kindness', 'Skybell Spar', 'selectMochiSpiritQuest', 'resolveMochiSpiritQuestProgress', 'quest-chain']
   },
@@ -202,6 +250,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Scroll Story Chapter', 'jade-scroll-story-chapter', 'resolveMochiStoryChapter', 'story-chapter', 'storyChapterProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Insignia Case', 'jade-insignia-case', 'resolveGuildInsigniaCase', 'guild-insignia-case', 'insigniaCaseProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -328,6 +380,10 @@ const checks = [
     includes: ['story.chapter_complete', 'jade-scroll-story-chapter', 'spiritStoryChapters', 'Jade Scroll Story Chapter', 'storyChapterProof']
   },
   {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['guild.insignia_case', 'jade-insignia-case', 'guildInsigniaCases', 'Jade Insignia Case', 'insigniaCaseProof']
+  },
+  {
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'simulated testers', 'HTTP alpha contract load smoke']
   },
@@ -362,6 +418,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter recorded']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case sealed']
   },
   {
     file: 'scripts/check-alpha-visual-snapshot.mjs',
@@ -434,6 +494,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter', 'jade-scroll-story-chapter', 'story-chapter', 'story chapter']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case', 'jade-insignia-case', 'guild-insignia-case', 'insignia case']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',

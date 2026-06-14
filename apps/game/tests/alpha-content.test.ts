@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ALPHA_ITEMS,
   GUILD_ASCENSION_TRIALS,
+  GUILD_INSIGNIA_CASES,
   GUILD_WAYFARER_CHRONICLES,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRITS,
@@ -26,6 +27,7 @@ import {
   growthStageFromBond,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
+  resolveGuildInsigniaCase,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
@@ -1049,6 +1051,42 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(storyChapter.message).toContain('No real value');
 
+    expect(GUILD_INSIGNIA_CASES.map((entry) => entry.id)).toEqual(['jade-insignia-case']);
+    const insigniaCase = resolveGuildInsigniaCase({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      localPresenceCount: 2,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      guildRankProof: true,
+      guildRankId: 'jade-court-initiate',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      storyChapterProof: true,
+      storyChapterId: 'jade-scroll-story-chapter',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Insignia case ready.']
+    });
+    expect(insigniaCase).toMatchObject({
+      completed: true,
+      caseId: 'jade-insignia-case',
+      caseName: 'Jade Insignia Case',
+      score: 44,
+      requiredScore: 34,
+      rewardItemId: ALPHA_ITEMS.insigniaCase.id,
+      source: 'guild-insignia-case'
+    });
+    expect(insigniaCase.message).toContain('No real value');
+
     expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
     const blockedChronicle = resolveGuildWayfarerChronicle({
       roster: fullRoster,
@@ -1080,6 +1118,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1127,6 +1166,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1142,8 +1182,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 97,
-      requiredScore: 58,
+      score: 100,
+      requiredScore: 61,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1159,6 +1199,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1193,6 +1234,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       tournamentProof: true,
       storyChapterProof: true,
+      insigniaCaseProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1216,8 +1258,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 65,
-      requiredScore: 50,
+      score: 68,
+      requiredScore: 53,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });

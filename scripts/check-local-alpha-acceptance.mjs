@@ -74,6 +74,7 @@ async function run() {
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
   assert(manifest.body.gameplay?.spiritStoryChapters === true, 'Manifest must expose Mochi Spirit story chapters.');
+  assert(manifest.body.gameplay?.guildInsigniaCases === true, 'Manifest must expose the Mochirii guild insignia case.');
   assert(manifest.body.gameplay?.wayfarerChronicles === true, 'Manifest must expose the Mochirii wayfarer chronicle.');
   assert(manifest.body.gameplay?.guildAscensionTrials === true, 'Manifest must expose the Mochirii guild ascension trial.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
@@ -121,6 +122,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
   assert(alphaStatus.body.gameplay?.spiritStoryChapters === true, 'Alpha status must expose Mochi Spirit story chapters.');
+  assert(alphaStatus.body.gameplay?.guildInsigniaCases === true, 'Alpha status must expose the Mochirii guild insignia case.');
   assert(alphaStatus.body.gameplay?.wayfarerChronicles === true, 'Alpha status must expose the Mochirii wayfarer chronicle.');
   assert(alphaStatus.body.gameplay?.guildAscensionTrials === true, 'Alpha status must expose the Mochirii guild ascension trial.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
@@ -949,6 +951,37 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-insignia-case`,
+      type: 'guild.insignia_case',
+      payload: {
+        caseId: 'jade-insignia-case',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        localPresenceCount: 2,
+        routeMasteryProof: true,
+        routeMasteryId: 'jade-cloudbell-circuit',
+        routePatrolProof: true,
+        routePatrolId: 'jade-cloudbell-patrol',
+        guildRankProof: true,
+        guildRankId: 'jade-court-initiate',
+        growthRiteProof: true,
+        growthRiteId: 'moonwell-bloom-rite',
+        tournamentProof: true,
+        tournamentId: 'jade-banner-tournament',
+        storyChapterProof: true,
+        storyChapterId: 'jade-scroll-story-chapter',
+        harmonyFormProof: true,
+        harmonyFormId: 'triune-jade-harmony',
+        profileViewed: true,
+        guildBuddyProof: true,
+        emoteProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-insignia-case',
+        chatLines: ['Local acceptance insignia case proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-wayfarer-chronicle`,
       type: 'guild.wayfarer_chronicle',
       payload: {
@@ -972,6 +1005,7 @@ async function run() {
         commissionProof: true,
         rallyProof: true,
         storyChapterProof: true,
+        insigniaCaseProof: true,
         techniqueLoadoutProof: true,
         traitAttunementProof: true,
         conditionWeaveProof: true,
@@ -1005,6 +1039,7 @@ async function run() {
         localPresenceCount: 2,
         wayfarerChronicleProof: true,
         storyChapterProof: true,
+        insigniaCaseProof: true,
         routePatrolProof: true,
         mentorChallengeProof: true,
         tournamentProof: true,
@@ -1203,6 +1238,19 @@ async function run() {
   assert(storyChapter?.payload?.rallyProof === true, 'Story chapter ledger entry must preserve social rally proof.');
   assert(storyChapter?.payload?.rewardItemId === 'jade-scroll-story-chapter', 'Story chapter ledger entry must preserve the no-real-value story scroll proof.');
   assert(storyChapter?.payload?.noRealValue === true, 'Story chapter ledger entry must remain no-real-value.');
+  const insigniaCase = entriesById.get(`${runId}-insignia-case`);
+  assert(insigniaCase?.payload?.caseId === 'jade-insignia-case', 'Insignia case ledger entry must preserve the Jade Insignia Case id.');
+  assert(Array.isArray(insigniaCase?.payload?.roster) && insigniaCase.payload.roster.length === 3, 'Insignia case ledger entry must preserve full roster proof.');
+  assert(Array.isArray(insigniaCase?.payload?.partyIds) && insigniaCase.payload.partyIds.length === 3, 'Insignia case ledger entry must preserve full-party proof.');
+  assert(insigniaCase?.payload?.routeMasteryProof === true, 'Insignia case ledger entry must preserve route mastery proof.');
+  assert(insigniaCase?.payload?.routePatrolProof === true, 'Insignia case ledger entry must preserve route patrol proof.');
+  assert(insigniaCase?.payload?.guildRankProof === true, 'Insignia case ledger entry must preserve guild rank proof.');
+  assert(insigniaCase?.payload?.growthRiteProof === true, 'Insignia case ledger entry must preserve growth rite proof.');
+  assert(insigniaCase?.payload?.tournamentProof === true, 'Insignia case ledger entry must preserve tournament proof.');
+  assert(insigniaCase?.payload?.storyChapterProof === true, 'Insignia case ledger entry must preserve story chapter proof.');
+  assert(insigniaCase?.payload?.harmonyFormProof === true, 'Insignia case ledger entry must preserve harmony proof.');
+  assert(insigniaCase?.payload?.rewardItemId === 'jade-insignia-case', 'Insignia case ledger entry must preserve the no-real-value insignia case proof.');
+  assert(insigniaCase?.payload?.noRealValue === true, 'Insignia case ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
@@ -1214,6 +1262,7 @@ async function run() {
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.storyChapterProof === true, 'Wayfarer chronicle ledger entry must preserve story chapter proof.');
+  assert(chronicle?.payload?.insigniaCaseProof === true, 'Wayfarer chronicle ledger entry must preserve insignia case proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
   const ascension = entriesById.get(`${runId}-ascension-trial`);
@@ -1221,6 +1270,7 @@ async function run() {
   assert(ascension?.payload?.localPresenceCount === 2, 'Ascension trial ledger entry must preserve two-tester presence proof.');
   assert(ascension?.payload?.wayfarerChronicleProof === true, 'Ascension trial ledger entry must preserve wayfarer chronicle proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
+  assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');
   assert(ascension?.payload?.tournamentProof === true, 'Ascension trial ledger entry must preserve tournament proof.');
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
