@@ -13,6 +13,7 @@ import {
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_BATTLE_CONDITIONS,
   SPIRIT_CARE_CYCLES,
+  SPIRIT_CAPTURE_RITES,
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_CRAFT_WRITS,
@@ -41,6 +42,7 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritCaptureRite,
   resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
@@ -140,6 +142,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCaptureRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -172,6 +175,7 @@ describe('alpha contract', () => {
   it('validates alpha action envelopes', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.capture_rite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_patrol');
@@ -240,6 +244,32 @@ describe('alpha contract', () => {
     expect(capture.message).toContain('Lantern Harmony Invitation');
     expect(resolveSpiritCapture('aozhen', 'lantern-harmony-tea', 1, []).ok).toBe(false);
     expect(resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, ['lirabao']).alreadyRostered).toBe(true);
+    expect(SPIRIT_CAPTURE_RITES[0].id).toBe('jade-court-capture-rite');
+    const captureRite = resolveSpiritCaptureRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      captureProof: true,
+      routeInviteProof: true,
+      fieldAccordProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Contract capture rite proof.']
+    });
+    expect(captureRite).toMatchObject({
+      recorded: true,
+      riteId: 'jade-court-capture-rite',
+      score: 51,
+      requiredScore: 38,
+      rewardItemId: 'jade-capture-rite-tally',
+      source: 'spirit-capture-rite'
+    });
 
     const attunement = resolveSpiritAttunement('lirabao', 'mochirii-guild-seal');
     expect(attunement).toMatchObject({
@@ -1383,6 +1413,7 @@ describe('alpha contract', () => {
       completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
       localPresenceCount: 2,
       captureProof: true,
+      captureRiteProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1429,8 +1460,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 103,
-      requiredScore: 64,
+      score: 106,
+      requiredScore: 67,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1442,6 +1473,7 @@ describe('alpha contract', () => {
       completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
       localPresenceCount: 2,
       captureProof: true,
+      captureRiteProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,

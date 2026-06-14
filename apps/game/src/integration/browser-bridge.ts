@@ -12,6 +12,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_CARE_CYCLES,
+  SPIRIT_CAPTURE_RITES,
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_CRAFT_WRITS,
@@ -49,6 +50,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
+  resolveSpiritCaptureRite,
   resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
@@ -123,6 +125,15 @@ interface AlphaHudState {
   growth: string;
   captureProof: boolean;
   lastCaptureSpiritId?: string;
+  captureRiteProof: boolean;
+  captureRiteId?: string;
+  captureRiteName: string;
+  captureRiteScore: number;
+  captureRiteRequiredScore: number;
+  captureRiteSpiritIds: string[];
+  captureRiteRouteInvitedSpiritIds: string[];
+  captureRiteLureItemIds: string[];
+  captureRiteClaimed: boolean;
   journalProof: boolean;
   journalDiscoveredCount: number;
   journalTotal: number;
@@ -764,6 +775,14 @@ function defaultAlphaState(): AlphaHudState {
     bond: 0,
     growth: 'seed',
     captureProof: false,
+    captureRiteProof: false,
+    captureRiteName: 'Unrecorded',
+    captureRiteScore: 0,
+    captureRiteRequiredScore: 0,
+    captureRiteSpiritIds: [],
+    captureRiteRouteInvitedSpiritIds: [],
+    captureRiteLureItemIds: [],
+    captureRiteClaimed: false,
     journalProof: false,
     journalDiscoveredCount: 0,
     journalTotal: MOCHI_SPIRITS.length,
@@ -1089,6 +1108,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
       <span class="mochi-hud__hint" data-route-invite-label>Route Invite: pending</span>
+      <span class="mochi-hud__hint" data-capture-rite-label>Capture Rite: pending</span>
       <span class="mochi-hud__hint" data-field-accord-label>Field Accord: pending</span>
       <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
       <span class="mochi-hud__hint" data-route-patrol-label>Route Patrol: pending</span>
@@ -1134,6 +1154,7 @@ function createHud() {
       <button type="button" data-alpha-local-action="guild.buddy" aria-label="Add local guild buddy proof">Guild</button>
       <button type="button" data-alpha-local-action="status.set" aria-label="Set cozy status mood">Mood</button>
       <button type="button" data-alpha-action="spirit.capture" aria-label="Invite a Mochi Spirit from the habitat grove">Invite</button>
+      <button type="button" data-alpha-action="spirit.capture_rite" aria-label="Record the no-real-value Jade Capture Rite">Rite+</button>
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
       <button type="button" data-alpha-action="party.set" aria-label="Form a Mochi Spirit party">Party</button>
       <button type="button" data-alpha-action="party.harmony_form" aria-label="Record the no-real-value three-spirit harmony form">Harmony</button>
@@ -1210,6 +1231,7 @@ function createHud() {
   const journalLabel = hud.querySelector('[data-journal-label]');
   const expeditionLabel = hud.querySelector('[data-expedition-label]');
   const routeInviteLabel = hud.querySelector('[data-route-invite-label]');
+  const captureRiteLabel = hud.querySelector('[data-capture-rite-label]');
   const fieldAccordLabel = hud.querySelector('[data-field-accord-label]');
   const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
   const routePatrolLabel = hud.querySelector('[data-route-patrol-label]');
@@ -1286,6 +1308,11 @@ function createHud() {
       routeInviteLabel.textContent = state.routeInviteProof
         ? `Route Invite: ${state.lastRouteInviteSpiritId || 'recorded'}`
         : 'Route Invite: pending';
+    }
+    if (captureRiteLabel) {
+      captureRiteLabel.textContent = state.captureRiteProof
+        ? `Capture Rite: ${state.captureRiteName}, ${state.captureRiteSpiritIds.length} spirits, score ${state.captureRiteScore}/${state.captureRiteRequiredScore}`
+        : 'Capture Rite: pending';
     }
     if (fieldAccordLabel) {
       fieldAccordLabel.textContent = state.fieldAccordProof
@@ -1703,6 +1730,9 @@ function readAlphaState(): AlphaHudState {
       ...defaultAlphaState(),
       ...(parsed || {}),
       attunedSpiritIds: Array.isArray(parsed?.attunedSpiritIds) ? parsed.attunedSpiritIds.map(String) : [],
+      captureRiteSpiritIds: Array.isArray(parsed?.captureRiteSpiritIds) ? parsed.captureRiteSpiritIds.map(String) : [],
+      captureRiteRouteInvitedSpiritIds: Array.isArray(parsed?.captureRiteRouteInvitedSpiritIds) ? parsed.captureRiteRouteInvitedSpiritIds.map(String) : [],
+      captureRiteLureItemIds: Array.isArray(parsed?.captureRiteLureItemIds) ? parsed.captureRiteLureItemIds.map(String) : [],
       routeInvitedSpiritIds: Array.isArray(parsed?.routeInvitedSpiritIds) ? parsed.routeInvitedSpiritIds.map(String) : [],
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
@@ -2189,6 +2219,29 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.capture_rite') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean);
+    return {
+      riteId: SPIRIT_CAPTURE_RITES[0].id,
+      roster,
+      capturedSpiritIds: roster,
+      routeInvitedSpiritIds: state.routeInvitedSpiritIds,
+      lureItemIds: Array.from(new Set(MOCHI_SPIRITS.map((entry) => entry.capture.lureItemId))),
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      localPresenceCount: presenceCount,
+      captureProof: state.captureProof,
+      routeInviteProof: state.routeInviteProof,
+      fieldAccordProof: state.fieldAccordProof,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'spirit.train') {
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
     return {
@@ -2622,6 +2675,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       completedQuestIds: state.completedQuestIds,
       localPresenceCount: presenceCount,
       captureProof: state.captureProof,
+      captureRiteProof: state.captureRiteProof,
       routeMasteryProof: state.routeMasteryProof,
       routePatrolProof: state.routePatrolProof,
       routeEcologyProof: state.routeEcologyProof,
@@ -3099,6 +3153,47 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       }
       state.bond = Math.max(state.bond, result.bond);
       state.growth = result.growth;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.capture_rite') {
+    const presenceCount = Number(payload.localPresenceCount ?? document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount ?? state.rallyPresenceCount ?? 1);
+    const roster = Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds;
+    const capturedSpiritIds = Array.isArray(payload.capturedSpiritIds) ? payload.capturedSpiritIds.map(String) : roster;
+    const result = resolveSpiritCaptureRite(
+      {
+        roster,
+        capturedSpiritIds,
+        routeInvitedSpiritIds: Array.isArray(payload.routeInvitedSpiritIds) ? payload.routeInvitedSpiritIds.map(String) : state.routeInvitedSpiritIds,
+        lureItemIds: Array.isArray(payload.lureItemIds) ? payload.lureItemIds.map(String) : Array.from(new Set(MOCHI_SPIRITS.map((entry) => entry.capture.lureItemId))),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        localPresenceCount: presenceCount,
+        captureProof: Boolean(payload.captureProof ?? state.captureProof),
+        routeInviteProof: Boolean(payload.routeInviteProof ?? state.routeInviteProof),
+        fieldAccordProof: Boolean(payload.fieldAccordProof ?? state.fieldAccordProof),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.riteId || SPIRIT_CAPTURE_RITES[0].id)
+    );
+    if (result.recorded) {
+      state.captureRiteProof = true;
+      state.captureRiteId = result.riteId;
+      state.captureRiteName = result.riteName;
+      state.captureRiteScore = result.score;
+      state.captureRiteRequiredScore = result.requiredScore;
+      state.captureRiteSpiritIds = result.capturedSpiritIds;
+      state.captureRiteRouteInvitedSpiritIds = result.routeInvitedSpiritIds;
+      state.captureRiteLureItemIds = result.lureItemIds;
+      state.captureRiteClaimed = result.rewardItemId === 'jade-capture-rite-tally';
+      state.attunedSpiritIds = result.roster;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+      state.captureProof = true;
     }
     state.chat.push(result.message);
   }
@@ -3799,6 +3894,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         captureProof: Boolean(payload.captureProof ?? state.captureProof),
+        captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
         routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),

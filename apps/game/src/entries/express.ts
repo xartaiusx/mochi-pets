@@ -38,6 +38,7 @@ const ALPHA_FEATURES = {
   },
   gameplay: {
     spiritCapture: true,
+    spiritCaptureRites: true,
     spiritAttunement: true,
     routeInvitations: true,
     routeMastery: true,
@@ -102,6 +103,7 @@ const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
   'spirit.capture',
+  'spirit.capture_rite',
   'spirit.route_invite',
   'world.route_mastery',
   'world.route_patrol',

@@ -149,43 +149,43 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Kinship Album proof', 'nurture/kinship/bracket', 'kinship album proof']
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/kinship/capture-rite/bracket', 'capture rite proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.kinship_album', 'Jade Kinship Album proof', 'kinship-album']
+    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Kinship Album proof', 'kinship-album']
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof']
   },
   {
     file: 'docs/alpha-preview-ready.md',
-    includes: ['Jade Kinship Album', 'Jade Kinship Album proof']
+    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Jade Capture Rite proof']
   },
   {
     file: 'docs/game-art-bible.md',
-    includes: ['Jade Kinship Album contribution', 'content-only Jade Kinship Album proof']
+    includes: ['Jade Kinship Album contribution', 'Jade Capture Rite contribution', 'content-only Jade Capture Rite proof']
   },
   {
     file: 'docs/visual-polish-brief.md',
-    includes: ['Jade Kinship Album proof', 'kinship album']
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'capture rite']
   },
   {
     file: 'docs/implementation-brief.md',
-    includes: ['Jade Kinship Album', 'Jade Kinship Album proof']
+    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Jade Capture Rite proof']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
-    includes: ['Jade Kinship Album proof', 'record the Jade Kinship Album']
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'record the Jade Capture Rite']
   },
   {
     file: 'docs/asset-pipeline-contract.md',
-    includes: ['Jade Kinship Album', 'Content-only proof loops']
+    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Content-only proof loops']
   },
   {
     file: 'docs/asset-ledger.md',
-    includes: ['Jade Kinship Album', 'Content-only HUD and ledger proofs']
+    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/site-integration.md',
@@ -226,6 +226,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritKinshipAlbums: true', "'spirit.kinship_album'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -277,6 +281,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_CAPTURE_RITES', 'resolveSpiritCaptureRite', 'data-alpha-action="spirit.capture_rite"', 'data-capture-rite-label', 'captureRiteProof', 'captureRiteClaimed', 'Jade Capture Rite']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_TOURNAMENT_BRACKETS', 'resolveSpiritTournamentBracket', 'data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament']
   },
   {
@@ -325,6 +333,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof']
   },
   {
@@ -366,6 +378,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritKinshipAlbums: true', 'spirit.kinship_album']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritCaptureRites: true', 'spirit.capture_rite']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -433,6 +449,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.tournament_bracket', 'jade-banner-tournament', 'spiritTournamentBrackets', 'Jade Banner Tournament', 'tournamentProof']
   },
   {
@@ -474,6 +494,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.kinship_album"', 'data-kinship-album-label', 'kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album recorded']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.capture_rite"', 'data-capture-rite-label', 'captureRiteProof', 'captureRiteClaimed', 'Jade Capture Rite recorded']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',

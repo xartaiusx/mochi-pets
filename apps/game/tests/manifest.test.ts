@@ -41,6 +41,7 @@ describe('game manifest', () => {
       },
       gameplay: {
         spiritCapture: true,
+        spiritCaptureRites: true,
         spiritAttunement: true,
         routeInvitations: true,
         routeMastery: true,

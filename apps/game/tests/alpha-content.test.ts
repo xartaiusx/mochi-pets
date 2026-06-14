@@ -9,6 +9,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_CARE_CYCLES,
+  SPIRIT_CAPTURE_RITES,
   SPIRIT_CRAFT_WRITS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
@@ -38,6 +39,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBondMilestone,
   resolveSpiritCapture,
+  resolveSpiritCaptureRite,
   resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
@@ -168,6 +170,66 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'spirit-capture'
     });
     expect(captured.message).toContain('Skybell Vow Invitation');
+
+    expect(SPIRIT_CAPTURE_RITES[0]).toMatchObject({
+      id: 'jade-court-capture-rite',
+      rewardItemId: ALPHA_ITEMS.captureRiteTally.id,
+      requiredScore: 38
+    });
+
+    const captureRite = resolveSpiritCaptureRite({
+      roster: [...fullRoster],
+      capturedSpiritIds: [...fullRoster],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      lureItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      captureProof: true,
+      routeInviteProof: true,
+      fieldAccordProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Capture rite test proof.']
+    });
+    expect(captureRite).toMatchObject({
+      recorded: true,
+      riteId: 'jade-court-capture-rite',
+      riteName: 'Jade Capture Rite',
+      score: 51,
+      requiredScore: 38,
+      rewardItemId: ALPHA_ITEMS.captureRiteTally.id,
+      source: 'spirit-capture-rite'
+    });
+    expect(captureRite.message).toContain('No real value');
+
+    const blockedCaptureRite = resolveSpiritCaptureRite({
+      roster: ['lirabao'],
+      capturedSpiritIds: ['lirabao'],
+      routeInvitedSpiritIds: [],
+      lureItemIds: [ALPHA_ITEMS.harmonyTea.id],
+      journalDiscoveredCount: 1,
+      localPresenceCount: 1,
+      captureProof: true,
+      routeInviteProof: false,
+      fieldAccordProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      profileViewed: false,
+      guildBuddyProof: false,
+      statusMood: 'exploring',
+      chatLines: []
+    });
+    expect(blockedCaptureRite.recorded).toBe(false);
+    expect(blockedCaptureRite.missing).toEqual(expect.arrayContaining([
+      'captured:1/3',
+      'route-invites:0/2',
+      'presence:1/2',
+      'field-accord',
+      'no-injury-battle'
+    ]));
 
     const firstScout = resolveSpiritExpedition('moonbridge-bamboo-trail', ['lirabao'], 'lirabao', 2, []);
     expect(firstScout).toMatchObject({
@@ -1132,6 +1194,7 @@ describe('Mochi Spirits alpha content contract', () => {
       completedQuestIds,
       localPresenceCount: 1,
       captureProof: true,
+      captureRiteProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1181,6 +1244,7 @@ describe('Mochi Spirits alpha content contract', () => {
       completedQuestIds,
       localPresenceCount: 2,
       captureProof: true,
+      captureRiteProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1221,8 +1285,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 103,
-      requiredScore: 64,
+      score: 106,
+      requiredScore: 67,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });

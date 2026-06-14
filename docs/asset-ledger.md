@@ -4,7 +4,7 @@ All current runtime art is original Mochirii High-Fidelity Wuxia art generated f
 
 Generation note: smooth illustrated 2D Mochirii guild/wuxia art with soft lantern lighting, jade, lacquer, gold, silk, and paper materials, clear gameplay silhouettes, no baked-in text, no logos, no real-value implication, and Enjin Canary kept as a configured preview stub. Assets ship under the repository MIT license as project-authored/generated-for-project work.
 
-Content-only HUD and ledger proofs, including the Jade Court Craft Writ, Jade Cloudbell Waystone, Jade Moonwell Nurture Rite, Jade Kinship Album, Jade Banner Tournament, Jade Scroll Story Chapter, and Jade Insignia Case, do not receive asset rows until a runtime art file and matching source card are generated.
+Content-only HUD and ledger proofs, including the Jade Court Craft Writ, Jade Cloudbell Waystone, Jade Moonwell Nurture Rite, Jade Kinship Album, Jade Capture Rite, Jade Banner Tournament, Jade Scroll Story Chapter, and Jade Insignia Case, do not receive asset rows until a runtime art file and matching source card are generated.
 
 | Asset | Runtime Location | Runtime Dimensions | Source Card | Role | Source | License |
 | --- | --- | --- | --- | --- | --- | --- |

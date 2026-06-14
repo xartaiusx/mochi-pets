@@ -1349,6 +1349,7 @@ export interface GuildWayfarerChronicleProgress {
   completedQuestIds: readonly string[];
   localPresenceCount: number;
   captureProof: boolean;
+  captureRiteProof: boolean;
   routeMasteryProof: boolean;
   routePatrolProof: boolean;
   routeEcologyProof: boolean;
@@ -1941,6 +1942,60 @@ export interface SpiritCaptureResult {
   source: string;
 }
 
+export interface SpiritCaptureRite {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredRouteInviteSpiritIds: readonly string[];
+  requiredLureItemIds: readonly string[];
+  requiredJournalCount: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritCaptureRiteProgress {
+  roster: readonly string[];
+  capturedSpiritIds: readonly string[];
+  routeInvitedSpiritIds: readonly string[];
+  lureItemIds: readonly string[];
+  journalDiscoveredCount: number;
+  localPresenceCount: number;
+  captureProof: boolean;
+  routeInviteProof: boolean;
+  fieldAccordProof: boolean;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritCaptureRiteResult {
+  ok: boolean;
+  recorded: boolean;
+  riteId: string;
+  riteName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  capturedSpiritIds: string[];
+  routeInvitedSpiritIds: string[];
+  lureItemIds: string[];
+  journalDiscoveredCount: number;
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritTrainingBattleResult {
   ok: boolean;
   spiritId: string;
@@ -2388,6 +2443,11 @@ export const ALPHA_ITEMS = {
     name: 'Lantern Harmony Tea',
     description: 'A no-real-value spirit invitation lure brewed for Jade Lantern Court encounters.'
   },
+  captureRiteTally: {
+    id: 'jade-capture-rite-tally',
+    name: 'Jade Capture Rite Tally',
+    description: 'A no-real-value capture rite proof for closed-alpha Mochirii lure choice, consent invitations, route accords, and social witnesses.'
+  },
   mooncakeBox: {
     id: 'jade-mooncake-box',
     name: 'Jade Mooncake Box',
@@ -2726,6 +2786,23 @@ export const SPIRIT_EXPEDITION_ROUTES: readonly SpiritExpeditionRoute[] = [
     recommendedItemId: ALPHA_ITEMS.harmonyTea.id,
     rewardItemId: ALPHA_ITEMS.trailRibbon.id,
     routeNote: 'A quiet reed bank under guild bells where Aozhen listens for careful wayfarers.'
+  }
+];
+
+export const SPIRIT_CAPTURE_RITES: readonly SpiritCaptureRite[] = [
+  {
+    id: 'jade-court-capture-rite',
+    name: 'Jade Capture Rite',
+    title: 'First-Court Consent Capture Rite',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredRouteInviteSpiritIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.encounterSpiritId),
+    requiredLureItemIds: Array.from(new Set(MOCHI_SPIRITS.map((spirit) => spirit.capture.lureItemId))),
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 38,
+    rewardItemId: ALPHA_ITEMS.captureRiteTally.id,
+    summary: 'A no-real-value first-court capture rite for testers who prove lure choice, consent invitations, route accord, no-injury battle rhythm, journal study, and nearby social witnesses.'
   }
 ];
 
@@ -3086,7 +3163,7 @@ export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
     requiredJournalCount: MOCHI_SPIRITS.length,
     requiredQuestCount: MOCHI_SPIRIT_QUESTS.length,
     requiredPresenceCount: 2,
-    requiredScore: 64,
+    requiredScore: 67,
     rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
     summary: 'A no-real-value alpha passport proof for testers who complete the first-court capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
   }
@@ -3571,6 +3648,91 @@ export function resolveSpiritCapture(spiritId: string, offeredItemId: string, ha
     bond: ok ? 1 : 0,
     growth: 'seed',
     source: 'spirit-capture'
+  };
+}
+
+export function resolveSpiritCaptureRite(
+  progress: SpiritCaptureRiteProgress,
+  riteId: string = SPIRIT_CAPTURE_RITES[0].id
+): SpiritCaptureRiteResult {
+  const rite = SPIRIT_CAPTURE_RITES.find((entry) => entry.id === riteId) || SPIRIT_CAPTURE_RITES[0];
+  const requiredSpiritIds = new Set(rite.requiredSpiritIds);
+  const requiredRouteInviteSpiritIds = new Set(rite.requiredRouteInviteSpiritIds);
+  const requiredLureItemIds = new Set(rite.requiredLureItemIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const capturedSpiritIds = Array.from(new Set(progress.capturedSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const routeInvitedSpiritIds = Array.from(new Set(progress.routeInvitedSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredRouteInviteSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const lureItemIds = Array.from(new Set(progress.lureItemIds.filter(Boolean))).filter((itemId) => requiredLureItemIds.has(itemId));
+  const journalDiscoveredCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const noInjuryReady = progress.battleRoundProof && progress.battleRoundVictory;
+  const missing: string[] = [];
+
+  if (roster.length < rite.requiredSpiritIds.length) missing.push(`roster:${roster.length}/${rite.requiredSpiritIds.length}`);
+  if (capturedSpiritIds.length < rite.requiredSpiritIds.length) missing.push(`captured:${capturedSpiritIds.length}/${rite.requiredSpiritIds.length}`);
+  if (routeInvitedSpiritIds.length < rite.requiredRouteInviteSpiritIds.length) {
+    missing.push(`route-invites:${routeInvitedSpiritIds.length}/${rite.requiredRouteInviteSpiritIds.length}`);
+  }
+  if (lureItemIds.length < rite.requiredLureItemIds.length) missing.push(`lures:${lureItemIds.length}/${rite.requiredLureItemIds.length}`);
+  if (journalDiscoveredCount < rite.requiredJournalCount) missing.push(`journal:${journalDiscoveredCount}/${rite.requiredJournalCount}`);
+  if (localPresenceCount < rite.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${rite.requiredPresenceCount}`);
+  if (!progress.captureProof) missing.push('capture-proof');
+  if (!progress.routeInviteProof) missing.push('route-invite-proof');
+  if (!progress.fieldAccordProof) missing.push('field-accord');
+  if (!noInjuryReady) missing.push('no-injury-battle');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(roster.length, rite.requiredSpiritIds.length) * 2 +
+    Math.min(capturedSpiritIds.length, rite.requiredSpiritIds.length) * 3 +
+    Math.min(routeInvitedSpiritIds.length, rite.requiredRouteInviteSpiritIds.length) * 2 +
+    Math.min(lureItemIds.length, rite.requiredLureItemIds.length) * 2 +
+    Math.min(journalDiscoveredCount, rite.requiredJournalCount) * 2 +
+    Math.min(localPresenceCount, rite.requiredPresenceCount) * 2 +
+    (progress.captureProof ? 4 : 0) +
+    (progress.routeInviteProof ? 3 : 0) +
+    (progress.fieldAccordProof ? 3 : 0) +
+    (noInjuryReady ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const recorded = missing.length === 0 && score >= rite.requiredScore;
+  const rosterNames = roster.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    recorded,
+    riteId: rite.id,
+    riteName: rite.name,
+    title: rite.title,
+    habitat: rite.habitat,
+    roster,
+    capturedSpiritIds,
+    routeInvitedSpiritIds,
+    lureItemIds,
+    journalDiscoveredCount,
+    localPresenceCount,
+    score,
+    requiredScore: rite.requiredScore,
+    missing,
+    rewardItemId: rite.rewardItemId,
+    message: recorded
+      ? `${rite.name} recorded: ${rosterNames} completed lure choice, consent invitations, route accord, no-injury battle rhythm, journal study, and nearby social witness proof. No real value.`
+      : `${rite.name} needs ${missing.join(', ')} before the first-court capture rite can be recorded.`,
+    source: 'spirit-capture-rite'
   };
 }
 
@@ -5397,6 +5559,7 @@ export function resolveGuildWayfarerChronicle(
   if (completedQuestIds.length < chronicle.requiredQuestCount || !progress.questChainProof) missing.push(`quests:${completedQuestIds.length}/${chronicle.requiredQuestCount}`);
   if (localPresenceCount < chronicle.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${chronicle.requiredPresenceCount}`);
   if (!progress.captureProof) missing.push('capture');
+  if (!progress.captureRiteProof) missing.push('capture-rite');
   if (!progress.routeMasteryProof) missing.push('route-mastery');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.routeEcologyProof) missing.push('route-ecology');
@@ -5438,6 +5601,7 @@ export function resolveGuildWayfarerChronicle(
     Math.min(completedQuestIds.length, chronicle.requiredQuestCount) * 2 +
     Math.min(localPresenceCount, chronicle.requiredPresenceCount) * 3 +
     (progress.captureProof ? 2 : 0) +
+    (progress.captureRiteProof ? 3 : 0) +
     (progress.routeMasteryProof ? 3 : 0) +
     (progress.routePatrolProof ? 3 : 0) +
     (progress.routeEcologyProof ? 3 : 0) +
@@ -5490,7 +5654,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, nurturing, kinship, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, routes, ecology, crafting, waystone travel, nurturing, kinship, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };

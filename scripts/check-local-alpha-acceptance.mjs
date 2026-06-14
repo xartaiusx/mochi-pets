@@ -55,6 +55,7 @@ async function run() {
   assert(manifest.body.market?.fixedPrice === true, 'Manifest must keep fixed-price market enabled.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
   assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
+  assert(manifest.body.gameplay?.spiritCaptureRites === true, 'Manifest must expose Mochi Spirit capture rites.');
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
   assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
@@ -104,6 +105,7 @@ async function run() {
   assert(alphaStatus.body.market?.fixedPrice === true, 'Alpha status must keep fixed-price enabled.');
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
   assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
+  assert(alphaStatus.body.gameplay?.spiritCaptureRites === true, 'Alpha status must expose Mochi Spirit capture rites.');
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
@@ -568,6 +570,30 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-capture-rite`,
+      type: 'spirit.capture_rite',
+      payload: {
+        riteId: 'jade-court-capture-rite',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        routeInvitedSpiritIds: ['jintari', 'aozhen'],
+        lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+        journalDiscoveredCount: 3,
+        localPresenceCount: 2,
+        captureProof: true,
+        routeInviteProof: true,
+        fieldAccordProof: true,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance capture rite proof.'],
+        rewardItemId: 'jade-capture-rite-tally',
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-bond`,
       type: 'spirit.bond',
       payload: { spiritId: 'lirabao', source: 'acceptance-script' }
@@ -1025,6 +1051,7 @@ async function run() {
         completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
         localPresenceCount: 2,
         captureProof: true,
+        captureRiteProof: true,
         routeMasteryProof: true,
         routePatrolProof: true,
         routeEcologyProof: true,
@@ -1260,6 +1287,21 @@ async function run() {
   assert(kinshipAlbum?.payload?.raisingProof === true, 'Kinship album ledger entry must preserve raising proof.');
   assert(kinshipAlbum?.payload?.rewardItemId === 'jade-kinship-album', 'Kinship album ledger entry must preserve the no-real-value album proof.');
   assert(kinshipAlbum?.payload?.noRealValue === true, 'Kinship album ledger entry must remain no-real-value.');
+  const captureRite = entriesById.get(`${runId}-capture-rite`);
+  assert(captureRite?.payload?.riteId === 'jade-court-capture-rite', 'Capture rite ledger entry must preserve the Jade Capture Rite id.');
+  assert(Array.isArray(captureRite?.payload?.roster) && captureRite.payload.roster.length === 3, 'Capture rite ledger entry must preserve full roster proof.');
+  assert(Array.isArray(captureRite?.payload?.capturedSpiritIds) && captureRite.payload.capturedSpiritIds.length === 3, 'Capture rite ledger entry must preserve all captured spirit ids.');
+  assert(Array.isArray(captureRite?.payload?.routeInvitedSpiritIds) && captureRite.payload.routeInvitedSpiritIds.includes('jintari') && captureRite.payload.routeInvitedSpiritIds.includes('aozhen'), 'Capture rite ledger entry must preserve both route invitation spirits.');
+  assert(Array.isArray(captureRite?.payload?.lureItemIds) && captureRite.payload.lureItemIds.includes('lantern-harmony-tea'), 'Capture rite ledger entry must preserve Lantern Harmony Tea lure proof.');
+  assert(Array.isArray(captureRite?.payload?.lureItemIds) && captureRite.payload.lureItemIds.includes('jade-thread-charm'), 'Capture rite ledger entry must preserve Jade Thread Charm lure proof.');
+  assert(captureRite?.payload?.journalDiscoveredCount === 3, 'Capture rite ledger entry must preserve full journal proof.');
+  assert(captureRite?.payload?.localPresenceCount === 2, 'Capture rite ledger entry must preserve two-tester presence proof.');
+  assert(captureRite?.payload?.captureProof === true, 'Capture rite ledger entry must preserve basic capture proof.');
+  assert(captureRite?.payload?.routeInviteProof === true, 'Capture rite ledger entry must preserve route invite proof.');
+  assert(captureRite?.payload?.fieldAccordProof === true, 'Capture rite ledger entry must preserve field accord proof.');
+  assert(captureRite?.payload?.battleRoundVictory === true, 'Capture rite ledger entry must preserve no-injury battle victory proof.');
+  assert(captureRite?.payload?.rewardItemId === 'jade-capture-rite-tally', 'Capture rite ledger entry must preserve the no-real-value capture rite tally proof.');
+  assert(captureRite?.payload?.noRealValue === true, 'Capture rite ledger entry must remain no-real-value.');
   const tournament = entriesById.get(`${runId}-tournament-bracket`);
   assert(tournament?.payload?.bracketId === 'jade-banner-tournament', 'Tournament ledger entry must preserve the Jade Banner Tournament id.');
   assert(Array.isArray(tournament?.payload?.partyIds) && tournament.payload.partyIds.length === 3, 'Tournament ledger entry must preserve full-party proof.');
@@ -1306,6 +1348,7 @@ async function run() {
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
+  assert(chronicle?.payload?.captureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve capture rite proof.');
   assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
   assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');
   assert(chronicle?.payload?.craftWritProof === true, 'Wayfarer chronicle ledger entry must preserve craft writ proof.');
