@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ALPHA_ITEMS,
+  GUILD_ASCENSION_TRIALS,
   GUILD_WAYFARER_CHRONICLES,
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
@@ -13,6 +14,7 @@ import {
   SPIRIT_ROUTE_PATROLS,
   growthStageFromBond,
   resolveGuildCommission,
+  resolveGuildAscensionTrial,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
@@ -567,6 +569,76 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'guild-wayfarer-chronicle'
     });
     expect(chronicle.message).toContain('No real value');
+
+    expect(GUILD_ASCENSION_TRIALS.map((trial) => trial.id)).toEqual(['jade-court-ascension-trial']);
+    const blockedAscension = resolveGuildAscensionTrial({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      localPresenceCount: 2,
+      wayfarerChronicleProof: false,
+      routePatrolProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      conditionWeaveProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ascension ready.']
+    });
+    expect(blockedAscension).toMatchObject({
+      ascended: false,
+      trialId: 'jade-court-ascension-trial',
+      missing: ['chronicle']
+    });
+
+    const ascension = resolveGuildAscensionTrial({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      localPresenceCount: 2,
+      wayfarerChronicleProof: true,
+      routePatrolProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      conditionWeaveProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ascension ready.']
+    });
+    expect(ascension).toMatchObject({
+      ascended: true,
+      trialId: 'jade-court-ascension-trial',
+      trialName: 'Jade Court Ascension Trial',
+      score: 59,
+      requiredScore: 44,
+      rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
+      source: 'guild-ascension-trial'
+    });
+    expect(ascension.message).toContain('No real value');
   });
 
   it('proves the no-injury battle, loadout, trait, condition, growth, and mentor readiness chain', () => {

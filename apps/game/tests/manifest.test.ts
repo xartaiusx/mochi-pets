@@ -52,6 +52,7 @@ describe('game manifest', () => {
         guildCommissions: true,
         socialRallies: true,
         wayfarerChronicles: true,
+        guildAscensionTrials: true,
         partyFormation: true,
         partyHarmony: true,
         harmonyTrials: true,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  GUILD_ASCENSION_TRIALS,
   GUILD_COMMISSIONS,
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
@@ -32,6 +33,7 @@ import {
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveGuildCommission,
+  resolveGuildAscensionTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
   resolveSpiritJournal,
@@ -86,6 +88,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildAscensionTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -140,6 +143,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('guild.wayfarer_chronicle');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.ascension_trial');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -706,6 +710,78 @@ describe('alpha contract', () => {
     });
     expect(missingChronicle.chronicled).toBe(false);
     expect(missingChronicle.missing).toContain('rally');
+
+    expect(GUILD_ASCENSION_TRIALS.map((trial) => trial.id)).toEqual(['jade-court-ascension-trial']);
+    const ascension = resolveGuildAscensionTrial({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      wayfarerChronicleProof: true,
+      routePatrolProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      conditionWeaveProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first ascension trial.']
+    });
+    expect(ascension).toMatchObject({
+      ok: true,
+      ascended: true,
+      trialId: 'jade-court-ascension-trial',
+      trialName: 'Jade Court Ascension Trial',
+      title: 'First Closed-Alpha Guild Capstone',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 59,
+      requiredScore: 44,
+      rewardItemId: 'jade-court-ascension-ribbon',
+      source: 'guild-ascension-trial'
+    });
+    expect(ascension.message).toContain('No real value');
+    const missingAscension = resolveGuildAscensionTrial({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      wayfarerChronicleProof: false,
+      routePatrolProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      conditionWeaveProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first ascension trial.']
+    });
+    expect(missingAscension.ascended).toBe(false);
+    expect(missingAscension.missing).toContain('chronicle');
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

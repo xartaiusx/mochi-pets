@@ -65,6 +65,7 @@ async function run() {
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
   assert(manifest.body.gameplay?.wayfarerChronicles === true, 'Manifest must expose the Mochirii wayfarer chronicle.');
+  assert(manifest.body.gameplay?.guildAscensionTrials === true, 'Manifest must expose the Mochirii guild ascension trial.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -100,6 +101,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
   assert(alphaStatus.body.gameplay?.wayfarerChronicles === true, 'Alpha status must expose the Mochirii wayfarer chronicle.');
+  assert(alphaStatus.body.gameplay?.guildAscensionTrials === true, 'Alpha status must expose the Mochirii guild ascension trial.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -683,6 +685,38 @@ async function run() {
         chatLines: ['Local acceptance wayfarer chronicle proof.'],
         noRealValue: true
       }
+    },
+    {
+      requestId: `${runId}-ascension-trial`,
+      type: 'guild.ascension_trial',
+      payload: {
+        trialId: 'jade-court-ascension-trial',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        localPresenceCount: 2,
+        wayfarerChronicleProof: true,
+        routePatrolProof: true,
+        mentorChallengeProof: true,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 18,
+        battleRoundOpponentScore: 8,
+        conditionWeaveProof: true,
+        harmonyFormProof: true,
+        harmonyTrialProof: true,
+        teamSparMatchProof: true,
+        guildRankProof: true,
+        growthRiteProof: true,
+        questChainProof: true,
+        marketProof: true,
+        tradeProof: true,
+        canaryPreviewProof: true,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance guild ascension proof.'],
+        noRealValue: true
+      }
     }
   ];
 
@@ -733,6 +767,14 @@ async function run() {
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
+  const ascension = entriesById.get(`${runId}-ascension-trial`);
+  assert(ascension?.payload?.trialId === 'jade-court-ascension-trial', 'Ascension trial ledger entry must preserve the Jade Court Ascension Trial id.');
+  assert(ascension?.payload?.localPresenceCount === 2, 'Ascension trial ledger entry must preserve two-tester presence proof.');
+  assert(ascension?.payload?.wayfarerChronicleProof === true, 'Ascension trial ledger entry must preserve wayfarer chronicle proof.');
+  assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');
+  assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
+  assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
+  assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');
 }
 
 async function getOk(path, name) {

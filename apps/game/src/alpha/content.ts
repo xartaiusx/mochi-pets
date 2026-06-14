@@ -706,6 +706,63 @@ export interface GuildWayfarerChronicleResult {
   source: string;
 }
 
+export interface GuildAscensionTrial {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritCount: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface GuildAscensionTrialProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  localPresenceCount: number;
+  wayfarerChronicleProof: boolean;
+  routePatrolProof: boolean;
+  mentorChallengeProof: boolean;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore?: number;
+  battleRoundOpponentScore?: number;
+  conditionWeaveProof: boolean;
+  harmonyFormProof: boolean;
+  harmonyTrialProof: boolean;
+  teamSparMatchProof: boolean;
+  guildRankProof: boolean;
+  growthRiteProof: boolean;
+  questChainProof: boolean;
+  marketProof: boolean;
+  tradeProof: boolean;
+  canaryPreviewProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface GuildAscensionTrialResult {
+  ok: boolean;
+  ascended: boolean;
+  trialId: string;
+  trialName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  partyIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -1676,6 +1733,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Wayfarer Chronicle Clasp',
     description: 'A no-real-value closed-alpha completion clasp for the first Mochirii wayfarer chronicle.'
   },
+  ascensionRibbon: {
+    id: 'jade-court-ascension-ribbon',
+    name: 'Jade Court Ascension Ribbon',
+    description: 'A no-real-value closed-alpha guild capstone ribbon for the first Mochirii ascension trial.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -2007,6 +2069,20 @@ export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
     requiredScore: 52,
     rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
     summary: 'A no-real-value alpha passport proof for testers who complete the first-court capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
+  }
+];
+
+export const GUILD_ASCENSION_TRIALS: readonly GuildAscensionTrial[] = [
+  {
+    id: 'jade-court-ascension-trial',
+    name: 'Jade Court Ascension Trial',
+    title: 'First Closed-Alpha Guild Capstone',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritCount: MOCHI_SPIRITS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 44,
+    rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
+    summary: 'A no-real-value guild capstone for testers who complete the first Mochirii chronicle, social party proof, no-injury battle proof, route patrol, and Canary preview.'
   }
 ];
 
@@ -3142,6 +3218,91 @@ export function resolveGuildWayfarerChronicle(
       ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
+  };
+}
+
+export function resolveGuildAscensionTrial(
+  progress: GuildAscensionTrialProgress,
+  trialId: string = GUILD_ASCENSION_TRIALS[0].id
+): GuildAscensionTrialResult {
+  const trial = GUILD_ASCENSION_TRIALS.find((entry) => entry.id === trialId) || GUILD_ASCENSION_TRIALS[0];
+  const knownSpiritIds = new Set<string>(MOCHI_SPIRITS.map((spirit) => spirit.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const focusScore = Math.max(0, Math.floor(progress.battleRoundFocusScore || 0));
+  const opponentScore = Math.max(0, Math.floor(progress.battleRoundOpponentScore || 0));
+  const scoreLeadReady = focusScore >= opponentScore && focusScore > 0 && opponentScore > 0;
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (roster.length < trial.requiredSpiritCount) missing.push(`roster:${roster.length}/${trial.requiredSpiritCount}`);
+  if (partyIds.length < trial.requiredSpiritCount) missing.push(`party:${partyIds.length}/${trial.requiredSpiritCount}`);
+  if (localPresenceCount < trial.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${trial.requiredPresenceCount}`);
+  if (!progress.wayfarerChronicleProof) missing.push('chronicle');
+  if (!progress.routePatrolProof) missing.push('route-patrol');
+  if (!progress.mentorChallengeProof) missing.push('mentor');
+  if (!progress.battleRoundProof || !progress.battleRoundVictory || !scoreLeadReady) missing.push('battle-round');
+  if (!progress.conditionWeaveProof) missing.push('condition-weave');
+  if (!progress.harmonyFormProof) missing.push('harmony');
+  if (!progress.harmonyTrialProof) missing.push('concord');
+  if (!progress.teamSparMatchProof) missing.push('team-match');
+  if (!progress.guildRankProof) missing.push('rank');
+  if (!progress.growthRiteProof) missing.push('growth');
+  if (!progress.questChainProof) missing.push('quest-chain');
+  if (!progress.marketProof) missing.push('market');
+  if (!progress.tradeProof) missing.push('trade');
+  if (!progress.canaryPreviewProof) missing.push('canary-preview');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(roster.length, trial.requiredSpiritCount) * 2 +
+    Math.min(partyIds.length, trial.requiredSpiritCount) * 2 +
+    Math.min(localPresenceCount, trial.requiredPresenceCount) * 3 +
+    (progress.wayfarerChronicleProof ? 5 : 0) +
+    (progress.routePatrolProof ? 4 : 0) +
+    (progress.mentorChallengeProof ? 4 : 0) +
+    (progress.battleRoundProof && progress.battleRoundVictory && scoreLeadReady ? 4 : 0) +
+    (progress.conditionWeaveProof ? 3 : 0) +
+    (progress.harmonyFormProof ? 2 : 0) +
+    (progress.harmonyTrialProof ? 3 : 0) +
+    (progress.teamSparMatchProof ? 3 : 0) +
+    (progress.guildRankProof ? 2 : 0) +
+    (progress.growthRiteProof ? 2 : 0) +
+    (progress.questChainProof ? 2 : 0) +
+    (progress.marketProof ? 1 : 0) +
+    (progress.tradeProof ? 1 : 0) +
+    (progress.canaryPreviewProof ? 1 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const ascended = missing.length === 0 && score >= trial.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    ascended,
+    trialId: trial.id,
+    trialName: trial.name,
+    title: trial.title,
+    habitat: trial.habitat,
+    roster,
+    partyIds,
+    localPresenceCount,
+    score,
+    requiredScore: trial.requiredScore,
+    missing,
+    rewardItemId: trial.rewardItemId,
+    message: ascended
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, route patrol, mentor, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
+    source: 'guild-ascension-trial'
   };
 }
 

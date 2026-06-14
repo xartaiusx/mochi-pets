@@ -1,5 +1,6 @@
 import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
+  GUILD_ASCENSION_TRIALS,
   GUILD_COMMISSIONS,
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
@@ -40,6 +41,7 @@ import {
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveGuildCommission,
+  resolveGuildAscensionTrial,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
@@ -166,6 +168,12 @@ interface AlphaHudState {
   wayfarerChronicleScore: number;
   wayfarerChronicleRequiredScore: number;
   wayfarerChronicleClaspClaimed: boolean;
+  guildAscensionProof: boolean;
+  guildAscensionTrialId?: string;
+  guildAscensionTrialName: string;
+  guildAscensionScore: number;
+  guildAscensionRequiredScore: number;
+  guildAscensionRibbonClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -679,6 +687,11 @@ function defaultAlphaState(): AlphaHudState {
     wayfarerChronicleScore: 0,
     wayfarerChronicleRequiredScore: 0,
     wayfarerChronicleClaspClaimed: false,
+    guildAscensionProof: false,
+    guildAscensionTrialName: 'Unascended',
+    guildAscensionScore: 0,
+    guildAscensionRequiredScore: 0,
+    guildAscensionRibbonClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -863,6 +876,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
+      <span class="mochi-hud__hint" data-ascension-label>Ascension: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
@@ -899,6 +913,7 @@ function createHud() {
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
+      <button type="button" data-alpha-action="guild.ascension_trial" aria-label="Record the no-real-value Jade Court Ascension Trial">Ascend</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -956,6 +971,7 @@ function createHud() {
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
+  const ascensionLabel = hud.querySelector('[data-ascension-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
@@ -1028,6 +1044,11 @@ function createHud() {
       chronicleLabel.textContent = state.wayfarerChronicleProof
         ? `Chronicle: ${state.wayfarerChronicleName}, score ${state.wayfarerChronicleScore}/${state.wayfarerChronicleRequiredScore}`
         : 'Chronicle: pending';
+    }
+    if (ascensionLabel) {
+      ascensionLabel.textContent = state.guildAscensionProof
+        ? `Ascension: ${state.guildAscensionTrialName}, score ${state.guildAscensionScore}/${state.guildAscensionRequiredScore}`
+        : 'Ascension: pending';
     }
     if (habitatBondLabel) {
       habitatBondLabel.textContent = state.habitatBondProof
@@ -1970,6 +1991,37 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'guild.ascension_trial') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      trialId: GUILD_ASCENSION_TRIALS[0].id,
+      roster: state.attunedSpiritIds,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      localPresenceCount: presenceCount,
+      wayfarerChronicleProof: state.wayfarerChronicleProof,
+      routePatrolProof: state.routePatrolProof,
+      mentorChallengeProof: state.mentorChallengeProof,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      conditionWeaveProof: state.conditionWeaveProof,
+      harmonyFormProof: state.harmonyFormProof,
+      harmonyTrialProof: state.harmonyTrialProof,
+      teamSparMatchProof: state.teamSparMatchProof,
+      guildRankProof: state.guildRankProof,
+      growthRiteProof: state.growthRiteProof,
+      questChainProof: state.questChainProof,
+      marketProof: state.charmListed,
+      tradeProof: state.tradeProof,
+      canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'world.expedition') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : state.spiritId ? [state.spiritId] : [];
     const route = SPIRIT_EXPEDITION_ROUTES[state.expeditionCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
@@ -2598,6 +2650,51 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
       state.completedQuestIds = result.completedQuestIds;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'guild.ascension_trial') {
+    const result = resolveGuildAscensionTrial(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        harmonyTrialProof: Boolean(payload.harmonyTrialProof ?? state.harmonyTrialProof),
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
+        guildRankProof: Boolean(payload.guildRankProof ?? state.guildRankProof),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.trialId || GUILD_ASCENSION_TRIALS[0].id)
+    );
+    if (result.ascended) {
+      state.guildAscensionProof = true;
+      state.guildAscensionTrialId = result.trialId;
+      state.guildAscensionTrialName = result.trialName;
+      state.guildAscensionScore = result.score;
+      state.guildAscensionRequiredScore = result.requiredScore;
+      state.guildAscensionRibbonClaimed = result.rewardItemId === 'jade-court-ascension-ribbon';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
       state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
