@@ -12,6 +12,7 @@ import {
   SPIRIT_MOVES,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_SANCTUARY_RITES,
   growthStageFromBond,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
@@ -39,6 +40,7 @@ import {
   resolveSpiritRouteInvitation,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
+  resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
@@ -383,6 +385,48 @@ describe('Mochi Spirits alpha content contract', () => {
       score: 19,
       rewardItemId: ALPHA_ITEMS.habitatTassel.id
     });
+
+    expect(SPIRIT_SANCTUARY_RITES.map((rite) => rite.id)).toEqual(['jade-court-sanctuary-rite']);
+    const blockedSanctuary = resolveSpiritSanctuaryRite({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      activeSpiritId: 'lirabao',
+      bondBySpiritId: fullBondMap,
+      careStreak: 1,
+      trainingXp: 3,
+      habitatBondProof: true,
+      conditionWeaveProof: false,
+      battleRoundProof: true,
+      battleRoundVictory: true
+    });
+    expect(blockedSanctuary).toMatchObject({
+      restored: false,
+      riteId: 'jade-court-sanctuary-rite',
+      missing: ['condition-weave']
+    });
+
+    const sanctuary = resolveSpiritSanctuaryRite({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      activeSpiritId: 'lirabao',
+      bondBySpiritId: fullBondMap,
+      careStreak: 1,
+      trainingXp: 3,
+      habitatBondProof: true,
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true
+    });
+    expect(sanctuary).toMatchObject({
+      restored: true,
+      riteId: 'jade-court-sanctuary-rite',
+      riteName: 'Jade Court Sanctuary Rite',
+      score: 33,
+      requiredScore: 24,
+      rewardItemId: ALPHA_ITEMS.sanctuaryBell.id,
+      source: 'spirit-sanctuary-rite'
+    });
+    expect(sanctuary.message).toContain('No real value');
 
     const research = resolveSpiritResearchFolio({
       roster: fullRoster,

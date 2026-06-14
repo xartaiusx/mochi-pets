@@ -22,6 +22,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TRAIT_ATTUNEMENTS,
@@ -55,6 +56,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
+  resolveSpiritSanctuaryRite,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTraitAttunement,
@@ -82,6 +84,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routePatrols).toBe(true);
     expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritSanctuaryRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
@@ -137,6 +140,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_patrol');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.sanctuary_rite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
@@ -413,6 +417,50 @@ describe('alpha contract', () => {
       guildBuddyProof: true,
       statusMood: 'cozy'
     }).bonded).toBe(false);
+
+    expect(SPIRIT_SANCTUARY_RITES.map((rite) => rite.id)).toEqual(['jade-court-sanctuary-rite']);
+    const sanctuary = resolveSpiritSanctuaryRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      habitatBondProof: true,
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true
+    });
+    expect(sanctuary).toMatchObject({
+      ok: true,
+      restored: true,
+      riteId: 'jade-court-sanctuary-rite',
+      riteName: 'Jade Court Sanctuary Rite',
+      title: 'First Care Shrine Restore',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 12,
+      careStreak: 1,
+      trainingXp: 3,
+      score: 33,
+      requiredScore: 24,
+      rewardItemId: 'jade-sanctuary-bell',
+      source: 'spirit-sanctuary-rite'
+    });
+    expect(sanctuary.message).toContain('No real value');
+    expect(resolveSpiritSanctuaryRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      habitatBondProof: false,
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true
+    }).restored).toBe(false);
 
     expect(SPIRIT_RESEARCH_FOLIOS.map((folio) => folio.id)).toEqual(['jade-court-research-folio']);
     const research = resolveSpiritResearchFolio({

@@ -22,6 +22,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TRAIT_ATTUNEMENTS,
@@ -57,6 +58,7 @@ import {
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
   resolveSpiritRouteInvitation,
+  resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
   resolveSpiritRoutePatrol,
   resolveSpiritTeamSparMatch,
@@ -134,6 +136,12 @@ interface AlphaHudState {
   habitatBondName: string;
   habitatBondScore: number;
   habitatTasselClaimed: boolean;
+  sanctuaryRiteProof: boolean;
+  sanctuaryRiteId?: string;
+  sanctuaryRiteName: string;
+  sanctuaryRiteScore: number;
+  sanctuaryRiteRequiredScore: number;
+  sanctuaryBellClaimed: boolean;
   researchProof: boolean;
   researchFolioId?: string;
   researchFolioName: string;
@@ -659,6 +667,11 @@ function defaultAlphaState(): AlphaHudState {
     habitatBondName: 'Unbonded',
     habitatBondScore: 0,
     habitatTasselClaimed: false,
+    sanctuaryRiteProof: false,
+    sanctuaryRiteName: 'Unrestored',
+    sanctuaryRiteScore: 0,
+    sanctuaryRiteRequiredScore: 0,
+    sanctuaryBellClaimed: false,
     researchProof: false,
     researchFolioName: 'Unresearched',
     researchScore: 0,
@@ -870,6 +883,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
       <span class="mochi-hud__hint" data-route-patrol-label>Route Patrol: pending</span>
       <span class="mochi-hud__hint" data-habitat-bond-label>Habitat Bond: pending</span>
+      <span class="mochi-hud__hint" data-sanctuary-label>Sanctuary: pending</span>
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
@@ -907,6 +921,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
+      <button type="button" data-alpha-action="spirit.sanctuary_rite" aria-label="Record the no-real-value Jade Court Sanctuary Rite">Rite</button>
       <button type="button" data-alpha-action="spirit.research" aria-label="Record the Mochirii spirit research folio">Research</button>
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
@@ -965,6 +980,7 @@ function createHud() {
   const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
   const routePatrolLabel = hud.querySelector('[data-route-patrol-label]');
   const habitatBondLabel = hud.querySelector('[data-habitat-bond-label]');
+  const sanctuaryLabel = hud.querySelector('[data-sanctuary-label]');
   const researchLabel = hud.querySelector('[data-research-label]');
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
@@ -1054,6 +1070,11 @@ function createHud() {
       habitatBondLabel.textContent = state.habitatBondProof
         ? `Habitat Bond: ${state.habitatBondName}, score ${state.habitatBondScore}`
         : 'Habitat Bond: pending';
+    }
+    if (sanctuaryLabel) {
+      sanctuaryLabel.textContent = state.sanctuaryRiteProof
+        ? `Sanctuary: ${state.sanctuaryRiteName}, score ${state.sanctuaryRiteScore}/${state.sanctuaryRiteRequiredScore}`
+        : 'Sanctuary: pending';
     }
     if (researchLabel) {
       researchLabel.textContent = state.researchProof
@@ -1868,6 +1889,23 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.sanctuary_rite') {
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    return {
+      riteId: SPIRIT_SANCTUARY_RITES[0].id,
+      roster: state.attunedSpiritIds,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0] || state.attunedSpiritIds[0],
+      bondBySpiritId: Object.fromEntries(partyIds.map((spiritId) => [spiritId, state.bond || 1])),
+      careStreak: state.raisingCareStreak,
+      trainingXp: state.trainingXp,
+      habitatBondProof: state.habitatBondProof,
+      conditionWeaveProof: state.conditionWeaveProof,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory
+    };
+  }
+
   if (type === 'spirit.research') {
     return {
       folioId: SPIRIT_RESEARCH_FOLIOS[0].id,
@@ -2445,6 +2483,43 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.habitatBondScore = result.score;
       state.habitatTasselClaimed = result.rewardItemId === 'jade-court-habitat-tassel';
       state.attunedSpiritIds = result.roster;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.sanctuary_rite') {
+    const fallbackPartyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    const partyIds = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : fallbackPartyIds;
+    const bondBySpiritId =
+      payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
+        ? (payload.bondBySpiritId as Record<string, number>)
+        : Object.fromEntries(partyIds.map((spiritId) => [spiritId, state.bond || 1]));
+    const result = resolveSpiritSanctuaryRite(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || partyIds[0] || ''),
+        bondBySpiritId,
+        careStreak: Number(payload.careStreak ?? state.raisingCareStreak ?? 0),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        habitatBondProof: Boolean(payload.habitatBondProof ?? state.habitatBondProof),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory)
+      },
+      String(payload.riteId || SPIRIT_SANCTUARY_RITES[0].id)
+    );
+    if (result.restored) {
+      state.sanctuaryRiteProof = true;
+      state.sanctuaryRiteId = result.riteId;
+      state.sanctuaryRiteName = result.riteName;
+      state.sanctuaryRiteScore = result.score;
+      state.sanctuaryRiteRequiredScore = result.requiredScore;
+      state.sanctuaryBellClaimed = result.rewardItemId === 'jade-sanctuary-bell';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);

@@ -191,6 +191,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.route_patrol"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.trait_attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.condition_weave"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.sanctuary_rite"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -219,6 +220,7 @@ async function exerciseAlphaHud(page) {
       const routeMastery = document.querySelector('[data-route-mastery-label]')?.textContent || '';
       const routePatrol = document.querySelector('[data-route-patrol-label]')?.textContent || '';
       const habitatBond = document.querySelector('[data-habitat-bond-label]')?.textContent || '';
+      const sanctuary = document.querySelector('[data-sanctuary-label]')?.textContent || '';
       const research = document.querySelector('[data-research-label]')?.textContent || '';
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
@@ -258,7 +260,9 @@ async function exerciseAlphaHud(page) {
         && routeInvite.includes('aozhen')
         && fieldAccord.includes('Cloudbell Skyvow Accord')
         && routeMastery.includes('Jade Cloudbell Circuit')
+        && routePatrol.includes('Jade Cloudbell Patrol')
         && habitatBond.includes('Jade Court Habitat Bond')
+        && sanctuary.includes('Jade Court Sanctuary Rite')
         && research.includes('Jade Court Research Folio')
         && compendium.includes('Jade Court Spirit Compendium')
         && provision.includes('Jade Court Provision Satchel')
@@ -335,6 +339,12 @@ async function exerciseAlphaHud(page) {
         && state.habitatBondName === 'Jade Court Habitat Bond'
         && state.habitatBondScore >= 15
         && state.habitatTasselClaimed === true
+        && state.sanctuaryRiteProof === true
+        && state.sanctuaryRiteId === 'jade-court-sanctuary-rite'
+        && state.sanctuaryRiteName === 'Jade Court Sanctuary Rite'
+        && state.sanctuaryRiteScore >= 24
+        && state.sanctuaryRiteRequiredScore === 24
+        && state.sanctuaryBellClaimed === true
         && state.researchProof === true
         && state.researchFolioId === 'jade-court-research-folio'
         && state.researchFolioName === 'Jade Court Research Folio'
@@ -499,6 +509,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Cloudbell Circuit mastered')
         && chat.includes('Jade Cloudbell Patrol complete')
         && chat.includes('Jade Court Habitat Bond recorded')
+        && chat.includes('Jade Court Sanctuary Rite complete')
         && chat.includes('Jade Court Research Folio recorded')
         && chat.includes('Jade Court Spirit Compendium complete')
         && chat.includes('Jade Court Provision Satchel stocked')
@@ -529,6 +540,7 @@ async function exerciseAlphaHud(page) {
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent || '',
       routePatrol: document.querySelector('[data-route-patrol-label]')?.textContent || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent || '',
+      sanctuary: document.querySelector('[data-sanctuary-label]')?.textContent || '',
       research: document.querySelector('[data-research-label]')?.textContent || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
@@ -567,6 +579,7 @@ async function exerciseAlphaHud(page) {
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent?.trim() || '',
       routePatrol: document.querySelector('[data-route-patrol-label]')?.textContent?.trim() || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent?.trim() || '',
+      sanctuary: document.querySelector('[data-sanctuary-label]')?.textContent?.trim() || '',
       research: document.querySelector('[data-research-label]')?.textContent?.trim() || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
@@ -645,6 +658,13 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.habitatBondName === 'Jade Court Habitat Bond', 'HUD habitat bond action must record the habitat bond name.');
   assert(snapshot.state.habitatBondScore >= 15, 'HUD habitat bond action must record a passing habitat score.');
   assert(snapshot.state.habitatTasselClaimed === true, 'HUD habitat bond action must mark the no-real-value habitat tassel proof.');
+  assert(snapshot.sanctuary.includes('Jade Court Sanctuary Rite'), 'HUD sanctuary label must show the completed care-shrine rite.');
+  assert(snapshot.state.sanctuaryRiteProof === true, 'HUD sanctuary action must record care-shrine restoration proof.');
+  assert(snapshot.state.sanctuaryRiteId === 'jade-court-sanctuary-rite', 'HUD sanctuary action must record the Jade Court Sanctuary Rite id.');
+  assert(snapshot.state.sanctuaryRiteName === 'Jade Court Sanctuary Rite', 'HUD sanctuary action must record the Jade Court Sanctuary Rite name.');
+  assert(snapshot.state.sanctuaryRiteScore >= 24, 'HUD sanctuary action must record a passing sanctuary score.');
+  assert(snapshot.state.sanctuaryRiteRequiredScore === 24, 'HUD sanctuary action must record the sanctuary requirement.');
+  assert(snapshot.state.sanctuaryBellClaimed === true, 'HUD sanctuary action must mark the no-real-value sanctuary bell proof.');
   assert(snapshot.research.includes('Jade Court Research Folio'), 'HUD research label must show the completed field guide proof.');
   assert(snapshot.state.researchProof === true, 'HUD research action must record research folio proof.');
   assert(snapshot.state.researchFolioId === 'jade-court-research-folio', 'HUD research action must record the research folio id.');
@@ -815,6 +835,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Circuit mastered')), 'HUD chat state must record the route mastery action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Patrol complete')), 'HUD chat state must record the route patrol action.');
   assert(chat.some((line) => String(line).includes('Jade Court Habitat Bond recorded')), 'HUD chat state must record the habitat bond action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Sanctuary Rite complete')), 'HUD chat state must record the sanctuary rite action.');
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');

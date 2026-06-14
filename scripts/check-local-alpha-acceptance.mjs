@@ -59,6 +59,7 @@ async function run() {
   assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
   assert(manifest.body.gameplay?.routePatrols === true, 'Manifest must expose Mochi Spirit route patrols.');
   assert(manifest.body.gameplay?.habitatBonds === true, 'Manifest must expose Mochi Spirit habitat bonds.');
+  assert(manifest.body.gameplay?.spiritSanctuaryRites === true, 'Manifest must expose Mochi Spirit sanctuary rites.');
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
@@ -95,6 +96,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
   assert(alphaStatus.body.gameplay?.routePatrols === true, 'Alpha status must expose Mochi Spirit route patrols.');
   assert(alphaStatus.body.gameplay?.habitatBonds === true, 'Alpha status must expose Mochi Spirit habitat bonds.');
+  assert(alphaStatus.body.gameplay?.spiritSanctuaryRites === true, 'Alpha status must expose Mochi Spirit sanctuary rites.');
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
@@ -294,6 +296,24 @@ async function run() {
         profileViewed: true,
         guildBuddyProof: true,
         statusMood: 'cozy',
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-sanctuary-rite`,
+      type: 'spirit.sanctuary_rite',
+      payload: {
+        riteId: 'jade-court-sanctuary-rite',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+        careStreak: 1,
+        trainingXp: 3,
+        habitatBondProof: true,
+        conditionWeaveProof: true,
+        battleRoundProof: true,
+        battleRoundVictory: true,
         noRealValue: true
       }
     },
@@ -760,6 +780,13 @@ async function run() {
   assert(routePatrol?.payload?.fieldAccordProof === true, 'Route patrol ledger entry must preserve field accord proof.');
   assert(routePatrol?.payload?.battleRoundProof === true, 'Route patrol ledger entry must preserve battle round proof.');
   assert(routePatrol?.payload?.noRealValue === true, 'Route patrol ledger entry must remain no-real-value.');
+  const sanctuary = entriesById.get(`${runId}-sanctuary-rite`);
+  assert(sanctuary?.payload?.riteId === 'jade-court-sanctuary-rite', 'Sanctuary rite ledger entry must preserve the Jade Court Sanctuary Rite id.');
+  assert(Array.isArray(sanctuary?.payload?.partyIds) && sanctuary.payload.partyIds.length === 3, 'Sanctuary rite ledger entry must preserve full-party proof.');
+  assert(sanctuary?.payload?.habitatBondProof === true, 'Sanctuary rite ledger entry must preserve habitat bond proof.');
+  assert(sanctuary?.payload?.conditionWeaveProof === true, 'Sanctuary rite ledger entry must preserve condition weave proof.');
+  assert(sanctuary?.payload?.battleRoundVictory === true, 'Sanctuary rite ledger entry must preserve no-injury battle victory proof.');
+  assert(sanctuary?.payload?.noRealValue === true, 'Sanctuary rite ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');

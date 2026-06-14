@@ -409,6 +409,53 @@ export interface SpiritHabitatBondResult {
   source: string;
 }
 
+export interface SpiritSanctuaryRite {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredCareStreak: number;
+  requiredTrainingXp: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritSanctuaryRiteProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  bondBySpiritId?: Record<string, number>;
+  careStreak: number;
+  trainingXp: number;
+  habitatBondProof: boolean;
+  conditionWeaveProof: boolean;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+}
+
+export interface SpiritSanctuaryRiteResult {
+  ok: boolean;
+  restored: boolean;
+  riteId: string;
+  riteName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  roster: string[];
+  partyIds: string[];
+  totalBond: number;
+  careStreak: number;
+  trainingXp: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritResearchFolio {
   id: string;
   name: string;
@@ -1718,6 +1765,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Habitat Tassel',
     description: 'A no-real-value habitat bond proof for closed-alpha Mochirii raising and roleplay progression.'
   },
+  sanctuaryBell: {
+    id: 'jade-sanctuary-bell',
+    name: 'Jade Sanctuary Bell',
+    description: 'A no-real-value care-shrine restoration proof for closed-alpha Mochirii party recovery.'
+  },
   commissionKnot: {
     id: 'jade-court-commission-knot',
     name: 'Jade Court Commission Knot',
@@ -1972,6 +2024,21 @@ export const SPIRIT_HABITAT_BONDS: readonly SpiritHabitatBond[] = [
     requiredScore: 15,
     rewardItemId: ALPHA_ITEMS.habitatTassel.id,
     summary: 'A no-real-value habitat trust proof for testers who invite every first-court Mochi Spirit, record the journal, care for a companion, and show local guild presence.'
+  }
+];
+
+export const SPIRIT_SANCTUARY_RITES: readonly SpiritSanctuaryRite[] = [
+  {
+    id: 'jade-court-sanctuary-rite',
+    name: 'Jade Court Sanctuary Rite',
+    title: 'First Care Shrine Restore',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredCareStreak: 1,
+    requiredTrainingXp: 3,
+    requiredScore: 24,
+    rewardItemId: ALPHA_ITEMS.sanctuaryBell.id,
+    summary: 'A no-real-value care-shrine restoration proof for testers who connect habitat trust, care streaks, training, condition weaving, and no-injury battle readiness.'
   }
 ];
 
@@ -2696,6 +2763,84 @@ export function resolveSpiritHabitatBond(
       ? `${bond.name} recorded: ${activeName} and the first-court roster settle into ${bond.habitat} with journal, care, guild, status, and profile proof.`
       : `${bond.name} needs ${missing.join(', ')} before the shared habitat bond can be recorded.`,
     source: 'spirit-habitat-bond'
+  };
+}
+
+export function resolveSpiritSanctuaryRite(
+  progress: SpiritSanctuaryRiteProgress,
+  riteId: string = SPIRIT_SANCTUARY_RITES[0].id
+): SpiritSanctuaryRiteResult {
+  const rite = SPIRIT_SANCTUARY_RITES.find((entry) => entry.id === riteId) || SPIRIT_SANCTUARY_RITES[0];
+  const requiredSpiritIds = new Set(rite.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && partyIds.includes(progress.activeSpiritId) ? progress.activeSpiritId : partyIds[0] || roster[0];
+  const missing: string[] = [];
+
+  for (const spiritId of rite.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+    if (!partyIds.includes(spiritId)) missing.push(`party:${spiritId}`);
+  }
+
+  const totalBond = partyIds.reduce((sum, spiritId) => {
+    const bond = Number(progress.bondBySpiritId?.[spiritId] ?? 0);
+    return sum + Math.max(0, Math.min(5, Math.floor(bond)));
+  }, 0);
+  if (totalBond < 9) {
+    missing.push(`bond:${totalBond}/9`);
+  }
+
+  const careStreak = Math.max(0, Math.floor(progress.careStreak || 0));
+  if (careStreak < rite.requiredCareStreak) {
+    missing.push(`care-streak:${careStreak}/${rite.requiredCareStreak}`);
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < rite.requiredTrainingXp) {
+    missing.push(`training-xp:${trainingXp}/${rite.requiredTrainingXp}`);
+  }
+
+  if (!progress.habitatBondProof) missing.push('habitat-bond');
+  if (!progress.conditionWeaveProof) missing.push('condition-weave');
+  if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
+
+  const score =
+    Math.min(roster.length, rite.requiredSpiritIds.length) * 2 +
+    Math.min(partyIds.length, rite.requiredSpiritIds.length) * 2 +
+    Math.min(totalBond, 9) +
+    Math.min(careStreak, 2) * 2 +
+    Math.min(trainingXp, rite.requiredTrainingXp) +
+    (progress.habitatBondProof ? 3 : 0) +
+    (progress.conditionWeaveProof ? 2 : 0) +
+    (progress.battleRoundProof && progress.battleRoundVictory ? 2 : 0);
+  const restored = missing.length === 0 && score >= rite.requiredScore;
+  const activeName = getMochiSpirit(activeSpiritId || '')?.name || 'the first-court party';
+
+  return {
+    ok: true,
+    restored,
+    riteId: rite.id,
+    riteName: rite.name,
+    title: rite.title,
+    habitat: rite.habitat,
+    activeSpiritId,
+    roster,
+    partyIds,
+    totalBond,
+    careStreak,
+    trainingXp,
+    score,
+    requiredScore: rite.requiredScore,
+    missing,
+    rewardItemId: rite.rewardItemId,
+    message: restored
+      ? `${rite.name} complete: ${activeName} restores the party at the care shrine with habitat, care, training, condition, and no-injury battle proof. No real value.`
+      : `${rite.name} needs ${missing.join(', ')} before the care-shrine restoration proof can be recorded.`,
+    source: 'spirit-sanctuary-rite'
   };
 }
 
