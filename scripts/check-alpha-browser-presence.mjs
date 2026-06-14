@@ -211,6 +211,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.recovery_tea"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.kinship_album"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.nursery_grove"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.bloom_ascendance"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
@@ -256,6 +257,7 @@ async function exerciseAlphaHud(page) {
       const recoveryTea = document.querySelector('[data-recovery-tea-label]')?.textContent || '';
       const kinship = document.querySelector('[data-kinship-album-label]')?.textContent || '';
       const nursery = document.querySelector('[data-nursery-grove-label]')?.textContent || '';
+      const bloomAscendance = document.querySelector('[data-bloom-ascendance-label]')?.textContent || '';
       const captureRite = document.querySelector('[data-capture-rite-label]')?.textContent || '';
       const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
       const rivalCircle = document.querySelector('[data-rival-circle-label]')?.textContent || '';
@@ -317,6 +319,7 @@ async function exerciseAlphaHud(page) {
         && recoveryTea.includes('Jade Teahouse Recovery')
         && kinship.includes('Jade Kinship Album')
         && nursery.includes('Jade Nursery Grove')
+        && bloomAscendance.includes('Jade Bloom Ascendance')
         && captureRite.includes('Jade Capture Rite')
         && tournament.includes('Jade Banner Tournament')
         && rivalCircle.includes('Jade Rival Circle')
@@ -580,6 +583,26 @@ async function exerciseAlphaHud(page) {
         && state.nurseryGroveCaredSpiritIds.includes('aozhen')
         && state.nurseryGroveTotalBond >= 15
         && state.nurserySproutClaimed === true
+        && state.bloomAscendanceProof === true
+        && state.bloomAscendanceId === 'jade-bloom-ascendance'
+        && state.bloomAscendanceName === 'Jade Bloom Ascendance'
+        && state.bloomAscendanceFormTitle === 'Jade Bloom Form'
+        && state.bloomAscendanceScore >= 58
+        && state.bloomAscendanceRequiredScore === 58
+        && Array.isArray(state.bloomAscendanceSpiritIds)
+        && state.bloomAscendanceSpiritIds.includes('lirabao')
+        && state.bloomAscendanceSpiritIds.includes('jintari')
+        && state.bloomAscendanceSpiritIds.includes('aozhen')
+        && Array.isArray(state.bloomAscendancePartyIds)
+        && state.bloomAscendancePartyIds.includes('lirabao')
+        && state.bloomAscendancePartyIds.includes('jintari')
+        && state.bloomAscendancePartyIds.includes('aozhen')
+        && Array.isArray(state.bloomAscendanceCaredSpiritIds)
+        && state.bloomAscendanceCaredSpiritIds.includes('lirabao')
+        && state.bloomAscendanceCaredSpiritIds.includes('jintari')
+        && state.bloomAscendanceCaredSpiritIds.includes('aozhen')
+        && state.bloomAscendanceTotalBond >= 15
+        && state.bloomAscendanceSigilClaimed === true
         && state.tournamentProof === true
         && state.tournamentId === 'jade-banner-tournament'
         && state.tournamentName === 'Jade Banner Tournament'
@@ -838,6 +861,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Moonwell Nurture Rite complete')
         && chat.includes('Jade Kinship Album recorded')
+        && chat.includes('Jade Bloom Ascendance complete')
         && chat.includes('Jade Encounter Atlas recorded')
         && chat.includes('Jade Banner Tournament cleared')
         && chat.includes('Jade Rival Circle cleared')
@@ -887,6 +911,7 @@ async function exerciseAlphaHud(page) {
       recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent || '',
       kinship: document.querySelector('[data-kinship-album-label]')?.textContent || '',
       nursery: document.querySelector('[data-nursery-grove-label]')?.textContent || '',
+      bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent || '',
       tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
       rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
@@ -945,6 +970,7 @@ async function exerciseAlphaHud(page) {
     recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent?.trim() || '',
     kinship: document.querySelector('[data-kinship-album-label]')?.textContent?.trim() || '',
     nursery: document.querySelector('[data-nursery-grove-label]')?.textContent?.trim() || '',
+    bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent?.trim() || '',
     tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
     rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
@@ -1233,6 +1259,24 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.nurseryGroveCaredSpiritIds) && snapshot.state.nurseryGroveCaredSpiritIds.includes('aozhen'), 'HUD nursery action must record Aozhen care proof.');
   assert(snapshot.state.nurseryGroveTotalBond >= 15, 'HUD nursery action must record full-roster bond proof.');
   assert(snapshot.state.nurserySproutClaimed === true, 'HUD nursery action must mark the no-real-value nursery sprout proof.');
+  assert(snapshot.bloomAscendance.includes('Jade Bloom Ascendance'), 'HUD bloom ascendance label must show the completed no-real-value form proof.');
+  assert(snapshot.state.bloomAscendanceProof === true, 'HUD bloom ascendance action must record ascendance proof.');
+  assert(snapshot.state.bloomAscendanceId === 'jade-bloom-ascendance', 'HUD bloom ascendance action must record the ascendance id.');
+  assert(snapshot.state.bloomAscendanceName === 'Jade Bloom Ascendance', 'HUD bloom ascendance action must record the ascendance name.');
+  assert(snapshot.state.bloomAscendanceFormTitle === 'Jade Bloom Form', 'HUD bloom ascendance action must record the form title.');
+  assert(snapshot.state.bloomAscendanceScore >= 58, 'HUD bloom ascendance action must record a passing ascendance score.');
+  assert(snapshot.state.bloomAscendanceRequiredScore === 58, 'HUD bloom ascendance action must record the ascendance requirement.');
+  assert(Array.isArray(snapshot.state.bloomAscendanceSpiritIds) && snapshot.state.bloomAscendanceSpiritIds.includes('lirabao'), 'HUD bloom ascendance action must record Lirabao roster proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendanceSpiritIds) && snapshot.state.bloomAscendanceSpiritIds.includes('jintari'), 'HUD bloom ascendance action must record Jintari roster proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendanceSpiritIds) && snapshot.state.bloomAscendanceSpiritIds.includes('aozhen'), 'HUD bloom ascendance action must record Aozhen roster proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendancePartyIds) && snapshot.state.bloomAscendancePartyIds.includes('lirabao'), 'HUD bloom ascendance action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendancePartyIds) && snapshot.state.bloomAscendancePartyIds.includes('jintari'), 'HUD bloom ascendance action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendancePartyIds) && snapshot.state.bloomAscendancePartyIds.includes('aozhen'), 'HUD bloom ascendance action must record Aozhen party proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendanceCaredSpiritIds) && snapshot.state.bloomAscendanceCaredSpiritIds.includes('lirabao'), 'HUD bloom ascendance action must record Lirabao care proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendanceCaredSpiritIds) && snapshot.state.bloomAscendanceCaredSpiritIds.includes('jintari'), 'HUD bloom ascendance action must record Jintari care proof.');
+  assert(Array.isArray(snapshot.state.bloomAscendanceCaredSpiritIds) && snapshot.state.bloomAscendanceCaredSpiritIds.includes('aozhen'), 'HUD bloom ascendance action must record Aozhen care proof.');
+  assert(snapshot.state.bloomAscendanceTotalBond >= 15, 'HUD bloom ascendance action must record full-roster bond proof.');
+  assert(snapshot.state.bloomAscendanceSigilClaimed === true, 'HUD bloom ascendance action must mark the no-real-value ascendance sigil proof.');
   assert(snapshot.tournament.includes('Jade Banner Tournament'), 'HUD tournament label must show the cleared no-injury battle bracket.');
   assert(snapshot.state.tournamentProof === true, 'HUD tournament action must record tournament proof.');
   assert(snapshot.state.tournamentId === 'jade-banner-tournament', 'HUD tournament action must record the tournament id.');
@@ -1457,6 +1501,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Teahouse Recovery complete')), 'HUD chat state must record the recovery tea action.');
   assert(chat.some((line) => String(line).includes('Jade Kinship Album recorded')), 'HUD chat state must record the kinship album action.');
   assert(chat.some((line) => String(line).includes('Jade Nursery Grove cultivated')), 'HUD chat state must record the nursery grove action.');
+  assert(chat.some((line) => String(line).includes('Jade Bloom Ascendance complete')), 'HUD chat state must record the bloom ascendance action.');
   assert(chat.some((line) => String(line).includes('Jade Capture Rite recorded')), 'HUD chat state must record the capture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Encounter Atlas recorded')), 'HUD chat state must record the encounter atlas action.');
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');

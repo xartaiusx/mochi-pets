@@ -261,11 +261,11 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/capture-rite', 'nursery grove proof']
+    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/ascendance/capture-rite', 'nursery grove proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/capture-rite']
+    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/bloom-ascendance/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -301,11 +301,51 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/capture-rite/bracket', 'capture rite proof']
+    includes: ['Jade Bloom Ascendance proof', 'nurture/recover/kinship/nursery/ascendance/capture-rite', 'bloom ascendance proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/capture-rite']
+    includes: ['spirit.bloom_ascendance', 'Jade Bloom Ascendance proof', 'kinship-album/nursery-grove/bloom-ascendance/capture-rite']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Bloom Ascendance proof', 'bloom-ascendance']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Bloom Ascendance', 'Jade Bloom Ascendance proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Bloom Ascendance contribution', 'content-only Jade Bloom Ascendance Sigil proof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Bloom Ascendance proof', 'ascendance', 'content-only']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Bloom Ascendance', 'Jade Bloom Ascendance proof', 'spirit.bloom_ascendance']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Bloom Ascendance proof', 'record the Jade Bloom Ascendance', 'no-real-value Jade Bloom Ascendance']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Bloom Ascendance', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Bloom Ascendance', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'AGENTS.md',
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/ascendance/capture-rite/bracket', 'capture rite proof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/bloom-ascendance/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -461,6 +501,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritBloomAscendances: true', "'spirit.bloom_ascendance'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
@@ -538,6 +582,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_NURSERY_GROVES', 'resolveSpiritNurseryGrove', 'data-alpha-action="spirit.nursery_grove"', 'data-nursery-grove-label', 'nurseryGroveProof', 'nurserySproutClaimed', 'Jade Nursery Grove']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_BLOOM_ASCENDANCES', 'resolveSpiritBloomAscendance', 'data-alpha-action="spirit.bloom_ascendance"', 'data-bloom-ascendance-label', 'bloomAscendanceProof', 'bloomAscendanceSigilClaimed', 'Jade Bloom Ascendance']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -621,6 +669,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Bloom Ascendance', 'jade-bloom-ascendance-sigil', 'resolveSpiritBloomAscendance', 'spirit-bloom-ascendance', 'bloomAscendanceProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -685,6 +737,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritBloomAscendances: true', 'spirit.bloom_ascendance']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritCaptureRites: true', 'spirit.capture_rite']
   },
   {
@@ -714,6 +770,10 @@ const checks = [
   {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['affinityMatrices: true']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['spiritBloomAscendances: true']
   },
   {
     file: 'apps/game/tests/map-object-contract.test.ts',
@@ -778,6 +838,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.nursery_grove', 'jade-nursery-grove', 'spiritNurseryGroves', 'Jade Nursery Grove', 'nurseryGrove']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.bloom_ascendance', 'jade-bloom-ascendance', 'spiritBloomAscendances', 'Jade Bloom Ascendance', 'bloomAscendanceProof', 'jade-bloom-ascendance-sigil']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -850,6 +914,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.nursery_grove"', 'data-nursery-grove-label', 'nurseryGroveProof', 'nurserySproutClaimed', 'Jade Nursery Grove cultivated']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.bloom_ascendance"', 'data-bloom-ascendance-label', 'bloomAscendanceProof', 'bloomAscendanceSigilClaimed', 'Jade Bloom Ascendance complete']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -958,6 +1026,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['nurseryGroveProof', 'nurserySproutClaimed', 'Jade Nursery Grove', 'jade-nursery-sprout', 'spirit-nursery-grove', 'nursery grove']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['bloomAscendanceProof', 'bloomAscendanceSigilClaimed', 'Jade Bloom Ascendance', 'jade-bloom-ascendance-sigil', 'spirit-bloom-ascendance', 'bloom ascendance']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
