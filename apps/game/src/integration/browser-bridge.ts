@@ -9,6 +9,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
+  SPIRIT_CARE_CYCLES,
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_EXPEDITION_ROUTES,
@@ -38,6 +39,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritCapture,
+  resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
@@ -168,6 +170,14 @@ interface AlphaHudState {
   provisionScore: number;
   provisionStockItemIds: string[];
   provisionSatchelClaimed: boolean;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  careCycleName: string;
+  careCycleScore: number;
+  careCycleRequiredScore: number;
+  careCycleCaredSpiritIds: string[];
+  careCycleTotalBond: number;
+  careCycleKnotClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -702,6 +712,13 @@ function defaultAlphaState(): AlphaHudState {
     provisionScore: 0,
     provisionStockItemIds: [],
     provisionSatchelClaimed: false,
+    careCycleProof: false,
+    careCycleName: 'Uncycled',
+    careCycleScore: 0,
+    careCycleRequiredScore: 0,
+    careCycleCaredSpiritIds: [],
+    careCycleTotalBond: 0,
+    careCycleKnotClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -905,6 +922,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
+      <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -944,6 +962,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
       <button type="button" data-alpha-action="spirit.roster_archive" aria-label="Seal the no-real-value Jade Court Roster Archive">Archive</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
+      <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1004,6 +1023,7 @@ function createHud() {
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const archiveLabel = hud.querySelector('[data-archive-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
+  const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1115,6 +1135,11 @@ function createHud() {
       provisionLabel.textContent = state.provisionProof
         ? `Satchel: ${state.provisionSatchelName}, ${state.provisionStockItemIds.length} items`
         : 'Satchel: pending';
+    }
+    if (careCycleLabel) {
+      careCycleLabel.textContent = state.careCycleProof
+        ? `Care Cycle: ${state.careCycleName}, ${state.careCycleCaredSpiritIds.length} spirits, score ${state.careCycleScore}/${state.careCycleRequiredScore}`
+        : 'Care Cycle: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1993,6 +2018,28 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.care_cycle') {
+    const roster = state.attunedSpiritIds;
+    return {
+      cycleId: SPIRIT_CARE_CYCLES[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, state.bond || 1])),
+      careStreak: state.raisingCareStreak,
+      trainingXp: state.trainingXp,
+      raisingProof: state.raisingProof,
+      raisingMilestoneLabel: state.raisingMilestoneLabel,
+      rosterArchiveProof: state.rosterArchiveProof,
+      rosterArchiveId: state.rosterArchiveId,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      sanctuaryRiteProof: state.sanctuaryRiteProof,
+      sanctuaryRiteId: state.sanctuaryRiteId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2678,6 +2725,46 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.provisionSatchelClaimed = result.rewardItemId === 'jade-court-provision-satchel';
       state.attunedSpiritIds = result.roster;
       state.completedQuestIds = result.completedQuestIds;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.care_cycle') {
+    const payloadBondBySpiritId =
+      payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
+        ? Object.fromEntries(Object.entries(payload.bondBySpiritId as Record<string, unknown>).map(([spiritId, bond]) => [spiritId, Number(bond)]))
+        : Object.fromEntries(state.attunedSpiritIds.map((spiritId) => [spiritId, state.bond || 1]));
+    const result = resolveSpiritCareCycle(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        bondBySpiritId: payloadBondBySpiritId,
+        careStreak: Number(payload.careStreak ?? state.raisingCareStreak ?? 0),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
+        raisingMilestoneLabel: String(payload.raisingMilestoneLabel || state.raisingMilestoneLabel || ''),
+        rosterArchiveProof: Boolean(payload.rosterArchiveProof ?? state.rosterArchiveProof),
+        rosterArchiveId: String(payload.rosterArchiveId || state.rosterArchiveId || ''),
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        sanctuaryRiteProof: Boolean(payload.sanctuaryRiteProof ?? state.sanctuaryRiteProof),
+        sanctuaryRiteId: String(payload.sanctuaryRiteId || state.sanctuaryRiteId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof)
+      },
+      String(payload.cycleId || SPIRIT_CARE_CYCLES[0].id)
+    );
+    if (result.cycled) {
+      state.careCycleProof = true;
+      state.careCycleId = result.cycleId;
+      state.careCycleName = result.cycleName;
+      state.careCycleScore = result.score;
+      state.careCycleRequiredScore = result.requiredScore;
+      state.careCycleCaredSpiritIds = result.caredSpiritIds;
+      state.careCycleTotalBond = result.totalBond;
+      state.careCycleKnotClaimed = result.rewardItemId === 'jade-care-cycle-knot';
+      state.attunedSpiritIds = result.roster;
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);

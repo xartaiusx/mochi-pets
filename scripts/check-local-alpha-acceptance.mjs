@@ -63,6 +63,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.spiritRosterArchives === true, 'Manifest must expose Mochi Spirit roster archives.');
+  assert(manifest.body.gameplay?.spiritCareCycles === true, 'Manifest must expose Mochi Spirit care cycles.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -101,6 +102,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.spiritRosterArchives === true, 'Alpha status must expose Mochi Spirit roster archives.');
+  assert(alphaStatus.body.gameplay?.spiritCareCycles === true, 'Alpha status must expose Mochi Spirit care cycles.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -629,6 +631,29 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-care-cycle`,
+      type: 'spirit.care_cycle',
+      payload: {
+        cycleId: 'jade-court-care-cycle',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+        careStreak: 1,
+        trainingXp: 3,
+        raisingProof: true,
+        raisingMilestoneLabel: 'Skybell Whisper Spark',
+        rosterArchiveProof: true,
+        rosterArchiveId: 'jade-court-roster-archive',
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        sanctuaryRiteProof: true,
+        sanctuaryRiteId: 'jade-court-sanctuary-rite',
+        profileViewed: true,
+        guildBuddyProof: true,
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -814,6 +839,17 @@ async function run() {
   assert(rosterArchive?.payload?.compendiumProof === true, 'Roster archive ledger entry must preserve compendium proof.');
   assert(rosterArchive?.payload?.sanctuaryRiteProof === true, 'Roster archive ledger entry must preserve sanctuary rite proof.');
   assert(rosterArchive?.payload?.noRealValue === true, 'Roster archive ledger entry must remain no-real-value.');
+  const careCycle = entriesById.get(`${runId}-care-cycle`);
+  assert(careCycle?.payload?.cycleId === 'jade-court-care-cycle', 'Care cycle ledger entry must preserve the Jade Court Care Cycle id.');
+  assert(Array.isArray(careCycle?.payload?.roster) && careCycle.payload.roster.length === 3, 'Care cycle ledger entry must preserve full roster proof.');
+  assert(careCycle?.payload?.bondBySpiritId?.lirabao >= 3, 'Care cycle ledger entry must preserve Lirabao care bond proof.');
+  assert(careCycle?.payload?.bondBySpiritId?.jintari >= 3, 'Care cycle ledger entry must preserve Jintari care bond proof.');
+  assert(careCycle?.payload?.bondBySpiritId?.aozhen >= 3, 'Care cycle ledger entry must preserve Aozhen care bond proof.');
+  assert(careCycle?.payload?.rosterArchiveProof === true, 'Care cycle ledger entry must preserve roster archive proof.');
+  assert(careCycle?.payload?.provisionProof === true, 'Care cycle ledger entry must preserve provision satchel proof.');
+  assert(careCycle?.payload?.sanctuaryRiteProof === true, 'Care cycle ledger entry must preserve sanctuary rite proof.');
+  assert(careCycle?.payload?.raisingProof === true, 'Care cycle ledger entry must preserve raising proof.');
+  assert(careCycle?.payload?.noRealValue === true, 'Care cycle ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');

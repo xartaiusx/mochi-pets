@@ -639,6 +639,63 @@ export interface SpiritProvisionSatchelResult {
   source: string;
 }
 
+export interface SpiritCareCycle {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredBondPerSpirit: number;
+  requiredCareStreak: number;
+  requiredTrainingXp: number;
+  requiredRosterArchiveId: string;
+  requiredProvisionSatchelId: string;
+  requiredSanctuaryRiteId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritCareCycleProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  bondBySpiritId?: Record<string, number>;
+  careStreak: number;
+  trainingXp: number;
+  raisingProof: boolean;
+  raisingMilestoneLabel?: string;
+  rosterArchiveProof: boolean;
+  rosterArchiveId?: string;
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  sanctuaryRiteProof: boolean;
+  sanctuaryRiteId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+}
+
+export interface SpiritCareCycleResult {
+  ok: boolean;
+  cycled: boolean;
+  cycleId: string;
+  cycleName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  roster: string[];
+  caredSpiritIds: string[];
+  totalBond: number;
+  careStreak: number;
+  trainingXp: number;
+  raisingMilestoneLabel?: string;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -1733,6 +1790,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Provision Satchel',
     description: 'A no-real-value item bag proof for closed-alpha Mochirii shop, care, route, and trade preparation.'
   },
+  careCycleKnot: {
+    id: 'jade-care-cycle-knot',
+    name: 'Jade Care Cycle Knot',
+    description: 'A no-real-value full-roster care cycle proof for closed-alpha Mochirii spirit raising.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2160,6 +2222,25 @@ export const SPIRIT_PROVISION_SATCHELS: readonly SpiritProvisionSatchel[] = [
     requiredScore: 24,
     rewardItemId: ALPHA_ITEMS.provisionSatchel.id,
     summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, market listings, direct trades, and quest supplies.'
+  }
+];
+
+export const SPIRIT_CARE_CYCLES: readonly SpiritCareCycle[] = [
+  {
+    id: 'jade-court-care-cycle',
+    name: 'Jade Court Care Cycle',
+    title: 'First Full-Roster Care Rotation',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredBondPerSpirit: 3,
+    requiredCareStreak: 1,
+    requiredTrainingXp: 3,
+    requiredRosterArchiveId: SPIRIT_ROSTER_ARCHIVES[0].id,
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredSanctuaryRiteId: SPIRIT_SANCTUARY_RITES[0].id,
+    requiredScore: 32,
+    rewardItemId: ALPHA_ITEMS.careCycleKnot.id,
+    summary: 'A no-real-value full-roster care rotation proof for testers who raise every first-court Mochi Spirit with supplies, archive tracking, sanctuary restoration, and social guild presence.'
   }
 ];
 
@@ -3237,6 +3318,109 @@ export function resolveSpiritProvisionSatchel(
       ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market proof, trade proof, and quest supplies. No-real-value item preparation only.`
       : `${satchel.name} needs ${missing.join(', ')} before the first-court provision bag can be stocked.`,
     source: 'item-provision-satchel'
+  };
+}
+
+export function resolveSpiritCareCycle(
+  progress: SpiritCareCycleProgress,
+  cycleId: string = SPIRIT_CARE_CYCLES[0].id
+): SpiritCareCycleResult {
+  const cycle = SPIRIT_CARE_CYCLES.find((entry) => entry.id === cycleId) || SPIRIT_CARE_CYCLES[0];
+  const requiredSpiritIds = new Set(cycle.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const bondBySpiritId = progress.bondBySpiritId || {};
+  const missing: string[] = [];
+
+  for (const spiritId of cycle.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+      continue;
+    }
+
+    const bond = Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0));
+    if (bond < cycle.requiredBondPerSpirit) {
+      missing.push(`bond:${spiritId}:${bond}/${cycle.requiredBondPerSpirit}`);
+    }
+  }
+
+  const careStreak = Math.max(0, Math.floor(progress.careStreak || 0));
+  if (careStreak < cycle.requiredCareStreak) {
+    missing.push(`care-streak:${careStreak}/${cycle.requiredCareStreak}`);
+  }
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < cycle.requiredTrainingXp) {
+    missing.push(`training-xp:${trainingXp}/${cycle.requiredTrainingXp}`);
+  }
+
+  if (!progress.raisingProof) {
+    missing.push('raising');
+  }
+
+  const archiveReady = progress.rosterArchiveProof && progress.rosterArchiveId === cycle.requiredRosterArchiveId;
+  if (!archiveReady) {
+    missing.push(`archive:${cycle.requiredRosterArchiveId}`);
+  }
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === cycle.requiredProvisionSatchelId;
+  if (!provisionReady) {
+    missing.push(`provision:${cycle.requiredProvisionSatchelId}`);
+  }
+
+  const sanctuaryReady = progress.sanctuaryRiteProof && progress.sanctuaryRiteId === cycle.requiredSanctuaryRiteId;
+  if (!sanctuaryReady) {
+    missing.push(`sanctuary:${cycle.requiredSanctuaryRiteId}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const caredSpiritIds = roster.filter((spiritId) => {
+    return Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0)) >= cycle.requiredBondPerSpirit;
+  });
+  const totalBond = roster.reduce((total, spiritId) => total + Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0)), 0);
+  const score =
+    Math.min(roster.length, cycle.requiredSpiritIds.length) * 3 +
+    Math.min(caredSpiritIds.length, cycle.requiredSpiritIds.length) * 3 +
+    Math.min(6, totalBond) +
+    Math.min(6, careStreak * 3) +
+    Math.min(5, trainingXp) +
+    (progress.raisingProof ? 4 : 0) +
+    (archiveReady ? 4 : 0) +
+    (provisionReady ? 4 : 0) +
+    (sanctuaryReady ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0);
+  const cycled = missing.length === 0 && score >= cycle.requiredScore;
+  const activeName = getMochiSpirit(activeSpiritId || '')?.name || 'the first-court roster';
+  const caredNames = caredSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+  const milestone = progress.raisingMilestoneLabel ? ` ${progress.raisingMilestoneLabel} anchors the rotation.` : '';
+
+  return {
+    ok: true,
+    cycled,
+    cycleId: cycle.id,
+    cycleName: cycle.name,
+    title: cycle.title,
+    habitat: cycle.habitat,
+    activeSpiritId,
+    roster,
+    caredSpiritIds,
+    totalBond,
+    careStreak,
+    trainingXp,
+    raisingMilestoneLabel: progress.raisingMilestoneLabel,
+    score,
+    requiredScore: cycle.requiredScore,
+    missing,
+    rewardItemId: cycle.rewardItemId,
+    message: cycled
+      ? `${cycle.name} complete: ${activeName} helps ${caredNames || 'the first-court roster'} rotate care, training, supplies, archive notes, and sanctuary rest.${milestone} No real value.`
+      : `${cycle.name} needs ${missing.join(', ')} before the full-roster care rotation can be recorded.`,
+    source: 'spirit-care-cycle'
   };
 }
 

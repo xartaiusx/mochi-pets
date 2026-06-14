@@ -6,6 +6,7 @@ import {
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BOND_MILESTONES,
+  SPIRIT_CARE_CYCLES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_HABITATS,
@@ -25,6 +26,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBondMilestone,
   resolveSpiritCapture,
+  resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
@@ -528,6 +530,61 @@ describe('Mochi Spirits alpha content contract', () => {
       score: 31,
       rewardItemId: ALPHA_ITEMS.provisionSatchel.id
     });
+
+    expect(SPIRIT_CARE_CYCLES.map((cycle) => cycle.id)).toEqual(['jade-court-care-cycle']);
+    const blockedCareCycle = resolveSpiritCareCycle({
+      roster: fullRoster,
+      activeSpiritId: 'jintari',
+      bondBySpiritId: fullBondMap,
+      careStreak: 1,
+      trainingXp: 3,
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      provisionProof: false,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(blockedCareCycle).toMatchObject({
+      cycled: false,
+      cycleId: 'jade-court-care-cycle',
+      missing: ['provision:jade-court-provision-satchel']
+    });
+
+    const careCycle = resolveSpiritCareCycle({
+      roster: fullRoster,
+      activeSpiritId: 'jintari',
+      bondBySpiritId: fullBondMap,
+      careStreak: 2,
+      trainingXp: 5,
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(careCycle).toMatchObject({
+      cycled: true,
+      cycleId: 'jade-court-care-cycle',
+      cycleName: 'Jade Court Care Cycle',
+      activeSpiritId: 'jintari',
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 12,
+      score: 53,
+      requiredScore: 32,
+      rewardItemId: ALPHA_ITEMS.careCycleKnot.id,
+      source: 'spirit-care-cycle'
+    });
+    expect(careCycle.message).toContain('No real value');
 
     const commission = resolveGuildCommission({
       roster: fullRoster,

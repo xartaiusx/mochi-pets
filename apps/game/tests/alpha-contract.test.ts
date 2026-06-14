@@ -10,6 +10,7 @@ import {
   SPIRIT_BOND_MILESTONES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_BATTLE_CONDITIONS,
+  SPIRIT_CARE_CYCLES,
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_GROWTH_RITES,
@@ -30,6 +31,7 @@ import {
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
+  resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
@@ -90,6 +92,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRosterArchives).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCareCycles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -147,6 +150,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_archive');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.care_cycle');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -623,6 +627,59 @@ describe('alpha contract', () => {
       careStreak: 0,
       completedQuestIds: []
     }).stocked).toBe(false);
+
+    expect(SPIRIT_CARE_CYCLES.map((cycle) => cycle.id)).toEqual(['jade-court-care-cycle']);
+    const careCycle = resolveSpiritCareCycle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      raisingProof: true,
+      raisingMilestoneLabel: 'Skybell Whisper Spark',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(careCycle).toMatchObject({
+      ok: true,
+      cycled: true,
+      cycleId: 'jade-court-care-cycle',
+      cycleName: 'Jade Court Care Cycle',
+      title: 'First Full-Roster Care Rotation',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 12,
+      careStreak: 1,
+      trainingXp: 3,
+      score: 48,
+      requiredScore: 32,
+      rewardItemId: 'jade-care-cycle-knot',
+      source: 'spirit-care-cycle'
+    });
+    expect(careCycle.message).toContain('No real value');
+    expect(resolveSpiritCareCycle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      raisingProof: true,
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      provisionProof: false,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    }).cycled).toBe(false);
 
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({

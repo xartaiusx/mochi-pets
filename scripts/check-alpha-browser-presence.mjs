@@ -199,6 +199,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="market.fixed_list"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="trade.direct_offer"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.care_cycle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -226,6 +227,7 @@ async function exerciseAlphaHud(page) {
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
       const archive = document.querySelector('[data-archive-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
+      const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -269,6 +271,7 @@ async function exerciseAlphaHud(page) {
         && compendium.includes('Jade Court Spirit Compendium')
         && archive.includes('Jade Court Roster Archive')
         && provision.includes('Jade Court Provision Satchel')
+        && careCycle.includes('Jade Court Care Cycle')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -377,6 +380,15 @@ async function exerciseAlphaHud(page) {
         && state.provisionStockItemIds.includes('lantern-harmony-tea')
         && state.provisionStockItemIds.includes('jade-mooncake-box')
         && state.provisionSatchelClaimed === true
+        && state.careCycleProof === true
+        && state.careCycleId === 'jade-court-care-cycle'
+        && state.careCycleName === 'Jade Court Care Cycle'
+        && state.careCycleScore >= 32
+        && state.careCycleRequiredScore === 32
+        && Array.isArray(state.careCycleCaredSpiritIds)
+        && state.careCycleCaredSpiritIds.length === 3
+        && state.careCycleTotalBond >= 9
+        && state.careCycleKnotClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -526,6 +538,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Research Folio recorded')
         && chat.includes('Jade Court Spirit Compendium complete')
         && chat.includes('Jade Court Roster Archive sealed')
+        && chat.includes('Jade Court Care Cycle complete')
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
@@ -559,6 +572,7 @@ async function exerciseAlphaHud(page) {
       compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
       archive: document.querySelector('[data-archive-label]')?.textContent || '',
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
+      careCycle: document.querySelector('[data-care-cycle-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -599,6 +613,7 @@ async function exerciseAlphaHud(page) {
       compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
       archive: document.querySelector('[data-archive-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
+      careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -711,6 +726,15 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('lantern-harmony-tea'), 'HUD provision action must stock Lantern Harmony Tea.');
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('jade-mooncake-box'), 'HUD provision action must stock the Jade Mooncake Box.');
   assert(snapshot.state.provisionSatchelClaimed === true, 'HUD provision action must mark the no-real-value satchel proof.');
+  assert(snapshot.careCycle.includes('Jade Court Care Cycle'), 'HUD care cycle label must show the completed full-roster care proof.');
+  assert(snapshot.state.careCycleProof === true, 'HUD care cycle action must record full-roster care proof.');
+  assert(snapshot.state.careCycleId === 'jade-court-care-cycle', 'HUD care cycle action must record the care cycle id.');
+  assert(snapshot.state.careCycleName === 'Jade Court Care Cycle', 'HUD care cycle action must record the care cycle name.');
+  assert(snapshot.state.careCycleScore >= 32, 'HUD care cycle action must record a passing care cycle score.');
+  assert(snapshot.state.careCycleRequiredScore === 32, 'HUD care cycle action must record the care cycle requirement.');
+  assert(Array.isArray(snapshot.state.careCycleCaredSpiritIds) && snapshot.state.careCycleCaredSpiritIds.length === 3, 'HUD care cycle action must record every cared spirit.');
+  assert(snapshot.state.careCycleTotalBond >= 9, 'HUD care cycle action must record enough full-roster bond proof.');
+  assert(snapshot.state.careCycleKnotClaimed === true, 'HUD care cycle action must mark the no-real-value care cycle knot proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -865,6 +889,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
   assert(chat.some((line) => String(line).includes('Jade Court Roster Archive sealed')), 'HUD chat state must record the roster archive action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');
