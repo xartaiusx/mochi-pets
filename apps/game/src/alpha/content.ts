@@ -1431,6 +1431,80 @@ export interface SpiritBloomAscendanceResult {
   source: string;
 }
 
+export interface SpiritLineageRegister {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredKinshipAlbumId: string;
+  requiredNurseryGroveId: string;
+  requiredBloomAscendanceId: string;
+  requiredCaptureRiteId: string;
+  requiredCareCycleId: string;
+  requiredGrowthRiteId: string;
+  requiredBondPerSpirit: number;
+  requiredTrainingXp: number;
+  requiredSparLadderXp: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritLineageRegisterProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  caredSpiritIds: readonly string[];
+  activeSpiritId?: string;
+  bondBySpiritId?: Record<string, number>;
+  localPresenceCount: number;
+  kinshipAlbumProof: boolean;
+  kinshipAlbumId?: string;
+  nurseryGroveProof: boolean;
+  nurseryGroveId?: string;
+  bloomAscendanceProof: boolean;
+  bloomAscendanceId?: string;
+  captureRiteProof: boolean;
+  captureRiteId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  growthRiteProof: boolean;
+  growthRiteId?: string;
+  growthForm?: string;
+  raisingProof: boolean;
+  raisingMilestoneLabel?: string;
+  trainingXp: number;
+  sparLadderXp: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritLineageRegisterResult {
+  ok: boolean;
+  registered: boolean;
+  registerId: string;
+  registerName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  partyIds: string[];
+  caredSpiritIds: string[];
+  totalBond: number;
+  milestoneLabels: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -1681,6 +1755,7 @@ export interface GuildWayfarerChronicleProgress {
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
   bloomAscendanceProof: boolean;
+  lineageRegisterProof: boolean;
   exchangeAccordProof: boolean;
   affinityMatrixProof: boolean;
   techniqueCodexProof: boolean;
@@ -1749,6 +1824,7 @@ export interface GuildAscensionTrialProgress {
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
   bloomAscendanceProof: boolean;
+  lineageRegisterProof: boolean;
   exchangeAccordProof: boolean;
   affinityMatrixProof: boolean;
   techniqueCodexProof: boolean;
@@ -3031,6 +3107,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Bloom Ascendance Sigil',
     description: 'A no-real-value ascendance proof for closed-alpha Mochirii full-roster growth, care, affinity, and no-injury battle readiness.'
   },
+  lineageRegisterSeal: {
+    id: 'jade-lineage-register-seal',
+    name: 'Jade Lineage Register Seal',
+    description: 'A no-real-value lineage register proof for closed-alpha Mochirii roster care, growth, capture, nursery, bloom, and bond records.'
+  },
   tournamentPennant: {
     id: 'jade-banner-tournament-pennant',
     name: 'Jade Banner Tournament Pennant',
@@ -3770,6 +3851,29 @@ export const SPIRIT_BLOOM_ASCENDANCES: readonly SpiritBloomAscendance[] = [
     requiredScore: 58,
     rewardItemId: ALPHA_ITEMS.bloomAscendanceSigil.id,
     summary: 'A no-real-value first-court form ascendance proof for testers who connect full-roster care, nursery cultivation, kinship, growth, affinity matrix planning, and no-injury battle readiness.'
+  }
+];
+
+export const SPIRIT_LINEAGE_REGISTERS: readonly SpiritLineageRegister[] = [
+  {
+    id: 'jade-lineage-register',
+    name: 'Jade Lineage Register',
+    title: 'First-Court Lineage Record',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredKinshipAlbumId: SPIRIT_KINSHIP_ALBUMS[0].id,
+    requiredNurseryGroveId: SPIRIT_NURSERY_GROVES[0].id,
+    requiredBloomAscendanceId: SPIRIT_BLOOM_ASCENDANCES[0].id,
+    requiredCaptureRiteId: SPIRIT_CAPTURE_RITES[0].id,
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredGrowthRiteId: SPIRIT_GROWTH_RITES[0].id,
+    requiredBondPerSpirit: 5,
+    requiredTrainingXp: 3,
+    requiredSparLadderXp: 5,
+    requiredPresenceCount: 2,
+    requiredScore: 60,
+    rewardItemId: ALPHA_ITEMS.lineageRegisterSeal.id,
+    summary: 'A no-real-value first-court lineage register for testers who connect capture, care, kinship, nursery, bloom ascendance, growth, raising, bonds, and social witness into one original Mochirii record.'
   }
 ];
 
@@ -6409,6 +6513,133 @@ export function resolveSpiritBloomAscendance(
   };
 }
 
+export function resolveSpiritLineageRegister(
+  progress: SpiritLineageRegisterProgress,
+  registerId: string = SPIRIT_LINEAGE_REGISTERS[0].id
+): SpiritLineageRegisterResult {
+  const register = SPIRIT_LINEAGE_REGISTERS.find((entry) => entry.id === registerId) || SPIRIT_LINEAGE_REGISTERS[0];
+  const requiredSpiritIds = new Set(register.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const caredSpiritIds = Array.from(new Set(progress.caredSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId =
+    progress.activeSpiritId && roster.includes(progress.activeSpiritId)
+      ? progress.activeSpiritId
+      : partyIds[partyIds.length - 1] || roster[roster.length - 1] || roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const bondBySpiritId = progress.bondBySpiritId || {};
+  const totalBond = register.requiredSpiritIds.reduce((sum, spiritId) => {
+    return sum + Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0));
+  }, 0);
+  const allBonded = register.requiredSpiritIds.every((spiritId) => {
+    return Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0)) >= register.requiredBondPerSpirit;
+  });
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  const sparLadderXp = Math.max(0, Math.floor(progress.sparLadderXp || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const milestoneLabels = Array.from(
+    new Set([
+      String(progress.growthForm || '').trim(),
+      String(progress.raisingMilestoneLabel || '').trim(),
+      ...roster.flatMap((spiritId) => {
+        const spirit = getMochiSpirit(spiritId);
+        return spirit ? spirit.bondMilestones.slice(-1).map((milestone) => milestone.label) : [];
+      })
+    ].filter(Boolean))
+  );
+  const missing: string[] = [];
+
+  if (roster.length < register.requiredSpiritIds.length) missing.push(`roster:${roster.length}/${register.requiredSpiritIds.length}`);
+  if (partyIds.length < register.requiredSpiritIds.length) missing.push(`party:${partyIds.length}/${register.requiredSpiritIds.length}`);
+  if (caredSpiritIds.length < register.requiredSpiritIds.length) missing.push(`care:${caredSpiritIds.length}/${register.requiredSpiritIds.length}`);
+  if (!allBonded) missing.push(`bond:${totalBond}/${register.requiredBondPerSpirit * register.requiredSpiritIds.length}`);
+  if (localPresenceCount < register.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${register.requiredPresenceCount}`);
+
+  const kinshipReady = progress.kinshipAlbumProof && progress.kinshipAlbumId === register.requiredKinshipAlbumId;
+  if (!kinshipReady) missing.push(`kinship:${register.requiredKinshipAlbumId}`);
+
+  const nurseryReady = progress.nurseryGroveProof && progress.nurseryGroveId === register.requiredNurseryGroveId;
+  if (!nurseryReady) missing.push(`nursery:${register.requiredNurseryGroveId}`);
+
+  const bloomReady = progress.bloomAscendanceProof && progress.bloomAscendanceId === register.requiredBloomAscendanceId;
+  if (!bloomReady) missing.push(`bloom:${register.requiredBloomAscendanceId}`);
+
+  const captureRiteReady = progress.captureRiteProof && progress.captureRiteId === register.requiredCaptureRiteId;
+  if (!captureRiteReady) missing.push(`capture-rite:${register.requiredCaptureRiteId}`);
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === register.requiredCareCycleId;
+  if (!careCycleReady) missing.push(`care-cycle:${register.requiredCareCycleId}`);
+
+  const growthReady = progress.growthRiteProof && progress.growthRiteId === register.requiredGrowthRiteId;
+  if (!growthReady) missing.push(`growth:${register.requiredGrowthRiteId}`);
+
+  if (!progress.raisingProof) missing.push('raising');
+  if (!milestoneLabels.length) missing.push('milestone');
+  if (trainingXp < register.requiredTrainingXp) missing.push(`training:${trainingXp}/${register.requiredTrainingXp}`);
+  if (sparLadderXp < register.requiredSparLadderXp) missing.push(`spar:${sparLadderXp}/${register.requiredSparLadderXp}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat:0/1');
+
+  const score =
+    Math.min(roster.length, register.requiredSpiritIds.length) * 2 +
+    Math.min(partyIds.length, register.requiredSpiritIds.length) * 2 +
+    Math.min(caredSpiritIds.length, register.requiredSpiritIds.length) * 2 +
+    (allBonded ? 9 : Math.min(9, totalBond)) +
+    Math.min(localPresenceCount, register.requiredPresenceCount) * 2 +
+    (kinshipReady ? 4 : 0) +
+    (nurseryReady ? 6 : 0) +
+    (bloomReady ? 6 : 0) +
+    (captureRiteReady ? 5 : 0) +
+    (careCycleReady ? 4 : 0) +
+    (growthReady ? 4 : 0) +
+    (progress.raisingProof ? 3 : 0) +
+    (milestoneLabels.length ? 2 : 0) +
+    (trainingXp >= register.requiredTrainingXp ? 3 : 0) +
+    (sparLadderXp >= register.requiredSparLadderXp ? 3 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const registered = missing.length === 0 && score >= register.requiredScore;
+  const rosterNames = roster.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    registered,
+    registerId: register.id,
+    registerName: register.name,
+    title: register.title,
+    habitat: register.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    partyIds,
+    caredSpiritIds,
+    totalBond,
+    milestoneLabels,
+    localPresenceCount,
+    score,
+    requiredScore: register.requiredScore,
+    missing,
+    rewardItemId: register.rewardItemId,
+    message: registered
+      ? `${register.name} recorded: ${activeSpirit.name} links ${rosterNames || 'the first-court roster'} through capture, care, kinship, nursery, bloom, growth, raising, and bond milestones. No real value.`
+      : `${register.name} needs ${missing.join(', ')} before the first-court lineage record can be sealed.`,
+    source: 'spirit-lineage-register'
+  };
+}
+
 export function resolveGuildCommission(
   progress: GuildCommissionProgress,
   commissionId: string = GUILD_COMMISSIONS[0].id
@@ -6784,6 +7015,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
   if (!progress.bloomAscendanceProof) missing.push('bloom-ascendance');
+  if (!progress.lineageRegisterProof) missing.push('lineage-register');
   if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.techniqueCodexProof) missing.push('technique-codex');
@@ -6832,6 +7064,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
     (progress.bloomAscendanceProof ? 3 : 0) +
+    (progress.lineageRegisterProof ? 3 : 0) +
     (progress.exchangeAccordProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.techniqueCodexProof ? 3 : 0) +
@@ -6876,7 +7109,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, bloom ascendance, technique codex study, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -6906,6 +7139,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
   if (!progress.bloomAscendanceProof) missing.push('bloom-ascendance');
+  if (!progress.lineageRegisterProof) missing.push('lineage-register');
   if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.techniqueCodexProof) missing.push('technique-codex');
@@ -6939,6 +7173,7 @@ export function resolveGuildAscensionTrial(
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
     (progress.bloomAscendanceProof ? 3 : 0) +
+    (progress.lineageRegisterProof ? 3 : 0) +
     (progress.exchangeAccordProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.techniqueCodexProof ? 3 : 0) +

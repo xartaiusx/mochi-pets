@@ -26,6 +26,10 @@ const checks = [
     includes: ['battle.technique_codex', 'techniqueCodexes: true', 'Jade Technique Codex label/state', 'Jade Technique Codex Seal payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['spirit.lineage_register', 'spiritLineageRegisters: true', 'Jade Lineage Register label/state', 'Jade Lineage Register Seal payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -44,6 +48,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Technique Codex proof', 'Jade Technique Codex Seal', 'Move-library proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Lineage Register proof', 'Jade Lineage Register Seal', 'Lineage proof is no-real-value']
   },
   {
     file: 'docs/no-cost-operations.md',
@@ -80,6 +88,10 @@ const checks = [
     includes: ['Jade Technique Codex proof', 'Jade Technique Codex', 'seal the Jade Technique Codex']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Lineage Register proof', 'Jade Lineage Register', 'Record Jade Lineage Register proof']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
@@ -90,6 +102,10 @@ const checks = [
   {
     file: 'docs/alpha-acceptance.md',
     includes: ['battle.technique_codex', 'Jade Technique Codex', 'Jade Technique Codex Seal', 'techniqueCodexProof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.lineage_register', 'Jade Lineage Register', 'Jade Lineage Register Seal', 'lineageRegisterProof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -106,6 +122,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['technique-codex', 'seal the Jade Technique Codex proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['lineage-register', 'record the Jade Lineage Register proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -301,11 +321,11 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/ascendance/capture-rite', 'nursery grove proof']
+    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/ascendance/lineage/capture-rite', 'nursery grove proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/bloom-ascendance/capture-rite']
+    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -341,11 +361,11 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Bloom Ascendance proof', 'nurture/recover/kinship/nursery/ascendance/capture-rite', 'bloom ascendance proof']
+    includes: ['Jade Bloom Ascendance proof', 'nurture/recover/kinship/nursery/ascendance/lineage/capture-rite', 'bloom ascendance proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.bloom_ascendance', 'Jade Bloom Ascendance proof', 'kinship-album/nursery-grove/bloom-ascendance/capture-rite']
+    includes: ['spirit.bloom_ascendance', 'Jade Bloom Ascendance proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -381,11 +401,11 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/ascendance/capture-rite/bracket', 'capture rite proof']
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/ascendance/lineage/capture-rite/bracket', 'capture rite proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/bloom-ascendance/capture-rite']
+    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -493,7 +513,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritEncounterAtlases: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.encounter_atlas'", "'item.craft_writ'", "'trade.exchange_accord'", "'world.route_waystone'", "'spirit.nurture_rite'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
+    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritEncounterAtlases: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritLineageRegisters: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.encounter_atlas'", "'item.craft_writ'", "'trade.exchange_accord'", "'world.route_waystone'", "'spirit.nurture_rite'", "'spirit.lineage_register'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -546,6 +566,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritBloomAscendances: true', "'spirit.bloom_ascendance'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritLineageRegisters: true', "'spirit.lineage_register'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -641,6 +665,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_LINEAGE_REGISTERS', 'resolveSpiritLineageRegister', 'data-alpha-action="spirit.lineage_register"', 'data-lineage-register-label', 'lineageRegisterProof', 'lineageRegisterSealClaimed', 'Jade Lineage Register']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_CAPTURE_RITES', 'resolveSpiritCaptureRite', 'data-alpha-action="spirit.capture_rite"', 'data-capture-rite-label', 'captureRiteProof', 'captureRiteClaimed', 'Jade Capture Rite']
   },
   {
@@ -729,6 +757,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Lineage Register', 'jade-lineage-register-seal', 'resolveSpiritLineageRegister', 'spirit-lineage-register', 'lineageRegisterProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -794,6 +826,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritBloomAscendances: true', 'spirit.bloom_ascendance']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritLineageRegisters: true', 'spirit.lineage_register']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -905,6 +941,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.lineage_register', 'jade-lineage-register', 'spiritLineageRegisters', 'Jade Lineage Register', 'lineageRegisterProof', 'jade-lineage-register-seal']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
   },
   {
@@ -982,6 +1022,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.bloom_ascendance"', 'data-bloom-ascendance-label', 'bloomAscendanceProof', 'bloomAscendanceSigilClaimed', 'Jade Bloom Ascendance complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.lineage_register"', 'data-lineage-register-label', 'lineageRegisterProof', 'lineageRegisterSealClaimed', 'Jade Lineage Register recorded']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1098,6 +1142,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['bloomAscendanceProof', 'bloomAscendanceSigilClaimed', 'Jade Bloom Ascendance', 'jade-bloom-ascendance-sigil', 'spirit-bloom-ascendance', 'bloom ascendance']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['lineageRegisterProof', 'lineageRegisterSealClaimed', 'Jade Lineage Register', 'jade-lineage-register-seal', 'spirit-lineage-register', 'lineage register']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

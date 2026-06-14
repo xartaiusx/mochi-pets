@@ -65,6 +65,7 @@ describe('game manifest', () => {
         spiritKinshipAlbums: true,
         spiritNurseryGroves: true,
         spiritBloomAscendances: true,
+        spiritLineageRegisters: true,
         itemProvisions: true,
         guildCommissions: true,
         socialRallies: true,

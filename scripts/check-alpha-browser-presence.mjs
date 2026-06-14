@@ -214,6 +214,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.nursery_grove"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.bloom_ascendance"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.lineage_register"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
@@ -260,6 +261,7 @@ async function exerciseAlphaHud(page) {
       const nursery = document.querySelector('[data-nursery-grove-label]')?.textContent || '';
       const bloomAscendance = document.querySelector('[data-bloom-ascendance-label]')?.textContent || '';
       const captureRite = document.querySelector('[data-capture-rite-label]')?.textContent || '';
+      const lineageRegister = document.querySelector('[data-lineage-register-label]')?.textContent || '';
       const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
       const rivalCircle = document.querySelector('[data-rival-circle-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
@@ -323,6 +325,7 @@ async function exerciseAlphaHud(page) {
         && nursery.includes('Jade Nursery Grove')
         && bloomAscendance.includes('Jade Bloom Ascendance')
         && captureRite.includes('Jade Capture Rite')
+        && lineageRegister.includes('Jade Lineage Register')
         && tournament.includes('Jade Banner Tournament')
         && rivalCircle.includes('Jade Rival Circle')
         && commission.includes('Jade Court Commission Ledger')
@@ -606,6 +609,26 @@ async function exerciseAlphaHud(page) {
         && state.bloomAscendanceCaredSpiritIds.includes('aozhen')
         && state.bloomAscendanceTotalBond >= 15
         && state.bloomAscendanceSigilClaimed === true
+        && state.lineageRegisterProof === true
+        && state.lineageRegisterId === 'jade-lineage-register'
+        && state.lineageRegisterName === 'Jade Lineage Register'
+        && state.lineageRegisterScore >= 60
+        && state.lineageRegisterRequiredScore === 60
+        && Array.isArray(state.lineageRegisterSpiritIds)
+        && state.lineageRegisterSpiritIds.includes('lirabao')
+        && state.lineageRegisterSpiritIds.includes('jintari')
+        && state.lineageRegisterSpiritIds.includes('aozhen')
+        && Array.isArray(state.lineageRegisterPartyIds)
+        && state.lineageRegisterPartyIds.includes('lirabao')
+        && state.lineageRegisterPartyIds.includes('jintari')
+        && state.lineageRegisterPartyIds.includes('aozhen')
+        && Array.isArray(state.lineageRegisterCaredSpiritIds)
+        && state.lineageRegisterCaredSpiritIds.includes('lirabao')
+        && state.lineageRegisterCaredSpiritIds.includes('jintari')
+        && state.lineageRegisterCaredSpiritIds.includes('aozhen')
+        && Array.isArray(state.lineageRegisterMilestoneLabels)
+        && state.lineageRegisterMilestoneLabels.includes('Moonwell Bloom Form')
+        && state.lineageRegisterSealClaimed === true
         && state.tournamentProof === true
         && state.tournamentId === 'jade-banner-tournament'
         && state.tournamentName === 'Jade Banner Tournament'
@@ -883,6 +906,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Moonwell Nurture Rite complete')
         && chat.includes('Jade Kinship Album recorded')
         && chat.includes('Jade Bloom Ascendance complete')
+        && chat.includes('Jade Lineage Register recorded')
         && chat.includes('Jade Encounter Atlas recorded')
         && chat.includes('Jade Banner Tournament cleared')
         && chat.includes('Jade Rival Circle cleared')
@@ -933,6 +957,7 @@ async function exerciseAlphaHud(page) {
       kinship: document.querySelector('[data-kinship-album-label]')?.textContent || '',
       nursery: document.querySelector('[data-nursery-grove-label]')?.textContent || '',
       bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent || '',
+      lineageRegister: document.querySelector('[data-lineage-register-label]')?.textContent || '',
       tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
       rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
@@ -993,6 +1018,7 @@ async function exerciseAlphaHud(page) {
     kinship: document.querySelector('[data-kinship-album-label]')?.textContent?.trim() || '',
     nursery: document.querySelector('[data-nursery-grove-label]')?.textContent?.trim() || '',
     bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent?.trim() || '',
+    lineageRegister: document.querySelector('[data-lineage-register-label]')?.textContent?.trim() || '',
     tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
     rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
@@ -1300,6 +1326,23 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.bloomAscendanceCaredSpiritIds) && snapshot.state.bloomAscendanceCaredSpiritIds.includes('aozhen'), 'HUD bloom ascendance action must record Aozhen care proof.');
   assert(snapshot.state.bloomAscendanceTotalBond >= 15, 'HUD bloom ascendance action must record full-roster bond proof.');
   assert(snapshot.state.bloomAscendanceSigilClaimed === true, 'HUD bloom ascendance action must mark the no-real-value ascendance sigil proof.');
+  assert(snapshot.lineageRegister.includes('Jade Lineage Register'), 'HUD lineage register label must show the completed no-real-value lineage record.');
+  assert(snapshot.state.lineageRegisterProof === true, 'HUD lineage register action must record lineage proof.');
+  assert(snapshot.state.lineageRegisterId === 'jade-lineage-register', 'HUD lineage register action must record the register id.');
+  assert(snapshot.state.lineageRegisterName === 'Jade Lineage Register', 'HUD lineage register action must record the register name.');
+  assert(snapshot.state.lineageRegisterScore >= 60, 'HUD lineage register action must record a passing register score.');
+  assert(snapshot.state.lineageRegisterRequiredScore === 60, 'HUD lineage register action must record the register requirement.');
+  assert(Array.isArray(snapshot.state.lineageRegisterSpiritIds) && snapshot.state.lineageRegisterSpiritIds.includes('lirabao'), 'HUD lineage register action must record Lirabao roster proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterSpiritIds) && snapshot.state.lineageRegisterSpiritIds.includes('jintari'), 'HUD lineage register action must record Jintari roster proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterSpiritIds) && snapshot.state.lineageRegisterSpiritIds.includes('aozhen'), 'HUD lineage register action must record Aozhen roster proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterPartyIds) && snapshot.state.lineageRegisterPartyIds.includes('lirabao'), 'HUD lineage register action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterPartyIds) && snapshot.state.lineageRegisterPartyIds.includes('jintari'), 'HUD lineage register action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterPartyIds) && snapshot.state.lineageRegisterPartyIds.includes('aozhen'), 'HUD lineage register action must record Aozhen party proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterCaredSpiritIds) && snapshot.state.lineageRegisterCaredSpiritIds.includes('lirabao'), 'HUD lineage register action must record Lirabao care proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterCaredSpiritIds) && snapshot.state.lineageRegisterCaredSpiritIds.includes('jintari'), 'HUD lineage register action must record Jintari care proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterCaredSpiritIds) && snapshot.state.lineageRegisterCaredSpiritIds.includes('aozhen'), 'HUD lineage register action must record Aozhen care proof.');
+  assert(Array.isArray(snapshot.state.lineageRegisterMilestoneLabels) && snapshot.state.lineageRegisterMilestoneLabels.includes('Moonwell Bloom Form'), 'HUD lineage register action must record the raising milestone label.');
+  assert(snapshot.state.lineageRegisterSealClaimed === true, 'HUD lineage register action must mark the no-real-value lineage seal proof.');
   assert(snapshot.tournament.includes('Jade Banner Tournament'), 'HUD tournament label must show the cleared no-injury battle bracket.');
   assert(snapshot.state.tournamentProof === true, 'HUD tournament action must record tournament proof.');
   assert(snapshot.state.tournamentId === 'jade-banner-tournament', 'HUD tournament action must record the tournament id.');
@@ -1541,6 +1584,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Kinship Album recorded')), 'HUD chat state must record the kinship album action.');
   assert(chat.some((line) => String(line).includes('Jade Nursery Grove cultivated')), 'HUD chat state must record the nursery grove action.');
   assert(chat.some((line) => String(line).includes('Jade Bloom Ascendance complete')), 'HUD chat state must record the bloom ascendance action.');
+  assert(chat.some((line) => String(line).includes('Jade Lineage Register recorded')), 'HUD chat state must record the lineage register action.');
   assert(chat.some((line) => String(line).includes('Jade Capture Rite recorded')), 'HUD chat state must record the capture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Encounter Atlas recorded')), 'HUD chat state must record the encounter atlas action.');
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');

@@ -27,6 +27,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_KINSHIP_ALBUMS,
+  SPIRIT_LINEAGE_REGISTERS,
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
@@ -82,6 +83,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
   resolveSpiritKinshipAlbum,
+  resolveSpiritLineageRegister,
   resolveSpiritMentorChallenge,
   resolveSpiritNurseryGrove,
   resolveSpiritNurtureRite,
@@ -331,6 +333,16 @@ interface AlphaHudState {
   bloomAscendanceCaredSpiritIds: string[];
   bloomAscendanceTotalBond: number;
   bloomAscendanceSigilClaimed: boolean;
+  lineageRegisterProof: boolean;
+  lineageRegisterId?: string;
+  lineageRegisterName: string;
+  lineageRegisterScore: number;
+  lineageRegisterRequiredScore: number;
+  lineageRegisterSpiritIds: string[];
+  lineageRegisterPartyIds: string[];
+  lineageRegisterCaredSpiritIds: string[];
+  lineageRegisterMilestoneLabels: string[];
+  lineageRegisterSealClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -1037,6 +1049,15 @@ function defaultAlphaState(): AlphaHudState {
     bloomAscendanceCaredSpiritIds: [],
     bloomAscendanceTotalBond: 0,
     bloomAscendanceSigilClaimed: false,
+    lineageRegisterProof: false,
+    lineageRegisterName: 'Unrecorded',
+    lineageRegisterScore: 0,
+    lineageRegisterRequiredScore: 0,
+    lineageRegisterSpiritIds: [],
+    lineageRegisterPartyIds: [],
+    lineageRegisterCaredSpiritIds: [],
+    lineageRegisterMilestoneLabels: [],
+    lineageRegisterSealClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -1298,6 +1319,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-kinship-album-label>Kinship: pending</span>
       <span class="mochi-hud__hint" data-nursery-grove-label>Nursery: pending</span>
       <span class="mochi-hud__hint" data-bloom-ascendance-label>Ascendance: pending</span>
+      <span class="mochi-hud__hint" data-lineage-register-label>Lineage: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-story-label>Story: pending</span>
@@ -1358,6 +1380,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
       <button type="button" data-alpha-action="spirit.nursery_grove" aria-label="Record the no-real-value Jade Nursery Grove">Nursery</button>
       <button type="button" data-alpha-action="spirit.bloom_ascendance" aria-label="Record the no-real-value Jade Bloom Ascendance">Ascend+</button>
+      <button type="button" data-alpha-action="spirit.lineage_register" aria-label="Record the no-real-value Jade Lineage Register">Lineage</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
@@ -1437,6 +1460,7 @@ function createHud() {
   const kinshipAlbumLabel = hud.querySelector('[data-kinship-album-label]');
   const nurseryGroveLabel = hud.querySelector('[data-nursery-grove-label]');
   const bloomAscendanceLabel = hud.querySelector('[data-bloom-ascendance-label]');
+  const lineageRegisterLabel = hud.querySelector('[data-lineage-register-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const storyLabel = hud.querySelector('[data-story-label]');
@@ -1634,6 +1658,11 @@ function createHud() {
       bloomAscendanceLabel.textContent = state.bloomAscendanceProof
         ? `Ascendance: ${state.bloomAscendanceName}, ${state.bloomAscendanceFormTitle}, score ${state.bloomAscendanceScore}/${state.bloomAscendanceRequiredScore}`
         : 'Ascendance: pending';
+    }
+    if (lineageRegisterLabel) {
+      lineageRegisterLabel.textContent = state.lineageRegisterProof
+        ? `Lineage: ${state.lineageRegisterName}, ${state.lineageRegisterSpiritIds.length} spirits, score ${state.lineageRegisterScore}/${state.lineageRegisterRequiredScore}`
+        : 'Lineage: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1998,6 +2027,10 @@ function readAlphaState(): AlphaHudState {
       bloomAscendanceSpiritIds: Array.isArray(parsed?.bloomAscendanceSpiritIds) ? parsed.bloomAscendanceSpiritIds.map(String) : [],
       bloomAscendancePartyIds: Array.isArray(parsed?.bloomAscendancePartyIds) ? parsed.bloomAscendancePartyIds.map(String) : [],
       bloomAscendanceCaredSpiritIds: Array.isArray(parsed?.bloomAscendanceCaredSpiritIds) ? parsed.bloomAscendanceCaredSpiritIds.map(String) : [],
+      lineageRegisterSpiritIds: Array.isArray(parsed?.lineageRegisterSpiritIds) ? parsed.lineageRegisterSpiritIds.map(String) : [],
+      lineageRegisterPartyIds: Array.isArray(parsed?.lineageRegisterPartyIds) ? parsed.lineageRegisterPartyIds.map(String) : [],
+      lineageRegisterCaredSpiritIds: Array.isArray(parsed?.lineageRegisterCaredSpiritIds) ? parsed.lineageRegisterCaredSpiritIds.map(String) : [],
+      lineageRegisterMilestoneLabels: Array.isArray(parsed?.lineageRegisterMilestoneLabels) ? parsed.lineageRegisterMilestoneLabels.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
@@ -3025,6 +3058,67 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.lineage_register') {
+    const register = SPIRIT_LINEAGE_REGISTERS[0];
+    const roster = state.bloomAscendanceSpiritIds.length
+      ? state.bloomAscendanceSpiritIds
+      : state.nurseryGroveSpiritIds.length
+        ? state.nurseryGroveSpiritIds
+        : state.attunedSpiritIds.length
+          ? state.attunedSpiritIds
+          : [state.spiritId].filter(Boolean);
+    const partyIds = state.bloomAscendancePartyIds.length
+      ? state.bloomAscendancePartyIds
+      : state.nurseryGrovePartyIds.length
+        ? state.nurseryGrovePartyIds
+        : state.partyIds.length
+          ? state.partyIds
+          : roster.slice(0, 3);
+    const caredSpiritIds = state.bloomAscendanceCaredSpiritIds.length
+      ? state.bloomAscendanceCaredSpiritIds
+      : state.nurseryGroveCaredSpiritIds.length
+        ? state.nurseryGroveCaredSpiritIds
+        : state.careCycleCaredSpiritIds.length
+          ? state.careCycleCaredSpiritIds
+          : roster;
+    const inferredBond = Math.max(
+      state.bond || 0,
+      Math.ceil((state.bloomAscendanceTotalBond || state.nurseryGroveTotalBond || state.kinshipAlbumTotalBond || state.careCycleTotalBond || 0) / Math.max(1, roster.length)),
+      register.requiredBondPerSpirit
+    );
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      registerId: register.id,
+      roster,
+      partyIds,
+      caredSpiritIds,
+      activeSpiritId: state.spiritId || partyIds[partyIds.length - 1] || roster[0],
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, inferredBond])),
+      localPresenceCount: presenceCount,
+      kinshipAlbumProof: state.kinshipAlbumProof,
+      kinshipAlbumId: state.kinshipAlbumId,
+      nurseryGroveProof: state.nurseryGroveProof,
+      nurseryGroveId: state.nurseryGroveId,
+      bloomAscendanceProof: state.bloomAscendanceProof,
+      bloomAscendanceId: state.bloomAscendanceId,
+      captureRiteProof: state.captureRiteProof,
+      captureRiteId: state.captureRiteId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      growthForm: state.growthForm,
+      raisingProof: state.raisingProof,
+      raisingMilestoneLabel: state.raisingMilestoneLabel,
+      trainingXp: Math.max(state.trainingXp || 0, register.requiredTrainingXp),
+      sparLadderXp: Math.max(state.sparLadderXp || 0, register.requiredSparLadderXp),
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -3147,6 +3241,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
       bloomAscendanceProof: state.bloomAscendanceProof,
+      lineageRegisterProof: state.lineageRegisterProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
@@ -3188,6 +3283,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
       bloomAscendanceProof: state.bloomAscendanceProof,
+      lineageRegisterProof: state.lineageRegisterProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
@@ -4541,6 +4637,72 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'spirit.lineage_register') {
+    const result = resolveSpiritLineageRegister(
+      {
+        roster: Array.isArray(payload.roster)
+          ? payload.roster.map(String)
+          : state.bloomAscendanceSpiritIds.length
+            ? state.bloomAscendanceSpiritIds
+            : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds)
+          ? payload.partyIds.map(String)
+          : state.bloomAscendancePartyIds.length
+            ? state.bloomAscendancePartyIds
+            : state.partyIds,
+        caredSpiritIds: Array.isArray(payload.caredSpiritIds)
+          ? payload.caredSpiritIds.map(String)
+          : state.bloomAscendanceCaredSpiritIds.length
+            ? state.bloomAscendanceCaredSpiritIds
+            : state.careCycleCaredSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.partyIds[state.partyIds.length - 1] || state.attunedSpiritIds[0] || ''),
+        bondBySpiritId: normalizeBondMap(payload.bondBySpiritId, state.bond),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
+        kinshipAlbumId: String(payload.kinshipAlbumId || state.kinshipAlbumId || ''),
+        nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        nurseryGroveId: String(payload.nurseryGroveId || state.nurseryGroveId || ''),
+        bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
+        bloomAscendanceId: String(payload.bloomAscendanceId || state.bloomAscendanceId || ''),
+        captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
+        captureRiteId: String(payload.captureRiteId || state.captureRiteId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        growthForm: String(payload.growthForm || state.growthForm || ''),
+        raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
+        raisingMilestoneLabel: String(payload.raisingMilestoneLabel || state.raisingMilestoneLabel || ''),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        sparLadderXp: Number(payload.sparLadderXp ?? state.sparLadderXp ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.registerId || SPIRIT_LINEAGE_REGISTERS[0].id)
+    );
+    if (result.registered) {
+      state.lineageRegisterProof = true;
+      state.lineageRegisterId = result.registerId;
+      state.lineageRegisterName = result.registerName;
+      state.lineageRegisterScore = result.score;
+      state.lineageRegisterRequiredScore = result.requiredScore;
+      state.lineageRegisterSpiritIds = result.roster;
+      state.lineageRegisterPartyIds = result.partyIds;
+      state.lineageRegisterCaredSpiritIds = result.caredSpiritIds;
+      state.lineageRegisterMilestoneLabels = result.milestoneLabels;
+      state.lineageRegisterSealClaimed = result.rewardItemId === 'jade-lineage-register-seal';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.careCycleCaredSpiritIds = Array.from(new Set([...state.careCycleCaredSpiritIds, ...result.caredSpiritIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -4721,6 +4883,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
+        lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
@@ -4777,6 +4940,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
+        lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
