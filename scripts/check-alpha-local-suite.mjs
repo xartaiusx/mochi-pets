@@ -13,6 +13,7 @@ const baseUrl = `http://localhost:${port}`;
 const saveDir = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_SUITE_SAVE_DIR || `.local/alpha-suite/${runId}/saves`);
 const serverToken = `local-suite-token-${Date.now().toString(36)}`;
 const timeoutMs = Number(process.env.MOCHI_SOCIAL_LOCAL_SUITE_TIMEOUT_MS || 30000);
+const commandTimeoutMs = Number(process.env.MOCHI_SOCIAL_LOCAL_SUITE_COMMAND_TIMEOUT_MS || 180000);
 const loadPlayers = String(process.env.MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS || process.env.MOCHI_SOCIAL_LOAD_PLAYERS || '10');
 
 const report = {
@@ -165,6 +166,21 @@ function exec(command, args, env) {
     });
     let stdout = '';
     let stderr = '';
+    let settled = false;
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      stderr += `\nCommand exceeded ${commandTimeoutMs}ms timeout.`;
+      processHandle.kill();
+    }, commandTimeoutMs);
+
+    const resolveOnce = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolvePromise(result);
+    };
+
     processHandle.stdout?.on('data', (chunk) => {
       stdout += String(chunk);
     });
@@ -172,10 +188,10 @@ function exec(command, args, env) {
       stderr += String(chunk);
     });
     processHandle.on('error', (error) => {
-      resolvePromise({ status: 1, stdout, stderr: `${stderr}\n${error.message}` });
+      resolveOnce({ status: 1, stdout, stderr: `${stderr}\n${error.message}` });
     });
     processHandle.on('close', (status) => {
-      resolvePromise({ status: status ?? 1, stdout, stderr });
+      resolveOnce({ status: timedOut ? 124 : status ?? 1, stdout, stderr });
     });
   });
 }

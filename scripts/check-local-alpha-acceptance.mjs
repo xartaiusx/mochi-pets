@@ -9,6 +9,7 @@ const saveDir = process.env.RPG_SAVE_DIR ?? '.local/saves';
 const ledgerPath = resolveFromRoot(process.env.MOCHI_SOCIAL_ALPHA_LEDGER_PATH ?? join(saveDir, 'alpha-ledger.jsonl'));
 const reportPath = resolveFromRoot(process.env.MOCHI_SOCIAL_ACCEPTANCE_REPORT ?? 'reports/alpha-local-acceptance.json');
 const allowEdgeMode = process.env.MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE === 'true';
+const requestTimeoutMs = Number(process.env.MOCHI_SOCIAL_ACCEPTANCE_REQUEST_TIMEOUT_MS || 10000);
 const runId = `local-accept-${Date.now().toString(36)}`;
 
 const report = {
@@ -1352,7 +1353,17 @@ async function postJson(path, body, name) {
 }
 
 async function request(path, init, name) {
-  const response = await fetch(`${baseUrl}${path}`, init);
+  let response;
+  try {
+    response = await fetch(`${baseUrl}${path}`, {
+      ...init,
+      signal: AbortSignal.timeout(requestTimeoutMs)
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`${name} request to ${path} failed: ${reason}`);
+  }
+
   const text = await response.text();
   const contentType = response.headers.get('content-type') ?? '';
   const body = contentType.includes('application/json') && text ? JSON.parse(text) : text;
