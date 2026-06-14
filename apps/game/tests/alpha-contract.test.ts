@@ -5,6 +5,7 @@ import {
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_BOND_MILESTONES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_BATTLE_CONDITIONS,
   SPIRIT_COMPENDIUMS,
@@ -33,6 +34,7 @@ import {
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritBattleRound,
+  resolveSpiritBondMilestone,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteMastery,
   resolveMochiSpiritQuestProgress,
@@ -80,6 +82,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.bondMilestones).toBe(true);
     expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
     expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
@@ -100,6 +103,8 @@ describe('alpha contract', () => {
     expect(MOCHI_SPIRITS.every((spirit) => spirit.capture.invitationLabel.length > 4)).toBe(true);
     expect(MOCHI_SPIRITS.every((spirit) => spirit.battle.moves.length >= 2)).toBe(true);
     expect(MOCHI_SPIRITS.every((spirit) => spirit.raisingNeeds.length >= 1)).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.bondMilestones.length === 3)).toBe(true);
+    expect(new Set(Object.values(SPIRIT_BOND_MILESTONES).map((milestone) => milestone.label)).size).toBe(9);
   });
 
   it('uses stable bond thresholds for visible growth', () => {
@@ -1022,7 +1027,19 @@ describe('alpha contract', () => {
       needId: 'jade-brush-groom',
       growth: 'sprout',
       careStreak: 1,
+      milestoneId: 'lirabao-ribbon-warmth',
+      milestoneLabel: 'Ribbon Guardian Warmth',
+      milestoneReached: true,
+      nextMilestoneId: 'lirabao-moonwell-glow',
       nextNeedId: 'mooncake-share'
+    });
+    expect(resolveSpiritBondMilestone('lirabao', 5, 'glow')).toMatchObject({
+      ok: true,
+      milestone: expect.objectContaining({
+        id: 'lirabao-moonwell-glow',
+        label: 'Moonwell Companion Glow'
+      }),
+      nextMilestone: undefined
     });
     expect(selectSpiritRaisingNeed('lirabao', 0)?.id).toBe('jade-brush-groom');
     expect(selectSpiritRaisingNeed('lirabao', 1)?.id).toBe('mooncake-share');
@@ -1031,6 +1048,7 @@ describe('alpha contract', () => {
       spiritId: 'lirabao',
       needId: 'mooncake-share',
       careStreak: 2,
+      milestoneReached: false,
       nextNeedId: 'jade-brush-groom'
     });
 

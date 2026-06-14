@@ -274,6 +274,9 @@ async function exerciseAlphaHud(page) {
         && training.includes('Training:')
         && training.includes('XP')
         && training.includes('ladder')
+        && typeof state.raisingMilestoneLabel === 'string'
+        && state.raisingMilestoneLabel.length > 4
+        && training.includes(state.raisingMilestoneLabel)
         && battleRound.includes('Battle Round:')
         && battleRound.includes('Jade Echo Apprentice')
         && !battleRound.includes('pending')
@@ -418,6 +421,9 @@ async function exerciseAlphaHud(page) {
         && state.battleRoundTranscript.length >= 1
         && state.trainingXp >= 1
         && state.raisingProof === true
+        && typeof state.raisingMilestoneLabel === 'string'
+        && state.raisingMilestoneLabel.length > 4
+        && training.includes(state.raisingMilestoneLabel)
         && state.activeQuestId === 'skybell-spar'
         && Array.isArray(state.completedQuestSteps)
         && state.completedQuestSteps.includes('complete-raising-care')
@@ -682,6 +688,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.trainingXp >= 1, 'HUD training action must record training XP.');
   assert(snapshot.state.sparLadderXp >= 1, 'HUD spar ladder action must record ladder XP.');
   assert(snapshot.state.lastSparOpponentId === 'jade-echo-apprentice', 'HUD spar ladder action must record the first spar opponent.');
+  assert(typeof snapshot.state.raisingMilestoneLabel === 'string' && snapshot.state.raisingMilestoneLabel.length > 4, 'HUD raising action must record a named bond milestone.');
+  assert(snapshot.training.includes(snapshot.state.raisingMilestoneLabel), 'HUD training label must display the current bond milestone.');
   assert(snapshot.battleRound.includes('Battle Round:'), 'HUD battle round label must show transcript state.');
   assert(snapshot.battleRound.includes('Jade Echo Apprentice'), 'HUD battle round label must name the spar opponent.');
   assert(!snapshot.battleRound.includes('pending'), 'HUD battle round label must leave the pending state after spar/training.');

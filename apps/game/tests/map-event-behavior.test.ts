@@ -187,6 +187,8 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.spirit.lirabao.careStreak')).toBe(4);
     expect(player.variables.get('mochiSocial.spirit.lirabao.lastCareNeed')).toBe('mooncake-share');
     expect(player.variables.get('mochiSocial.spirit.lirabao.nextCareNeed')).toBe('jade-brush-groom');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.bondMilestone')).toBe('lirabao-moonwell-glow');
+    expect(player.variables.get('mochiSocial.spirit.lirabao.nextBondMilestone')).toBe('lirabao-moonwell-glow');
     expect(player.saves.filter((save) => save.options.source === 'spirit-care')).toHaveLength(4);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
@@ -194,9 +196,14 @@ describe('Mochi town event behavior', () => {
         raising: {
           careStreak: 4,
           needId: 'mooncake-share',
+          milestoneId: 'lirabao-moonwell-glow',
+          milestoneLabel: 'Moonwell Companion Glow',
+          milestoneReached: true,
+          nextMilestoneId: undefined,
+          nextMilestoneLabel: undefined,
           nextNeedId: 'jade-brush-groom',
           proof: true,
-          message: 'Share mooncake complete for Lirabao. Restores focus for social play. Care streak 4.'
+          message: 'Share mooncake complete for Lirabao. Restores focus for social play. Care streak 4. Moonwell Companion Glow milestone opened.'
         },
         spirit: { id: 'lirabao', bond: 5, growth: 'glow' }
       }

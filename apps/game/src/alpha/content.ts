@@ -62,6 +62,15 @@ export interface SpiritRaisingNeed {
   growthHint: string;
 }
 
+export interface SpiritBondMilestone {
+  id: string;
+  label: string;
+  requiredBond: number;
+  requiredGrowth: SpiritGrowthStage;
+  summary: string;
+  roleplayPrompt: string;
+}
+
 export interface MochiSpirit {
   id: string;
   name: string;
@@ -78,6 +87,7 @@ export interface MochiSpirit {
   journal: SpiritJournalEntry;
   careActions: SpiritCareAction[];
   raisingNeeds: SpiritRaisingNeed[];
+  bondMilestones: readonly SpiritBondMilestone[];
 }
 
 export interface MochiSpiritQuest {
@@ -1078,8 +1088,26 @@ export interface SpiritRaisingResult {
   bond: number;
   growth: SpiritGrowthStage;
   careStreak: number;
+  milestoneId?: string;
+  milestoneLabel?: string;
+  milestoneReached: boolean;
+  nextMilestoneId?: string;
+  nextMilestoneLabel?: string;
   nextNeedId?: string;
   message: string;
+  source: string;
+}
+
+export interface SpiritBondMilestoneResult {
+  ok: boolean;
+  spiritId: string;
+  spiritName: string;
+  bond: number;
+  growth: SpiritGrowthStage;
+  milestone?: SpiritBondMilestone;
+  nextMilestone?: SpiritBondMilestone;
+  message: string;
+  source: string;
 }
 
 export interface RuntimeAssetManifest {
@@ -1129,6 +1157,81 @@ export const SPIRIT_RAISE_ACTIONS = {
     growthHint: 'Restores focus for social play.'
   }
 } as const satisfies Record<string, SpiritRaisingNeed>;
+
+export const SPIRIT_BOND_MILESTONES = {
+  lirabaoLanternSpark: {
+    id: 'lirabao-lantern-spark',
+    label: 'Blush Lantern Spark',
+    requiredBond: 1,
+    requiredGrowth: 'seed',
+    summary: 'Lirabao steadies a tiny companion glow for first-court greetings.',
+    roleplayPrompt: 'Offer quiet tea beside the lanterns and let Lirabao choose the walking pace.'
+  },
+  lirabaoRibbonWarmth: {
+    id: 'lirabao-ribbon-warmth',
+    label: 'Ribbon Guardian Warmth',
+    requiredBond: 3,
+    requiredGrowth: 'sprout',
+    summary: 'Lirabao warms guild ribbons before social sparring and no-injury training.',
+    roleplayPrompt: 'Brush the jade ribbon once, then greet a nearby wayfarer before practice.'
+  },
+  lirabaoMoonwellGlow: {
+    id: 'lirabao-moonwell-glow',
+    label: 'Moonwell Companion Glow',
+    requiredBond: 5,
+    requiredGrowth: 'glow',
+    summary: 'Lirabao opens a calm moonwell glow for closed-alpha growth rite proof.',
+    roleplayPrompt: 'Share a mooncake after training and record the glow in the Mochirii journal.'
+  },
+  jintariMarketSpark: {
+    id: 'jintari-market-spark',
+    label: 'Goldleaf Market Spark',
+    requiredBond: 1,
+    requiredGrowth: 'seed',
+    summary: 'Jintari flickers near fair trades and generous guild greetings.',
+    roleplayPrompt: 'Show the Jade Thread Charm and name one helpful market errand.'
+  },
+  jintariTradeStep: {
+    id: 'jintari-trade-step',
+    label: 'Generous Trade Step',
+    requiredBond: 3,
+    requiredGrowth: 'sprout',
+    summary: 'Jintari learns a bright footwork step for fixed-price market practice.',
+    roleplayPrompt: 'Offer a no-real-value trade proof and thank the other tester in chat.'
+  },
+  jintariLacquerGlow: {
+    id: 'jintari-lacquer-glow',
+    label: 'Lacquer Luck Glow',
+    requiredBond: 5,
+    requiredGrowth: 'glow',
+    summary: 'Jintari carries lacquer-gold luck through guild commissions and rallies.',
+    roleplayPrompt: 'Mark one commission complete, then return to the market board with Jintari.'
+  },
+  aozhenSkybellSpark: {
+    id: 'aozhen-skybell-spark',
+    label: 'Skybell Whisper Spark',
+    requiredBond: 1,
+    requiredGrowth: 'seed',
+    summary: 'Aozhen catches the first quiet bell note at the court edge.',
+    roleplayPrompt: 'Stand near open air and promise to carry one guild message carefully.'
+  },
+  aozhenReedwindStep: {
+    id: 'aozhen-reedwind-step',
+    label: 'Reedwind Message Step',
+    requiredBond: 3,
+    requiredGrowth: 'sprout',
+    summary: 'Aozhen practices a light scouting step for Cloudbell route invitations.',
+    roleplayPrompt: 'Scout a route, return safely, and describe the wind direction in the journal.'
+  },
+  aozhenCloudVowGlow: {
+    id: 'aozhen-cloud-vow-glow',
+    label: 'Cloud Vow Glow',
+    requiredBond: 5,
+    requiredGrowth: 'glow',
+    summary: 'Aozhen keeps a sky-jade vow for full-party harmony and team match proof.',
+    roleplayPrompt: 'Complete a team spar match, then ring the guild bell without claiming real value.'
+  }
+} as const satisfies Record<string, SpiritBondMilestone>;
 
 export const SPIRIT_MOVES = {
   lanternPulse: {
@@ -1195,7 +1298,12 @@ export const MOCHI_SPIRITS = [
       unlockHint: 'Meet Lirabao in the Jade Lantern Court and offer a quiet greeting.'
     },
     careActions: [SPIRIT_CARE_ACTIONS.teaRibbon],
-    raisingNeeds: [SPIRIT_RAISE_ACTIONS.jadeBrush, SPIRIT_RAISE_ACTIONS.mooncakeShare]
+    raisingNeeds: [SPIRIT_RAISE_ACTIONS.jadeBrush, SPIRIT_RAISE_ACTIONS.mooncakeShare],
+    bondMilestones: [
+      SPIRIT_BOND_MILESTONES.lirabaoLanternSpark,
+      SPIRIT_BOND_MILESTONES.lirabaoRibbonWarmth,
+      SPIRIT_BOND_MILESTONES.lirabaoMoonwellGlow
+    ]
   },
   {
     id: 'jintari',
@@ -1232,7 +1340,12 @@ export const MOCHI_SPIRITS = [
       unlockHint: 'Find Jintari beside the guild court path.'
     },
     careActions: [SPIRIT_CARE_ACTIONS.teaRibbon],
-    raisingNeeds: [SPIRIT_RAISE_ACTIONS.mooncakeShare]
+    raisingNeeds: [SPIRIT_RAISE_ACTIONS.mooncakeShare],
+    bondMilestones: [
+      SPIRIT_BOND_MILESTONES.jintariMarketSpark,
+      SPIRIT_BOND_MILESTONES.jintariTradeStep,
+      SPIRIT_BOND_MILESTONES.jintariLacquerGlow
+    ]
   },
   {
     id: 'aozhen',
@@ -1269,7 +1382,12 @@ export const MOCHI_SPIRITS = [
       unlockHint: 'Approach Aozhen where the court opens toward the upper path.'
     },
     careActions: [SPIRIT_CARE_ACTIONS.teaRibbon],
-    raisingNeeds: [SPIRIT_RAISE_ACTIONS.jadeBrush]
+    raisingNeeds: [SPIRIT_RAISE_ACTIONS.jadeBrush],
+    bondMilestones: [
+      SPIRIT_BOND_MILESTONES.aozhenSkybellSpark,
+      SPIRIT_BOND_MILESTONES.aozhenReedwindStep,
+      SPIRIT_BOND_MILESTONES.aozhenCloudVowGlow
+    ]
   }
 ] as const satisfies readonly MochiSpirit[];
 
@@ -1937,6 +2055,18 @@ export function growthStageFromBond(bond: number): SpiritGrowthStage {
   return 'seed';
 }
 
+const GROWTH_STAGE_ORDER: Record<SpiritGrowthStage, number> = {
+  seed: 0,
+  sprout: 1,
+  glow: 2
+};
+
+function normalizeSpiritGrowth(growth: SpiritGrowthStage | string | undefined, bond: number): SpiritGrowthStage {
+  return ['seed', 'sprout', 'glow'].includes(String(growth))
+    ? (growth as SpiritGrowthStage)
+    : growthStageFromBond(bond);
+}
+
 export function techniqueMasteryLevelFromXp(xp: number): SpiritTechniqueMasteryLevel {
   if (xp >= 18) return 'adept';
   if (xp >= 7) return 'practiced';
@@ -1945,6 +2075,48 @@ export function techniqueMasteryLevelFromXp(xp: number): SpiritTechniqueMasteryL
 
 export function getMochiSpirit(spiritId: string) {
   return MOCHI_SPIRITS.find((spirit) => spirit.id === spiritId);
+}
+
+export function resolveSpiritBondMilestone(
+  spiritId: string,
+  bond = 0,
+  growth?: SpiritGrowthStage | string
+): SpiritBondMilestoneResult {
+  const spirit = getMochiSpirit(spiritId);
+  const boundedBond = Math.max(0, Math.min(5, Math.floor(bond || 0)));
+  const resolvedGrowth = normalizeSpiritGrowth(growth, boundedBond);
+
+  if (!spirit) {
+    return {
+      ok: false,
+      spiritId,
+      spiritName: 'Unknown Mochi Spirit',
+      bond: boundedBond,
+      growth: resolvedGrowth,
+      message: 'No Mochirii spirit profile exists for this bond milestone.',
+      source: 'spirit-bond-milestone'
+    };
+  }
+
+  const reached = spirit.bondMilestones.filter((milestone) => {
+    return boundedBond >= milestone.requiredBond && GROWTH_STAGE_ORDER[resolvedGrowth] >= GROWTH_STAGE_ORDER[milestone.requiredGrowth];
+  });
+  const milestone = reached[reached.length - 1];
+  const nextMilestone = spirit.bondMilestones.find((candidate) => candidate.id !== milestone?.id && !reached.includes(candidate));
+
+  return {
+    ok: Boolean(milestone),
+    spiritId: spirit.id,
+    spiritName: spirit.name,
+    bond: boundedBond,
+    growth: resolvedGrowth,
+    milestone,
+    nextMilestone,
+    message: milestone
+      ? `${spirit.name} holds ${milestone.label}: ${milestone.summary}`
+      : `${spirit.name} has not opened a bond milestone yet. ${spirit.bondMilestones[0]?.roleplayPrompt || 'Offer care in Jade Lantern Court.'}`,
+    source: 'spirit-bond-milestone'
+  };
 }
 
 export function resolveSpiritAttunement(spiritId: string, offeredItemId: string): SpiritAttunementResult {
@@ -3730,9 +3902,7 @@ export function resolveSpiritGrowthRite(
   const spiritId = spirit?.id || String(progress.spiritId || '');
   const bond = Math.max(0, Math.min(5, Math.floor(progress.bond || 0)));
   const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
-  const growth = ['seed', 'sprout', 'glow'].includes(String(progress.growth))
-    ? (progress.growth as SpiritGrowthStage)
-    : growthStageFromBond(bond);
+  const growth = normalizeSpiritGrowth(progress.growth, bond);
   const rankMatches = Boolean(progress.rankTrialProof) && progress.rankTrialId === rite.requiredRankTrialId;
   const passed = Boolean(spirit) &&
     bond >= rite.requiredBond &&
@@ -3829,21 +3999,32 @@ export function resolveSpiritRaisingAction(spiritId: string, needId: string, cur
   const spirit = getMochiSpirit(spiritId);
   const need = spirit?.raisingNeeds.find((candidate) => candidate.id === needId);
   const boundedCareStreak = Math.max(0, Math.floor(careStreak));
+  const boundedBond = Math.max(0, Math.min(5, Math.floor(currentBond)));
   if (!spirit || !need) {
     return {
       ok: false,
       spiritId,
       needId,
-      bond: Math.max(0, Math.min(5, Math.floor(currentBond))),
-      growth: growthStageFromBond(Math.max(0, Math.min(5, Math.floor(currentBond)))),
+      bond: boundedBond,
+      growth: growthStageFromBond(boundedBond),
       careStreak: boundedCareStreak,
-      message: 'Raising action is not available for this Mochi Spirit.'
+      milestoneReached: false,
+      message: 'Raising action is not available for this Mochi Spirit.',
+      source: 'spirit-raise'
     };
   }
 
-  const bond = Math.max(0, Math.min(5, Math.floor(currentBond) + need.bondDelta));
+  const previousMilestone = resolveSpiritBondMilestone(spirit.id, boundedBond);
+  const bond = Math.max(0, Math.min(5, boundedBond + need.bondDelta));
+  const milestone = resolveSpiritBondMilestone(spirit.id, bond);
+  const milestoneReached = Boolean(milestone.milestone && milestone.milestone.id !== previousMilestone.milestone?.id);
   const nextCareStreak = boundedCareStreak + 1;
   const nextNeed = selectSpiritRaisingNeed(spiritId, nextCareStreak);
+  const milestoneText = milestoneReached
+    ? ` ${milestone.milestone?.label} milestone opened.`
+    : milestone.nextMilestone
+      ? ` Next milestone: ${milestone.nextMilestone.label}.`
+      : ' All first-court bond milestones are open.';
   return {
     ok: true,
     spiritId,
@@ -3851,7 +4032,13 @@ export function resolveSpiritRaisingAction(spiritId: string, needId: string, cur
     bond,
     growth: growthStageFromBond(bond),
     careStreak: nextCareStreak,
+    milestoneId: milestone.milestone?.id,
+    milestoneLabel: milestone.milestone?.label,
+    milestoneReached,
+    nextMilestoneId: milestone.nextMilestone?.id,
+    nextMilestoneLabel: milestone.nextMilestone?.label,
     nextNeedId: nextNeed?.id,
-    message: `${need.label} complete for ${spirit.name}. ${need.growthHint} Care streak ${nextCareStreak}.`
+    message: `${need.label} complete for ${spirit.name}. ${need.growthHint} Care streak ${nextCareStreak}.${milestoneText}`,
+    source: 'spirit-raise'
   };
 }

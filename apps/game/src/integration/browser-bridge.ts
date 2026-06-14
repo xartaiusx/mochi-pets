@@ -45,6 +45,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
+  resolveSpiritBondMilestone,
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
@@ -214,6 +215,10 @@ interface AlphaHudState {
   raisingCareStreak: number;
   lastRaisingNeedId?: string;
   nextRaisingNeedId?: string;
+  lastRaisingMilestoneId?: string;
+  raisingMilestoneLabel: string;
+  nextRaisingMilestoneId?: string;
+  nextRaisingMilestoneLabel?: string;
   activeQuestId?: string;
   completedQuestSteps: string[];
   completedQuestIds: string[];
@@ -504,7 +509,12 @@ export interface AlphaWorldStatePatch {
   raising?: {
     careStreak?: number;
     message?: string;
+    milestoneId?: string;
+    milestoneLabel?: string;
+    milestoneReached?: boolean;
     needId: string;
+    nextMilestoneId?: string;
+    nextMilestoneLabel?: string;
     nextNeedId?: string;
     proof: boolean;
   };
@@ -669,6 +679,7 @@ function defaultAlphaState(): AlphaHudState {
     trainingVictories: 0,
     raisingProof: false,
     raisingCareStreak: 0,
+    raisingMilestoneLabel: 'Unopened',
     completedQuestSteps: [],
     completedQuestIds: [],
     questStepsById: {},
@@ -1022,7 +1033,10 @@ function createHud() {
         : 'Mentor: pending';
     }
     if (trainingLabel) {
-      trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${state.raisingProof ? `care streak ${state.raisingCareStreak}` : 'needs care'}`;
+      const raisingLabel = state.raisingProof
+        ? `care ${state.raisingCareStreak}, ${state.raisingMilestoneLabel}`
+        : 'needs care';
+      trainingLabel.textContent = `Training: ${state.trainingXp} XP, ${state.trainingVictories} spar win${state.trainingVictories === 1 ? '' : 's'}, ladder ${state.sparLadderXp} XP, ${raisingLabel}`;
     }
     if (battleRoundLabel) {
       battleRoundLabel.textContent = state.battleRoundProof
@@ -1631,6 +1645,10 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.raisingCareStreak = Math.max(state.raisingCareStreak, Number(patch.raising.careStreak) || 0);
     state.lastRaisingNeedId = patch.raising.needId || state.lastRaisingNeedId;
     state.nextRaisingNeedId = patch.raising.nextNeedId || state.nextRaisingNeedId;
+    state.lastRaisingMilestoneId = patch.raising.milestoneId || state.lastRaisingMilestoneId;
+    state.raisingMilestoneLabel = patch.raising.milestoneLabel || state.raisingMilestoneLabel;
+    state.nextRaisingMilestoneId = patch.raising.nextMilestoneId || state.nextRaisingMilestoneId;
+    state.nextRaisingMilestoneLabel = patch.raising.nextMilestoneLabel || state.nextRaisingMilestoneLabel;
     appendUniqueAlphaChat(state, patch.raising.message || `Raising care recorded: ${patch.raising.needId}.`);
   }
 
@@ -2124,9 +2142,12 @@ function performAlphaLocalAction(type: AlphaLocalActionType) {
     if (!spirit) {
       state.chat.push('No Mochi Spirit is bonded yet. Bond with Lirabao, Jintari, or Aozhen first.');
     } else {
+      const milestone = resolveSpiritBondMilestone(spirit.id, state.bond, state.growth);
+      const milestoneLabel = milestone.milestone?.label || state.raisingMilestoneLabel;
+      const nextMilestone = milestone.nextMilestone?.label ? ` Next: ${milestone.nextMilestone.label}.` : '';
       state.lastInspectedSpiritId = spirit.id;
       state.chat.push(
-        `Inspect ${spirit.name}: ${spirit.title}, ${state.growth} growth, bond ${state.bond}/5, ${spirit.habitat}, ${spirit.certificateEligible ? 'Canary certificate eligible, no real value' : 'curated preview spirit, no real value'}.`
+        `Inspect ${spirit.name}: ${spirit.title}, ${state.growth} growth, bond ${state.bond}/5, ${milestoneLabel}, ${spirit.habitat}, ${spirit.certificateEligible ? 'Canary certificate eligible, no real value' : 'curated preview spirit, no real value'}.${nextMilestone}`
       );
     }
   }
@@ -2852,6 +2873,10 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.raisingCareStreak = Math.max(state.raisingCareStreak, result.careStreak);
       state.lastRaisingNeedId = result.needId;
       state.nextRaisingNeedId = result.nextNeedId;
+      state.lastRaisingMilestoneId = result.milestoneId;
+      state.raisingMilestoneLabel = result.milestoneLabel || state.raisingMilestoneLabel;
+      state.nextRaisingMilestoneId = result.nextMilestoneId;
+      state.nextRaisingMilestoneLabel = result.nextMilestoneLabel;
       state.bond = Math.max(state.bond, result.bond);
       state.growth = result.growth;
     }

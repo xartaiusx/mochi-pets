@@ -54,6 +54,7 @@ export const ALPHA_FEATURES = {
     trainingBattles: true,
     techniqueMastery: true,
     raisingCare: true,
+    bondMilestones: true,
     roleplayQuests: true,
     questChains: true,
     spiritJournal: true,

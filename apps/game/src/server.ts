@@ -274,7 +274,12 @@ type AlphaHudStatePatch = {
   raising?: {
     careStreak?: number;
     message?: string;
+    milestoneId?: string;
+    milestoneLabel?: string;
+    milestoneReached?: boolean;
     needId: string;
+    nextMilestoneId?: string;
+    nextMilestoneLabel?: string;
     nextNeedId?: string;
     proof: boolean;
   };
@@ -363,6 +368,15 @@ type SpiritRaisingNeed = {
   label: string;
   bondDelta: number;
   growthHint: string;
+};
+
+type SpiritBondMilestone = {
+  id: string;
+  label: string;
+  requiredBond: number;
+  requiredGrowth: SpiritGrowthStage;
+  summary: string;
+  roleplayPrompt: string;
 };
 
 type SpiritCaptureProfile = {
@@ -897,6 +911,7 @@ type MochiSpirit = {
     moves: SpiritBattleMove[];
   };
   raisingNeeds: SpiritRaisingNeed[];
+  bondMilestones: readonly SpiritBondMilestone[];
 };
 
 const alphaItems = {
@@ -1012,6 +1027,81 @@ const alphaItems = {
   }
 } as const;
 
+const spiritBondMilestones = {
+  lirabaoLanternSpark: {
+    id: 'lirabao-lantern-spark',
+    label: 'Blush Lantern Spark',
+    requiredBond: 1,
+    requiredGrowth: 'seed',
+    summary: 'Lirabao steadies a tiny companion glow for first-court greetings.',
+    roleplayPrompt: 'Offer quiet tea beside the lanterns and let Lirabao choose the walking pace.'
+  },
+  lirabaoRibbonWarmth: {
+    id: 'lirabao-ribbon-warmth',
+    label: 'Ribbon Guardian Warmth',
+    requiredBond: 3,
+    requiredGrowth: 'sprout',
+    summary: 'Lirabao warms guild ribbons before social sparring and no-injury training.',
+    roleplayPrompt: 'Brush the jade ribbon once, then greet a nearby wayfarer before practice.'
+  },
+  lirabaoMoonwellGlow: {
+    id: 'lirabao-moonwell-glow',
+    label: 'Moonwell Companion Glow',
+    requiredBond: 5,
+    requiredGrowth: 'glow',
+    summary: 'Lirabao opens a calm moonwell glow for closed-alpha growth rite proof.',
+    roleplayPrompt: 'Share a mooncake after training and record the glow in the Mochirii journal.'
+  },
+  jintariMarketSpark: {
+    id: 'jintari-market-spark',
+    label: 'Goldleaf Market Spark',
+    requiredBond: 1,
+    requiredGrowth: 'seed',
+    summary: 'Jintari flickers near fair trades and generous guild greetings.',
+    roleplayPrompt: 'Show the Jade Thread Charm and name one helpful market errand.'
+  },
+  jintariTradeStep: {
+    id: 'jintari-trade-step',
+    label: 'Generous Trade Step',
+    requiredBond: 3,
+    requiredGrowth: 'sprout',
+    summary: 'Jintari learns a bright footwork step for fixed-price market practice.',
+    roleplayPrompt: 'Offer a no-real-value trade proof and thank the other tester in chat.'
+  },
+  jintariLacquerGlow: {
+    id: 'jintari-lacquer-glow',
+    label: 'Lacquer Luck Glow',
+    requiredBond: 5,
+    requiredGrowth: 'glow',
+    summary: 'Jintari carries lacquer-gold luck through guild commissions and rallies.',
+    roleplayPrompt: 'Mark one commission complete, then return to the market board with Jintari.'
+  },
+  aozhenSkybellSpark: {
+    id: 'aozhen-skybell-spark',
+    label: 'Skybell Whisper Spark',
+    requiredBond: 1,
+    requiredGrowth: 'seed',
+    summary: 'Aozhen catches the first quiet bell note at the court edge.',
+    roleplayPrompt: 'Stand near open air and promise to carry one guild message carefully.'
+  },
+  aozhenReedwindStep: {
+    id: 'aozhen-reedwind-step',
+    label: 'Reedwind Message Step',
+    requiredBond: 3,
+    requiredGrowth: 'sprout',
+    summary: 'Aozhen practices a light scouting step for Cloudbell route invitations.',
+    roleplayPrompt: 'Scout a route, return safely, and describe the wind direction in the journal.'
+  },
+  aozhenCloudVowGlow: {
+    id: 'aozhen-cloud-vow-glow',
+    label: 'Cloud Vow Glow',
+    requiredBond: 5,
+    requiredGrowth: 'glow',
+    summary: 'Aozhen keeps a sky-jade vow for full-party harmony and team match proof.',
+    roleplayPrompt: 'Complete a team spar match, then ring the guild bell without claiming real value.'
+  }
+} as const satisfies Record<string, SpiritBondMilestone>;
+
 const spirits = [
   {
     id: 'lirabao',
@@ -1047,6 +1137,11 @@ const spirits = [
     raisingNeeds: [
       { id: 'jade-brush-groom', label: 'Jade brush grooming', bondDelta: 1, growthHint: 'Smooths the spirit aura after training.' },
       { id: 'mooncake-share', label: 'Share mooncake', bondDelta: 1, growthHint: 'Restores focus for social play.' }
+    ],
+    bondMilestones: [
+      spiritBondMilestones.lirabaoLanternSpark,
+      spiritBondMilestones.lirabaoRibbonWarmth,
+      spiritBondMilestones.lirabaoMoonwellGlow
     ]
   },
   {
@@ -1082,6 +1177,11 @@ const spirits = [
     },
     raisingNeeds: [
       { id: 'mooncake-share', label: 'Share mooncake', bondDelta: 1, growthHint: 'Restores focus for social play.' }
+    ],
+    bondMilestones: [
+      spiritBondMilestones.jintariMarketSpark,
+      spiritBondMilestones.jintariTradeStep,
+      spiritBondMilestones.jintariLacquerGlow
     ]
   },
   {
@@ -1117,6 +1217,11 @@ const spirits = [
     },
     raisingNeeds: [
       { id: 'jade-brush-groom', label: 'Jade brush grooming', bondDelta: 1, growthHint: 'Smooths the spirit aura after training.' }
+    ],
+    bondMilestones: [
+      spiritBondMilestones.aozhenSkybellSpark,
+      spiritBondMilestones.aozhenReedwindStep,
+      spiritBondMilestones.aozhenCloudVowGlow
     ]
   }
 ] as const satisfies readonly MochiSpirit[];
@@ -1554,6 +1659,18 @@ function growthStageFromBond(bond: number): SpiritGrowthStage {
   return 'seed';
 }
 
+const growthStageOrder: Record<SpiritGrowthStage, number> = {
+  seed: 0,
+  sprout: 1,
+  glow: 2
+};
+
+function normalizeSpiritGrowth(growth: SpiritGrowthStage | string | undefined, bond: number): SpiritGrowthStage {
+  return ['seed', 'sprout', 'glow'].includes(String(growth))
+    ? growth as SpiritGrowthStage
+    : growthStageFromBond(bond);
+}
+
 function techniqueMasteryLevelFromXp(xp: number): SpiritTechniqueMasteryLevel {
   if (xp >= 18) return 'adept';
   if (xp >= 7) return 'practiced';
@@ -1562,6 +1679,30 @@ function techniqueMasteryLevelFromXp(xp: number): SpiritTechniqueMasteryLevel {
 
 function getSpirit(spiritId: string) {
   return spirits.find((entry) => entry.id === spiritId);
+}
+
+function resolveSpiritBondMilestone(spiritId: string, bond = 0, growth?: SpiritGrowthStage | string) {
+  const spirit = getSpirit(spiritId);
+  const boundedBond = Math.max(0, Math.min(5, Math.floor(bond || 0)));
+  const resolvedGrowth = normalizeSpiritGrowth(growth, boundedBond);
+  if (!spirit) {
+    return {
+      ok: false,
+      milestone: undefined,
+      nextMilestone: undefined
+    };
+  }
+
+  const reached = spirit.bondMilestones.filter((milestone) => {
+    return boundedBond >= milestone.requiredBond && growthStageOrder[resolvedGrowth] >= growthStageOrder[milestone.requiredGrowth];
+  });
+  const milestone = reached[reached.length - 1];
+  const nextMilestone = spirit.bondMilestones.find((candidate) => !reached.includes(candidate));
+  return {
+    ok: Boolean(milestone),
+    milestone,
+    nextMilestone
+  };
 }
 
 function resolveSpiritCapture(spiritId: string, offeredItemId: string, harmonyScore = 1, roster: readonly string[] = []) {
@@ -3352,20 +3493,34 @@ function resolveSpiritRaisingAction(spiritId: string, needId: string, currentBon
       bond: boundedBond,
       growth: growthStageFromBond(boundedBond),
       careStreak: boundedCareStreak,
+      milestoneReached: false,
       message: 'Raising action is not available for this Mochi Spirit.'
     };
   }
 
+  const previousMilestone = resolveSpiritBondMilestone(spirit.id, boundedBond);
   const bond = Math.max(0, Math.min(5, boundedBond + need.bondDelta));
+  const milestone = resolveSpiritBondMilestone(spirit.id, bond);
+  const milestoneReached = Boolean(milestone.milestone && milestone.milestone.id !== previousMilestone.milestone?.id);
   const nextCareStreak = boundedCareStreak + 1;
   const nextNeed = selectSpiritRaisingNeed(spiritId, nextCareStreak);
+  const milestoneText = milestoneReached
+    ? ` ${milestone.milestone?.label} milestone opened.`
+    : milestone.nextMilestone
+      ? ` Next milestone: ${milestone.nextMilestone.label}.`
+      : ' All first-court bond milestones are open.';
   return {
     ok: true,
     bond,
     growth: growthStageFromBond(bond),
     careStreak: nextCareStreak,
+    milestoneId: milestone.milestone?.id,
+    milestoneLabel: milestone.milestone?.label,
+    milestoneReached,
+    nextMilestoneId: milestone.nextMilestone?.id,
+    nextMilestoneLabel: milestone.nextMilestone?.label,
     nextNeedId: nextNeed?.id,
-    message: `${need.label} complete for ${spirit.name}. ${need.growthHint} Care streak ${nextCareStreak}.`
+    message: `${need.label} complete for ${spirit.name}. ${need.growthHint} Care streak ${nextCareStreak}.${milestoneText}`
   };
 }
 
@@ -3593,6 +3748,12 @@ function careShrine(): EventDefinition {
         actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.raisingProof`, true);
         actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastCareNeed`, need.id);
         actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.nextCareNeed`, raising?.nextNeedId || need.id);
+        if (raising?.milestoneId) {
+          actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.bondMilestone`, raising.milestoneId);
+        }
+        if (raising?.nextMilestoneId) {
+          actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.nextBondMilestone`, raising.nextMilestoneId);
+        }
         actingPlayer.setVariable(careStreakKey, raising?.careStreak || currentCareStreak);
       }
       actingPlayer.showNotification(`Spirit bond ${nextBond}/5`, { time: 1800, icon: 'sifu-narao' });
@@ -3601,6 +3762,11 @@ function careShrine(): EventDefinition {
           ? {
               careStreak: raising?.careStreak,
               needId: need.id,
+              milestoneId: raising?.milestoneId,
+              milestoneLabel: raising?.milestoneLabel,
+              milestoneReached: raising?.milestoneReached,
+              nextMilestoneId: raising?.nextMilestoneId,
+              nextMilestoneLabel: raising?.nextMilestoneLabel,
               nextNeedId: raising?.nextNeedId,
               proof: true,
               message: raising?.message

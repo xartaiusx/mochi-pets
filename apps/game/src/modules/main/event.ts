@@ -298,7 +298,12 @@ type AlphaHudStatePatch = {
   raising?: {
     careStreak?: number;
     message?: string;
+    milestoneId?: string;
+    milestoneLabel?: string;
+    milestoneReached?: boolean;
     needId: string;
+    nextMilestoneId?: string;
+    nextMilestoneLabel?: string;
     nextNeedId?: string;
     proof: boolean;
   };
@@ -559,6 +564,12 @@ export function CareShrine(): EventDefinition {
         player.setVariable(`mochiSocial.spirit.${activeSpirit}.raisingProof`, true);
         player.setVariable(`mochiSocial.spirit.${activeSpirit}.lastCareNeed`, need.id);
         player.setVariable(`mochiSocial.spirit.${activeSpirit}.nextCareNeed`, raising?.nextNeedId || need.id);
+        if (raising?.milestoneId) {
+          player.setVariable(`mochiSocial.spirit.${activeSpirit}.bondMilestone`, raising.milestoneId);
+        }
+        if (raising?.nextMilestoneId) {
+          player.setVariable(`mochiSocial.spirit.${activeSpirit}.nextBondMilestone`, raising.nextMilestoneId);
+        }
         player.setVariable(careStreakKey, raising?.careStreak || currentCareStreak);
       }
       player.showNotification(`Spirit bond ${nextBond}/5`, { time: 1800, icon: 'sifu-narao' });
@@ -567,6 +578,11 @@ export function CareShrine(): EventDefinition {
           ? {
               careStreak: raising?.careStreak,
               needId: need.id,
+              milestoneId: raising?.milestoneId,
+              milestoneLabel: raising?.milestoneLabel,
+              milestoneReached: raising?.milestoneReached,
+              nextMilestoneId: raising?.nextMilestoneId,
+              nextMilestoneLabel: raising?.nextMilestoneLabel,
               nextNeedId: raising?.nextNeedId,
               proof: true,
               message: raising?.message

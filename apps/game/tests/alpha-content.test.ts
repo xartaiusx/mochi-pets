@@ -3,6 +3,7 @@ import {
   ALPHA_ITEMS,
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
+  SPIRIT_BOND_MILESTONES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
@@ -14,6 +15,7 @@ import {
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleRound,
+  resolveSpiritBondMilestone,
   resolveSpiritCapture,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
@@ -71,6 +73,48 @@ describe('Mochi Spirits alpha content contract', () => {
 
     const allItemText = Object.values(ALPHA_ITEMS).map((item) => `${item.id} ${item.name} ${item.description}`).join('\n');
     expect(allItemText).toContain('no-real-value');
+  });
+
+  it('keeps Mochi Spirit bond milestones unique, staged, and original to the Jade Lantern Court', () => {
+    const milestoneIds = MOCHI_SPIRITS.flatMap((spirit) => spirit.bondMilestones.map((milestone) => milestone.id));
+    const milestoneLabels = MOCHI_SPIRITS.flatMap((spirit) => spirit.bondMilestones.map((milestone) => milestone.label));
+
+    expect(milestoneIds).toHaveLength(9);
+    expect(new Set(milestoneIds).size).toBe(9);
+    expect(new Set(milestoneLabels).size).toBe(9);
+    expect(Object.values(SPIRIT_BOND_MILESTONES).map((milestone) => milestone.id).sort()).toEqual([...milestoneIds].sort());
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.bondMilestones.map((milestone) => milestone.requiredBond).join(',') === '1,3,5')).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.bondMilestones.map((milestone) => milestone.requiredGrowth).join(',') === 'seed,sprout,glow')).toBe(true);
+
+    expect(resolveSpiritBondMilestone('lirabao', 5, 'glow')).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      milestone: expect.objectContaining({
+        id: 'lirabao-moonwell-glow',
+        label: 'Moonwell Companion Glow'
+      }),
+      nextMilestone: undefined,
+      source: 'spirit-bond-milestone'
+    });
+
+    expect(resolveSpiritBondMilestone('jintari', 3, 'sprout')).toMatchObject({
+      ok: true,
+      milestone: expect.objectContaining({
+        id: 'jintari-trade-step',
+        label: 'Generous Trade Step'
+      }),
+      nextMilestone: expect.objectContaining({
+        id: 'jintari-lacquer-glow'
+      })
+    });
+
+    expect(resolveSpiritBondMilestone('aozhen', 0)).toMatchObject({
+      ok: false,
+      nextMilestone: expect.objectContaining({
+        id: 'aozhen-skybell-spark'
+      }),
+      source: 'spirit-bond-milestone'
+    });
   });
 
   it('gates capture, route scouting, route invitations, and journal discovery by original Mochirii rules', () => {
