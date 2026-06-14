@@ -57,6 +57,7 @@ describe('game manifest', () => {
         routeEcologySurveys: true,
         spiritEncounterAtlases: true,
         spiritCraftWrits: true,
+        spiritRivalCircles: true,
         routeWaystones: true,
         spiritNurtureRites: true,
         spiritKinshipAlbums: true,

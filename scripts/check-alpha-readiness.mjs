@@ -76,6 +76,10 @@ const checks = [
     includes: ['Jade Scroll Story Chapter proof', 'story-chapter', 'story, chronicle']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['battle.rival_circle', 'Jade Rival Circle proof', 'rival-circle']
+  },
+  {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
   },
@@ -84,28 +88,60 @@ const checks = [
     includes: ['Jade Scroll Story Chapter proof', 'story-chapter']
   },
   {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Rival Circle proof', 'tournament-bracket/rival-circle']
+  },
+  {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Rival Circle', 'Jade Rival Circle proof']
   },
   {
     file: 'docs/game-art-bible.md',
     includes: ['Jade Scroll Story Chapter contribution', 'content-only Jade Scroll Story Chapter proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Rival Circle contribution', 'content-only Jade Rival Circle Mark proof']
+  },
+  {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Scroll Story Chapter proof', 'story']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Rival Circle proof', 'rival, commission']
   },
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
   },
   {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Rival Circle', 'Jade Rival Circle proof']
+  },
+  {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Scroll Story Chapter proof', 'record the Jade Scroll Story Chapter']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Rival Circle proof', 'clear the Jade Rival Circle', 'no-real-value Jade Rival Circle']
+  },
+  {
     file: 'docs/asset-pipeline-contract.md',
     includes: ['Jade Scroll Story Chapter', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Rival Circle', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Rival Circle', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/asset-ledger.md',
@@ -277,6 +313,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritRivalCircles: true', "'battle.rival_circle'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
   },
   {
@@ -333,6 +373,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_RIVAL_CIRCLES', 'resolveSpiritRivalCircle', 'data-alpha-action="battle.rival_circle"', 'data-rival-circle-label', 'rivalCircleProof', 'rivalCircleMarkClaimed', 'Jade Rival Circle']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['MOCHI_STORY_CHAPTERS', 'resolveMochiStoryChapter', 'data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter']
   },
   {
@@ -362,6 +406,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Encounter Atlas', 'jade-encounter-atlas', 'resolveSpiritEncounterAtlas', 'spirit-encounter-atlas', 'encounterAtlasProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Rival Circle', 'jade-rival-circle-mark', 'resolveSpiritRivalCircle', 'battle-rival-circle', 'rivalCircleProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -441,6 +489,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritRivalCircles: true', 'battle.rival_circle']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
   },
   {
@@ -513,6 +565,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.rival_circle', 'jade-rival-circle', 'spiritRivalCircles', 'Jade Rival Circle', 'rivalCircleProof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['story.chapter_complete', 'jade-scroll-story-chapter', 'spiritStoryChapters', 'Jade Scroll Story Chapter', 'storyChapterProof']
   },
   {
@@ -562,6 +618,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament cleared']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.rival_circle"', 'data-rival-circle-label', 'rivalCircleProof', 'rivalCircleMarkClaimed', 'Jade Rival Circle cleared']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -646,6 +706,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'battle-tournament-bracket', 'tournament bracket']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['rivalCircleProof', 'rivalCircleMarkClaimed', 'Jade Rival Circle', 'jade-rival-circle-mark', 'battle-rival-circle', 'rival circle']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

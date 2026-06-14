@@ -29,6 +29,7 @@ import {
   SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_ROUTE_MASTERIES,
@@ -80,6 +81,7 @@ import {
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
+  resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
@@ -387,6 +389,14 @@ interface AlphaHudState {
   tournamentPartyIds: string[];
   tournamentPresenceCount: number;
   tournamentPennantClaimed: boolean;
+  rivalCircleProof: boolean;
+  rivalCircleId?: string;
+  rivalCircleName: string;
+  rivalCircleRivalName: string;
+  rivalCircleScore: number;
+  rivalCircleRequiredScore: number;
+  rivalCirclePartyIds: string[];
+  rivalCircleMarkClaimed: boolean;
   sparLadderXp: number;
   sparLadderWins: number;
   lastSparOpponentId?: string;
@@ -1000,6 +1010,13 @@ function defaultAlphaState(): AlphaHudState {
     tournamentPartyIds: [],
     tournamentPresenceCount: 1,
     tournamentPennantClaimed: false,
+    rivalCircleProof: false,
+    rivalCircleName: 'Unchallenged',
+    rivalCircleRivalName: 'No rival circle',
+    rivalCircleScore: 0,
+    rivalCircleRequiredScore: 0,
+    rivalCirclePartyIds: [],
+    rivalCircleMarkClaimed: false,
     sparLadderXp: 0,
     sparLadderWins: 0,
     battleRoundProof: false,
@@ -1166,6 +1183,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-team-match-label>Team Match: pending</span>
       <span class="mochi-hud__hint" data-mentor-label>Mentor: pending</span>
       <span class="mochi-hud__hint" data-tournament-label>Tournament: pending</span>
+      <span class="mochi-hud__hint" data-rival-circle-label>Rival: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-battle-round-label>Battle Round: pending</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
@@ -1184,6 +1202,7 @@ function createHud() {
       <button type="button" data-alpha-action="battle.team_spar_match" aria-label="Clear the no-injury full-party team spar match">Match</button>
       <button type="button" data-alpha-action="battle.mentor_challenge" aria-label="Clear the no-injury Mochirii mentor challenge">Mentor</button>
       <button type="button" data-alpha-action="battle.tournament_bracket" aria-label="Clear the no-injury Jade Banner Tournament bracket">Bracket</button>
+      <button type="button" data-alpha-action="battle.rival_circle" aria-label="Clear the no-injury Jade Rival Circle">Rival</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
@@ -1291,6 +1310,7 @@ function createHud() {
   const teamMatchLabel = hud.querySelector('[data-team-match-label]');
   const mentorLabel = hud.querySelector('[data-mentor-label]');
   const tournamentLabel = hud.querySelector('[data-tournament-label]');
+  const rivalCircleLabel = hud.querySelector('[data-rival-circle-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
   const battleRoundLabel = hud.querySelector('[data-battle-round-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
@@ -1515,6 +1535,11 @@ function createHud() {
       tournamentLabel.textContent = state.tournamentProof
         ? `Tournament: ${state.tournamentName}, ${state.tournamentPresenceCount} testers, score ${state.tournamentScore}/${state.tournamentRequiredScore}`
         : 'Tournament: pending';
+    }
+    if (rivalCircleLabel) {
+      rivalCircleLabel.textContent = state.rivalCircleProof
+        ? `Rival: ${state.rivalCircleName}, ${state.rivalCircleRivalName}, score ${state.rivalCircleScore}/${state.rivalCircleRequiredScore}`
+        : 'Rival: pending';
     }
     if (trainingLabel) {
       const raisingLabel = state.raisingProof
@@ -1786,6 +1811,7 @@ function readAlphaState(): AlphaHudState {
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
       insigniaCasePartyIds: Array.isArray(parsed?.insigniaCasePartyIds) ? parsed.insigniaCasePartyIds.map(String) : [],
       tournamentPartyIds: Array.isArray(parsed?.tournamentPartyIds) ? parsed.tournamentPartyIds.map(String) : [],
+      rivalCirclePartyIds: Array.isArray(parsed?.rivalCirclePartyIds) ? parsed.rivalCirclePartyIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-80).map(String) : []
@@ -2783,6 +2809,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       kinshipAlbumProof: state.kinshipAlbumProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
+      rivalCircleProof: state.rivalCircleProof,
       routePatrolProof: state.routePatrolProof,
       mentorChallengeProof: state.mentorChallengeProof,
       battleRoundProof: state.battleRoundProof,
@@ -3029,6 +3056,38 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       routePatrolProof: state.routePatrolProof,
       nurtureRiteProof: state.nurtureRiteProof,
       guildRankProof: state.guildRankProof,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
+  if (type === 'battle.rival_circle') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      circleId: SPIRIT_RIVAL_CIRCLES[0].id,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      tournamentProof: state.tournamentProof,
+      tournamentId: state.tournamentId,
+      tournamentScore: state.tournamentScore,
+      mentorChallengeProof: state.mentorChallengeProof,
+      mentorChallengeId: state.mentorChallengeId,
+      mentorChallengeScore: state.mentorChallengeScore,
+      teamSparMatchProof: state.teamSparMatchProof,
+      teamSparMatchId: state.teamSparMatchId,
+      teamSparMatchScore: state.teamSparMatchScore,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      traitAttunementProof: state.traitAttunementProof,
+      guildRankProof: state.guildRankProof,
+      growthRiteProof: state.growthRiteProof,
+      localPresenceCount: presenceCount,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
       statusMood: state.statusMood,
@@ -4058,6 +4117,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
+        rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
@@ -4607,6 +4667,55 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0];
       state.spiritId = result.partyIds[0] || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.rival_circle') {
+    const result = resolveSpiritRivalCircle(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
+        tournamentId: String(payload.tournamentId || state.tournamentId || ''),
+        tournamentScore: Number(payload.tournamentScore ?? state.tournamentScore ?? 0),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        mentorChallengeId: String(payload.mentorChallengeId || state.mentorChallengeId || ''),
+        mentorChallengeScore: Number(payload.mentorChallengeScore ?? state.mentorChallengeScore ?? 0),
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
+        teamSparMatchId: String(payload.teamSparMatchId || state.teamSparMatchId || ''),
+        teamSparMatchScore: Number(payload.teamSparMatchScore ?? state.teamSparMatchScore ?? 0),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
+        guildRankProof: Boolean(payload.guildRankProof ?? state.guildRankProof),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.circleId || SPIRIT_RIVAL_CIRCLES[0].id)
+    );
+    if (result.cleared) {
+      state.rivalCircleProof = true;
+      state.rivalCircleId = result.circleId;
+      state.rivalCircleName = result.circleName;
+      state.rivalCircleRivalName = result.rivalName;
+      state.rivalCircleScore = result.score;
+      state.rivalCircleRequiredScore = result.requiredScore;
+      state.rivalCirclePartyIds = result.partyIds;
+      state.rivalCircleMarkClaimed = result.rewardItemId === 'jade-rival-circle-mark';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
   }

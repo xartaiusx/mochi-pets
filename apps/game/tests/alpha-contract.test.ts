@@ -29,6 +29,7 @@ import {
   SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
@@ -81,6 +82,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
+  resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritTeamSparMatch,
@@ -142,6 +144,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
     expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
@@ -218,6 +221,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
     expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
@@ -1585,6 +1589,7 @@ describe('alpha contract', () => {
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
+      rivalCircleProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1614,8 +1619,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 71,
-      requiredScore: 56,
+      score: 74,
+      requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -1631,6 +1636,7 @@ describe('alpha contract', () => {
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
+      rivalCircleProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -2087,6 +2093,71 @@ describe('alpha contract', () => {
       routePatrolProof: false,
       nurtureRiteProof: false,
       guildRankProof: false,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_RIVAL_CIRCLES.map((circle) => circle.id)).toEqual(['jade-rival-circle']);
+    const rivalCircle = resolveSpiritRivalCircle({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: 32,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the rival circle.']
+    });
+    expect(rivalCircle).toMatchObject({
+      ok: true,
+      cleared: true,
+      circleId: 'jade-rival-circle',
+      circleName: 'Jade Rival Circle',
+      title: 'First No-Injury Rival Bout',
+      rivalName: 'Qinghei Banner Circle',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      localPresenceCount: 2,
+      score: 55,
+      requiredScore: 46,
+      rewardItemId: 'jade-rival-circle-mark',
+      source: 'battle-rival-circle'
+    });
+    expect(rivalCircle.message).toContain('No real value');
+    expect(resolveSpiritRivalCircle({
+      partyIds: ['aozhen', 'lirabao'],
+      tournamentProof: false,
+      tournamentScore: 0,
+      mentorChallengeProof: false,
+      mentorChallengeScore: 0,
+      teamSparMatchProof: false,
+      teamSparMatchScore: 0,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      conditionWeaveProof: false,
+      techniqueLoadoutProof: false,
+      traitAttunementProof: false,
+      guildRankProof: false,
+      growthRiteProof: false,
+      localPresenceCount: 1,
       profileViewed: false,
       guildBuddyProof: false
     }).cleared).toBe(false);

@@ -210,6 +210,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="story.chapter_complete"]', { timeout: timeoutMs });
@@ -250,6 +251,7 @@ async function exerciseAlphaHud(page) {
       const kinship = document.querySelector('[data-kinship-album-label]')?.textContent || '';
       const captureRite = document.querySelector('[data-capture-rite-label]')?.textContent || '';
       const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
+      const rivalCircle = document.querySelector('[data-rival-circle-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const story = document.querySelector('[data-story-label]')?.textContent || '';
@@ -306,6 +308,7 @@ async function exerciseAlphaHud(page) {
         && kinship.includes('Jade Kinship Album')
         && captureRite.includes('Jade Capture Rite')
         && tournament.includes('Jade Banner Tournament')
+        && rivalCircle.includes('Jade Rival Circle')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && story.includes('Jade Scroll Story Chapter')
@@ -533,6 +536,17 @@ async function exerciseAlphaHud(page) {
         && state.tournamentPartyIds.includes('aozhen')
         && state.tournamentPresenceCount >= 2
         && state.tournamentPennantClaimed === true
+        && state.rivalCircleProof === true
+        && state.rivalCircleId === 'jade-rival-circle'
+        && state.rivalCircleName === 'Jade Rival Circle'
+        && state.rivalCircleRivalName === 'Qinghei Banner Circle'
+        && state.rivalCircleScore >= 46
+        && state.rivalCircleRequiredScore === 46
+        && Array.isArray(state.rivalCirclePartyIds)
+        && state.rivalCirclePartyIds.includes('lirabao')
+        && state.rivalCirclePartyIds.includes('jintari')
+        && state.rivalCirclePartyIds.includes('aozhen')
+        && state.rivalCircleMarkClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -616,8 +630,8 @@ async function exerciseAlphaHud(page) {
         && state.guildAscensionProof === true
         && state.guildAscensionTrialId === 'jade-court-ascension-trial'
         && state.guildAscensionTrialName === 'Jade Court Ascension Trial'
-        && state.guildAscensionScore >= 56
-        && state.guildAscensionRequiredScore === 56
+        && state.guildAscensionScore >= 59
+        && state.guildAscensionRequiredScore === 59
         && state.guildAscensionRibbonClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
@@ -752,6 +766,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Kinship Album recorded')
         && chat.includes('Jade Encounter Atlas recorded')
         && chat.includes('Jade Banner Tournament cleared')
+        && chat.includes('Jade Rival Circle cleared')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
         && chat.includes('Jade Scroll Story Chapter recorded')
@@ -795,6 +810,7 @@ async function exerciseAlphaHud(page) {
       nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
       kinship: document.querySelector('[data-kinship-album-label]')?.textContent || '',
       tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
+      rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       story: document.querySelector('[data-story-label]')?.textContent || '',
@@ -848,6 +864,7 @@ async function exerciseAlphaHud(page) {
     nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
     kinship: document.querySelector('[data-kinship-album-label]')?.textContent?.trim() || '',
     tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
+    rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       story: document.querySelector('[data-story-label]')?.textContent?.trim() || '',
@@ -1103,6 +1120,17 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.tournamentPartyIds) && snapshot.state.tournamentPartyIds.includes('aozhen'), 'HUD tournament action must record Aozhen party proof.');
   assert(snapshot.state.tournamentPresenceCount >= 2, 'HUD tournament action must record two local tester presences.');
   assert(snapshot.state.tournamentPennantClaimed === true, 'HUD tournament action must mark the no-real-value tournament pennant proof.');
+  assert(snapshot.rivalCircle.includes('Jade Rival Circle'), 'HUD rival label must show the cleared no-injury rival circle.');
+  assert(snapshot.state.rivalCircleProof === true, 'HUD rival circle action must record rival circle proof.');
+  assert(snapshot.state.rivalCircleId === 'jade-rival-circle', 'HUD rival circle action must record the rival circle id.');
+  assert(snapshot.state.rivalCircleName === 'Jade Rival Circle', 'HUD rival circle action must record the rival circle name.');
+  assert(snapshot.state.rivalCircleRivalName === 'Qinghei Banner Circle', 'HUD rival circle action must record the rival opponent name.');
+  assert(snapshot.state.rivalCircleScore >= 46, 'HUD rival circle action must record a passing rival circle score.');
+  assert(snapshot.state.rivalCircleRequiredScore === 46, 'HUD rival circle action must record the rival circle requirement.');
+  assert(Array.isArray(snapshot.state.rivalCirclePartyIds) && snapshot.state.rivalCirclePartyIds.includes('lirabao'), 'HUD rival circle action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.rivalCirclePartyIds) && snapshot.state.rivalCirclePartyIds.includes('jintari'), 'HUD rival circle action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.rivalCirclePartyIds) && snapshot.state.rivalCirclePartyIds.includes('aozhen'), 'HUD rival circle action must record Aozhen party proof.');
+  assert(snapshot.state.rivalCircleMarkClaimed === true, 'HUD rival circle action must mark the no-real-value rival circle mark proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -1149,8 +1177,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.guildAscensionProof === true, 'HUD ascension action must record closed-alpha guild capstone proof.');
   assert(snapshot.state.guildAscensionTrialId === 'jade-court-ascension-trial', 'HUD ascension action must record the Jade Court Ascension Trial id.');
   assert(snapshot.state.guildAscensionTrialName === 'Jade Court Ascension Trial', 'HUD ascension action must record the Jade Court Ascension Trial name.');
-  assert(snapshot.state.guildAscensionScore >= 56, 'HUD ascension action must record a passing ascension score.');
-  assert(snapshot.state.guildAscensionRequiredScore === 56, 'HUD ascension action must record the ascension score requirement.');
+  assert(snapshot.state.guildAscensionScore >= 59, 'HUD ascension action must record a passing ascension score.');
+  assert(snapshot.state.guildAscensionRequiredScore === 59, 'HUD ascension action must record the ascension score requirement.');
   assert(snapshot.state.guildAscensionRibbonClaimed === true, 'HUD ascension action must mark the no-real-value ascension ribbon proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
@@ -1289,6 +1317,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Capture Rite recorded')), 'HUD chat state must record the capture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Encounter Atlas recorded')), 'HUD chat state must record the encounter atlas action.');
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');
+  assert(chat.some((line) => String(line).includes('Jade Rival Circle cleared')), 'HUD chat state must record the rival circle action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Insignia Case sealed')), 'HUD chat state must record the insignia case action.');

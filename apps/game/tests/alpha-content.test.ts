@@ -19,6 +19,7 @@ import {
   SPIRIT_MOVES,
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_NURTURE_RITES,
+  SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
@@ -60,6 +61,7 @@ import {
   resolveSpiritParty,
   resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
+  resolveSpiritRivalCircle,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteWaystone,
@@ -1370,6 +1372,7 @@ describe('Mochi Spirits alpha content contract', () => {
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
+      rivalCircleProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1406,6 +1409,7 @@ describe('Mochi Spirits alpha content contract', () => {
       tournamentProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
+      rivalCircleProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1429,8 +1433,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 71,
-      requiredScore: 56,
+      score: 74,
+      requiredScore: 59,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });
@@ -1700,6 +1704,80 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'battle-tournament-bracket'
     });
     expect(tournament.message).toContain('No real value');
+
+    expect(SPIRIT_RIVAL_CIRCLES.map((circle) => circle.id)).toEqual(['jade-rival-circle']);
+    const blockedRivalCircle = resolveSpiritRivalCircle({
+      partyIds: fullRoster,
+      tournamentProof: false,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: teamMatch.score,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Rival circle ready.']
+    });
+    expect(blockedRivalCircle).toMatchObject({
+      cleared: false,
+      circleId: 'jade-rival-circle',
+      missing: ['tournament:jade-banner-tournament']
+    });
+
+    const rivalCircle = resolveSpiritRivalCircle({
+      partyIds: fullRoster,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: teamMatch.score,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Rival circle ready.']
+    });
+    expect(rivalCircle).toMatchObject({
+      cleared: true,
+      circleId: 'jade-rival-circle',
+      circleName: 'Jade Rival Circle',
+      rivalName: 'Qinghei Banner Circle',
+      partyIds: [...fullRoster],
+      score: 55,
+      requiredScore: 46,
+      rewardItemId: ALPHA_ITEMS.rivalCircleMark.id,
+      source: 'battle-rival-circle'
+    });
+    expect(rivalCircle.message).toContain('No real value');
 
     expect(growthStageFromBond(2)).toBe('seed');
     expect(growthStageFromBond(3)).toBe('sprout');

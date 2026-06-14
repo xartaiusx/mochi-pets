@@ -71,6 +71,7 @@ async function run() {
   assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
   assert(manifest.body.gameplay?.spiritEncounterAtlases === true, 'Manifest must expose Mochi Spirit encounter atlases.');
   assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
+  assert(manifest.body.gameplay?.spiritRivalCircles === true, 'Manifest must expose Mochi Spirit rival circles.');
   assert(manifest.body.gameplay?.routeWaystones === true, 'Manifest must expose Mochi Spirit route waystones.');
   assert(manifest.body.gameplay?.spiritNurtureRites === true, 'Manifest must expose Mochi Spirit nurture rites.');
   assert(manifest.body.gameplay?.spiritKinshipAlbums === true, 'Manifest must expose Mochi Spirit kinship albums.');
@@ -122,6 +123,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
   assert(alphaStatus.body.gameplay?.spiritEncounterAtlases === true, 'Alpha status must expose Mochi Spirit encounter atlases.');
   assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
+  assert(alphaStatus.body.gameplay?.spiritRivalCircles === true, 'Alpha status must expose Mochi Spirit rival circles.');
   assert(alphaStatus.body.gameplay?.routeWaystones === true, 'Alpha status must expose Mochi Spirit route waystones.');
   assert(alphaStatus.body.gameplay?.spiritNurtureRites === true, 'Alpha status must expose Mochi Spirit nurture rites.');
   assert(alphaStatus.body.gameplay?.spiritKinshipAlbums === true, 'Alpha status must expose Mochi Spirit kinship albums.');
@@ -948,6 +950,40 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-rival-circle`,
+      type: 'battle.rival_circle',
+      payload: {
+        circleId: 'jade-rival-circle',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        tournamentProof: true,
+        tournamentId: 'jade-banner-tournament',
+        tournamentScore: 49,
+        mentorChallengeProof: true,
+        mentorChallengeId: 'silk-banner-mentor-drill',
+        mentorChallengeScore: 28,
+        teamSparMatchProof: true,
+        teamSparMatchId: 'jade-mirror-team-match',
+        teamSparMatchScore: 32,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 31,
+        battleRoundOpponentScore: 18,
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        techniqueLoadoutProof: true,
+        traitAttunementProof: true,
+        guildRankProof: true,
+        growthRiteProof: true,
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-rival-circle-mark',
+        chatLines: ['Local acceptance rival circle proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -1133,6 +1169,7 @@ async function run() {
         routePatrolProof: true,
         mentorChallengeProof: true,
         tournamentProof: true,
+        rivalCircleProof: true,
         battleRoundProof: true,
         battleRoundVictory: true,
         battleRoundFocusScore: 18,
@@ -1358,6 +1395,23 @@ async function run() {
   assert(tournament?.payload?.guildRankProof === true, 'Tournament ledger entry must preserve guild rank proof.');
   assert(tournament?.payload?.rewardItemId === 'jade-banner-tournament-pennant', 'Tournament ledger entry must preserve the no-real-value tournament pennant proof.');
   assert(tournament?.payload?.noRealValue === true, 'Tournament ledger entry must remain no-real-value.');
+  const rivalCircle = entriesById.get(`${runId}-rival-circle`);
+  assert(rivalCircle?.payload?.circleId === 'jade-rival-circle', 'Rival circle ledger entry must preserve the Jade Rival Circle id.');
+  assert(Array.isArray(rivalCircle?.payload?.partyIds) && rivalCircle.payload.partyIds.length === 3, 'Rival circle ledger entry must preserve full-party proof.');
+  assert(rivalCircle?.payload?.tournamentProof === true, 'Rival circle ledger entry must preserve tournament proof.');
+  assert(rivalCircle?.payload?.tournamentId === 'jade-banner-tournament', 'Rival circle ledger entry must preserve tournament id.');
+  assert(rivalCircle?.payload?.mentorChallengeProof === true, 'Rival circle ledger entry must preserve mentor proof.');
+  assert(rivalCircle?.payload?.teamSparMatchProof === true, 'Rival circle ledger entry must preserve team match proof.');
+  assert(rivalCircle?.payload?.conditionWeaveProof === true, 'Rival circle ledger entry must preserve condition weave proof.');
+  assert(rivalCircle?.payload?.conditionWeaveId === 'jade-mirror-condition-weave', 'Rival circle ledger entry must preserve condition weave id.');
+  assert(rivalCircle?.payload?.battleRoundVictory === true, 'Rival circle ledger entry must preserve no-injury battle victory proof.');
+  assert(rivalCircle?.payload?.techniqueLoadoutProof === true, 'Rival circle ledger entry must preserve technique loadout proof.');
+  assert(rivalCircle?.payload?.traitAttunementProof === true, 'Rival circle ledger entry must preserve trait proof.');
+  assert(rivalCircle?.payload?.guildRankProof === true, 'Rival circle ledger entry must preserve rank proof.');
+  assert(rivalCircle?.payload?.growthRiteProof === true, 'Rival circle ledger entry must preserve growth proof.');
+  assert(rivalCircle?.payload?.localPresenceCount === 2, 'Rival circle ledger entry must preserve two-tester presence proof.');
+  assert(rivalCircle?.payload?.rewardItemId === 'jade-rival-circle-mark', 'Rival circle ledger entry must preserve the no-real-value rival mark proof.');
+  assert(rivalCircle?.payload?.noRealValue === true, 'Rival circle ledger entry must remain no-real-value.');
   const storyChapter = entriesById.get(`${runId}-story-chapter`);
   assert(storyChapter?.payload?.chapterId === 'jade-scroll-story-chapter', 'Story chapter ledger entry must preserve the Jade Scroll Story Chapter id.');
   assert(Array.isArray(storyChapter?.payload?.roster) && storyChapter.payload.roster.length === 3, 'Story chapter ledger entry must preserve full roster proof.');
@@ -1411,6 +1465,7 @@ async function run() {
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');
   assert(ascension?.payload?.tournamentProof === true, 'Ascension trial ledger entry must preserve tournament proof.');
+  assert(ascension?.payload?.rivalCircleProof === true, 'Ascension trial ledger entry must preserve rival circle proof.');
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
   assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
   assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');
