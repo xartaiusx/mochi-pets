@@ -42,6 +42,7 @@ import {
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
+  SPIRIT_TECHNIQUE_CODEXES,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
@@ -96,6 +97,7 @@ import {
   resolveSpiritSanctuaryRite,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
+  resolveSpiritTechniqueCodex,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTournamentBracket,
   resolveSpiritTraitAttunement,
@@ -118,6 +120,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueLoadouts).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.techniqueCodexes).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTraits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
@@ -229,6 +232,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.technique_loadout');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.technique_codex');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.trait_attune');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
     expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
@@ -1791,6 +1795,7 @@ describe('alpha contract', () => {
       traitAttunementProof: true,
       conditionWeaveProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       guildRankProof: true,
       growthRiteProof: true,
       harmonyFormProof: true,
@@ -1821,7 +1826,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 121,
+      score: 124,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1856,6 +1861,7 @@ describe('alpha contract', () => {
       traitAttunementProof: true,
       conditionWeaveProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       guildRankProof: true,
       growthRiteProof: true,
       harmonyFormProof: true,
@@ -1901,6 +1907,7 @@ describe('alpha contract', () => {
       battleRoundOpponentScore: 8,
       conditionWeaveProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       harmonyFormProof: true,
       harmonyTrialProof: true,
       teamSparMatchProof: true,
@@ -1925,7 +1932,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 86,
+      score: 89,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -1952,6 +1959,7 @@ describe('alpha contract', () => {
       battleRoundOpponentScore: 8,
       conditionWeaveProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       harmonyFormProof: true,
       harmonyTrialProof: true,
       teamSparMatchProof: true,
@@ -2272,6 +2280,56 @@ describe('alpha contract', () => {
       journalProof: false,
       journalDiscoveredCount: 0
     }).prepared).toBe(false);
+
+    expect(SPIRIT_TECHNIQUE_CODEXES.map((codex) => codex.id)).toEqual(['jade-technique-codex']);
+    const techniqueCodex = resolveSpiritTechniqueCodex({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      masteredMoveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
+      tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+      techniqueProof: true,
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueMasteryXp: 18,
+      tacticProof: true,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Technique codex ready.']
+    });
+    expect(techniqueCodex).toMatchObject({
+      ok: true,
+      codified: true,
+      codexId: 'jade-technique-codex',
+      codexName: 'Jade Technique Codex',
+      score: 58,
+      requiredScore: 46,
+      rewardItemId: 'jade-technique-codex-seal',
+      source: 'spirit-technique-codex'
+    });
+    expect(techniqueCodex.message).toContain('No real value');
+    expect(resolveSpiritTechniqueCodex({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      masteredMoveIds: ['lantern-pulse'],
+      tacticIds: ['lantern-anchor'],
+      techniqueProof: true,
+      techniqueLoadoutProof: false,
+      techniqueMasteryXp: 18,
+      tacticProof: true,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Technique codex ready.']
+    }).codified).toBe(false);
 
     const battleRound = resolveSpiritBattleRound({
       partyIds: ['lirabao', 'jintari', 'aozhen'],

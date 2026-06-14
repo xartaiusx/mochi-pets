@@ -98,6 +98,7 @@ async function run() {
   assert(manifest.body.gameplay?.techniqueMastery === true, 'Manifest must expose Mochi Spirit technique mastery.');
   assert(manifest.body.gameplay?.battleTactics === true, 'Manifest must expose Mochi Spirit battle tactics.');
   assert(manifest.body.gameplay?.techniqueLoadouts === true, 'Manifest must expose Mochi Spirit technique loadouts.');
+  assert(manifest.body.gameplay?.techniqueCodexes === true, 'Manifest must expose Mochi Spirit technique codexes.');
   assert(manifest.body.gameplay?.spiritTraits === true, 'Manifest must expose Mochi Spirit trait attunements.');
   assert(manifest.body.gameplay?.guildRankTrials === true, 'Manifest must expose Mochirii guild rank trials.');
   assert(manifest.body.gameplay?.spiritGrowthRites === true, 'Manifest must expose Mochi Spirit growth rites.');
@@ -155,6 +156,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.techniqueMastery === true, 'Alpha status must expose Mochi Spirit technique mastery.');
   assert(alphaStatus.body.gameplay?.battleTactics === true, 'Alpha status must expose Mochi Spirit battle tactics.');
   assert(alphaStatus.body.gameplay?.techniqueLoadouts === true, 'Alpha status must expose Mochi Spirit technique loadouts.');
+  assert(alphaStatus.body.gameplay?.techniqueCodexes === true, 'Alpha status must expose Mochi Spirit technique codexes.');
   assert(alphaStatus.body.gameplay?.spiritTraits === true, 'Alpha status must expose Mochi Spirit trait attunements.');
   assert(alphaStatus.body.gameplay?.guildRankTrials === true, 'Alpha status must expose Mochirii guild rank trials.');
   assert(alphaStatus.body.gameplay?.spiritGrowthRites === true, 'Alpha status must expose Mochi Spirit growth rites.');
@@ -531,6 +533,32 @@ async function run() {
         raisingCareStreak: 1,
         profileViewed: true,
         guildBuddyProof: true,
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-technique-codex`,
+      type: 'battle.technique_codex',
+      payload: {
+        codexId: 'jade-technique-codex',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        masteredMoveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
+        tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+        techniqueProof: true,
+        techniqueLoadoutProof: true,
+        techniqueLoadoutId: 'jade-step-loadout',
+        techniqueMasteryXp: 18,
+        tacticProof: true,
+        trainingXp: 3,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        journalProof: true,
+        journalDiscoveredCount: 3,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-technique-codex-seal',
+        chatLines: ['Local acceptance technique codex proof.'],
         noRealValue: true
       }
     },
@@ -1307,6 +1335,7 @@ async function run() {
         conditionWeaveProof: true,
         affinityMatrixProof: true,
         affinityMatrixId: 'jade-affinity-matrix',
+        techniqueCodexProof: true,
         guildRankProof: true,
         growthRiteProof: true,
         harmonyFormProof: true,
@@ -1354,6 +1383,7 @@ async function run() {
         conditionWeaveProof: true,
         affinityMatrixProof: true,
         affinityMatrixId: 'jade-affinity-matrix',
+        techniqueCodexProof: true,
         harmonyFormProof: true,
         harmonyTrialProof: true,
         teamSparMatchProof: true,
@@ -1614,6 +1644,19 @@ async function run() {
   assert(bloomAscendance?.payload?.sparLadderXp >= 5, 'Bloom ascendance ledger entry must preserve spar ladder XP proof.');
   assert(bloomAscendance?.payload?.rewardItemId === 'jade-bloom-ascendance-sigil', 'Bloom ascendance ledger entry must preserve the no-real-value ascendance sigil proof.');
   assert(bloomAscendance?.payload?.noRealValue === true, 'Bloom ascendance ledger entry must remain no-real-value.');
+  const techniqueCodex = entriesById.get(`${runId}-technique-codex`);
+  assert(techniqueCodex?.payload?.codexId === 'jade-technique-codex', 'Technique codex ledger entry must preserve the Jade Technique Codex id.');
+  assert(Array.isArray(techniqueCodex?.payload?.partyIds) && techniqueCodex.payload.partyIds.length === 3, 'Technique codex ledger entry must preserve full-party proof.');
+  assert(Array.isArray(techniqueCodex?.payload?.masteredMoveIds) && techniqueCodex.payload.masteredMoveIds.includes('lantern-pulse') && techniqueCodex.payload.masteredMoveIds.includes('goldleaf-feint') && techniqueCodex.payload.masteredMoveIds.includes('skybell-guard'), 'Technique codex ledger entry must preserve all first-court move ids.');
+  assert(Array.isArray(techniqueCodex?.payload?.tacticIds) && techniqueCodex.payload.tacticIds.includes('lantern-anchor') && techniqueCodex.payload.tacticIds.includes('goldleaf-opening') && techniqueCodex.payload.tacticIds.includes('skybell-ward'), 'Technique codex ledger entry must preserve all battle tactic ids.');
+  assert(techniqueCodex?.payload?.techniqueProof === true, 'Technique codex ledger entry must preserve technique mastery proof.');
+  assert(techniqueCodex?.payload?.techniqueLoadoutProof === true, 'Technique codex ledger entry must preserve technique loadout proof.');
+  assert(techniqueCodex?.payload?.techniqueLoadoutId === 'jade-step-loadout', 'Technique codex ledger entry must preserve the Jade Step Loadout id.');
+  assert(techniqueCodex?.payload?.tacticProof === true, 'Technique codex ledger entry must preserve tactic scroll proof.');
+  assert(techniqueCodex?.payload?.trainingXp >= 3, 'Technique codex ledger entry must preserve training XP proof.');
+  assert(techniqueCodex?.payload?.battleRoundVictory === true, 'Technique codex ledger entry must preserve no-injury battle victory proof.');
+  assert(techniqueCodex?.payload?.rewardItemId === 'jade-technique-codex-seal', 'Technique codex ledger entry must preserve the no-real-value codex seal proof.');
+  assert(techniqueCodex?.payload?.noRealValue === true, 'Technique codex ledger entry must remain no-real-value.');
   const captureRite = entriesById.get(`${runId}-capture-rite`);
   assert(captureRite?.payload?.riteId === 'jade-court-capture-rite', 'Capture rite ledger entry must preserve the Jade Capture Rite id.');
   assert(Array.isArray(captureRite?.payload?.roster) && captureRite.payload.roster.length === 3, 'Capture rite ledger entry must preserve full roster proof.');
@@ -1726,6 +1769,7 @@ async function run() {
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.storyChapterProof === true, 'Wayfarer chronicle ledger entry must preserve story chapter proof.');
   assert(chronicle?.payload?.insigniaCaseProof === true, 'Wayfarer chronicle ledger entry must preserve insignia case proof.');
+  assert(chronicle?.payload?.techniqueCodexProof === true, 'Wayfarer chronicle ledger entry must preserve technique codex proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
   const ascension = entriesById.get(`${runId}-ascension-trial`);
@@ -1745,6 +1789,7 @@ async function run() {
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
   assert(ascension?.payload?.affinityMatrixProof === true, 'Ascension trial ledger entry must preserve affinity matrix proof.');
   assert(ascension?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Ascension trial ledger entry must preserve the affinity matrix id.');
+  assert(ascension?.payload?.techniqueCodexProof === true, 'Ascension trial ledger entry must preserve technique codex proof.');
   assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
   assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');
 }

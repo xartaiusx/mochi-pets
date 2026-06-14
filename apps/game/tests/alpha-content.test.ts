@@ -31,6 +31,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEMPERAMENT_CONCORDS,
+  SPIRIT_TECHNIQUE_CODEXES,
   SPIRIT_TOURNAMENT_BRACKETS,
   TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
@@ -81,6 +82,7 @@ import {
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
+  resolveSpiritTechniqueCodex,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTournamentBracket,
@@ -1573,6 +1575,7 @@ describe('Mochi Spirits alpha content contract', () => {
       bloomAscendanceProof: true,
       exchangeAccordProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1628,6 +1631,7 @@ describe('Mochi Spirits alpha content contract', () => {
       bloomAscendanceProof: true,
       exchangeAccordProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1657,7 +1661,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 121,
+      score: 124,
       requiredScore: 70,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -1675,6 +1679,7 @@ describe('Mochi Spirits alpha content contract', () => {
       bloomAscendanceProof: true,
       exchangeAccordProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1716,6 +1721,7 @@ describe('Mochi Spirits alpha content contract', () => {
       bloomAscendanceProof: true,
       exchangeAccordProof: true,
       affinityMatrixProof: true,
+      techniqueCodexProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1745,7 +1751,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 86,
+      score: 89,
       requiredScore: 59,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
@@ -1834,6 +1840,63 @@ describe('Mochi Spirits alpha content contract', () => {
       ],
       rewardItemId: ALPHA_ITEMS.loadoutSlip.id
     });
+
+    expect(SPIRIT_TECHNIQUE_CODEXES.map((entry) => entry.id)).toEqual(['jade-technique-codex']);
+    const blockedCodex = resolveSpiritTechniqueCodex({
+      partyIds: fullRoster,
+      masteredMoveIds: [SPIRIT_MOVES.lanternPulse.id, SPIRIT_MOVES.goldleafFeint.id],
+      tacticIds: ['lantern-anchor'],
+      techniqueProof: true,
+      techniqueLoadoutProof: false,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueMasteryXp: 18,
+      tacticProof: true,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for codex.']
+    });
+    expect(blockedCodex.codified).toBe(false);
+    expect(blockedCodex.missing).toContain('move:skybell-guard');
+    expect(blockedCodex.missing).toContain('loadout:jade-step-loadout');
+
+    const techniqueCodex = resolveSpiritTechniqueCodex({
+      partyIds: fullRoster,
+      masteredMoveIds: [SPIRIT_MOVES.lanternPulse.id, SPIRIT_MOVES.goldleafFeint.id, SPIRIT_MOVES.skybellGuard.id],
+      tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+      techniqueProof: true,
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueMasteryXp: 18,
+      tacticProof: true,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for codex.']
+    });
+    expect(techniqueCodex).toMatchObject({
+      codified: true,
+      codexId: 'jade-technique-codex',
+      codexName: 'Jade Technique Codex',
+      partyIds: [...fullRoster],
+      masteredMoveIds: [SPIRIT_MOVES.lanternPulse.id, SPIRIT_MOVES.goldleafFeint.id, SPIRIT_MOVES.skybellGuard.id],
+      tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+      score: 58,
+      requiredScore: 46,
+      rewardItemId: ALPHA_ITEMS.techniqueCodexSeal.id,
+      source: 'spirit-technique-codex'
+    });
+    expect(techniqueCodex.message).toContain('No real value');
 
     const growth = resolveSpiritGrowthRite({
       spiritId: 'lirabao',

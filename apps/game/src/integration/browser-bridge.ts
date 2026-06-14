@@ -42,6 +42,7 @@ import {
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
+  SPIRIT_TECHNIQUE_CODEXES,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
@@ -100,6 +101,7 @@ import {
   resolveSpiritRoutePatrol,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
+  resolveSpiritTechniqueCodex,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTournamentBracket,
@@ -387,6 +389,15 @@ interface AlphaHudState {
   techniqueLoadoutScore: number;
   techniqueLoadoutMoves: string[];
   loadoutSlipClaimed: boolean;
+  techniqueCodexProof: boolean;
+  techniqueCodexId?: string;
+  techniqueCodexName: string;
+  techniqueCodexScore: number;
+  techniqueCodexRequiredScore: number;
+  techniqueCodexPartyIds: string[];
+  techniqueCodexMoveIds: string[];
+  techniqueCodexTacticIds: string[];
+  techniqueCodexSealClaimed: boolean;
   traitAttunementProof: boolean;
   traitAttunementId?: string;
   traitAttunementName: string;
@@ -721,6 +732,19 @@ export interface AlphaWorldStatePatch {
     requiredScore: number;
     rewardItemId: string;
     score: number;
+    title: string;
+  };
+  techniqueCodex?: {
+    codexId: string;
+    codexName: string;
+    masteredMoveIds: string[];
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    tacticIds: string[];
     title: string;
   };
   traitAttunement?: {
@@ -1059,6 +1083,14 @@ function defaultAlphaState(): AlphaHudState {
     techniqueLoadoutScore: 0,
     techniqueLoadoutMoves: [],
     loadoutSlipClaimed: false,
+    techniqueCodexProof: false,
+    techniqueCodexName: 'Unsealed',
+    techniqueCodexScore: 0,
+    techniqueCodexRequiredScore: 0,
+    techniqueCodexPartyIds: [],
+    techniqueCodexMoveIds: [],
+    techniqueCodexTacticIds: [],
+    techniqueCodexSealClaimed: false,
     traitAttunementProof: false,
     traitAttunementName: 'Unattuned',
     traitLabel: 'No trait',
@@ -1275,6 +1307,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
+      <span class="mochi-hud__hint" data-technique-codex-label>Technique Codex: pending</span>
       <span class="mochi-hud__hint" data-trait-label>Trait: pending</span>
       <span class="mochi-hud__hint" data-condition-label>Condition: pending</span>
       <span class="mochi-hud__hint" data-affinity-matrix-label>Matrix: pending</span>
@@ -1338,6 +1371,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="battle.tactic_scroll" aria-label="Study a no-injury Mochirii tactic scroll">Tactic</button>
       <button type="button" data-alpha-action="spirit.technique_loadout" aria-label="Prepare the three-spirit Mochirii move loadout">Moves</button>
+      <button type="button" data-alpha-action="battle.technique_codex" aria-label="Seal the no-real-value Jade Technique Codex">Codex+</button>
       <button type="button" data-alpha-action="spirit.trait_attune" aria-label="Attune an original no-real-value Mochirii spirit trait">Trait</button>
       <button type="button" data-alpha-action="battle.condition_weave" aria-label="Weave original no-injury Mochirii battle conditions">Weave</button>
       <button type="button" data-alpha-action="battle.affinity_matrix" aria-label="Record the no-real-value Jade Affinity Matrix">Matrix</button>
@@ -1412,6 +1446,7 @@ function createHud() {
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
+  const techniqueCodexLabel = hud.querySelector('[data-technique-codex-label]');
   const traitLabel = hud.querySelector('[data-trait-label]');
   const conditionLabel = hud.querySelector('[data-condition-label]');
   const affinityMatrixLabel = hud.querySelector('[data-affinity-matrix-label]');
@@ -1622,6 +1657,11 @@ function createHud() {
       loadoutLabel.textContent = state.techniqueLoadoutProof
         ? `Loadout: ${state.techniqueLoadoutName}, score ${state.techniqueLoadoutScore}`
         : 'Loadout: pending';
+    }
+    if (techniqueCodexLabel) {
+      techniqueCodexLabel.textContent = state.techniqueCodexProof
+        ? `Technique Codex: ${state.techniqueCodexName}, ${state.techniqueCodexMoveIds.length} moves, score ${state.techniqueCodexScore}/${state.techniqueCodexRequiredScore}`
+        : 'Technique Codex: pending';
     }
     if (traitLabel) {
       traitLabel.textContent = state.traitAttunementProof
@@ -1927,6 +1967,9 @@ function readAlphaState(): AlphaHudState {
       routeInvitedSpiritIds: Array.isArray(parsed?.routeInvitedSpiritIds) ? parsed.routeInvitedSpiritIds.map(String) : [],
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
+      techniqueCodexPartyIds: Array.isArray(parsed?.techniqueCodexPartyIds) ? parsed.techniqueCodexPartyIds.map(String) : [],
+      techniqueCodexMoveIds: Array.isArray(parsed?.techniqueCodexMoveIds) ? parsed.techniqueCodexMoveIds.map(String) : [],
+      techniqueCodexTacticIds: Array.isArray(parsed?.techniqueCodexTacticIds) ? parsed.techniqueCodexTacticIds.map(String) : [],
       conditionIds: Array.isArray(parsed?.conditionIds) ? parsed.conditionIds.map(String) : [],
       affinityMatrixSpiritIds: Array.isArray(parsed?.affinityMatrixSpiritIds) ? parsed.affinityMatrixSpiritIds.map(String) : [],
       affinityMatrixAffinityLabels: Array.isArray(parsed?.affinityMatrixAffinityLabels) ? parsed.affinityMatrixAffinityLabels.map(String) : [],
@@ -2208,6 +2251,21 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.techniqueLoadout.partyIds.map(String)]));
     state.supportSpiritIds = state.partyIds.slice(1);
     appendUniqueAlphaChat(state, patch.techniqueLoadout.message || `${state.techniqueLoadoutName} recorded as no-real-value move loadout proof.`);
+  }
+
+  if (patch.techniqueCodex) {
+    state.techniqueCodexProof = patch.techniqueCodex.proof || state.techniqueCodexProof;
+    state.techniqueCodexId = patch.techniqueCodex.codexId || state.techniqueCodexId;
+    state.techniqueCodexName = patch.techniqueCodex.codexName || state.techniqueCodexName;
+    state.techniqueCodexScore = Math.max(state.techniqueCodexScore, Number(patch.techniqueCodex.score) || 0);
+    state.techniqueCodexRequiredScore = Math.max(state.techniqueCodexRequiredScore, Number(patch.techniqueCodex.requiredScore) || 0);
+    state.techniqueCodexPartyIds = Array.isArray(patch.techniqueCodex.partyIds) ? patch.techniqueCodex.partyIds.map(String) : state.techniqueCodexPartyIds;
+    state.techniqueCodexMoveIds = Array.isArray(patch.techniqueCodex.masteredMoveIds) ? patch.techniqueCodex.masteredMoveIds.map(String) : state.techniqueCodexMoveIds;
+    state.techniqueCodexTacticIds = Array.isArray(patch.techniqueCodex.tacticIds) ? patch.techniqueCodex.tacticIds.map(String) : state.techniqueCodexTacticIds;
+    state.techniqueCodexSealClaimed = state.techniqueCodexSealClaimed || patch.techniqueCodex.rewardItemId === 'jade-technique-codex-seal';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...state.techniqueCodexPartyIds]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    appendUniqueAlphaChat(state, patch.techniqueCodex.message || `${state.techniqueCodexName} sealed as no-real-value technique codex proof.`);
   }
 
   if (patch.traitAttunement) {
@@ -3091,6 +3149,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       bloomAscendanceProof: state.bloomAscendanceProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
+      techniqueCodexProof: state.techniqueCodexProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       storyChapterProof: state.storyChapterProof,
@@ -3131,6 +3190,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       bloomAscendanceProof: state.bloomAscendanceProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
+      techniqueCodexProof: state.techniqueCodexProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
       rivalCircleProof: state.rivalCircleProof,
@@ -3255,6 +3315,34 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       trialId: trial.id,
       bond: state.bond || 1,
       techniqueMasteryXp: state.techniqueMasteryXp || 0
+    };
+  }
+
+  if (type === 'battle.technique_codex') {
+    const codex = SPIRIT_TECHNIQUE_CODEXES[0];
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    const masteredMoveIds = state.techniqueLoadoutMoves.length
+      ? state.techniqueLoadoutMoves.map((entry) => entry.split(':')[1]).filter(Boolean)
+      : [...codex.requiredMoveIds];
+    return {
+      codexId: codex.id,
+      partyIds,
+      masteredMoveIds,
+      tacticIds: [...codex.requiredTacticIds],
+      techniqueProof: state.techniqueProof,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      techniqueLoadoutId: state.techniqueLoadoutId,
+      techniqueMasteryXp: Math.max(state.techniqueMasteryXp || 0, codex.requiredTechniqueXp),
+      tacticProof: state.tacticProof,
+      trainingXp: Math.max(state.trainingXp || 0, codex.requiredTrainingXp),
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      journalProof: state.journalProof,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
     };
   }
 
@@ -4635,6 +4723,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
+        techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
@@ -4690,6 +4779,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
+        techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),
@@ -4951,6 +5041,47 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.techniqueLoadoutScore = result.score;
       state.techniqueLoadoutMoves = result.moves.map((move) => `${move.spiritId}:${move.moveId}`);
       state.loadoutSlipClaimed = result.rewardItemId === 'jade-step-loadout-slip';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.technique_codex') {
+    const result = resolveSpiritTechniqueCodex(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        masteredMoveIds: Array.isArray(payload.masteredMoveIds) ? payload.masteredMoveIds.map(String) : SPIRIT_TECHNIQUE_CODEXES[0].requiredMoveIds,
+        tacticIds: Array.isArray(payload.tacticIds) ? payload.tacticIds.map(String) : SPIRIT_TECHNIQUE_CODEXES[0].requiredTacticIds,
+        techniqueProof: Boolean(payload.techniqueProof ?? state.techniqueProof),
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        techniqueLoadoutId: String(payload.techniqueLoadoutId || state.techniqueLoadoutId || ''),
+        techniqueMasteryXp: Number(payload.techniqueMasteryXp ?? state.techniqueMasteryXp ?? 0),
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        journalProof: Boolean(payload.journalProof ?? state.journalProof),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.codexId || SPIRIT_TECHNIQUE_CODEXES[0].id)
+    );
+    if (result.codified) {
+      state.techniqueCodexProof = true;
+      state.techniqueCodexId = result.codexId;
+      state.techniqueCodexName = result.codexName;
+      state.techniqueCodexScore = result.score;
+      state.techniqueCodexRequiredScore = result.requiredScore;
+      state.techniqueCodexPartyIds = result.partyIds;
+      state.techniqueCodexMoveIds = result.masteredMoveIds;
+      state.techniqueCodexTacticIds = result.tacticIds;
+      state.techniqueCodexSealClaimed = result.rewardItemId === 'jade-technique-codex-seal';
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0];

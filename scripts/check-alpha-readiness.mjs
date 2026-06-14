@@ -22,6 +22,10 @@ const checks = [
     includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['battle.technique_codex', 'techniqueCodexes: true', 'Jade Technique Codex label/state', 'Jade Technique Codex Seal payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -36,6 +40,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'Do not set dummy', 'Never credit inventory', 'Mochirii Vercel Preview', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL', 'MOCHI_SOCIAL_AUTH', 'check:mochi-social-bridge-state', 'Alpha Preview Ready can pass while funded-chain gates are red']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Technique Codex proof', 'Jade Technique Codex Seal', 'Move-library proof is no-real-value']
   },
   {
     file: 'docs/no-cost-operations.md',
@@ -68,12 +76,20 @@ const checks = [
     includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Technique Codex proof', 'Jade Technique Codex', 'seal the Jade Technique Codex']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
   {
     file: 'docs/alpha-acceptance.md',
     includes: ['Jade Scroll Story Chapter proof', 'story-chapter', 'story, chronicle']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['battle.technique_codex', 'Jade Technique Codex', 'Jade Technique Codex Seal', 'techniqueCodexProof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -86,6 +102,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Jade Scroll Story Chapter proof', 'story-chapter']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['technique-codex', 'seal the Jade Technique Codex proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -108,6 +128,10 @@ const checks = [
     includes: ['Jade Rival Circle contribution', 'content-only Jade Rival Circle Mark proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Technique Codex contribution', 'content-only Jade Technique Codex Seal proof']
+  },
+  {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Scroll Story Chapter proof', 'story']
   },
@@ -116,12 +140,20 @@ const checks = [
     includes: ['Jade Rival Circle proof', 'rival, commission']
   },
   {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Technique Codex proof', 'technique codex']
+  },
+  {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
   },
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Rival Circle', 'Jade Rival Circle proof']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Technique Codex move-library proof', 'battle.technique_codex']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -140,12 +172,20 @@ const checks = [
     includes: ['Jade Rival Circle', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Technique Codex', 'Jade Technique Codex Seal', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Rival Circle', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Scroll Story Chapter', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Technique Codex', 'Jade Technique Codex Seal', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -465,6 +505,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['routeEcologySurveys: true', "'world.route_ecology'"]
   },
   {
@@ -532,6 +576,10 @@ const checks = [
     includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
   },
   {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
+  },
+  {
     file: 'apps/game/src/integration/enjin-canary.ts',
     includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
@@ -546,6 +594,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_AFFINITY_MATRICES', 'resolveSpiritAffinityMatrix', 'data-alpha-action="battle.affinity_matrix"', 'data-affinity-matrix-label', 'affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_TECHNIQUE_CODEXES', 'resolveSpiritTechniqueCodex', 'data-alpha-action="battle.technique_codex"', 'data-technique-codex-label', 'techniqueCodexProof', 'techniqueCodexSealClaimed', 'Jade Technique Codex']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -618,6 +670,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Affinity Matrix', 'jade-affinity-matrix-seal', 'resolveSpiritAffinityMatrix', 'battle-affinity-matrix', 'affinityMatrixProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Technique Codex', 'jade-technique-codex-seal', 'resolveSpiritTechniqueCodex', 'spirit-technique-codex', 'techniqueCodexProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -805,6 +861,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.technique_codex', 'jade-technique-codex', 'techniqueCodexes', 'Jade Technique Codex', 'techniqueCodexProof', 'jade-technique-codex-seal']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['world.route_ecology', 'jade-route-ecology-survey', 'routeEcologySurveys', 'Jade Route Ecology Survey', 'routeEcologyProof', 'jade-route-ecology-map']
   },
   {
@@ -878,6 +938,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.affinity_matrix"', 'data-affinity-matrix-label', 'affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix mapped']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.technique_codex"', 'data-technique-codex-label', 'techniqueCodexProof', 'techniqueCodexSealClaimed', 'Jade Technique Codex sealed']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -986,6 +1050,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix', 'jade-affinity-matrix-seal', 'battle-affinity-matrix', 'affinity matrix']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['techniqueCodexProof', 'techniqueCodexSealClaimed', 'Jade Technique Codex', 'jade-technique-codex-seal', 'spirit-technique-codex', 'technique codex']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

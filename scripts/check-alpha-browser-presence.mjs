@@ -184,6 +184,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.route_mastery"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.compendium_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.technique_loadout"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.technique_codex"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="party.harmony_form"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.harmony_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.team_spar_match"]', { timeout: timeoutMs });
@@ -270,6 +271,7 @@ async function exerciseAlphaHud(page) {
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const tactic = document.querySelector('[data-tactic-label]')?.textContent || '';
       const loadout = document.querySelector('[data-loadout-label]')?.textContent || '';
+      const techniqueCodex = document.querySelector('[data-technique-codex-label]')?.textContent || '';
       const trait = document.querySelector('[data-trait-label]')?.textContent || '';
       const condition = document.querySelector('[data-condition-label]')?.textContent || '';
       const affinityMatrix = document.querySelector('[data-affinity-matrix-label]')?.textContent || '';
@@ -334,6 +336,7 @@ async function exerciseAlphaHud(page) {
         && tactic.includes('Tactic:')
         && tactic.includes('goldleaf-opening')
         && loadout.includes('Jade Step Loadout')
+        && techniqueCodex.includes('Jade Technique Codex')
         && trait.includes('Skybell Wayfinder')
         && condition.includes('Jade Mirror Condition Weave')
         && affinity.includes('Affinity:')
@@ -785,6 +788,24 @@ async function exerciseAlphaHud(page) {
         && state.techniqueLoadoutMoves.includes('lirabao:lantern-pulse')
         && state.techniqueLoadoutMoves.includes('jintari:goldleaf-feint')
         && state.techniqueLoadoutMoves.includes('aozhen:skybell-guard')
+        && state.techniqueCodexProof === true
+        && state.techniqueCodexId === 'jade-technique-codex'
+        && state.techniqueCodexName === 'Jade Technique Codex'
+        && state.techniqueCodexScore >= 46
+        && state.techniqueCodexRequiredScore === 46
+        && Array.isArray(state.techniqueCodexPartyIds)
+        && state.techniqueCodexPartyIds.includes('lirabao')
+        && state.techniqueCodexPartyIds.includes('jintari')
+        && state.techniqueCodexPartyIds.includes('aozhen')
+        && Array.isArray(state.techniqueCodexMoveIds)
+        && state.techniqueCodexMoveIds.includes('lantern-pulse')
+        && state.techniqueCodexMoveIds.includes('goldleaf-feint')
+        && state.techniqueCodexMoveIds.includes('skybell-guard')
+        && Array.isArray(state.techniqueCodexTacticIds)
+        && state.techniqueCodexTacticIds.includes('lantern-anchor')
+        && state.techniqueCodexTacticIds.includes('goldleaf-opening')
+        && state.techniqueCodexTacticIds.includes('skybell-ward')
+        && state.techniqueCodexSealClaimed === true
         && state.affinityProof === true
         && state.lastAffinityTrialId === 'silk-cinder-trial'
         && state.affinityAdvantage === true
@@ -921,6 +942,7 @@ async function exerciseAlphaHud(page) {
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
       ascension: document.querySelector('[data-ascension-label]')?.textContent || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
+      techniqueCodex: document.querySelector('[data-technique-codex-label]')?.textContent || '',
       trait: document.querySelector('[data-trait-label]')?.textContent || '',
       condition: document.querySelector('[data-condition-label]')?.textContent || '',
       affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent || '',
@@ -982,6 +1004,7 @@ async function exerciseAlphaHud(page) {
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       tactic: document.querySelector('[data-tactic-label]')?.textContent?.trim() || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent?.trim() || '',
+      techniqueCodex: document.querySelector('[data-technique-codex-label]')?.textContent?.trim() || '',
       trait: document.querySelector('[data-trait-label]')?.textContent?.trim() || '',
       condition: document.querySelector('[data-condition-label]')?.textContent?.trim() || '',
       affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent?.trim() || '',
@@ -1393,6 +1416,22 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.techniqueLoadoutMoves) && snapshot.state.techniqueLoadoutMoves.includes('lirabao:lantern-pulse'), 'HUD loadout action must include Lirabao Lantern Pulse.');
   assert(Array.isArray(snapshot.state.techniqueLoadoutMoves) && snapshot.state.techniqueLoadoutMoves.includes('jintari:goldleaf-feint'), 'HUD loadout action must include Jintari Goldleaf Feint.');
   assert(Array.isArray(snapshot.state.techniqueLoadoutMoves) && snapshot.state.techniqueLoadoutMoves.includes('aozhen:skybell-guard'), 'HUD loadout action must include Aozhen Skybell Guard.');
+  assert(snapshot.techniqueCodex.includes('Jade Technique Codex'), 'HUD technique codex label must show the sealed move library.');
+  assert(snapshot.state.techniqueCodexProof === true, 'HUD technique codex action must record codex proof.');
+  assert(snapshot.state.techniqueCodexId === 'jade-technique-codex', 'HUD technique codex action must record the Jade Technique Codex id.');
+  assert(snapshot.state.techniqueCodexName === 'Jade Technique Codex', 'HUD technique codex action must record the codex name.');
+  assert(snapshot.state.techniqueCodexScore >= 46, 'HUD technique codex action must record a passing codex score.');
+  assert(snapshot.state.techniqueCodexRequiredScore === 46, 'HUD technique codex action must record the codex requirement.');
+  assert(Array.isArray(snapshot.state.techniqueCodexPartyIds) && snapshot.state.techniqueCodexPartyIds.includes('lirabao'), 'HUD technique codex action must include Lirabao in the codex party.');
+  assert(Array.isArray(snapshot.state.techniqueCodexPartyIds) && snapshot.state.techniqueCodexPartyIds.includes('jintari'), 'HUD technique codex action must include Jintari in the codex party.');
+  assert(Array.isArray(snapshot.state.techniqueCodexPartyIds) && snapshot.state.techniqueCodexPartyIds.includes('aozhen'), 'HUD technique codex action must include Aozhen in the codex party.');
+  assert(Array.isArray(snapshot.state.techniqueCodexMoveIds) && snapshot.state.techniqueCodexMoveIds.includes('lantern-pulse'), 'HUD technique codex action must include Lantern Pulse.');
+  assert(Array.isArray(snapshot.state.techniqueCodexMoveIds) && snapshot.state.techniqueCodexMoveIds.includes('goldleaf-feint'), 'HUD technique codex action must include Goldleaf Feint.');
+  assert(Array.isArray(snapshot.state.techniqueCodexMoveIds) && snapshot.state.techniqueCodexMoveIds.includes('skybell-guard'), 'HUD technique codex action must include Skybell Guard.');
+  assert(Array.isArray(snapshot.state.techniqueCodexTacticIds) && snapshot.state.techniqueCodexTacticIds.includes('lantern-anchor'), 'HUD technique codex action must include Lantern Anchor.');
+  assert(Array.isArray(snapshot.state.techniqueCodexTacticIds) && snapshot.state.techniqueCodexTacticIds.includes('goldleaf-opening'), 'HUD technique codex action must include Goldleaf Opening.');
+  assert(Array.isArray(snapshot.state.techniqueCodexTacticIds) && snapshot.state.techniqueCodexTacticIds.includes('skybell-ward'), 'HUD technique codex action must include Skybell Ward.');
+  assert(snapshot.state.techniqueCodexSealClaimed === true, 'HUD technique codex action must mark the no-real-value codex seal proof.');
   assert(snapshot.trait.includes('Skybell Wayfinder'), 'HUD trait label must show the attuned spirit trait.');
   assert(snapshot.state.traitAttunementProof === true, 'HUD trait action must record trait attunement proof.');
   assert(snapshot.state.traitAttunementId === 'jade-heart-trait', 'HUD trait action must record the Jade Heart trait id.');
@@ -1512,6 +1551,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');
   assert(chat.some((line) => String(line).includes('Jade Court Ascension Trial complete')), 'HUD chat state must record the guild ascension trial action.');
   assert(chat.some((line) => String(line).includes('Jade Step Loadout prepared')), 'HUD chat state must record the technique loadout action.');
+  assert(chat.some((line) => String(line).includes('Jade Technique Codex sealed')), 'HUD chat state must record the technique codex action.');
   assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Condition Weave complete')), 'HUD chat state must record the condition weave action.');
   assert(chat.some((line) => String(line).includes('Jade Affinity Matrix mapped')), 'HUD chat state must record the affinity matrix action.');

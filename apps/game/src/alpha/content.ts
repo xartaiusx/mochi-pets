@@ -1683,6 +1683,7 @@ export interface GuildWayfarerChronicleProgress {
   bloomAscendanceProof: boolean;
   exchangeAccordProof: boolean;
   affinityMatrixProof: boolean;
+  techniqueCodexProof: boolean;
   commissionProof: boolean;
   rallyProof: boolean;
   techniqueLoadoutProof: boolean;
@@ -1750,6 +1751,7 @@ export interface GuildAscensionTrialProgress {
   bloomAscendanceProof: boolean;
   exchangeAccordProof: boolean;
   affinityMatrixProof: boolean;
+  techniqueCodexProof: boolean;
   routePatrolProof: boolean;
   mentorChallengeProof: boolean;
   tournamentProof: boolean;
@@ -2138,6 +2140,58 @@ export interface SpiritTechniqueLoadoutResult {
   title: string;
   partyIds: string[];
   moves: SpiritTechniqueLoadoutMove[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
+export interface SpiritTechniqueCodex {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredMoveIds: readonly string[];
+  requiredLoadoutId: string;
+  requiredTacticIds: readonly string[];
+  requiredTechniqueXp: number;
+  requiredTrainingXp: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritTechniqueCodexProgress {
+  partyIds: readonly string[];
+  masteredMoveIds: readonly string[];
+  tacticIds: readonly string[];
+  techniqueProof: boolean;
+  techniqueLoadoutProof: boolean;
+  techniqueLoadoutId?: string;
+  techniqueMasteryXp: number;
+  tacticProof: boolean;
+  trainingXp: number;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  journalProof: boolean;
+  journalDiscoveredCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritTechniqueCodexResult {
+  ok: boolean;
+  codified: boolean;
+  codexId: string;
+  codexName: string;
+  title: string;
+  partyIds: string[];
+  masteredMoveIds: string[];
+  tacticIds: string[];
   score: number;
   requiredScore: number;
   missing: string[];
@@ -3066,6 +3120,11 @@ export const ALPHA_ITEMS = {
     id: 'jade-step-loadout-slip',
     name: 'Jade Step Loadout Slip',
     description: 'A no-real-value technique loadout proof for closed-alpha Mochirii party battles.'
+  },
+  techniqueCodexSeal: {
+    id: 'jade-technique-codex-seal',
+    name: 'Jade Technique Codex Seal',
+    description: 'A no-real-value technique codex proof for closed-alpha Mochirii full-party move literacy, tactics, training, and safe battle readiness.'
   },
   traitThread: {
     id: 'jade-heart-trait-thread',
@@ -4004,6 +4063,23 @@ export const SPIRIT_TECHNIQUE_LOADOUTS: readonly SpiritTechniqueLoadout[] = [
     requiredScore: 22,
     rewardItemId: ALPHA_ITEMS.loadoutSlip.id,
     summary: 'A no-real-value battle preparation proof that assigns one original Mochirii move to each first-court spirit before team trials.'
+  }
+];
+
+export const SPIRIT_TECHNIQUE_CODEXES: readonly SpiritTechniqueCodex[] = [
+  {
+    id: 'jade-technique-codex',
+    name: 'Jade Technique Codex',
+    title: 'First-Court Move Library',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredMoveIds: [SPIRIT_MOVES.lanternPulse.id, SPIRIT_MOVES.goldleafFeint.id, SPIRIT_MOVES.skybellGuard.id],
+    requiredLoadoutId: SPIRIT_TECHNIQUE_LOADOUTS[0].id,
+    requiredTacticIds: SPIRIT_BATTLE_TACTICS.map((tactic) => tactic.id),
+    requiredTechniqueXp: 18,
+    requiredTrainingXp: 3,
+    requiredScore: 46,
+    rewardItemId: ALPHA_ITEMS.techniqueCodexSeal.id,
+    summary: 'A no-real-value party move-library proof for testers who record each first-court spirit technique, tactic stance, loadout, training, journal, and no-injury battle evidence.'
   }
 ];
 
@@ -6710,6 +6786,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.bloomAscendanceProof) missing.push('bloom-ascendance');
   if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
+  if (!progress.techniqueCodexProof) missing.push('technique-codex');
   if (!progress.commissionProof) missing.push('commission');
   if (!progress.rallyProof) missing.push('rally');
   if (!progress.techniqueLoadoutProof) missing.push('loadout');
@@ -6757,6 +6834,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.bloomAscendanceProof ? 3 : 0) +
     (progress.exchangeAccordProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
+    (progress.techniqueCodexProof ? 3 : 0) +
     (progress.commissionProof ? 2 : 0) +
     (progress.rallyProof ? 3 : 0) +
     (progress.techniqueLoadoutProof ? 2 : 0) +
@@ -6798,7 +6876,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, bloom ascendance, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, bloom ascendance, technique codex study, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -6830,6 +6908,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.bloomAscendanceProof) missing.push('bloom-ascendance');
   if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
+  if (!progress.techniqueCodexProof) missing.push('technique-codex');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.mentorChallengeProof) missing.push('mentor');
   if (!progress.tournamentProof) missing.push('tournament');
@@ -6862,6 +6941,7 @@ export function resolveGuildAscensionTrial(
     (progress.bloomAscendanceProof ? 3 : 0) +
     (progress.exchangeAccordProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
+    (progress.techniqueCodexProof ? 3 : 0) +
     (progress.routePatrolProof ? 4 : 0) +
     (progress.mentorChallengeProof ? 4 : 0) +
     (progress.tournamentProof ? 3 : 0) +
@@ -6901,7 +6981,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, bloom ascendance, exchange accord, affinity matrix, route patrol, mentor, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, bloom ascendance, technique codex, exchange accord, affinity matrix, route patrol, mentor, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };
@@ -8093,6 +8173,100 @@ export function resolveSpiritTechniqueLoadout(
       ? `${loadout.name} prepared: ${moveSummary} are set as no-injury Mochirii party moves for closed-alpha battles.`
       : `${loadout.name} needs ${missing.join(', ')} before party moves can be locked for battle practice.`,
     source: 'spirit-technique-loadout'
+  };
+}
+
+export function resolveSpiritTechniqueCodex(
+  progress: SpiritTechniqueCodexProgress,
+  codexId: string = SPIRIT_TECHNIQUE_CODEXES[0].id
+): SpiritTechniqueCodexResult {
+  const codex = SPIRIT_TECHNIQUE_CODEXES.find((entry) => entry.id === codexId) || SPIRIT_TECHNIQUE_CODEXES[0];
+  const requiredSpiritIds = new Set(codex.requiredSpiritIds);
+  const requiredMoveIds = new Set(codex.requiredMoveIds);
+  const requiredTacticIds = new Set(codex.requiredTacticIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const masteredMoveIds = Array.from(new Set(progress.masteredMoveIds.filter(Boolean))).filter((moveId) => {
+    return requiredMoveIds.has(moveId);
+  });
+  const tacticIds = Array.from(new Set(progress.tacticIds.filter(Boolean))).filter((tacticId) => {
+    return requiredTacticIds.has(tacticId);
+  });
+  const techniqueXp = Math.max(0, Math.floor(progress.techniqueMasteryXp || 0));
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  const journalDiscoveredCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of codex.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  for (const moveId of codex.requiredMoveIds) {
+    if (!masteredMoveIds.includes(moveId)) missing.push(`move:${moveId}`);
+  }
+
+  for (const tacticId of codex.requiredTacticIds) {
+    if (!tacticIds.includes(tacticId)) missing.push(`tactic:${tacticId}`);
+  }
+
+  if (!progress.techniqueProof) missing.push('technique');
+
+  const loadoutReady = progress.techniqueLoadoutProof && progress.techniqueLoadoutId === codex.requiredLoadoutId;
+  if (!loadoutReady) missing.push(`loadout:${codex.requiredLoadoutId}`);
+
+  if (!progress.tacticProof) missing.push('tactic-proof');
+  if (techniqueXp < codex.requiredTechniqueXp) missing.push(`technique-xp:${techniqueXp}/${codex.requiredTechniqueXp}`);
+  if (trainingXp < codex.requiredTrainingXp) missing.push(`training-xp:${trainingXp}/${codex.requiredTrainingXp}`);
+  if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
+  if (!progress.journalProof || journalDiscoveredCount < codex.requiredSpiritIds.length) {
+    missing.push(`journal:${journalDiscoveredCount}/${codex.requiredSpiritIds.length}`);
+  }
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(partyIds.length, codex.requiredSpiritIds.length) * 3 +
+    Math.min(masteredMoveIds.length, codex.requiredMoveIds.length) * 4 +
+    Math.min(tacticIds.length, codex.requiredTacticIds.length) * 2 +
+    (progress.techniqueProof ? 4 : 0) +
+    (loadoutReady ? 5 : 0) +
+    (progress.tacticProof ? 3 : 0) +
+    Math.min(6, Math.floor(techniqueXp / 3)) +
+    Math.min(trainingXp, codex.requiredTrainingXp) +
+    (progress.battleRoundProof && progress.battleRoundVictory ? 4 : 0) +
+    (progress.journalProof ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const codified = missing.length === 0 && score >= codex.requiredScore;
+  const moveNames = masteredMoveIds.map((moveId) => {
+    return Object.values(SPIRIT_MOVES).find((move) => move.id === moveId)?.label || moveId;
+  });
+
+  return {
+    ok: true,
+    codified,
+    codexId: codex.id,
+    codexName: codex.name,
+    title: codex.title,
+    partyIds,
+    masteredMoveIds,
+    tacticIds,
+    score,
+    requiredScore: codex.requiredScore,
+    missing,
+    rewardItemId: codex.rewardItemId,
+    message: codified
+      ? `${codex.name} sealed: ${moveNames.join(', ')} and ${tacticIds.length} tactic stances are recorded for no-injury Mochirii party battles. No real value.`
+      : `${codex.name} needs ${missing.join(', ')} before full-party technique literacy can be sealed.`,
+    source: 'spirit-technique-codex'
   };
 }
 

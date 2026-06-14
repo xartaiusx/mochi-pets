@@ -19,7 +19,7 @@ This contract tells Codex how to upgrade Mochi Social art without breaking RPGJS
 - Character and prop spritesheets are 384x768 with a 3x4 layout and 128x192 frames.
 - Keep Tiled layer names, map width/height, collision semantics, object roles, public routes, bridge messages, and HUD `data-*` hooks stable unless tests and docs change in the same task.
 - Keep Enjin UI and copy as Canary, no-real-value, and `configured-preview-stub` until funded-chain gates are approved and verified.
-- Content-only proof loops such as the Jade Encounter Atlas, Jade Court Craft Writ, Jade Exchange Accord, Jade Exchange Accord Tally, Jade Cloudbell Waystone, Jade Moonwell Nurture Rite, Jade Teahouse Recovery, Jade Kinship Album, Jade Nursery Grove, Jade Bloom Ascendance, Jade Bloom Ascendance Sigil, Jade Capture Rite, Jade Banner Tournament, Jade Rival Circle, Jade Affinity Matrix, Jade Scroll Story Chapter, and Jade Insignia Case may add HUD labels/actions and tests without an asset-ledger row when no runtime art file or source card is created.
+- Content-only proof loops such as the Jade Encounter Atlas, Jade Court Craft Writ, Jade Exchange Accord, Jade Exchange Accord Tally, Jade Cloudbell Waystone, Jade Moonwell Nurture Rite, Jade Teahouse Recovery, Jade Kinship Album, Jade Nursery Grove, Jade Bloom Ascendance, Jade Bloom Ascendance Sigil, Jade Capture Rite, Jade Banner Tournament, Jade Rival Circle, Jade Affinity Matrix, Jade Technique Codex, Jade Technique Codex Seal, Jade Scroll Story Chapter, and Jade Insignia Case may add HUD labels/actions and tests without an asset-ledger row when no runtime art file or source card is created.
 
 ## Asset Replacement Order
 
