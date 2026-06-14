@@ -261,11 +261,51 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/capture-rite/bracket', 'capture rite proof']
+    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/capture-rite', 'nursery grove proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/capture-rite']
+    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/capture-rite']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Nursery Grove proof', 'nursery-grove']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Nursery Grove', 'Jade Nursery Grove proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Nursery Grove contribution', 'content-only Jade Nursery Sprout proof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Nursery Grove proof', 'nursery', 'content-only']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Nursery Grove', 'Jade Nursery Grove proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Nursery Grove proof', 'record the Jade Nursery Grove', 'no-real-value Jade Nursery Grove']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Nursery Grove', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Nursery Grove', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'AGENTS.md',
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/capture-rite/bracket', 'capture rite proof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/capture-rite']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -349,6 +389,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritNurseryGroves: true', "'spirit.nursery_grove'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
@@ -410,6 +454,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_KINSHIP_ALBUMS', 'resolveSpiritKinshipAlbum', 'data-alpha-action="spirit.kinship_album"', 'data-kinship-album-label', 'kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_NURSERY_GROVES', 'resolveSpiritNurseryGrove', 'data-alpha-action="spirit.nursery_grove"', 'data-nursery-grove-label', 'nurseryGroveProof', 'nurserySproutClaimed', 'Jade Nursery Grove']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -481,6 +529,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Nursery Grove', 'jade-nursery-sprout', 'resolveSpiritNurseryGrove', 'spirit-nursery-grove', 'nurserySprout']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -534,6 +586,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritKinshipAlbums: true', 'spirit.kinship_album']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritNurseryGroves: true', 'spirit.nursery_grove']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -617,6 +673,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.nursery_grove', 'jade-nursery-grove', 'spiritNurseryGroves', 'Jade Nursery Grove', 'nurseryGrove']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
   },
   {
@@ -674,6 +734,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.kinship_album"', 'data-kinship-album-label', 'kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album recorded']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.nursery_grove"', 'data-nursery-grove-label', 'nurseryGroveProof', 'nurserySproutClaimed', 'Jade Nursery Grove cultivated']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -770,6 +834,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album', 'jade-kinship-album', 'spirit-kinship-album', 'kinship album']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['nurseryGroveProof', 'nurserySproutClaimed', 'Jade Nursery Grove', 'jade-nursery-sprout', 'spirit-nursery-grove', 'nursery grove']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

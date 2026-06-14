@@ -27,6 +27,7 @@ import {
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
+  SPIRIT_NURSERY_GROVES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
   SPIRIT_RESEARCH_FOLIOS,
@@ -76,6 +77,7 @@ import {
   resolveSpiritJournal,
   resolveSpiritKinshipAlbum,
   resolveSpiritMentorChallenge,
+  resolveSpiritNurseryGrove,
   resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritBondMilestone,
@@ -292,6 +294,16 @@ interface AlphaHudState {
   kinshipAlbumCaredSpiritIds: string[];
   kinshipAlbumTotalBond: number;
   kinshipAlbumClaimed: boolean;
+  nurseryGroveProof: boolean;
+  nurseryGroveId?: string;
+  nurseryGroveName: string;
+  nurseryGroveScore: number;
+  nurseryGroveRequiredScore: number;
+  nurseryGroveSpiritIds: string[];
+  nurseryGrovePartyIds: string[];
+  nurseryGroveCaredSpiritIds: string[];
+  nurseryGroveTotalBond: number;
+  nurserySproutClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -941,6 +953,15 @@ function defaultAlphaState(): AlphaHudState {
     kinshipAlbumCaredSpiritIds: [],
     kinshipAlbumTotalBond: 0,
     kinshipAlbumClaimed: false,
+    nurseryGroveProof: false,
+    nurseryGroveName: 'Uncultivated',
+    nurseryGroveScore: 0,
+    nurseryGroveRequiredScore: 0,
+    nurseryGroveSpiritIds: [],
+    nurseryGrovePartyIds: [],
+    nurseryGroveCaredSpiritIds: [],
+    nurseryGroveTotalBond: 0,
+    nurserySproutClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -1183,6 +1204,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
       <span class="mochi-hud__hint" data-recovery-tea-label>Recovery: pending</span>
       <span class="mochi-hud__hint" data-kinship-album-label>Kinship: pending</span>
+      <span class="mochi-hud__hint" data-nursery-grove-label>Nursery: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-story-label>Story: pending</span>
@@ -1239,6 +1261,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
       <button type="button" data-alpha-action="spirit.recovery_tea" aria-label="Record the no-real-value Jade Teahouse Recovery">Recover</button>
       <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
+      <button type="button" data-alpha-action="spirit.nursery_grove" aria-label="Record the no-real-value Jade Nursery Grove">Nursery</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
@@ -1312,6 +1335,7 @@ function createHud() {
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
   const recoveryTeaLabel = hud.querySelector('[data-recovery-tea-label]');
   const kinshipAlbumLabel = hud.querySelector('[data-kinship-album-label]');
+  const nurseryGroveLabel = hud.querySelector('[data-nursery-grove-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const storyLabel = hud.querySelector('[data-story-label]');
@@ -1492,6 +1516,11 @@ function createHud() {
       kinshipAlbumLabel.textContent = state.kinshipAlbumProof
         ? `Kinship: ${state.kinshipAlbumName}, ${state.kinshipAlbumCaredSpiritIds.length} cared, bond ${state.kinshipAlbumTotalBond}, score ${state.kinshipAlbumScore}/${state.kinshipAlbumRequiredScore}`
         : 'Kinship: pending';
+    }
+    if (nurseryGroveLabel) {
+      nurseryGroveLabel.textContent = state.nurseryGroveProof
+        ? `Nursery: ${state.nurseryGroveName}, ${state.nurseryGroveSpiritIds.length} spirits, score ${state.nurseryGroveScore}/${state.nurseryGroveRequiredScore}`
+        : 'Nursery: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1833,6 +1862,9 @@ function readAlphaState(): AlphaHudState {
       recoveryTeaCaredSpiritIds: Array.isArray(parsed?.recoveryTeaCaredSpiritIds) ? parsed.recoveryTeaCaredSpiritIds.map(String) : [],
       kinshipAlbumSpiritIds: Array.isArray(parsed?.kinshipAlbumSpiritIds) ? parsed.kinshipAlbumSpiritIds.map(String) : [],
       kinshipAlbumCaredSpiritIds: Array.isArray(parsed?.kinshipAlbumCaredSpiritIds) ? parsed.kinshipAlbumCaredSpiritIds.map(String) : [],
+      nurseryGroveSpiritIds: Array.isArray(parsed?.nurseryGroveSpiritIds) ? parsed.nurseryGroveSpiritIds.map(String) : [],
+      nurseryGrovePartyIds: Array.isArray(parsed?.nurseryGrovePartyIds) ? parsed.nurseryGrovePartyIds.map(String) : [],
+      nurseryGroveCaredSpiritIds: Array.isArray(parsed?.nurseryGroveCaredSpiritIds) ? parsed.nurseryGroveCaredSpiritIds.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
@@ -2711,6 +2743,59 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.nursery_grove') {
+    const roster = state.kinshipAlbumSpiritIds.length
+      ? state.kinshipAlbumSpiritIds
+      : state.attunedSpiritIds.length
+        ? state.attunedSpiritIds
+        : [state.spiritId].filter(Boolean);
+    const partyIds = state.recoveryTeaPartyIds.length
+      ? state.recoveryTeaPartyIds
+      : state.partyIds.length
+        ? state.partyIds
+        : roster.slice(0, 3);
+    const caredSpiritIds = state.kinshipAlbumCaredSpiritIds.length
+      ? state.kinshipAlbumCaredSpiritIds
+      : state.recoveryTeaCaredSpiritIds.length
+        ? state.recoveryTeaCaredSpiritIds
+        : state.careCycleCaredSpiritIds.length
+          ? state.careCycleCaredSpiritIds
+          : roster;
+    const inferredBond = Math.max(
+      state.bond || 0,
+      Math.ceil((state.kinshipAlbumTotalBond || state.careCycleTotalBond || 0) / Math.max(1, roster.length)),
+      5
+    );
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      nurseryId: SPIRIT_NURSERY_GROVES[0].id,
+      roster,
+      partyIds,
+      caredSpiritIds,
+      activeSpiritId: state.spiritId || partyIds[partyIds.length - 1] || roster[0],
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, inferredBond])),
+      localPresenceCount: presenceCount,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      nurtureRiteProof: state.nurtureRiteProof,
+      nurtureRiteId: state.nurtureRiteId,
+      recoveryTeaProof: state.recoveryTeaProof,
+      recoveryTeaId: state.recoveryTeaId,
+      kinshipAlbumProof: state.kinshipAlbumProof,
+      kinshipAlbumId: state.kinshipAlbumId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      raisingProof: state.raisingProof,
+      raisingMilestoneLabel: state.raisingMilestoneLabel,
+      trainingXp: state.trainingXp,
+      sparLadderXp: state.sparLadderXp,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2831,6 +2916,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       routeWaystoneProof: state.routeWaystoneProof,
       nurtureRiteProof: state.nurtureRiteProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
+      nurseryGroveProof: state.nurseryGroveProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       storyChapterProof: state.storyChapterProof,
@@ -2867,6 +2953,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       localPresenceCount: presenceCount,
       wayfarerChronicleProof: state.wayfarerChronicleProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
+      nurseryGroveProof: state.nurseryGroveProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
       rivalCircleProof: state.rivalCircleProof,
@@ -3991,6 +4078,63 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'spirit.nursery_grove') {
+    const result = resolveSpiritNurseryGrove(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.kinshipAlbumSpiritIds.length ? state.kinshipAlbumSpiritIds : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.recoveryTeaPartyIds.length ? state.recoveryTeaPartyIds : state.partyIds,
+        caredSpiritIds: Array.isArray(payload.caredSpiritIds)
+          ? payload.caredSpiritIds.map(String)
+          : state.kinshipAlbumCaredSpiritIds.length
+            ? state.kinshipAlbumCaredSpiritIds
+            : state.recoveryTeaCaredSpiritIds.length
+              ? state.recoveryTeaCaredSpiritIds
+              : state.careCycleCaredSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.partyIds[state.partyIds.length - 1] || state.attunedSpiritIds[0] || ''),
+        bondBySpiritId: normalizeBondMap(payload.bondBySpiritId, state.bond),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
+        nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
+        recoveryTeaProof: Boolean(payload.recoveryTeaProof ?? state.recoveryTeaProof),
+        recoveryTeaId: String(payload.recoveryTeaId || state.recoveryTeaId || ''),
+        kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
+        kinshipAlbumId: String(payload.kinshipAlbumId || state.kinshipAlbumId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
+        raisingMilestoneLabel: String(payload.raisingMilestoneLabel || state.raisingMilestoneLabel || ''),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        sparLadderXp: Number(payload.sparLadderXp ?? state.sparLadderXp ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.nurseryId || SPIRIT_NURSERY_GROVES[0].id)
+    );
+    if (result.cultivated) {
+      state.nurseryGroveProof = true;
+      state.nurseryGroveId = result.nurseryId;
+      state.nurseryGroveName = result.nurseryName;
+      state.nurseryGroveScore = result.score;
+      state.nurseryGroveRequiredScore = result.requiredScore;
+      state.nurseryGroveSpiritIds = result.roster;
+      state.nurseryGrovePartyIds = result.partyIds;
+      state.nurseryGroveCaredSpiritIds = result.caredSpiritIds;
+      state.nurseryGroveTotalBond = result.totalBond;
+      state.nurserySproutClaimed = result.rewardItemId === 'jade-nursery-sprout';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.careCycleCaredSpiritIds = Array.from(new Set([...state.careCycleCaredSpiritIds, ...result.caredSpiritIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -4169,6 +4313,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
+        nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
@@ -4220,6 +4365,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
+        nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),

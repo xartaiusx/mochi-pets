@@ -208,6 +208,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.nurture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.recovery_tea"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.kinship_album"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.nursery_grove"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
@@ -251,6 +252,7 @@ async function exerciseAlphaHud(page) {
       const nurtureRite = document.querySelector('[data-nurture-rite-label]')?.textContent || '';
       const recoveryTea = document.querySelector('[data-recovery-tea-label]')?.textContent || '';
       const kinship = document.querySelector('[data-kinship-album-label]')?.textContent || '';
+      const nursery = document.querySelector('[data-nursery-grove-label]')?.textContent || '';
       const captureRite = document.querySelector('[data-capture-rite-label]')?.textContent || '';
       const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
       const rivalCircle = document.querySelector('[data-rival-circle-label]')?.textContent || '';
@@ -309,6 +311,7 @@ async function exerciseAlphaHud(page) {
         && nurtureRite.includes('Jade Moonwell Nurture Rite')
         && recoveryTea.includes('Jade Teahouse Recovery')
         && kinship.includes('Jade Kinship Album')
+        && nursery.includes('Jade Nursery Grove')
         && captureRite.includes('Jade Capture Rite')
         && tournament.includes('Jade Banner Tournament')
         && rivalCircle.includes('Jade Rival Circle')
@@ -542,6 +545,25 @@ async function exerciseAlphaHud(page) {
         && state.kinshipAlbumCaredSpiritIds.includes('aozhen')
         && state.kinshipAlbumTotalBond >= 15
         && state.kinshipAlbumClaimed === true
+        && state.nurseryGroveProof === true
+        && state.nurseryGroveId === 'jade-nursery-grove'
+        && state.nurseryGroveName === 'Jade Nursery Grove'
+        && state.nurseryGroveScore >= 52
+        && state.nurseryGroveRequiredScore === 52
+        && Array.isArray(state.nurseryGroveSpiritIds)
+        && state.nurseryGroveSpiritIds.includes('lirabao')
+        && state.nurseryGroveSpiritIds.includes('jintari')
+        && state.nurseryGroveSpiritIds.includes('aozhen')
+        && Array.isArray(state.nurseryGrovePartyIds)
+        && state.nurseryGrovePartyIds.includes('lirabao')
+        && state.nurseryGrovePartyIds.includes('jintari')
+        && state.nurseryGrovePartyIds.includes('aozhen')
+        && Array.isArray(state.nurseryGroveCaredSpiritIds)
+        && state.nurseryGroveCaredSpiritIds.includes('lirabao')
+        && state.nurseryGroveCaredSpiritIds.includes('jintari')
+        && state.nurseryGroveCaredSpiritIds.includes('aozhen')
+        && state.nurseryGroveTotalBond >= 15
+        && state.nurserySproutClaimed === true
         && state.tournamentProof === true
         && state.tournamentId === 'jade-banner-tournament'
         && state.tournamentName === 'Jade Banner Tournament'
@@ -827,6 +849,7 @@ async function exerciseAlphaHud(page) {
       nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
       recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent || '',
       kinship: document.querySelector('[data-kinship-album-label]')?.textContent || '',
+      nursery: document.querySelector('[data-nursery-grove-label]')?.textContent || '',
       tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
       rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
@@ -882,6 +905,7 @@ async function exerciseAlphaHud(page) {
     nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
     recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent?.trim() || '',
     kinship: document.querySelector('[data-kinship-album-label]')?.textContent?.trim() || '',
+    nursery: document.querySelector('[data-nursery-grove-label]')?.textContent?.trim() || '',
     tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
     rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
@@ -1141,6 +1165,23 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.kinshipAlbumCaredSpiritIds) && snapshot.state.kinshipAlbumCaredSpiritIds.includes('aozhen'), 'HUD kinship action must record Aozhen care proof.');
   assert(snapshot.state.kinshipAlbumTotalBond >= 15, 'HUD kinship action must record full-roster bond proof.');
   assert(snapshot.state.kinshipAlbumClaimed === true, 'HUD kinship action must mark the no-real-value kinship album proof.');
+  assert(snapshot.nursery.includes('Jade Nursery Grove'), 'HUD nursery label must show the completed no-real-value nursery proof.');
+  assert(snapshot.state.nurseryGroveProof === true, 'HUD nursery action must record nursery grove proof.');
+  assert(snapshot.state.nurseryGroveId === 'jade-nursery-grove', 'HUD nursery action must record the nursery grove id.');
+  assert(snapshot.state.nurseryGroveName === 'Jade Nursery Grove', 'HUD nursery action must record the nursery grove name.');
+  assert(snapshot.state.nurseryGroveScore >= 52, 'HUD nursery action must record a passing nursery score.');
+  assert(snapshot.state.nurseryGroveRequiredScore === 52, 'HUD nursery action must record the nursery requirement.');
+  assert(Array.isArray(snapshot.state.nurseryGroveSpiritIds) && snapshot.state.nurseryGroveSpiritIds.includes('lirabao'), 'HUD nursery action must record Lirabao roster proof.');
+  assert(Array.isArray(snapshot.state.nurseryGroveSpiritIds) && snapshot.state.nurseryGroveSpiritIds.includes('jintari'), 'HUD nursery action must record Jintari roster proof.');
+  assert(Array.isArray(snapshot.state.nurseryGroveSpiritIds) && snapshot.state.nurseryGroveSpiritIds.includes('aozhen'), 'HUD nursery action must record Aozhen roster proof.');
+  assert(Array.isArray(snapshot.state.nurseryGrovePartyIds) && snapshot.state.nurseryGrovePartyIds.includes('lirabao'), 'HUD nursery action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.nurseryGrovePartyIds) && snapshot.state.nurseryGrovePartyIds.includes('jintari'), 'HUD nursery action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.nurseryGrovePartyIds) && snapshot.state.nurseryGrovePartyIds.includes('aozhen'), 'HUD nursery action must record Aozhen party proof.');
+  assert(Array.isArray(snapshot.state.nurseryGroveCaredSpiritIds) && snapshot.state.nurseryGroveCaredSpiritIds.includes('lirabao'), 'HUD nursery action must record Lirabao care proof.');
+  assert(Array.isArray(snapshot.state.nurseryGroveCaredSpiritIds) && snapshot.state.nurseryGroveCaredSpiritIds.includes('jintari'), 'HUD nursery action must record Jintari care proof.');
+  assert(Array.isArray(snapshot.state.nurseryGroveCaredSpiritIds) && snapshot.state.nurseryGroveCaredSpiritIds.includes('aozhen'), 'HUD nursery action must record Aozhen care proof.');
+  assert(snapshot.state.nurseryGroveTotalBond >= 15, 'HUD nursery action must record full-roster bond proof.');
+  assert(snapshot.state.nurserySproutClaimed === true, 'HUD nursery action must mark the no-real-value nursery sprout proof.');
   assert(snapshot.tournament.includes('Jade Banner Tournament'), 'HUD tournament label must show the cleared no-injury battle bracket.');
   assert(snapshot.state.tournamentProof === true, 'HUD tournament action must record tournament proof.');
   assert(snapshot.state.tournamentId === 'jade-banner-tournament', 'HUD tournament action must record the tournament id.');
@@ -1347,6 +1388,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Moonwell Nurture Rite complete')), 'HUD chat state must record the nurture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Teahouse Recovery complete')), 'HUD chat state must record the recovery tea action.');
   assert(chat.some((line) => String(line).includes('Jade Kinship Album recorded')), 'HUD chat state must record the kinship album action.');
+  assert(chat.some((line) => String(line).includes('Jade Nursery Grove cultivated')), 'HUD chat state must record the nursery grove action.');
   assert(chat.some((line) => String(line).includes('Jade Capture Rite recorded')), 'HUD chat state must record the capture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Encounter Atlas recorded')), 'HUD chat state must record the encounter atlas action.');
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');

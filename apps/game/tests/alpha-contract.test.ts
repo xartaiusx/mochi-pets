@@ -27,6 +27,7 @@ import {
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
+  SPIRIT_NURSERY_GROVES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
   SPIRIT_RESEARCH_FOLIOS,
@@ -64,6 +65,7 @@ import {
   resolveSpiritKinshipAlbum,
   resolveSpiritMentorChallenge,
   resolveSpiritNurtureRite,
+  resolveSpiritNurseryGrove,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritBattleRound,
@@ -130,6 +132,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRecoveryTeas).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritKinshipAlbums).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritNurseryGroves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -203,6 +206,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.recovery_tea');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.kinship_album');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.nursery_grove');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -1275,6 +1279,79 @@ describe('alpha contract', () => {
     expect(missingKinshipAlbum.recorded).toBe(false);
     expect(missingKinshipAlbum.missing).toContain('presence:1/2');
     expect(missingKinshipAlbum.missing).toContain('nurture:jade-moonwell-nurture-rite');
+
+    expect(SPIRIT_NURSERY_GROVES.map((entry) => entry.id)).toEqual(['jade-nursery-grove']);
+    const nurseryGrove = resolveSpiritNurseryGrove({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for nursery grove.']
+    });
+    expect(nurseryGrove).toMatchObject({
+      ok: true,
+      cultivated: true,
+      nurseryId: 'jade-nursery-grove',
+      nurseryName: 'Jade Nursery Grove',
+      title: 'First-Court Companion Nursery',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 15,
+      localPresenceCount: 2,
+      score: 61,
+      requiredScore: 52,
+      rewardItemId: 'jade-nursery-sprout',
+      source: 'spirit-nursery-grove'
+    });
+    expect(nurseryGrove.message).toContain('No real value');
+    expect(resolveSpiritNurseryGrove({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      kinshipAlbumProof: false,
+      kinshipAlbumId: 'jade-kinship-album',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for nursery grove.']
+    }).cultivated).toBe(false);
     expect(resolveSpiritNurtureRite({
       roster: ['lirabao', 'jintari', 'aozhen'],
       caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
@@ -1554,6 +1631,7 @@ describe('alpha contract', () => {
       routeWaystoneProof: true,
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
+      nurseryGroveProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1589,7 +1667,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 109,
+      score: 112,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1615,6 +1693,7 @@ describe('alpha contract', () => {
       routeWaystoneProof: true,
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
+      nurseryGroveProof: true,
       commissionProof: true,
       rallyProof: false,
       techniqueLoadoutProof: true,
@@ -1650,6 +1729,7 @@ describe('alpha contract', () => {
       localPresenceCount: 2,
       wayfarerChronicleProof: true,
       kinshipAlbumProof: true,
+      nurseryGroveProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1685,7 +1765,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 74,
+      score: 77,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -1697,6 +1777,7 @@ describe('alpha contract', () => {
       localPresenceCount: 2,
       wayfarerChronicleProof: false,
       kinshipAlbumProof: true,
+      nurseryGroveProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,

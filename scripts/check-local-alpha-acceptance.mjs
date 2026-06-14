@@ -128,6 +128,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritNurtureRites === true, 'Alpha status must expose Mochi Spirit nurture rites.');
   assert(alphaStatus.body.gameplay?.spiritRecoveryTeas === true, 'Alpha status must expose Mochi Spirit recovery tea proofs.');
   assert(alphaStatus.body.gameplay?.spiritKinshipAlbums === true, 'Alpha status must expose Mochi Spirit kinship albums.');
+  assert(alphaStatus.body.gameplay?.spiritNurseryGroves === true, 'Alpha status must expose Mochi Spirit nursery grove proofs.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -948,6 +949,39 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-nursery-grove`,
+      type: 'spirit.nursery_grove',
+      payload: {
+        nurseryId: 'jade-nursery-grove',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+        localPresenceCount: 2,
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        nurtureRiteProof: true,
+        nurtureRiteId: 'jade-moonwell-nurture-rite',
+        recoveryTeaProof: true,
+        recoveryTeaId: 'jade-teahouse-recovery',
+        kinshipAlbumProof: true,
+        kinshipAlbumId: 'jade-kinship-album',
+        growthRiteProof: true,
+        growthRiteId: 'moonwell-bloom-rite',
+        raisingProof: true,
+        raisingMilestoneLabel: 'Moonwell Bloom Form',
+        trainingXp: 3,
+        sparLadderXp: 5,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-nursery-sprout',
+        chatLines: ['Local acceptance nursery grove proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-tournament-bracket`,
       type: 'battle.tournament_bracket',
       payload: {
@@ -1156,6 +1190,7 @@ async function run() {
         routeWaystoneProof: true,
         nurtureRiteProof: true,
         kinshipAlbumProof: true,
+        nurseryGroveProof: true,
         commissionProof: true,
         rallyProof: true,
         storyChapterProof: true,
@@ -1193,6 +1228,7 @@ async function run() {
         localPresenceCount: 2,
         wayfarerChronicleProof: true,
         kinshipAlbumProof: true,
+        nurseryGroveProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -1405,6 +1441,25 @@ async function run() {
   assert(kinshipAlbum?.payload?.raisingProof === true, 'Kinship album ledger entry must preserve raising proof.');
   assert(kinshipAlbum?.payload?.rewardItemId === 'jade-kinship-album', 'Kinship album ledger entry must preserve the no-real-value album proof.');
   assert(kinshipAlbum?.payload?.noRealValue === true, 'Kinship album ledger entry must remain no-real-value.');
+  const nurseryGrove = entriesById.get(`${runId}-nursery-grove`);
+  assert(nurseryGrove?.payload?.nurseryId === 'jade-nursery-grove', 'Nursery grove ledger entry must preserve the Jade Nursery Grove id.');
+  assert(Array.isArray(nurseryGrove?.payload?.roster) && nurseryGrove.payload.roster.length === 3, 'Nursery grove ledger entry must preserve full roster proof.');
+  assert(Array.isArray(nurseryGrove?.payload?.partyIds) && nurseryGrove.payload.partyIds.length === 3, 'Nursery grove ledger entry must preserve full party proof.');
+  assert(Array.isArray(nurseryGrove?.payload?.caredSpiritIds) && nurseryGrove.payload.caredSpiritIds.length === 3, 'Nursery grove ledger entry must preserve full care proof.');
+  assert(nurseryGrove?.payload?.bondBySpiritId?.lirabao === 5, 'Nursery grove ledger entry must preserve Lirabao bond proof.');
+  assert(nurseryGrove?.payload?.bondBySpiritId?.jintari === 5, 'Nursery grove ledger entry must preserve Jintari bond proof.');
+  assert(nurseryGrove?.payload?.bondBySpiritId?.aozhen === 5, 'Nursery grove ledger entry must preserve Aozhen bond proof.');
+  assert(nurseryGrove?.payload?.localPresenceCount === 2, 'Nursery grove ledger entry must preserve two-tester presence proof.');
+  assert(nurseryGrove?.payload?.careCycleProof === true, 'Nursery grove ledger entry must preserve care cycle proof.');
+  assert(nurseryGrove?.payload?.nurtureRiteProof === true, 'Nursery grove ledger entry must preserve nurture rite proof.');
+  assert(nurseryGrove?.payload?.recoveryTeaProof === true, 'Nursery grove ledger entry must preserve recovery tea proof.');
+  assert(nurseryGrove?.payload?.kinshipAlbumProof === true, 'Nursery grove ledger entry must preserve kinship album proof.');
+  assert(nurseryGrove?.payload?.growthRiteProof === true, 'Nursery grove ledger entry must preserve growth rite proof.');
+  assert(nurseryGrove?.payload?.raisingProof === true, 'Nursery grove ledger entry must preserve raising proof.');
+  assert(nurseryGrove?.payload?.trainingXp >= 3, 'Nursery grove ledger entry must preserve training XP proof.');
+  assert(nurseryGrove?.payload?.sparLadderXp >= 5, 'Nursery grove ledger entry must preserve spar ladder XP proof.');
+  assert(nurseryGrove?.payload?.rewardItemId === 'jade-nursery-sprout', 'Nursery grove ledger entry must preserve the no-real-value nursery sprout proof.');
+  assert(nurseryGrove?.payload?.noRealValue === true, 'Nursery grove ledger entry must remain no-real-value.');
   const captureRite = entriesById.get(`${runId}-capture-rite`);
   assert(captureRite?.payload?.riteId === 'jade-court-capture-rite', 'Capture rite ledger entry must preserve the Jade Capture Rite id.');
   assert(Array.isArray(captureRite?.payload?.roster) && captureRite.payload.roster.length === 3, 'Capture rite ledger entry must preserve full roster proof.');
@@ -1491,6 +1546,7 @@ async function run() {
   assert(chronicle?.payload?.routeWaystoneProof === true, 'Wayfarer chronicle ledger entry must preserve route waystone proof.');
   assert(chronicle?.payload?.nurtureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve nurture rite proof.');
   assert(chronicle?.payload?.kinshipAlbumProof === true, 'Wayfarer chronicle ledger entry must preserve kinship album proof.');
+  assert(chronicle?.payload?.nurseryGroveProof === true, 'Wayfarer chronicle ledger entry must preserve nursery grove proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.storyChapterProof === true, 'Wayfarer chronicle ledger entry must preserve story chapter proof.');
@@ -1502,6 +1558,7 @@ async function run() {
   assert(ascension?.payload?.localPresenceCount === 2, 'Ascension trial ledger entry must preserve two-tester presence proof.');
   assert(ascension?.payload?.wayfarerChronicleProof === true, 'Ascension trial ledger entry must preserve wayfarer chronicle proof.');
   assert(ascension?.payload?.kinshipAlbumProof === true, 'Ascension trial ledger entry must preserve kinship album proof.');
+  assert(ascension?.payload?.nurseryGroveProof === true, 'Ascension trial ledger entry must preserve nursery grove proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');
