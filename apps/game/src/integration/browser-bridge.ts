@@ -21,6 +21,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
@@ -62,6 +63,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
+  resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritBondMilestone,
   resolveSpiritProvisionSatchel,
@@ -230,6 +232,14 @@ interface AlphaHudState {
   routeWaystoneRouteIds: string[];
   routeWaystoneInvitedSpiritIds: string[];
   routeWaystoneSealClaimed: boolean;
+  nurtureRiteProof: boolean;
+  nurtureRiteId?: string;
+  nurtureRiteName: string;
+  nurtureRiteScore: number;
+  nurtureRiteRequiredScore: number;
+  nurtureRiteRosterIds: string[];
+  nurtureRiteCaredSpiritIds: string[];
+  nurtureRibbonClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -808,6 +818,13 @@ function defaultAlphaState(): AlphaHudState {
     routeWaystoneRouteIds: [],
     routeWaystoneInvitedSpiritIds: [],
     routeWaystoneSealClaimed: false,
+    nurtureRiteProof: false,
+    nurtureRiteName: 'Unsealed',
+    nurtureRiteScore: 0,
+    nurtureRiteRequiredScore: 0,
+    nurtureRiteRosterIds: [],
+    nurtureRiteCaredSpiritIds: [],
+    nurtureRibbonClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -1017,6 +1034,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
+      <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -1062,6 +1080,7 @@ function createHud() {
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
+      <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1128,6 +1147,7 @@ function createHud() {
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
+  const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1269,6 +1289,11 @@ function createHud() {
       routeWaystoneLabel.textContent = state.routeWaystoneProof
         ? `Waystone: ${state.routeWaystoneName}, ${state.routeWaystoneRouteIds.length} routes, score ${state.routeWaystoneScore}/${state.routeWaystoneRequiredScore}`
         : 'Waystone: pending';
+    }
+    if (nurtureRiteLabel) {
+      nurtureRiteLabel.textContent = state.nurtureRiteProof
+        ? `Nurture: ${state.nurtureRiteName}, ${state.nurtureRiteCaredSpiritIds.length} spirits, score ${state.nurtureRiteScore}/${state.nurtureRiteRequiredScore}`
+        : 'Nurture: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1587,9 +1612,11 @@ function readAlphaState(): AlphaHudState {
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       routeWaystoneRouteIds: Array.isArray(parsed?.routeWaystoneRouteIds) ? parsed.routeWaystoneRouteIds.map(String) : [],
       routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
+      nurtureRiteRosterIds: Array.isArray(parsed?.nurtureRiteRosterIds) ? parsed.nurtureRiteRosterIds.map(String) : [],
+      nurtureRiteCaredSpiritIds: Array.isArray(parsed?.nurtureRiteCaredSpiritIds) ? parsed.nurtureRiteCaredSpiritIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
-      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-64).map(String) : []
+      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-80).map(String) : []
     };
   } catch {
     return defaultAlphaState();
@@ -1597,7 +1624,7 @@ function readAlphaState(): AlphaHudState {
 }
 
 function writeAlphaState(state: AlphaHudState) {
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-64) }));
+  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-80) }));
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
 
@@ -2303,6 +2330,34 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.nurture_rite') {
+    return {
+      riteId: SPIRIT_NURTURE_RITES[0].id,
+      roster: state.attunedSpiritIds,
+      caredSpiritIds: state.careCycleCaredSpiritIds.length ? state.careCycleCaredSpiritIds : state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[state.attunedSpiritIds.length - 1] || state.attunedSpiritIds[0],
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      craftWritProof: state.craftWritProof,
+      craftWritId: state.craftWritId,
+      temperamentConcordProof: state.temperamentConcordProof,
+      temperamentConcordId: state.temperamentConcordId,
+      raisingProof: state.raisingProof,
+      raisingMilestoneLabel: state.raisingMilestoneLabel,
+      bond: state.bond,
+      trainingXp: state.trainingXp,
+      sparLadderXp: state.sparLadderXp,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2360,6 +2415,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       provisionProof: state.provisionProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
+      nurtureRiteProof: state.nurtureRiteProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       techniqueLoadoutProof: state.techniqueLoadoutProof,
@@ -3233,6 +3289,50 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'spirit.nurture_rite') {
+    const result = resolveSpiritNurtureRite(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        caredSpiritIds: Array.isArray(payload.caredSpiritIds) ? payload.caredSpiritIds.map(String) : state.careCycleCaredSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        craftWritId: String(payload.craftWritId || state.craftWritId || ''),
+        temperamentConcordProof: Boolean(payload.temperamentConcordProof ?? state.temperamentConcordProof),
+        temperamentConcordId: String(payload.temperamentConcordId || state.temperamentConcordId || ''),
+        raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
+        raisingMilestoneLabel: String(payload.raisingMilestoneLabel || state.raisingMilestoneLabel || ''),
+        bond: Number(payload.bond ?? state.bond ?? 0),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        sparLadderXp: Number(payload.sparLadderXp ?? state.sparLadderXp ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.riteId || SPIRIT_NURTURE_RITES[0].id)
+    );
+    if (result.nurtured) {
+      state.nurtureRiteProof = true;
+      state.nurtureRiteId = result.riteId;
+      state.nurtureRiteName = result.riteName;
+      state.nurtureRiteScore = result.score;
+      state.nurtureRiteRequiredScore = result.requiredScore;
+      state.nurtureRiteRosterIds = result.roster;
+      state.nurtureRiteCaredSpiritIds = result.caredSpiritIds;
+      state.nurtureRibbonClaimed = result.rewardItemId === 'jade-moonwell-nurture-ribbon';
+      state.attunedSpiritIds = result.roster;
+      state.careCycleCaredSpiritIds = Array.from(new Set([...state.careCycleCaredSpiritIds, ...result.caredSpiritIds]));
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -3316,6 +3416,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
+        nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),

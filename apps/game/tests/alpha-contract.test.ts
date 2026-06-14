@@ -21,6 +21,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
@@ -49,6 +50,7 @@ import {
   resolveGuildWayfarerChronicle,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
+  resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
   resolveSpiritBattleRound,
@@ -108,6 +110,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -171,6 +174,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -986,6 +990,72 @@ describe('alpha contract', () => {
       chatLines: ['Waystone ready.']
     }).activated).toBe(false);
 
+    expect(SPIRIT_NURTURE_RITES.map((rite) => rite.id)).toEqual(['jade-moonwell-nurture-rite']);
+    const nurtureRite = resolveSpiritNurtureRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      bond: 5,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first nurture rite.']
+    });
+    expect(nurtureRite).toMatchObject({
+      ok: true,
+      nurtured: true,
+      riteId: 'jade-moonwell-nurture-rite',
+      riteName: 'Jade Moonwell Nurture Rite',
+      title: 'First-Court Raising Seal',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 43,
+      requiredScore: 40,
+      rewardItemId: 'jade-moonwell-nurture-ribbon',
+      source: 'spirit-nurture-rite'
+    });
+    expect(nurtureRite.message).toContain('No real value');
+    expect(resolveSpiritNurtureRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: false,
+      growthRiteId: 'moonwell-bloom-rite',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      bond: 5,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first nurture rite.']
+    }).nurtured).toBe(false);
+
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -1094,6 +1164,7 @@ describe('alpha contract', () => {
       provisionProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      nurtureRiteProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1126,7 +1197,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 88,
+      score: 91,
       requiredScore: 52,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1148,6 +1219,7 @@ describe('alpha contract', () => {
       provisionProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      nurtureRiteProof: true,
       commissionProof: true,
       rallyProof: false,
       techniqueLoadoutProof: true,

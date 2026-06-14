@@ -13,6 +13,7 @@ import {
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
+  SPIRIT_NURTURE_RITES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
@@ -44,6 +45,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
+  resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
@@ -894,6 +896,75 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(routeWaystone.message).toContain('No real value');
 
+    expect(SPIRIT_NURTURE_RITES.map((rite) => rite.id)).toEqual(['jade-moonwell-nurture-rite']);
+    const blockedNurtureRite = resolveSpiritNurtureRite({
+      roster: fullRoster,
+      caredSpiritIds: fullRoster,
+      activeSpiritId: 'aozhen',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      raisingProof: false,
+      bond: 5,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Nurture rite ready.']
+    });
+    expect(blockedNurtureRite).toMatchObject({
+      nurtured: false,
+      riteId: 'jade-moonwell-nurture-rite',
+      missing: ['raising']
+    });
+
+    const nurtureRite = resolveSpiritNurtureRite({
+      roster: fullRoster,
+      caredSpiritIds: fullRoster,
+      activeSpiritId: 'aozhen',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      bond: 5,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Nurture rite ready.']
+    });
+    expect(nurtureRite).toMatchObject({
+      nurtured: true,
+      riteId: 'jade-moonwell-nurture-rite',
+      riteName: 'Jade Moonwell Nurture Rite',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: [...fullRoster],
+      caredSpiritIds: [...fullRoster],
+      score: 43,
+      requiredScore: 40,
+      rewardItemId: ALPHA_ITEMS.nurtureRibbon.id,
+      source: 'spirit-nurture-rite'
+    });
+    expect(nurtureRite.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -954,6 +1025,7 @@ describe('Mochi Spirits alpha content contract', () => {
       provisionProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      nurtureRiteProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -998,6 +1070,7 @@ describe('Mochi Spirits alpha content contract', () => {
       provisionProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      nurtureRiteProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1024,7 +1097,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 88,
+      score: 91,
       requiredScore: 52,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'

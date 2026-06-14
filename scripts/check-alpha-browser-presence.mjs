@@ -205,6 +205,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_waystone"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.nurture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -238,6 +239,7 @@ async function exerciseAlphaHud(page) {
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
       const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
+      const nurtureRite = document.querySelector('[data-nurture-rite-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -287,6 +289,7 @@ async function exerciseAlphaHud(page) {
         && routeEcology.includes('Jade Route Ecology Survey')
         && craftWrit.includes('Jade Court Craft Writ')
         && routeWaystone.includes('Jade Cloudbell Waystone')
+        && nurtureRite.includes('Jade Moonwell Nurture Rite')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -472,6 +475,20 @@ async function exerciseAlphaHud(page) {
         && state.routeWaystoneInvitedSpiritIds.includes('jintari')
         && state.routeWaystoneInvitedSpiritIds.includes('aozhen')
         && state.routeWaystoneSealClaimed === true
+        && state.nurtureRiteProof === true
+        && state.nurtureRiteId === 'jade-moonwell-nurture-rite'
+        && state.nurtureRiteName === 'Jade Moonwell Nurture Rite'
+        && state.nurtureRiteScore >= 40
+        && state.nurtureRiteRequiredScore === 40
+        && Array.isArray(state.nurtureRiteRosterIds)
+        && state.nurtureRiteRosterIds.includes('lirabao')
+        && state.nurtureRiteRosterIds.includes('jintari')
+        && state.nurtureRiteRosterIds.includes('aozhen')
+        && Array.isArray(state.nurtureRiteCaredSpiritIds)
+        && state.nurtureRiteCaredSpiritIds.includes('lirabao')
+        && state.nurtureRiteCaredSpiritIds.includes('jintari')
+        && state.nurtureRiteCaredSpiritIds.includes('aozhen')
+        && state.nurtureRibbonClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -625,6 +642,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Temperament Concord complete')
         && chat.includes('Jade Route Ecology Survey complete')
         && chat.includes('Jade Court Provision Satchel stocked')
+        && chat.includes('Jade Moonwell Nurture Rite complete')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
         && chat.includes('Jade Wayfarer Chronicle complete')
@@ -663,6 +681,7 @@ async function exerciseAlphaHud(page) {
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
       routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
+      nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -706,10 +725,11 @@ async function exerciseAlphaHud(page) {
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
-      routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
-      craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
-      routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
-      commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
+    routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
+    craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
+    routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
+    nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
+    commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
       ascension: document.querySelector('[data-ascension-label]')?.textContent?.trim() || '',
@@ -892,6 +912,19 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.routeWaystoneInvitedSpiritIds) && snapshot.state.routeWaystoneInvitedSpiritIds.includes('jintari'), 'HUD waystone action must record Jintari route invitation proof.');
   assert(Array.isArray(snapshot.state.routeWaystoneInvitedSpiritIds) && snapshot.state.routeWaystoneInvitedSpiritIds.includes('aozhen'), 'HUD waystone action must record Aozhen route invitation proof.');
   assert(snapshot.state.routeWaystoneSealClaimed === true, 'HUD waystone action must mark the no-real-value waystone travel seal proof.');
+  assert(snapshot.nurtureRite.includes('Jade Moonwell Nurture Rite'), 'HUD nurture label must show the completed no-real-value nurture rite.');
+  assert(snapshot.state.nurtureRiteProof === true, 'HUD nurture action must record nurture rite proof.');
+  assert(snapshot.state.nurtureRiteId === 'jade-moonwell-nurture-rite', 'HUD nurture action must record the nurture rite id.');
+  assert(snapshot.state.nurtureRiteName === 'Jade Moonwell Nurture Rite', 'HUD nurture action must record the nurture rite name.');
+  assert(snapshot.state.nurtureRiteScore >= 40, 'HUD nurture action must record a passing nurture rite score.');
+  assert(snapshot.state.nurtureRiteRequiredScore === 40, 'HUD nurture action must record the nurture rite requirement.');
+  assert(Array.isArray(snapshot.state.nurtureRiteRosterIds) && snapshot.state.nurtureRiteRosterIds.includes('lirabao'), 'HUD nurture action must record Lirabao roster proof.');
+  assert(Array.isArray(snapshot.state.nurtureRiteRosterIds) && snapshot.state.nurtureRiteRosterIds.includes('jintari'), 'HUD nurture action must record Jintari roster proof.');
+  assert(Array.isArray(snapshot.state.nurtureRiteRosterIds) && snapshot.state.nurtureRiteRosterIds.includes('aozhen'), 'HUD nurture action must record Aozhen roster proof.');
+  assert(Array.isArray(snapshot.state.nurtureRiteCaredSpiritIds) && snapshot.state.nurtureRiteCaredSpiritIds.includes('lirabao'), 'HUD nurture action must record Lirabao care proof.');
+  assert(Array.isArray(snapshot.state.nurtureRiteCaredSpiritIds) && snapshot.state.nurtureRiteCaredSpiritIds.includes('jintari'), 'HUD nurture action must record Jintari care proof.');
+  assert(Array.isArray(snapshot.state.nurtureRiteCaredSpiritIds) && snapshot.state.nurtureRiteCaredSpiritIds.includes('aozhen'), 'HUD nurture action must record Aozhen care proof.');
+  assert(snapshot.state.nurtureRibbonClaimed === true, 'HUD nurture action must mark the no-real-value nurture ribbon proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -1052,6 +1085,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');
   assert(chat.some((line) => String(line).includes('Jade Court Craft Writ complete')), 'HUD chat state must record the craft writ action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Waystone activated')), 'HUD chat state must record the route waystone action.');
+  assert(chat.some((line) => String(line).includes('Jade Moonwell Nurture Rite complete')), 'HUD chat state must record the nurture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');

@@ -988,6 +988,69 @@ export interface SpiritRouteWaystoneResult {
   source: string;
 }
 
+export interface SpiritNurtureRite {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredCareCycleId: string;
+  requiredGrowthRiteId: string;
+  requiredProvisionSatchelId: string;
+  requiredCraftWritId: string;
+  requiredTemperamentConcordId: string;
+  requiredBond: number;
+  requiredTrainingXp: number;
+  requiredSparLadderXp: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritNurtureRiteProgress {
+  roster: readonly string[];
+  caredSpiritIds: readonly string[];
+  activeSpiritId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  growthRiteProof: boolean;
+  growthRiteId?: string;
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  craftWritProof: boolean;
+  craftWritId?: string;
+  temperamentConcordProof: boolean;
+  temperamentConcordId?: string;
+  raisingProof: boolean;
+  raisingMilestoneLabel?: string;
+  bond: number;
+  trainingXp: number;
+  sparLadderXp: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritNurtureRiteResult {
+  ok: boolean;
+  nurtured: boolean;
+  riteId: string;
+  riteName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  caredSpiritIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -1111,6 +1174,7 @@ export interface GuildWayfarerChronicleProgress {
   provisionProof: boolean;
   craftWritProof: boolean;
   routeWaystoneProof: boolean;
+  nurtureRiteProof: boolean;
   commissionProof: boolean;
   rallyProof: boolean;
   techniqueLoadoutProof: boolean;
@@ -2115,6 +2179,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Waystone Travel Seal',
     description: 'A no-real-value route navigation proof for closed-alpha Mochirii Moonbridge and Cloudbell travel.'
   },
+  nurtureRibbon: {
+    id: 'jade-moonwell-nurture-ribbon',
+    name: 'Jade Moonwell Nurture Ribbon',
+    description: 'A no-real-value raising proof for closed-alpha Mochirii care, growth, supplies, and safe practice.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2663,6 +2732,27 @@ export const SPIRIT_ROUTE_WAYSTONES: readonly SpiritRouteWaystone[] = [
     requiredScore: 30,
     rewardItemId: ALPHA_ITEMS.waystoneSeal.id,
     summary: 'A no-real-value first route navigation proof for testers who connect Moonbridge, Cloudbell, route spirits, patrol safety, ecology, and crafted travel supplies.'
+  }
+];
+
+export const SPIRIT_NURTURE_RITES: readonly SpiritNurtureRite[] = [
+  {
+    id: 'jade-moonwell-nurture-rite',
+    name: 'Jade Moonwell Nurture Rite',
+    title: 'First-Court Raising Seal',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredGrowthRiteId: SPIRIT_GROWTH_RITES[0].id,
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredCraftWritId: SPIRIT_CRAFT_WRITS[0].id,
+    requiredTemperamentConcordId: SPIRIT_TEMPERAMENT_CONCORDS[0].id,
+    requiredBond: 5,
+    requiredTrainingXp: 3,
+    requiredSparLadderXp: 5,
+    requiredScore: 40,
+    rewardItemId: ALPHA_ITEMS.nurtureRibbon.id,
+    summary: 'A no-real-value first-court raising proof for testers who connect care, growth, supplies, temperament, bond milestones, and safe training.'
   }
 ];
 
@@ -4408,6 +4498,103 @@ export function resolveSpiritRouteWaystone(
   };
 }
 
+export function resolveSpiritNurtureRite(
+  progress: SpiritNurtureRiteProgress,
+  riteId: string = SPIRIT_NURTURE_RITES[0].id
+): SpiritNurtureRiteResult {
+  const rite = SPIRIT_NURTURE_RITES.find((entry) => entry.id === riteId) || SPIRIT_NURTURE_RITES[0];
+  const requiredSpiritIds = new Set(rite.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const caredSpiritIds = Array.from(new Set(progress.caredSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId =
+    progress.activeSpiritId && roster.includes(progress.activeSpiritId)
+      ? progress.activeSpiritId
+      : roster[roster.length - 1] || roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const milestoneLabel = String(progress.raisingMilestoneLabel || '').trim();
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const bond = Math.max(0, Math.floor(progress.bond || 0));
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  const sparLadderXp = Math.max(0, Math.floor(progress.sparLadderXp || 0));
+  const missing: string[] = [];
+
+  if (roster.length < rite.requiredSpiritIds.length) missing.push(`roster:${roster.length}/${rite.requiredSpiritIds.length}`);
+  if (caredSpiritIds.length < rite.requiredSpiritIds.length) missing.push(`care:${caredSpiritIds.length}/${rite.requiredSpiritIds.length}`);
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === rite.requiredCareCycleId;
+  if (!careCycleReady) missing.push(`care-cycle:${rite.requiredCareCycleId}`);
+
+  const growthReady = progress.growthRiteProof && progress.growthRiteId === rite.requiredGrowthRiteId;
+  if (!growthReady) missing.push(`growth:${rite.requiredGrowthRiteId}`);
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === rite.requiredProvisionSatchelId;
+  if (!provisionReady) missing.push(`provision:${rite.requiredProvisionSatchelId}`);
+
+  const craftReady = progress.craftWritProof && progress.craftWritId === rite.requiredCraftWritId;
+  if (!craftReady) missing.push(`craft-writ:${rite.requiredCraftWritId}`);
+
+  const temperamentReady = progress.temperamentConcordProof && progress.temperamentConcordId === rite.requiredTemperamentConcordId;
+  if (!temperamentReady) missing.push(`temperament:${rite.requiredTemperamentConcordId}`);
+
+  const raisingReady = progress.raisingProof && milestoneLabel.length > 0;
+  if (!raisingReady) missing.push('raising');
+
+  if (bond < rite.requiredBond) missing.push(`bond:${bond}/${rite.requiredBond}`);
+  if (trainingXp < rite.requiredTrainingXp) missing.push(`training:${trainingXp}/${rite.requiredTrainingXp}`);
+  if (sparLadderXp < rite.requiredSparLadderXp) missing.push(`spar:${sparLadderXp}/${rite.requiredSparLadderXp}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat:0/1');
+
+  const score =
+    Math.min(roster.length, rite.requiredSpiritIds.length) * 2 +
+    Math.min(caredSpiritIds.length, rite.requiredSpiritIds.length) * 2 +
+    (careCycleReady ? 4 : 0) +
+    (growthReady ? 4 : 0) +
+    (provisionReady ? 3 : 0) +
+    (craftReady ? 3 : 0) +
+    (temperamentReady ? 3 : 0) +
+    (raisingReady ? 3 : 0) +
+    (bond >= rite.requiredBond ? 3 : 0) +
+    (trainingXp >= rite.requiredTrainingXp ? 2 : 0) +
+    (sparLadderXp >= rite.requiredSparLadderXp ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const nurtured = missing.length === 0 && score >= rite.requiredScore;
+  const caredNames = caredSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+  const milestoneText = milestoneLabel ? ` ${milestoneLabel} anchors the care record.` : '';
+
+  return {
+    ok: true,
+    nurtured,
+    riteId: rite.id,
+    riteName: rite.name,
+    title: rite.title,
+    habitat: rite.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    caredSpiritIds,
+    score,
+    requiredScore: rite.requiredScore,
+    missing,
+    rewardItemId: rite.rewardItemId,
+    message: nurtured
+      ? `${rite.name} complete: ${activeSpirit.name} guides ${caredNames || 'the first-court roster'} through care, growth, supplies, temperament, safe sparring, and bond practice.${milestoneText} No real value.`
+      : `${rite.name} needs ${missing.join(', ')} before first-court nurture can be sealed.`,
+    source: 'spirit-nurture-rite'
+  };
+}
+
 export function resolveGuildCommission(
   progress: GuildCommissionProgress,
   commissionId: string = GUILD_COMMISSIONS[0].id
@@ -4614,6 +4801,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.provisionProof) missing.push('provision');
   if (!progress.craftWritProof) missing.push('craft-writ');
   if (!progress.routeWaystoneProof) missing.push('route-waystone');
+  if (!progress.nurtureRiteProof) missing.push('nurture-rite');
   if (!progress.commissionProof) missing.push('commission');
   if (!progress.rallyProof) missing.push('rally');
   if (!progress.techniqueLoadoutProof) missing.push('loadout');
@@ -4650,6 +4838,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.provisionProof ? 2 : 0) +
     (progress.craftWritProof ? 3 : 0) +
     (progress.routeWaystoneProof ? 3 : 0) +
+    (progress.nurtureRiteProof ? 3 : 0) +
     (progress.commissionProof ? 2 : 0) +
     (progress.rallyProof ? 3 : 0) +
     (progress.techniqueLoadoutProof ? 2 : 0) +
@@ -4688,7 +4877,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, nurturing, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };

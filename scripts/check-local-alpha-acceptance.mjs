@@ -69,6 +69,7 @@ async function run() {
   assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
   assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
   assert(manifest.body.gameplay?.routeWaystones === true, 'Manifest must expose Mochi Spirit route waystones.');
+  assert(manifest.body.gameplay?.spiritNurtureRites === true, 'Manifest must expose Mochi Spirit nurture rites.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -113,6 +114,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
   assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
   assert(alphaStatus.body.gameplay?.routeWaystones === true, 'Alpha status must expose Mochi Spirit route waystones.');
+  assert(alphaStatus.body.gameplay?.spiritNurtureRites === true, 'Alpha status must expose Mochi Spirit nurture rites.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -792,6 +794,37 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-nurture-rite`,
+      type: 'spirit.nurture_rite',
+      payload: {
+        riteId: 'jade-moonwell-nurture-rite',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        growthRiteProof: true,
+        growthRiteId: 'moonwell-bloom-rite',
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        craftWritProof: true,
+        craftWritId: 'jade-court-craft-writ',
+        temperamentConcordProof: true,
+        temperamentConcordId: 'jade-temperament-concord',
+        raisingProof: true,
+        raisingMilestoneLabel: 'Lacquer Luck Glow',
+        bond: 5,
+        trainingXp: 3,
+        sparLadderXp: 5,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-moonwell-nurture-ribbon',
+        chatLines: ['Local acceptance nurture rite proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -868,6 +901,7 @@ async function run() {
         provisionProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
+        nurtureRiteProof: true,
         commissionProof: true,
         rallyProof: true,
         techniqueLoadoutProof: true,
@@ -1052,6 +1086,22 @@ async function run() {
   assert(routeWaystone?.payload?.craftWritProof === true, 'Route waystone ledger entry must preserve craft writ proof.');
   assert(routeWaystone?.payload?.rewardItemId === 'jade-waystone-travel-seal', 'Route waystone ledger entry must preserve the no-real-value waystone travel seal proof.');
   assert(routeWaystone?.payload?.noRealValue === true, 'Route waystone ledger entry must remain no-real-value.');
+  const nurtureRite = entriesById.get(`${runId}-nurture-rite`);
+  assert(nurtureRite?.payload?.riteId === 'jade-moonwell-nurture-rite', 'Nurture rite ledger entry must preserve the Jade Moonwell Nurture Rite id.');
+  assert(Array.isArray(nurtureRite?.payload?.roster) && nurtureRite.payload.roster.length === 3, 'Nurture rite ledger entry must preserve full roster proof.');
+  assert(Array.isArray(nurtureRite?.payload?.caredSpiritIds) && nurtureRite.payload.caredSpiritIds.length === 3, 'Nurture rite ledger entry must preserve full care-cycle proof.');
+  assert(nurtureRite?.payload?.careCycleProof === true, 'Nurture rite ledger entry must preserve care cycle proof.');
+  assert(nurtureRite?.payload?.growthRiteProof === true, 'Nurture rite ledger entry must preserve growth rite proof.');
+  assert(nurtureRite?.payload?.provisionProof === true, 'Nurture rite ledger entry must preserve provision proof.');
+  assert(nurtureRite?.payload?.craftWritProof === true, 'Nurture rite ledger entry must preserve craft writ proof.');
+  assert(nurtureRite?.payload?.temperamentConcordProof === true, 'Nurture rite ledger entry must preserve temperament concord proof.');
+  assert(nurtureRite?.payload?.raisingProof === true, 'Nurture rite ledger entry must preserve raising proof.');
+  assert(nurtureRite?.payload?.raisingMilestoneLabel === 'Lacquer Luck Glow', 'Nurture rite ledger entry must preserve the raising milestone label.');
+  assert(nurtureRite?.payload?.bond >= 5, 'Nurture rite ledger entry must preserve max bond proof.');
+  assert(nurtureRite?.payload?.trainingXp >= 3, 'Nurture rite ledger entry must preserve training XP proof.');
+  assert(nurtureRite?.payload?.sparLadderXp >= 5, 'Nurture rite ledger entry must preserve spar ladder XP proof.');
+  assert(nurtureRite?.payload?.rewardItemId === 'jade-moonwell-nurture-ribbon', 'Nurture rite ledger entry must preserve the no-real-value nurture ribbon proof.');
+  assert(nurtureRite?.payload?.noRealValue === true, 'Nurture rite ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
@@ -1059,6 +1109,7 @@ async function run() {
   assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');
   assert(chronicle?.payload?.craftWritProof === true, 'Wayfarer chronicle ledger entry must preserve craft writ proof.');
   assert(chronicle?.payload?.routeWaystoneProof === true, 'Wayfarer chronicle ledger entry must preserve route waystone proof.');
+  assert(chronicle?.payload?.nurtureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve nurture rite proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
