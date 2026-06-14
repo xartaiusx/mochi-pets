@@ -92,6 +92,7 @@ async function run() {
   assert(manifest.body.gameplay?.mentorChallenges === true, 'Manifest must expose Mochi Spirit mentor challenges.');
   assert(manifest.body.gameplay?.dojoLadders === true, 'Manifest must expose Mochi Spirit dojo ladders.');
   assert(manifest.body.gameplay?.spiritTournamentBrackets === true, 'Manifest must expose Mochi Spirit tournament brackets.');
+  assert(manifest.body.gameplay?.sifuCouncils === true, 'Manifest must expose Mochi Spirit sifu councils.');
   assert(manifest.body.gameplay?.battleRoundTranscripts === true, 'Manifest must expose Mochi Spirit battle round transcripts.');
   assert(manifest.body.gameplay?.conditionWeaves === true, 'Manifest must expose Mochi Spirit condition weaves.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
@@ -152,6 +153,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.mentorChallenges === true, 'Alpha status must expose Mochi Spirit mentor challenges.');
   assert(alphaStatus.body.gameplay?.dojoLadders === true, 'Alpha status must expose Mochi Spirit dojo ladders.');
   assert(alphaStatus.body.gameplay?.spiritTournamentBrackets === true, 'Alpha status must expose Mochi Spirit tournament brackets.');
+  assert(alphaStatus.body.gameplay?.sifuCouncils === true, 'Alpha status must expose Mochi Spirit sifu councils.');
   assert(alphaStatus.body.gameplay?.battleRoundTranscripts === true, 'Alpha status must expose Mochi Spirit battle round transcripts.');
   assert(alphaStatus.body.gameplay?.conditionWeaves === true, 'Alpha status must expose Mochi Spirit condition weaves.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
@@ -1256,6 +1258,45 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-sifu-council`,
+      type: 'battle.sifu_council',
+      payload: {
+        councilId: 'jade-sifu-council',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+        dojoLadderProof: true,
+        dojoLadderId: 'jade-dojo-ladder',
+        dojoLadderScore: 56,
+        tournamentProof: true,
+        tournamentId: 'jade-banner-tournament',
+        tournamentScore: 57,
+        rivalCircleProof: true,
+        rivalCircleId: 'jade-rival-circle',
+        rivalCircleScore: 63,
+        techniqueCodexProof: true,
+        techniqueCodexId: 'jade-technique-codex',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
+        mentorChallengeProof: true,
+        mentorChallengeId: 'silk-banner-mentor-drill',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 31,
+        battleRoundOpponentScore: 18,
+        guildRankProof: true,
+        routePatrolProof: true,
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-sifu-council-crest',
+        chatLines: ['Local acceptance sifu council proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -1422,6 +1463,7 @@ async function run() {
         mentorChallengeProof: true,
         dojoLadderProof: true,
         tournamentProof: true,
+        sifuCouncilProof: true,
         battleRoundProof: true,
         battleRoundVictory: true,
         questChainProof: true,
@@ -1456,6 +1498,7 @@ async function run() {
         mentorChallengeProof: true,
         dojoLadderProof: true,
         tournamentProof: true,
+        sifuCouncilProof: true,
         rivalCircleProof: true,
         battleRoundProof: true,
         battleRoundVictory: true,
@@ -1847,6 +1890,24 @@ async function run() {
   assert(rivalCircle?.payload?.localPresenceCount === 2, 'Rival circle ledger entry must preserve two-tester presence proof.');
   assert(rivalCircle?.payload?.rewardItemId === 'jade-rival-circle-mark', 'Rival circle ledger entry must preserve the no-real-value rival mark proof.');
   assert(rivalCircle?.payload?.noRealValue === true, 'Rival circle ledger entry must remain no-real-value.');
+  const sifuCouncil = entriesById.get(`${runId}-sifu-council`);
+  assert(sifuCouncil?.payload?.councilId === 'jade-sifu-council', 'Sifu council ledger entry must preserve the Jade Sifu Council id.');
+  assert(Array.isArray(sifuCouncil?.payload?.partyIds) && sifuCouncil.payload.partyIds.length === 3, 'Sifu council ledger entry must preserve full-party proof.');
+  assert(Array.isArray(sifuCouncil?.payload?.clearedCouncilMemberIds) && sifuCouncil.payload.clearedCouncilMemberIds.includes('sifu-narao') && sifuCouncil.payload.clearedCouncilMemberIds.includes('warden-meilin') && sifuCouncil.payload.clearedCouncilMemberIds.includes('keeper-haoran'), 'Sifu council ledger entry must preserve all council member ids.');
+  assert(sifuCouncil?.payload?.dojoLadderProof === true, 'Sifu council ledger entry must preserve dojo ladder proof.');
+  assert(sifuCouncil?.payload?.dojoLadderId === 'jade-dojo-ladder', 'Sifu council ledger entry must preserve dojo ladder id.');
+  assert(sifuCouncil?.payload?.tournamentProof === true, 'Sifu council ledger entry must preserve tournament proof.');
+  assert(sifuCouncil?.payload?.tournamentId === 'jade-banner-tournament', 'Sifu council ledger entry must preserve tournament id.');
+  assert(sifuCouncil?.payload?.rivalCircleProof === true, 'Sifu council ledger entry must preserve rival circle proof.');
+  assert(sifuCouncil?.payload?.rivalCircleId === 'jade-rival-circle', 'Sifu council ledger entry must preserve rival circle id.');
+  assert(sifuCouncil?.payload?.techniqueCodexProof === true, 'Sifu council ledger entry must preserve technique codex proof.');
+  assert(sifuCouncil?.payload?.conditionWeaveProof === true, 'Sifu council ledger entry must preserve condition weave proof.');
+  assert(sifuCouncil?.payload?.affinityMatrixProof === true, 'Sifu council ledger entry must preserve affinity matrix proof.');
+  assert(sifuCouncil?.payload?.mentorChallengeProof === true, 'Sifu council ledger entry must preserve mentor challenge proof.');
+  assert(sifuCouncil?.payload?.battleRoundVictory === true, 'Sifu council ledger entry must preserve no-injury battle victory proof.');
+  assert(sifuCouncil?.payload?.localPresenceCount === 2, 'Sifu council ledger entry must preserve two-tester presence proof.');
+  assert(sifuCouncil?.payload?.rewardItemId === 'jade-sifu-council-crest', 'Sifu council ledger entry must preserve the no-real-value sifu council crest proof.');
+  assert(sifuCouncil?.payload?.noRealValue === true, 'Sifu council ledger entry must remain no-real-value.');
   const storyChapter = entriesById.get(`${runId}-story-chapter`);
   assert(storyChapter?.payload?.chapterId === 'jade-scroll-story-chapter', 'Story chapter ledger entry must preserve the Jade Scroll Story Chapter id.');
   assert(Array.isArray(storyChapter?.payload?.roster) && storyChapter.payload.roster.length === 3, 'Story chapter ledger entry must preserve full roster proof.');
@@ -1892,6 +1953,7 @@ async function run() {
   assert(chronicle?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Wayfarer chronicle ledger entry must preserve the exchange accord id.');
   assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
+  assert(chronicle?.payload?.sifuCouncilProof === true, 'Wayfarer chronicle ledger entry must preserve sifu council proof.');
   assert(chronicle?.payload?.affinityMatrixProof === true, 'Wayfarer chronicle ledger entry must preserve affinity matrix proof.');
   assert(chronicle?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Wayfarer chronicle ledger entry must preserve the affinity matrix id.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
@@ -1916,6 +1978,7 @@ async function run() {
   assert(ascension?.payload?.dojoLadderProof === true, 'Ascension trial ledger entry must preserve dojo ladder proof.');
   assert(ascension?.payload?.tournamentProof === true, 'Ascension trial ledger entry must preserve tournament proof.');
   assert(ascension?.payload?.rivalCircleProof === true, 'Ascension trial ledger entry must preserve rival circle proof.');
+  assert(ascension?.payload?.sifuCouncilProof === true, 'Ascension trial ledger entry must preserve sifu council proof.');
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
   assert(ascension?.payload?.affinityMatrixProof === true, 'Ascension trial ledger entry must preserve affinity matrix proof.');
   assert(ascension?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Ascension trial ledger entry must preserve the affinity matrix id.');

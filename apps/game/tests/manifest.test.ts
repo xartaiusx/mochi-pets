@@ -80,6 +80,7 @@ describe('game manifest', () => {
         mentorChallenges: true,
         dojoLadders: true,
         spiritTournamentBrackets: true,
+        sifuCouncils: true,
         battleRoundTranscripts: true,
         conditionWeaves: true,
         fieldExpeditions: true,

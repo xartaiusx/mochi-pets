@@ -32,6 +32,7 @@ import {
   SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
+  SPIRIT_SIFU_COUNCILS,
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_CODEXES,
   SPIRIT_TOURNAMENT_BRACKETS,
@@ -83,6 +84,7 @@ import {
   resolveSpiritRoutePatrol,
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
+  resolveSpiritSifuCouncil,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
@@ -1676,6 +1678,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -1734,6 +1737,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -1751,7 +1755,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 130,
+      score: 133,
       requiredScore: 70,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -1775,6 +1779,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -1819,6 +1824,7 @@ describe('Mochi Spirits alpha content contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -1845,7 +1851,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 95,
+      score: 98,
       requiredScore: 59,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
@@ -2401,6 +2407,93 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'battle-rival-circle'
     });
     expect(rivalCircle.message).toContain('No real value');
+
+    expect(SPIRIT_SIFU_COUNCILS.map((council) => council.id)).toEqual(['jade-sifu-council']);
+    const blockedSifuCouncil = resolveSpiritSifuCouncil({
+      partyIds: fullRoster,
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: false,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: false,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      guildRankProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Sifu council ready.']
+    });
+    expect(blockedSifuCouncil).toMatchObject({
+      cleared: false,
+      councilId: 'jade-sifu-council',
+      missing: ['council:keeper-haoran', 'rival:jade-rival-circle', 'condition:jade-mirror-condition-weave']
+    });
+
+    const sifuCouncil = resolveSpiritSifuCouncil({
+      partyIds: fullRoster,
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      guildRankProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Sifu council ready.']
+    });
+    expect(sifuCouncil).toMatchObject({
+      cleared: true,
+      councilId: 'jade-sifu-council',
+      councilName: 'Jade Sifu Council',
+      title: 'First Guild-Leader Council Trial',
+      hostName: 'Sifu Narao',
+      partyIds: [...fullRoster],
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+      localPresenceCount: 2,
+      score: 74,
+      requiredScore: 62,
+      rewardItemId: ALPHA_ITEMS.sifuCouncilCrest.id,
+      source: 'battle-sifu-council'
+    });
+    expect(sifuCouncil.message).toContain('No real value');
 
     expect(growthStageFromBond(2)).toBe('seed');
     expect(growthStageFromBond(3)).toBe('sprout');

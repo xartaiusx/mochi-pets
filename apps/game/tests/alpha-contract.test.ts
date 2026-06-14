@@ -42,6 +42,7 @@ import {
   SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
+  SPIRIT_SIFU_COUNCILS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_CODEXES,
@@ -99,6 +100,7 @@ import {
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
+  resolveSpiritSifuCouncil,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueCodex,
@@ -169,6 +171,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.dojoLadders).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.sifuCouncils).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
@@ -250,6 +253,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
     expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
     expect(ALPHA_ACTION_TYPES).toContain('battle.dojo_ladder');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.sifu_council');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
     expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
@@ -1893,6 +1897,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -1916,7 +1921,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 130,
+      score: 133,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1961,6 +1966,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -1992,6 +1998,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2026,7 +2033,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 95,
+      score: 98,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2046,6 +2053,7 @@ describe('alpha contract', () => {
       mentorChallengeProof: true,
       dojoLadderProof: true,
       tournamentProof: true,
+      sifuCouncilProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2697,6 +2705,76 @@ describe('alpha contract', () => {
       traitAttunementProof: false,
       guildRankProof: false,
       growthRiteProof: false,
+      localPresenceCount: 1,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_SIFU_COUNCILS.map((council) => council.id)).toEqual(['jade-sifu-council']);
+    const sifuCouncil = resolveSpiritSifuCouncil({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      guildRankProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the sifu council.']
+    });
+    expect(sifuCouncil).toMatchObject({
+      ok: true,
+      cleared: true,
+      councilId: 'jade-sifu-council',
+      councilName: 'Jade Sifu Council',
+      title: 'First Guild-Leader Council Trial',
+      hostName: 'Sifu Narao',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+      localPresenceCount: 2,
+      score: 74,
+      requiredScore: 62,
+      rewardItemId: 'jade-sifu-council-crest',
+      source: 'battle-sifu-council'
+    });
+    expect(sifuCouncil.message).toContain('No real value');
+    expect(resolveSpiritSifuCouncil({
+      partyIds: ['aozhen', 'lirabao'],
+      clearedCouncilMemberIds: ['sifu-narao'],
+      dojoLadderProof: false,
+      tournamentProof: false,
+      rivalCircleProof: false,
+      techniqueCodexProof: false,
+      conditionWeaveProof: false,
+      affinityMatrixProof: false,
+      mentorChallengeProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      guildRankProof: false,
+      routePatrolProof: false,
       localPresenceCount: 1,
       profileViewed: false,
       guildBuddyProof: false

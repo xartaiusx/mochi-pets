@@ -34,6 +34,10 @@ const checks = [
     includes: ['battle.dojo_ladder', 'dojoLadders: true', 'Jade Dojo Ladder label/state', 'Jade Dojo Ladder Seal payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['battle.sifu_council', 'sifuCouncils: true', 'Jade Sifu Council label/state', 'Jade Sifu Council Crest payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -60,6 +64,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder Seal', 'Dojo ladder proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Sifu Council proof', 'Jade Sifu Council Crest', 'Sifu council proof is no-real-value']
   },
   {
     file: 'docs/no-cost-operations.md',
@@ -104,6 +112,10 @@ const checks = [
     includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder', 'clear the Jade Dojo Ladder', 'no-real-value Jade Dojo Ladder']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Sifu Council proof', 'Jade Sifu Council', 'clear the Jade Sifu Council', 'no-real-value Jade Sifu Council']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
   },
@@ -128,6 +140,10 @@ const checks = [
     includes: ['battle.rival_circle', 'Jade Rival Circle proof', 'rival-circle']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['battle.sifu_council', 'Jade Sifu Council', 'Jade Sifu Council Crest', 'sifuCouncilProof']
+  },
+  {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
   },
@@ -142,6 +158,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['lineage-register', 'record the Jade Lineage Register proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['sifu-council', 'clear the Jade Sifu Council proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -176,6 +196,10 @@ const checks = [
     includes: ['Jade Dojo Ladder contribution', 'content-only Jade Dojo Ladder Seal proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Sifu Council contribution', 'content-only Jade Sifu Council Crest proof']
+  },
+  {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Scroll Story Chapter proof', 'story']
   },
@@ -192,6 +216,10 @@ const checks = [
     includes: ['Jade Dojo Ladder proof', 'ladder', 'content-only']
   },
   {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Sifu Council proof', 'council', 'content-only']
+  },
+  {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Scroll Story Chapter', 'Jade Scroll Story Chapter proof']
   },
@@ -206,6 +234,10 @@ const checks = [
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder proof', 'battle.dojo_ladder']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Sifu Council', 'Jade Sifu Council proof', 'battle.sifu_council']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -232,6 +264,10 @@ const checks = [
     includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Sifu Council', 'Jade Sifu Council Crest', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Rival Circle', 'Content-only HUD and ledger proofs']
   },
@@ -246,6 +282,10 @@ const checks = [
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Sifu Council', 'Jade Sifu Council Crest', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -629,6 +669,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['sifuCouncils: true', "'battle.sifu_council'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
   },
   {
@@ -729,6 +773,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_SIFU_COUNCILS', 'resolveSpiritSifuCouncil', 'data-alpha-action="battle.sifu_council"', 'data-sifu-council-label', 'sifuCouncilProof', 'sifuCouncilCrestClaimed', 'Jade Sifu Council']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['MOCHI_STORY_CHAPTERS', 'resolveMochiStoryChapter', 'data-alpha-action="story.chapter_complete"', 'data-story-label', 'storyChapterProof', 'storyScrollClaimed', 'Jade Scroll Story Chapter']
   },
   {
@@ -820,6 +868,10 @@ const checks = [
     includes: ['Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof']
   },
   {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_SIFU_COUNCILS', 'resolveSpiritSifuCouncil', 'Jade Sifu Council', 'jade-sifu-council-crest', 'battle-sifu-council', 'sifuCouncilProof']
+  },
+  {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
     includes: ['Mochi Social browser bridge auth check passed', 'payload.accessToken', 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'postToParent(BRIDGE_EVENTS.authState', 'refreshToken', 'SUPABASE_SERVICE_ROLE_KEY', 'ENJIN_PLATFORM_TOKEN']
   },
@@ -901,6 +953,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['sifuCouncils: true', 'battle.sifu_council']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
   },
   {
@@ -934,6 +990,10 @@ const checks = [
   {
     file: 'apps/game/tests/map-event-behavior.test.ts',
     includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochirii Guild Seal', 'spirit-care', 'bond 5/5', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'training-ring', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'market-board', 'trade-post', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'guildSocialRally', 'mochiSocial.guild.rallyProof', 'no-real-value Enjin Canary certificate request', 'Jade Vault Return Proof', 'Wallet Daemon services']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['sifuCouncils: true']
   },
   {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
@@ -1018,6 +1078,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.rival_circle', 'jade-rival-circle', 'spiritRivalCircles', 'Jade Rival Circle', 'rivalCircleProof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.sifu_council', 'jade-sifu-council', 'sifuCouncils === true', 'sifuCouncilProof', 'jade-sifu-council-crest']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -1106,6 +1170,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.rival_circle"', 'data-rival-circle-label', 'rivalCircleProof', 'rivalCircleMarkClaimed', 'Jade Rival Circle cleared']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.sifu_council"', 'data-sifu-council-label', 'sifuCouncilProof', 'sifuCouncilCrestClaimed', 'Jade Sifu Council cleared']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1226,6 +1294,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['rivalCircleProof', 'rivalCircleMarkClaimed', 'Jade Rival Circle', 'jade-rival-circle-mark', 'battle-rival-circle', 'rival circle']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['sifuCouncilProof', 'sifuCouncilCrestClaimed', 'Jade Sifu Council', 'jade-sifu-council-crest', 'battle-sifu-council', 'sifu council']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
