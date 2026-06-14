@@ -49,6 +49,7 @@ describe('game manifest', () => {
         spiritSanctuaryRites: true,
         spiritResearch: true,
         spiritCompendium: true,
+        spiritRosterArchives: true,
         itemProvisions: true,
         guildCommissions: true,
         socialRallies: true,

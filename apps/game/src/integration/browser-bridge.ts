@@ -20,6 +20,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
   SPIRIT_SANCTUARY_RITES,
@@ -57,6 +58,7 @@ import {
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritResearchFolio,
+  resolveSpiritRosterArchive,
   resolveSpiritRouteInvitation,
   resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
@@ -152,6 +154,14 @@ interface AlphaHudState {
   compendiumName: string;
   compendiumScore: number;
   compendiumSealClaimed: boolean;
+  rosterArchiveProof: boolean;
+  rosterArchiveId?: string;
+  rosterArchiveName: string;
+  rosterArchiveScore: number;
+  rosterArchiveRequiredScore: number;
+  rosterArchivePartyIds: string[];
+  rosterArchiveReserveIds: string[];
+  rosterArchiveSealClaimed: boolean;
   provisionProof: boolean;
   provisionSatchelId?: string;
   provisionSatchelName: string;
@@ -680,6 +690,13 @@ function defaultAlphaState(): AlphaHudState {
     compendiumName: 'Unsealed',
     compendiumScore: 0,
     compendiumSealClaimed: false,
+    rosterArchiveProof: false,
+    rosterArchiveName: 'Unarchived',
+    rosterArchiveScore: 0,
+    rosterArchiveRequiredScore: 0,
+    rosterArchivePartyIds: [],
+    rosterArchiveReserveIds: [],
+    rosterArchiveSealClaimed: false,
     provisionProof: false,
     provisionSatchelName: 'Unstocked',
     provisionScore: 0,
@@ -886,6 +903,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-sanctuary-label>Sanctuary: pending</span>
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
+      <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
@@ -924,6 +942,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.sanctuary_rite" aria-label="Record the no-real-value Jade Court Sanctuary Rite">Rite</button>
       <button type="button" data-alpha-action="spirit.research" aria-label="Record the Mochirii spirit research folio">Research</button>
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
+      <button type="button" data-alpha-action="spirit.roster_archive" aria-label="Seal the no-real-value Jade Court Roster Archive">Archive</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
@@ -983,6 +1002,7 @@ function createHud() {
   const sanctuaryLabel = hud.querySelector('[data-sanctuary-label]');
   const researchLabel = hud.querySelector('[data-research-label]');
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
+  const archiveLabel = hud.querySelector('[data-archive-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
@@ -1085,6 +1105,11 @@ function createHud() {
       compendiumLabel.textContent = state.compendiumProof
         ? `Compendium: ${state.compendiumName}, score ${state.compendiumScore}`
         : 'Compendium: pending';
+    }
+    if (archiveLabel) {
+      archiveLabel.textContent = state.rosterArchiveProof
+        ? `Archive: ${state.rosterArchiveName}, reserve ${state.rosterArchiveReserveIds.length}, score ${state.rosterArchiveScore}/${state.rosterArchiveRequiredScore}`
+        : 'Archive: pending';
     }
     if (provisionLabel) {
       provisionLabel.textContent = state.provisionProof
@@ -1937,6 +1962,23 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.roster_archive') {
+    const archivePartyIds = (state.partyIds.length ? state.partyIds : state.attunedSpiritIds).slice(0, 2);
+    return {
+      archiveId: SPIRIT_ROSTER_ARCHIVES[0].id,
+      roster: state.attunedSpiritIds,
+      partyIds: archivePartyIds,
+      activeSpiritId: state.spiritId || archivePartyIds[0] || state.attunedSpiritIds[0],
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      compendiumProof: state.compendiumProof,
+      compendiumId: state.compendiumId,
+      sanctuaryRiteProof: state.sanctuaryRiteProof,
+      sanctuaryRiteId: state.sanctuaryRiteId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof
+    };
+  }
+
   if (type === 'item.provision_satchel') {
     return {
       satchelId: SPIRIT_PROVISION_SATCHELS[0].id,
@@ -2577,6 +2619,37 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.compendiumSealClaimed = result.rewardItemId === 'jade-court-compendium-seal';
       state.attunedSpiritIds = result.roster;
       state.discoveredRouteIds = result.discoveredRoutes;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.roster_archive') {
+    const result = resolveSpiritRosterArchive(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.slice(0, 2),
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || ''),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        compendiumId: String(payload.compendiumId || state.compendiumId || ''),
+        sanctuaryRiteProof: Boolean(payload.sanctuaryRiteProof ?? state.sanctuaryRiteProof),
+        sanctuaryRiteId: String(payload.sanctuaryRiteId || state.sanctuaryRiteId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof)
+      },
+      String(payload.archiveId || SPIRIT_ROSTER_ARCHIVES[0].id)
+    );
+    if (result.archived) {
+      state.rosterArchiveProof = true;
+      state.rosterArchiveId = result.archiveId;
+      state.rosterArchiveName = result.archiveName;
+      state.rosterArchiveScore = result.score;
+      state.rosterArchiveRequiredScore = result.requiredScore;
+      state.rosterArchivePartyIds = result.partyIds;
+      state.rosterArchiveReserveIds = result.reserveSpiritIds;
+      state.rosterArchiveSealClaimed = result.rewardItemId === 'jade-roster-archive-seal';
+      state.attunedSpiritIds = result.roster;
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);

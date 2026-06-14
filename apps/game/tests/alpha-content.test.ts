@@ -12,6 +12,7 @@ import {
   SPIRIT_MOVES,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   growthStageFromBond,
   resolveGuildCommission,
@@ -40,6 +41,7 @@ import {
   resolveSpiritRouteInvitation,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
+  resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
@@ -464,6 +466,50 @@ describe('Mochi Spirits alpha content contract', () => {
       score: 29,
       rewardItemId: ALPHA_ITEMS.compendiumSeal.id
     });
+
+    expect(SPIRIT_ROSTER_ARCHIVES.map((archive) => archive.id)).toEqual(['jade-court-roster-archive']);
+    const blockedArchive = resolveSpiritRosterArchive({
+      roster: fullRoster,
+      partyIds: ['lirabao', 'jintari'],
+      activeSpiritId: 'lirabao',
+      journalDiscoveredCount: 3,
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      sanctuaryRiteProof: false,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(blockedArchive).toMatchObject({
+      archived: false,
+      archiveId: 'jade-court-roster-archive',
+      missing: ['sanctuary:jade-court-sanctuary-rite']
+    });
+
+    const archive = resolveSpiritRosterArchive({
+      roster: fullRoster,
+      partyIds: ['lirabao', 'jintari'],
+      activeSpiritId: 'lirabao',
+      journalDiscoveredCount: 3,
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(archive).toMatchObject({
+      archived: true,
+      archiveId: 'jade-court-roster-archive',
+      archiveName: 'Jade Court Roster Archive',
+      partyIds: ['lirabao', 'jintari'],
+      reserveSpiritIds: ['aozhen'],
+      score: 29,
+      requiredScore: 22,
+      rewardItemId: ALPHA_ITEMS.rosterArchiveSeal.id,
+      source: 'spirit-roster-archive'
+    });
+    expect(archive.message).toContain('No real value');
 
     const provision = resolveSpiritProvisionSatchel({
       roster: fullRoster,

@@ -546,6 +546,54 @@ export interface SpiritCompendiumResult {
   source: string;
 }
 
+export interface SpiritRosterArchive {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredPartySize: number;
+  requiredReserveCount: number;
+  requiredJournalCount: number;
+  requiredCompendiumId: string;
+  requiredSanctuaryRiteId: string;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRosterArchiveProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  journalDiscoveredCount: number;
+  compendiumProof: boolean;
+  compendiumId?: string;
+  sanctuaryRiteProof: boolean;
+  sanctuaryRiteId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+}
+
+export interface SpiritRosterArchiveResult {
+  ok: boolean;
+  archived: boolean;
+  archiveId: string;
+  archiveName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  roster: string[];
+  partyIds: string[];
+  reserveSpiritIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritProvisionSatchel {
   id: string;
   name: string;
@@ -1715,6 +1763,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Compendium Seal',
     description: 'A no-real-value species compendium proof for closed-alpha Mochirii spirit collection.'
   },
+  rosterArchiveSeal: {
+    id: 'jade-roster-archive-seal',
+    name: 'Jade Roster Archive Seal',
+    description: 'A no-real-value roster archive proof for closed-alpha Mochirii collection management.'
+  },
   rankSeal: {
     id: 'jade-court-rank-seal',
     name: 'Jade Court Rank Seal',
@@ -2072,6 +2125,24 @@ export const SPIRIT_COMPENDIUMS: readonly SpiritCompendiumCompletion[] = [
     requiredScore: 25,
     rewardItemId: ALPHA_ITEMS.compendiumSeal.id,
     summary: 'A no-real-value first-court species compendium for testers who collect every original Mochi Spirit, scout both field routes, and prove habitat plus research coverage.'
+  }
+];
+
+export const SPIRIT_ROSTER_ARCHIVES: readonly SpiritRosterArchive[] = [
+  {
+    id: 'jade-court-roster-archive',
+    name: 'Jade Court Roster Archive',
+    title: 'First Spirit Roster Archive',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredPartySize: 2,
+    requiredReserveCount: 1,
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredCompendiumId: SPIRIT_COMPENDIUMS[0].id,
+    requiredSanctuaryRiteId: SPIRIT_SANCTUARY_RITES[0].id,
+    requiredScore: 22,
+    rewardItemId: ALPHA_ITEMS.rosterArchiveSeal.id,
+    summary: 'A no-real-value roster archive proof for testers who organize a ready party, reserve spirit, compendium record, and care-shrine restoration path.'
   }
 ];
 
@@ -3003,6 +3074,89 @@ export function resolveSpiritCompendiumCompletion(
       ? `${compendium.name} complete: ${activeName} anchors all first-court Mochi Spirit records with roster, journal, route, habitat, and research proof. No-real-value collection progress only.`
       : `${compendium.name} needs ${missing.join(', ')} before the first-court species collection can be sealed.`,
     source: 'spirit-compendium'
+  };
+}
+
+export function resolveSpiritRosterArchive(
+  progress: SpiritRosterArchiveProgress,
+  archiveId: string = SPIRIT_ROSTER_ARCHIVES[0].id
+): SpiritRosterArchiveResult {
+  const archive = SPIRIT_ROSTER_ARCHIVES.find((entry) => entry.id === archiveId) || SPIRIT_ROSTER_ARCHIVES[0];
+  const requiredSpiritIds = new Set(archive.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return roster.includes(spiritId) && Boolean(getMochiSpirit(spiritId));
+  }).slice(0, archive.requiredPartySize);
+  const reserveSpiritIds = roster.filter((spiritId) => !partyIds.includes(spiritId));
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : partyIds[0] || roster[0];
+  const missing: string[] = [];
+
+  for (const spiritId of archive.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  if (partyIds.length < archive.requiredPartySize) {
+    missing.push(`party:${partyIds.length}/${archive.requiredPartySize}`);
+  }
+
+  if (reserveSpiritIds.length < archive.requiredReserveCount) {
+    missing.push(`reserve:${reserveSpiritIds.length}/${archive.requiredReserveCount}`);
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < archive.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${archive.requiredJournalCount}`);
+  }
+
+  const compendiumReady = progress.compendiumProof && progress.compendiumId === archive.requiredCompendiumId;
+  if (!compendiumReady) {
+    missing.push(`compendium:${archive.requiredCompendiumId}`);
+  }
+
+  const sanctuaryReady = progress.sanctuaryRiteProof && progress.sanctuaryRiteId === archive.requiredSanctuaryRiteId;
+  if (!sanctuaryReady) {
+    missing.push(`sanctuary:${archive.requiredSanctuaryRiteId}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const score =
+    Math.min(roster.length, archive.requiredSpiritIds.length) * 3 +
+    Math.min(partyIds.length, archive.requiredPartySize) * 2 +
+    Math.min(reserveSpiritIds.length, archive.requiredReserveCount) * 2 +
+    Math.min(journalCount, archive.requiredJournalCount) +
+    (compendiumReady ? 5 : 0) +
+    (sanctuaryReady ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0);
+  const archived = missing.length === 0 && score >= archive.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+  const reserveNames = reserveSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    archived,
+    archiveId: archive.id,
+    archiveName: archive.name,
+    title: archive.title,
+    habitat: archive.habitat,
+    activeSpiritId,
+    roster,
+    partyIds,
+    reserveSpiritIds,
+    score,
+    requiredScore: archive.requiredScore,
+    missing,
+    rewardItemId: archive.rewardItemId,
+    message: archived
+      ? `${archive.name} sealed: ${partyNames || 'the active party'} stands ready while ${reserveNames || 'the reserve roster'} rests in the guild archive with compendium and sanctuary proof. No real value.`
+      : `${archive.name} needs ${missing.join(', ')} before the first spirit roster archive can be sealed.`,
+    source: 'spirit-roster-archive'
   };
 }
 

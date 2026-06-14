@@ -62,6 +62,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritSanctuaryRites === true, 'Manifest must expose Mochi Spirit sanctuary rites.');
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
+  assert(manifest.body.gameplay?.spiritRosterArchives === true, 'Manifest must expose Mochi Spirit roster archives.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -99,6 +100,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritSanctuaryRites === true, 'Alpha status must expose Mochi Spirit sanctuary rites.');
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
+  assert(alphaStatus.body.gameplay?.spiritRosterArchives === true, 'Alpha status must expose Mochi Spirit roster archives.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -349,6 +351,24 @@ async function run() {
         researchProof: true,
         researchFolioId: 'jade-court-research-folio',
         routeMasteryProof: true,
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-roster-archive`,
+      type: 'spirit.roster_archive',
+      payload: {
+        archiveId: 'jade-court-roster-archive',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['aozhen', 'lirabao'],
+        activeSpiritId: 'aozhen',
+        journalDiscoveredCount: 3,
+        compendiumProof: true,
+        compendiumId: 'jade-court-spirit-compendium',
+        sanctuaryRiteProof: true,
+        sanctuaryRiteId: 'jade-court-sanctuary-rite',
+        profileViewed: true,
+        guildBuddyProof: true,
         noRealValue: true
       }
     },
@@ -787,6 +807,13 @@ async function run() {
   assert(sanctuary?.payload?.conditionWeaveProof === true, 'Sanctuary rite ledger entry must preserve condition weave proof.');
   assert(sanctuary?.payload?.battleRoundVictory === true, 'Sanctuary rite ledger entry must preserve no-injury battle victory proof.');
   assert(sanctuary?.payload?.noRealValue === true, 'Sanctuary rite ledger entry must remain no-real-value.');
+  const rosterArchive = entriesById.get(`${runId}-roster-archive`);
+  assert(rosterArchive?.payload?.archiveId === 'jade-court-roster-archive', 'Roster archive ledger entry must preserve the Jade Court Roster Archive id.');
+  assert(Array.isArray(rosterArchive?.payload?.roster) && rosterArchive.payload.roster.length === 3, 'Roster archive ledger entry must preserve full roster proof.');
+  assert(Array.isArray(rosterArchive?.payload?.partyIds) && rosterArchive.payload.partyIds.length === 2, 'Roster archive ledger entry must preserve archive party proof.');
+  assert(rosterArchive?.payload?.compendiumProof === true, 'Roster archive ledger entry must preserve compendium proof.');
+  assert(rosterArchive?.payload?.sanctuaryRiteProof === true, 'Roster archive ledger entry must preserve sanctuary rite proof.');
+  assert(rosterArchive?.payload?.noRealValue === true, 'Roster archive ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');

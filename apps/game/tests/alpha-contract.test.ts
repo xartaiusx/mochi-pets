@@ -22,6 +22,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
@@ -56,6 +57,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
+  resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
@@ -87,6 +89,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritSanctuaryRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRosterArchives).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -143,6 +146,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.sanctuary_rite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_archive');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -539,6 +543,48 @@ describe('alpha contract', () => {
       researchProof: false,
       routeMasteryProof: false
     }).completed).toBe(false);
+
+    expect(SPIRIT_ROSTER_ARCHIVES.map((archive) => archive.id)).toEqual(['jade-court-roster-archive']);
+    const rosterArchive = resolveSpiritRosterArchive({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['aozhen', 'lirabao'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(rosterArchive).toMatchObject({
+      ok: true,
+      archived: true,
+      archiveId: 'jade-court-roster-archive',
+      archiveName: 'Jade Court Roster Archive',
+      title: 'First Spirit Roster Archive',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['aozhen', 'lirabao'],
+      reserveSpiritIds: ['jintari'],
+      score: 29,
+      requiredScore: 22,
+      rewardItemId: 'jade-roster-archive-seal',
+      source: 'spirit-roster-archive'
+    });
+    expect(rosterArchive.message).toContain('No real value');
+    expect(resolveSpiritRosterArchive({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['aozhen', 'lirabao'],
+      journalDiscoveredCount: 3,
+      compendiumProof: false,
+      compendiumId: 'jade-court-spirit-compendium',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    }).archived).toBe(false);
 
     expect(SPIRIT_PROVISION_SATCHELS.map((satchel) => satchel.id)).toEqual(['jade-court-provision-satchel']);
     const satchel = resolveSpiritProvisionSatchel({

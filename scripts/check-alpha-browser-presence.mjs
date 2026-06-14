@@ -192,6 +192,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.trait_attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.condition_weave"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.sanctuary_rite"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.roster_archive"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
@@ -223,6 +224,7 @@ async function exerciseAlphaHud(page) {
       const sanctuary = document.querySelector('[data-sanctuary-label]')?.textContent || '';
       const research = document.querySelector('[data-research-label]')?.textContent || '';
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
+      const archive = document.querySelector('[data-archive-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
@@ -265,6 +267,7 @@ async function exerciseAlphaHud(page) {
         && sanctuary.includes('Jade Court Sanctuary Rite')
         && research.includes('Jade Court Research Folio')
         && compendium.includes('Jade Court Spirit Compendium')
+        && archive.includes('Jade Court Roster Archive')
         && provision.includes('Jade Court Provision Satchel')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
@@ -355,6 +358,16 @@ async function exerciseAlphaHud(page) {
         && state.compendiumName === 'Jade Court Spirit Compendium'
         && state.compendiumScore >= 25
         && state.compendiumSealClaimed === true
+        && state.rosterArchiveProof === true
+        && state.rosterArchiveId === 'jade-court-roster-archive'
+        && state.rosterArchiveName === 'Jade Court Roster Archive'
+        && state.rosterArchiveScore >= 22
+        && state.rosterArchiveRequiredScore === 22
+        && Array.isArray(state.rosterArchivePartyIds)
+        && state.rosterArchivePartyIds.length === 2
+        && Array.isArray(state.rosterArchiveReserveIds)
+        && state.rosterArchiveReserveIds.length >= 1
+        && state.rosterArchiveSealClaimed === true
         && state.provisionProof === true
         && state.provisionSatchelId === 'jade-court-provision-satchel'
         && state.provisionSatchelName === 'Jade Court Provision Satchel'
@@ -512,6 +525,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Sanctuary Rite complete')
         && chat.includes('Jade Court Research Folio recorded')
         && chat.includes('Jade Court Spirit Compendium complete')
+        && chat.includes('Jade Court Roster Archive sealed')
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
@@ -543,6 +557,7 @@ async function exerciseAlphaHud(page) {
       sanctuary: document.querySelector('[data-sanctuary-label]')?.textContent || '',
       research: document.querySelector('[data-research-label]')?.textContent || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
+      archive: document.querySelector('[data-archive-label]')?.textContent || '',
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
@@ -582,6 +597,7 @@ async function exerciseAlphaHud(page) {
       sanctuary: document.querySelector('[data-sanctuary-label]')?.textContent?.trim() || '',
       research: document.querySelector('[data-research-label]')?.textContent?.trim() || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
+      archive: document.querySelector('[data-archive-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
@@ -677,6 +693,15 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.compendiumName === 'Jade Court Spirit Compendium', 'HUD compendium action must record the compendium name.');
   assert(snapshot.state.compendiumScore >= 25, 'HUD compendium action must record a passing compendium score.');
   assert(snapshot.state.compendiumSealClaimed === true, 'HUD compendium action must mark the no-real-value compendium seal proof.');
+  assert(snapshot.archive.includes('Jade Court Roster Archive'), 'HUD roster archive label must show the completed archive proof.');
+  assert(snapshot.state.rosterArchiveProof === true, 'HUD roster archive action must record collection-management proof.');
+  assert(snapshot.state.rosterArchiveId === 'jade-court-roster-archive', 'HUD roster archive action must record the archive id.');
+  assert(snapshot.state.rosterArchiveName === 'Jade Court Roster Archive', 'HUD roster archive action must record the archive name.');
+  assert(snapshot.state.rosterArchiveScore >= 22, 'HUD roster archive action must record a passing archive score.');
+  assert(snapshot.state.rosterArchiveRequiredScore === 22, 'HUD roster archive action must record the archive requirement.');
+  assert(Array.isArray(snapshot.state.rosterArchivePartyIds) && snapshot.state.rosterArchivePartyIds.length === 2, 'HUD roster archive action must record the active archive party.');
+  assert(Array.isArray(snapshot.state.rosterArchiveReserveIds) && snapshot.state.rosterArchiveReserveIds.length >= 1, 'HUD roster archive action must record a reserve spirit.');
+  assert(snapshot.state.rosterArchiveSealClaimed === true, 'HUD roster archive action must mark the no-real-value archive seal proof.');
   assert(snapshot.provision.includes('Jade Court Provision Satchel'), 'HUD provision label must show the stocked no-real-value satchel.');
   assert(snapshot.state.provisionProof === true, 'HUD provision action must record provision satchel proof.');
   assert(snapshot.state.provisionSatchelId === 'jade-court-provision-satchel', 'HUD provision action must record the provision satchel id.');
@@ -838,6 +863,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Sanctuary Rite complete')), 'HUD chat state must record the sanctuary rite action.');
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Roster Archive sealed')), 'HUD chat state must record the roster archive action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
