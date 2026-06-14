@@ -53,6 +53,7 @@ const ALPHA_FEATURES = {
     routeEcologySurveys: true,
     spiritEncounterAtlases: true,
     spiritCraftWrits: true,
+    tradeExchangeAccords: true,
     routeWaystones: true,
     spiritNurtureRites: true,
     spiritRecoveryTeas: true,
@@ -163,6 +164,7 @@ const ALPHA_ACTION_TYPES = [
   'quest.progress',
   'market.fixed_list',
   'trade.direct_offer',
+  'trade.exchange_accord',
   'chain.withdraw_request',
   'chain.deposit_request',
   'chain.operation_update'

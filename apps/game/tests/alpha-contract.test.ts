@@ -44,6 +44,7 @@ import {
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
+  TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
   resolveSpiritAttunement,
   resolveSpiritCapture,
@@ -100,7 +101,8 @@ import {
   selectMochiSpiritQuest,
   resolveSpiritSparLadder,
   resolveSpiritTechniqueMastery,
-  resolveSpiritTrainingBattle
+  resolveSpiritTrainingBattle,
+  resolveTradeExchangeAccord
 } from '../src/alpha/content';
 import { ALPHA_ACTION_TYPES, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
 
@@ -130,6 +132,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.tradeExchangeAccords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRecoveryTeas).toBe(true);
@@ -243,6 +246,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('quest.progress');
     expect(ALPHA_ACTION_TYPES).toContain('market.fixed_list');
     expect(ALPHA_ACTION_TYPES).toContain('trade.direct_offer');
+    expect(ALPHA_ACTION_TYPES).toContain('trade.exchange_accord');
     expect(ALPHA_ACTION_TYPES).toContain('chain.withdraw_request');
     expect(ALPHA_ACTION_TYPES).toContain('chain.deposit_request');
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
@@ -1058,6 +1062,62 @@ describe('alpha contract', () => {
       chatLines: ['Craft writ ready.']
     }).crafted).toBe(false);
 
+    expect(TRADE_EXCHANGE_ACCORDS.map((accord) => accord.id)).toEqual(['jade-exchange-accord']);
+    const exchangeAccord = resolveTradeExchangeAccord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      listedItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      offeredItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      marketProof: true,
+      tradeProof: true,
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Exchange accord ready.']
+    });
+    expect(exchangeAccord).toMatchObject({
+      ok: true,
+      exchanged: true,
+      accordId: 'jade-exchange-accord',
+      accordName: 'Jade Exchange Accord',
+      title: 'First-Court Guild Exchange',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      localPresenceCount: 2,
+      score: 42,
+      requiredScore: 34,
+      rewardItemId: 'jade-exchange-accord-tally',
+      source: 'trade-exchange-accord'
+    });
+    expect(exchangeAccord.message).toContain('No real value');
+    const missingExchangeAccord = resolveTradeExchangeAccord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      listedItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      offeredItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      marketProof: true,
+      tradeProof: false,
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Exchange accord ready.']
+    });
+    expect(missingExchangeAccord.exchanged).toBe(false);
+    expect(missingExchangeAccord.missing).toContain('direct-trade');
+
     expect(SPIRIT_ROUTE_WAYSTONES.map((waystone) => waystone.id)).toEqual(['jade-cloudbell-waystone']);
     const routeWaystone = resolveSpiritRouteWaystone({
       discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
@@ -1636,6 +1696,7 @@ describe('alpha contract', () => {
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1672,7 +1733,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 115,
+      score: 118,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1699,6 +1760,7 @@ describe('alpha contract', () => {
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       commissionProof: true,
       rallyProof: false,
       techniqueLoadoutProof: true,
@@ -1736,6 +1798,7 @@ describe('alpha contract', () => {
       wayfarerChronicleProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1772,7 +1835,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 80,
+      score: 83,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -1785,6 +1848,7 @@ describe('alpha contract', () => {
       wayfarerChronicleProof: false,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,

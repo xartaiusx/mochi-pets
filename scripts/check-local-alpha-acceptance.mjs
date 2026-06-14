@@ -71,6 +71,7 @@ async function run() {
   assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
   assert(manifest.body.gameplay?.spiritEncounterAtlases === true, 'Manifest must expose Mochi Spirit encounter atlases.');
   assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
+  assert(manifest.body.gameplay?.tradeExchangeAccords === true, 'Manifest must expose Mochirii trade exchange accords.');
   assert(manifest.body.gameplay?.spiritRivalCircles === true, 'Manifest must expose Mochi Spirit rival circles.');
   assert(manifest.body.gameplay?.routeWaystones === true, 'Manifest must expose Mochi Spirit route waystones.');
   assert(manifest.body.gameplay?.spiritNurtureRites === true, 'Manifest must expose Mochi Spirit nurture rites.');
@@ -124,6 +125,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
   assert(alphaStatus.body.gameplay?.spiritEncounterAtlases === true, 'Alpha status must expose Mochi Spirit encounter atlases.');
   assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
+  assert(alphaStatus.body.gameplay?.tradeExchangeAccords === true, 'Alpha status must expose Mochirii trade exchange accords.');
   assert(alphaStatus.body.gameplay?.spiritRivalCircles === true, 'Alpha status must expose Mochi Spirit rival circles.');
   assert(alphaStatus.body.gameplay?.routeWaystones === true, 'Alpha status must expose Mochi Spirit route waystones.');
   assert(alphaStatus.body.gameplay?.spiritNurtureRites === true, 'Alpha status must expose Mochi Spirit nurture rites.');
@@ -871,6 +873,30 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-exchange-accord`,
+      type: 'trade.exchange_accord',
+      payload: {
+        accordId: 'jade-exchange-accord',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        listedItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+        offeredItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+        marketProof: true,
+        tradeProof: true,
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        craftWritProof: true,
+        craftWritId: 'jade-court-craft-writ',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-exchange-accord-tally',
+        chatLines: ['Local acceptance exchange accord proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-route-waystone`,
       type: 'world.route_waystone',
       payload: {
@@ -1230,6 +1256,8 @@ async function run() {
         nurtureRiteProof: true,
         kinshipAlbumProof: true,
         nurseryGroveProof: true,
+        exchangeAccordProof: true,
+        exchangeAccordId: 'jade-exchange-accord',
         commissionProof: true,
         rallyProof: true,
         storyChapterProof: true,
@@ -1270,6 +1298,8 @@ async function run() {
         wayfarerChronicleProof: true,
         kinshipAlbumProof: true,
         nurseryGroveProof: true,
+        exchangeAccordProof: true,
+        exchangeAccordId: 'jade-exchange-accord',
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -1427,6 +1457,24 @@ async function run() {
   assert(craftWrit?.payload?.temperamentConcordProof === true, 'Craft writ ledger entry must preserve temperament concord proof.');
   assert(craftWrit?.payload?.rewardItemId === 'jade-court-craft-writ', 'Craft writ ledger entry must preserve the no-real-value craft writ proof.');
   assert(craftWrit?.payload?.noRealValue === true, 'Craft writ ledger entry must remain no-real-value.');
+  const exchangeAccord = entriesById.get(`${runId}-exchange-accord`);
+  assert(exchangeAccord?.payload?.accordId === 'jade-exchange-accord', 'Exchange accord ledger entry must preserve the Jade Exchange Accord id.');
+  assert(Array.isArray(exchangeAccord?.payload?.roster) && exchangeAccord.payload.roster.length === 3, 'Exchange accord ledger entry must preserve full roster proof.');
+  assert(Array.isArray(exchangeAccord?.payload?.listedItemIds) && exchangeAccord.payload.listedItemIds.includes('jade-thread-charm'), 'Exchange accord ledger entry must preserve listed Jade Thread Charm proof.');
+  assert(Array.isArray(exchangeAccord?.payload?.listedItemIds) && exchangeAccord.payload.listedItemIds.includes('lantern-harmony-tea'), 'Exchange accord ledger entry must preserve listed Lantern Harmony Tea proof.');
+  assert(Array.isArray(exchangeAccord?.payload?.listedItemIds) && exchangeAccord.payload.listedItemIds.includes('jade-mooncake-box'), 'Exchange accord ledger entry must preserve listed Jade Mooncake Box proof.');
+  assert(Array.isArray(exchangeAccord?.payload?.offeredItemIds) && exchangeAccord.payload.offeredItemIds.includes('jade-thread-charm'), 'Exchange accord ledger entry must preserve offered Jade Thread Charm proof.');
+  assert(Array.isArray(exchangeAccord?.payload?.offeredItemIds) && exchangeAccord.payload.offeredItemIds.includes('lantern-harmony-tea'), 'Exchange accord ledger entry must preserve offered Lantern Harmony Tea proof.');
+  assert(Array.isArray(exchangeAccord?.payload?.offeredItemIds) && exchangeAccord.payload.offeredItemIds.includes('jade-mooncake-box'), 'Exchange accord ledger entry must preserve offered Jade Mooncake Box proof.');
+  assert(exchangeAccord?.payload?.marketProof === true, 'Exchange accord ledger entry must preserve fixed market proof.');
+  assert(exchangeAccord?.payload?.tradeProof === true, 'Exchange accord ledger entry must preserve direct trade proof.');
+  assert(exchangeAccord?.payload?.provisionProof === true, 'Exchange accord ledger entry must preserve provision proof.');
+  assert(exchangeAccord?.payload?.provisionSatchelId === 'jade-court-provision-satchel', 'Exchange accord ledger entry must preserve provision satchel id.');
+  assert(exchangeAccord?.payload?.craftWritProof === true, 'Exchange accord ledger entry must preserve craft writ proof.');
+  assert(exchangeAccord?.payload?.craftWritId === 'jade-court-craft-writ', 'Exchange accord ledger entry must preserve craft writ id.');
+  assert(exchangeAccord?.payload?.localPresenceCount === 2, 'Exchange accord ledger entry must preserve two-tester presence proof.');
+  assert(exchangeAccord?.payload?.rewardItemId === 'jade-exchange-accord-tally', 'Exchange accord ledger entry must preserve the no-real-value accord tally proof.');
+  assert(exchangeAccord?.payload?.noRealValue === true, 'Exchange accord ledger entry must remain no-real-value.');
   const routeWaystone = entriesById.get(`${runId}-route-waystone`);
   assert(routeWaystone?.payload?.waystoneId === 'jade-cloudbell-waystone', 'Route waystone ledger entry must preserve the Jade Cloudbell Waystone id.');
   assert(Array.isArray(routeWaystone?.payload?.discoveredRoutes) && routeWaystone.payload.discoveredRoutes.includes('moonbridge-bamboo-trail'), 'Route waystone ledger entry must preserve the Moonbridge route.');
@@ -1606,6 +1654,8 @@ async function run() {
   assert(chronicle?.payload?.nurtureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve nurture rite proof.');
   assert(chronicle?.payload?.kinshipAlbumProof === true, 'Wayfarer chronicle ledger entry must preserve kinship album proof.');
   assert(chronicle?.payload?.nurseryGroveProof === true, 'Wayfarer chronicle ledger entry must preserve nursery grove proof.');
+  assert(chronicle?.payload?.exchangeAccordProof === true, 'Wayfarer chronicle ledger entry must preserve exchange accord proof.');
+  assert(chronicle?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Wayfarer chronicle ledger entry must preserve the exchange accord id.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.affinityMatrixProof === true, 'Wayfarer chronicle ledger entry must preserve affinity matrix proof.');
   assert(chronicle?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Wayfarer chronicle ledger entry must preserve the affinity matrix id.');
@@ -1620,6 +1670,8 @@ async function run() {
   assert(ascension?.payload?.wayfarerChronicleProof === true, 'Ascension trial ledger entry must preserve wayfarer chronicle proof.');
   assert(ascension?.payload?.kinshipAlbumProof === true, 'Ascension trial ledger entry must preserve kinship album proof.');
   assert(ascension?.payload?.nurseryGroveProof === true, 'Ascension trial ledger entry must preserve nursery grove proof.');
+  assert(ascension?.payload?.exchangeAccordProof === true, 'Ascension trial ledger entry must preserve exchange accord proof.');
+  assert(ascension?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Ascension trial ledger entry must preserve the exchange accord id.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

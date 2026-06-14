@@ -993,6 +993,60 @@ export interface SpiritCraftWritResult {
   source: string;
 }
 
+export interface TradeExchangeAccord {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredItemIds: readonly string[];
+  requiredProvisionSatchelId: string;
+  requiredCraftWritId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface TradeExchangeAccordProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  listedItemIds: readonly string[];
+  offeredItemIds: readonly string[];
+  marketProof: boolean;
+  tradeProof: boolean;
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  craftWritProof: boolean;
+  craftWritId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface TradeExchangeAccordResult {
+  ok: boolean;
+  exchanged: boolean;
+  accordId: string;
+  accordName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  itemIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritRouteWaystone {
   id: string;
   name: string;
@@ -1549,6 +1603,7 @@ export interface GuildWayfarerChronicleProgress {
   nurtureRiteProof: boolean;
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
+  exchangeAccordProof: boolean;
   affinityMatrixProof: boolean;
   commissionProof: boolean;
   rallyProof: boolean;
@@ -1614,6 +1669,7 @@ export interface GuildAscensionTrialProgress {
   wayfarerChronicleProof: boolean;
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
+  exchangeAccordProof: boolean;
   affinityMatrixProof: boolean;
   routePatrolProof: boolean;
   mentorChallengeProof: boolean;
@@ -2807,6 +2863,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Craft Writ',
     description: 'A no-real-value crafting proof for closed-alpha Mochirii supplies, route ecology, care notes, and guild exchange.'
   },
+  exchangeAccordTally: {
+    id: 'jade-exchange-accord-tally',
+    name: 'Jade Exchange Accord Tally',
+    description: 'A no-real-value two-tester exchange accord proof for closed-alpha Mochirii market, direct trade, provision, and craft handoff.'
+  },
   waystoneSeal: {
     id: 'jade-waystone-travel-seal',
     name: 'Jade Waystone Travel Seal',
@@ -3424,6 +3485,24 @@ export const SPIRIT_CRAFT_WRITS: readonly SpiritCraftWrit[] = [
     requiredScore: 44,
     rewardItemId: ALPHA_ITEMS.craftWrit.id,
     summary: 'A no-real-value craft writ proof for testers who turn original Mochirii provisions, route ecology, care-cycle notes, and market/trade handoff into guild-ready supplies.'
+  }
+];
+
+export const TRADE_EXCHANGE_ACCORDS: readonly TradeExchangeAccord[] = [
+  {
+    id: 'jade-exchange-accord',
+    name: 'Jade Exchange Accord',
+    title: 'First-Court Guild Exchange',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredCraftWritId: SPIRIT_CRAFT_WRITS[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 34,
+    rewardItemId: ALPHA_ITEMS.exchangeAccordTally.id,
+    summary: 'A no-real-value social exchange proof for testers who connect fixed-list market practice, direct trade, provision supplies, craft writs, and two-tester guild presence.'
   }
 ];
 
@@ -5439,6 +5518,89 @@ export function resolveSpiritCraftWrit(
   };
 }
 
+export function resolveTradeExchangeAccord(
+  progress: TradeExchangeAccordProgress,
+  accordId: string = TRADE_EXCHANGE_ACCORDS[0].id
+): TradeExchangeAccordResult {
+  const accord = TRADE_EXCHANGE_ACCORDS.find((entry) => entry.id === accordId) || TRADE_EXCHANGE_ACCORDS[0];
+  const requiredSpiritIds = new Set(accord.requiredSpiritIds);
+  const requiredItemIds = new Set(accord.requiredItemIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const itemIds = Array.from(new Set([...progress.listedItemIds, ...progress.offeredItemIds].filter(Boolean))).filter((itemId) => {
+    return requiredItemIds.has(itemId) && Object.values(ALPHA_ITEMS).some((item) => item.id === itemId);
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of accord.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  for (const itemId of accord.requiredItemIds) {
+    if (!itemIds.includes(itemId)) missing.push(`item:${itemId}`);
+  }
+
+  if (!progress.marketProof) missing.push('market-listing');
+  if (!progress.tradeProof) missing.push('direct-trade');
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === accord.requiredProvisionSatchelId;
+  if (!provisionReady) missing.push(`provision:${accord.requiredProvisionSatchelId}`);
+
+  const craftReady = progress.craftWritProof && progress.craftWritId === accord.requiredCraftWritId;
+  if (!craftReady) missing.push(`craft:${accord.requiredCraftWritId}`);
+
+  if (localPresenceCount < accord.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${accord.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < accord.requiredChatLines) missing.push(`chat:${chatLines.length}/${accord.requiredChatLines}`);
+
+  const score =
+    Math.min(roster.length, accord.requiredSpiritIds.length) * 3 +
+    Math.min(itemIds.length, accord.requiredItemIds.length) * 3 +
+    (progress.marketProof ? 3 : 0) +
+    (progress.tradeProof ? 3 : 0) +
+    (provisionReady ? 5 : 0) +
+    (craftReady ? 5 : 0) +
+    Math.min(localPresenceCount, accord.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const exchanged = missing.length === 0 && score >= accord.requiredScore;
+  const rosterNames = roster.length ? roster.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ') : 'unregistered spirits';
+  const itemSummary = itemIds.length ? itemIds.join(', ') : 'unverified supplies';
+
+  return {
+    ok: true,
+    exchanged,
+    accordId: accord.id,
+    accordName: accord.name,
+    title: accord.title,
+    habitat: accord.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    itemIds,
+    localPresenceCount,
+    score,
+    requiredScore: accord.requiredScore,
+    missing,
+    rewardItemId: accord.rewardItemId,
+    message: exchanged
+      ? `${accord.name} complete: ${rosterNames} exchange ${itemSummary} through fixed-list practice, direct trade, provision supplies, and craft writs with two-tester guild witness proof. No real value.`
+      : `${accord.name} needs ${missing.join(', ')} before the guild exchange accord can be recorded.`,
+    source: 'trade-exchange-accord'
+  };
+}
+
 export function resolveSpiritRouteWaystone(
   progress: SpiritRouteWaystoneProgress,
   waystoneId: string = SPIRIT_ROUTE_WAYSTONES[0].id
@@ -6316,6 +6478,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
+  if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.commissionProof) missing.push('commission');
   if (!progress.rallyProof) missing.push('rally');
@@ -6361,6 +6524,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.nurtureRiteProof ? 3 : 0) +
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
+    (progress.exchangeAccordProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.commissionProof ? 2 : 0) +
     (progress.rallyProof ? 3 : 0) +
@@ -6403,7 +6567,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, waystone travel, nurturing, kinship, nursery care, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, waystone travel, nurturing, kinship, nursery care, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -6432,6 +6596,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.wayfarerChronicleProof) missing.push('chronicle');
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
+  if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.mentorChallengeProof) missing.push('mentor');
@@ -6462,6 +6627,7 @@ export function resolveGuildAscensionTrial(
     (progress.wayfarerChronicleProof ? 5 : 0) +
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
+    (progress.exchangeAccordProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.routePatrolProof ? 4 : 0) +
     (progress.mentorChallengeProof ? 4 : 0) +
@@ -6502,7 +6668,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, affinity matrix, route patrol, mentor, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, exchange accord, affinity matrix, route patrol, mentor, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

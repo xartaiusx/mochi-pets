@@ -44,6 +44,7 @@ import {
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
+  TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
   resolveSpiritRouteMastery,
@@ -101,7 +102,8 @@ import {
   resolveSpiritTechniqueMastery,
   resolveSpiritTournamentBracket,
   resolveSpiritTraitAttunement,
-  resolveSpiritTrainingBattle
+  resolveSpiritTrainingBattle,
+  resolveTradeExchangeAccord
 } from '../alpha/content';
 import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
 
@@ -263,6 +265,14 @@ interface AlphaHudState {
   craftWritRecipeIds: string[];
   craftWritStockItemIds: string[];
   craftWritClaimed: boolean;
+  exchangeAccordProof: boolean;
+  exchangeAccordId?: string;
+  exchangeAccordName: string;
+  exchangeAccordScore: number;
+  exchangeAccordRequiredScore: number;
+  exchangeAccordItemIds: string[];
+  exchangeAccordPresenceCount: number;
+  exchangeAccordTallyClaimed: boolean;
   routeWaystoneProof: boolean;
   routeWaystoneId?: string;
   routeWaystoneName: string;
@@ -935,6 +945,13 @@ function defaultAlphaState(): AlphaHudState {
     craftWritRecipeIds: [],
     craftWritStockItemIds: [],
     craftWritClaimed: false,
+    exchangeAccordProof: false,
+    exchangeAccordName: 'Pending',
+    exchangeAccordScore: 0,
+    exchangeAccordRequiredScore: 0,
+    exchangeAccordItemIds: [],
+    exchangeAccordPresenceCount: 1,
+    exchangeAccordTallyClaimed: false,
     routeWaystoneProof: false,
     routeWaystoneName: 'Inactive',
     routeWaystoneScore: 0,
@@ -1219,6 +1236,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
       <span class="mochi-hud__hint" data-encounter-atlas-label>Atlas: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
+      <span class="mochi-hud__hint" data-exchange-accord-label>Exchange: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
       <span class="mochi-hud__hint" data-recovery-tea-label>Recovery: pending</span>
@@ -1310,6 +1328,7 @@ function createHud() {
       <button type="button" data-alpha-action="emote.send" aria-label="Wave to nearby testers">Wave</button>
       <button type="button" data-alpha-action="market.fixed_list" aria-label="List a no-real-value market item">List</button>
       <button type="button" data-alpha-action="trade.direct_offer" aria-label="Record a no-real-value direct trade proof">Trade</button>
+      <button type="button" data-alpha-action="trade.exchange_accord" aria-label="Record the no-real-value Jade Exchange Accord">Accord</button>
       <button type="button" data-alpha-action="chain.withdraw_request" aria-label="Stage a no-real-value Enjin Canary preview request">Canary</button>
       <button type="button" data-alpha-action="chain.deposit_request" aria-label="Stage a no-real-value Enjin Canary return preview">Return</button>
     </div>
@@ -1352,6 +1371,7 @@ function createHud() {
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
   const encounterAtlasLabel = hud.querySelector('[data-encounter-atlas-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
+  const exchangeAccordLabel = hud.querySelector('[data-exchange-accord-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
   const recoveryTeaLabel = hud.querySelector('[data-recovery-tea-label]');
@@ -1518,6 +1538,11 @@ function createHud() {
       craftWritLabel.textContent = state.craftWritProof
         ? `Craft: ${state.craftWritName}, ${state.craftWritRecipeIds.length} recipes, score ${state.craftWritScore}/${state.craftWritRequiredScore}`
         : 'Craft: pending';
+    }
+    if (exchangeAccordLabel) {
+      exchangeAccordLabel.textContent = state.exchangeAccordProof
+        ? `Exchange: ${state.exchangeAccordName}, ${state.exchangeAccordItemIds.length} supplies, ${state.exchangeAccordPresenceCount} testers`
+        : 'Exchange: pending';
     }
     if (routeWaystoneLabel) {
       routeWaystoneLabel.textContent = state.routeWaystoneProof
@@ -1884,6 +1909,7 @@ function readAlphaState(): AlphaHudState {
       encounterAtlasRarityTiers: Array.isArray(parsed?.encounterAtlasRarityTiers) ? parsed.encounterAtlasRarityTiers.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
+      exchangeAccordItemIds: Array.isArray(parsed?.exchangeAccordItemIds) ? parsed.exchangeAccordItemIds.map(String) : [],
       routeWaystoneRouteIds: Array.isArray(parsed?.routeWaystoneRouteIds) ? parsed.routeWaystoneRouteIds.map(String) : [],
       routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
       nurtureRiteRosterIds: Array.isArray(parsed?.nurtureRiteRosterIds) ? parsed.nurtureRiteRosterIds.map(String) : [],
@@ -2650,6 +2676,32 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'trade.exchange_accord') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const exchangeItemIds = state.provisionStockItemIds.length
+      ? state.provisionStockItemIds
+      : TRADE_EXCHANGE_ACCORDS[0].requiredItemIds;
+    return {
+      accordId: TRADE_EXCHANGE_ACCORDS[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[roster.length - 1] || roster[0],
+      listedItemIds: exchangeItemIds,
+      offeredItemIds: TRADE_EXCHANGE_ACCORDS[0].requiredItemIds,
+      marketProof: state.charmListed,
+      tradeProof: state.tradeProof,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      craftWritProof: state.craftWritProof,
+      craftWritId: state.craftWritId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'world.route_waystone') {
     return {
       waystoneId: SPIRIT_ROUTE_WAYSTONES[0].id,
@@ -2947,6 +2999,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       nurtureRiteProof: state.nurtureRiteProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
+      exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
@@ -2985,6 +3038,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       wayfarerChronicleProof: state.wayfarerChronicleProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
+      exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
@@ -3972,6 +4026,43 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'trade.exchange_accord') {
+    const result = resolveTradeExchangeAccord(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        listedItemIds: Array.isArray(payload.listedItemIds) ? payload.listedItemIds.map(String) : state.provisionStockItemIds,
+        offeredItemIds: Array.isArray(payload.offeredItemIds) ? payload.offeredItemIds.map(String) : TRADE_EXCHANGE_ACCORDS[0].requiredItemIds,
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        craftWritId: String(payload.craftWritId || state.craftWritId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.accordId || TRADE_EXCHANGE_ACCORDS[0].id)
+    );
+    if (result.exchanged) {
+      state.exchangeAccordProof = true;
+      state.exchangeAccordId = result.accordId;
+      state.exchangeAccordName = result.accordName;
+      state.exchangeAccordScore = result.score;
+      state.exchangeAccordRequiredScore = result.requiredScore;
+      state.exchangeAccordItemIds = result.itemIds;
+      state.exchangeAccordPresenceCount = result.localPresenceCount;
+      state.exchangeAccordTallyClaimed = result.rewardItemId === 'jade-exchange-accord-tally';
+      state.attunedSpiritIds = result.roster;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'world.route_waystone') {
     const result = resolveSpiritRouteWaystone(
       {
@@ -4382,6 +4473,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
@@ -4435,6 +4527,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),

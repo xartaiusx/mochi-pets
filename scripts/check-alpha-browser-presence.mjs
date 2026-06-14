@@ -205,6 +205,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="trade.exchange_accord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_waystone"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.nurture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.recovery_tea"]', { timeout: timeoutMs });
@@ -249,6 +250,7 @@ async function exerciseAlphaHud(page) {
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
       const encounterAtlas = document.querySelector('[data-encounter-atlas-label]')?.textContent || '';
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
+      const exchangeAccord = document.querySelector('[data-exchange-accord-label]')?.textContent || '';
       const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
       const nurtureRite = document.querySelector('[data-nurture-rite-label]')?.textContent || '';
       const recoveryTea = document.querySelector('[data-recovery-tea-label]')?.textContent || '';
@@ -309,6 +311,7 @@ async function exerciseAlphaHud(page) {
         && routeEcology.includes('Jade Route Ecology Survey')
         && encounterAtlas.includes('Jade Encounter Atlas')
         && craftWrit.includes('Jade Court Craft Writ')
+        && exchangeAccord.includes('Jade Exchange Accord')
         && routeWaystone.includes('Jade Cloudbell Waystone')
         && nurtureRite.includes('Jade Moonwell Nurture Rite')
         && recoveryTea.includes('Jade Teahouse Recovery')
@@ -492,6 +495,17 @@ async function exerciseAlphaHud(page) {
         && state.craftWritStockItemIds.includes('lantern-harmony-tea')
         && state.craftWritStockItemIds.includes('jade-mooncake-box')
         && state.craftWritClaimed === true
+        && state.exchangeAccordProof === true
+        && state.exchangeAccordId === 'jade-exchange-accord'
+        && state.exchangeAccordName === 'Jade Exchange Accord'
+        && state.exchangeAccordScore >= 34
+        && state.exchangeAccordRequiredScore === 34
+        && Array.isArray(state.exchangeAccordItemIds)
+        && state.exchangeAccordItemIds.includes('jade-thread-charm')
+        && state.exchangeAccordItemIds.includes('lantern-harmony-tea')
+        && state.exchangeAccordItemIds.includes('jade-mooncake-box')
+        && state.exchangeAccordPresenceCount >= 2
+        && state.exchangeAccordTallyClaimed === true
         && state.routeWaystoneProof === true
         && state.routeWaystoneId === 'jade-cloudbell-waystone'
         && state.routeWaystoneName === 'Jade Cloudbell Waystone'
@@ -867,6 +881,7 @@ async function exerciseAlphaHud(page) {
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
       encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
+      exchangeAccord: document.querySelector('[data-exchange-accord-label]')?.textContent || '',
       routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
       nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
       recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent || '',
@@ -924,6 +939,7 @@ async function exerciseAlphaHud(page) {
     routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
     encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent?.trim() || '',
     craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
+    exchangeAccord: document.querySelector('[data-exchange-accord-label]')?.textContent?.trim() || '',
     routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
     nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
     recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent?.trim() || '',
@@ -1138,6 +1154,17 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('lantern-harmony-tea'), 'HUD craft action must record Lantern Harmony Tea stock.');
   assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('jade-mooncake-box'), 'HUD craft action must record Jade Mooncake Box stock.');
   assert(snapshot.state.craftWritClaimed === true, 'HUD craft action must mark the no-real-value craft writ proof.');
+  assert(snapshot.exchangeAccord.includes('Jade Exchange Accord'), 'HUD exchange label must show the completed no-real-value exchange accord.');
+  assert(snapshot.state.exchangeAccordProof === true, 'HUD exchange action must record exchange accord proof.');
+  assert(snapshot.state.exchangeAccordId === 'jade-exchange-accord', 'HUD exchange action must record the exchange accord id.');
+  assert(snapshot.state.exchangeAccordName === 'Jade Exchange Accord', 'HUD exchange action must record the exchange accord name.');
+  assert(snapshot.state.exchangeAccordScore >= 34, 'HUD exchange action must record a passing exchange accord score.');
+  assert(snapshot.state.exchangeAccordRequiredScore === 34, 'HUD exchange action must record the exchange accord requirement.');
+  assert(Array.isArray(snapshot.state.exchangeAccordItemIds) && snapshot.state.exchangeAccordItemIds.includes('jade-thread-charm'), 'HUD exchange action must record the Jade Thread Charm exchange item.');
+  assert(Array.isArray(snapshot.state.exchangeAccordItemIds) && snapshot.state.exchangeAccordItemIds.includes('lantern-harmony-tea'), 'HUD exchange action must record Lantern Harmony Tea exchange item.');
+  assert(Array.isArray(snapshot.state.exchangeAccordItemIds) && snapshot.state.exchangeAccordItemIds.includes('jade-mooncake-box'), 'HUD exchange action must record Jade Mooncake Box exchange item.');
+  assert(snapshot.state.exchangeAccordPresenceCount >= 2, 'HUD exchange action must record two local tester presences.');
+  assert(snapshot.state.exchangeAccordTallyClaimed === true, 'HUD exchange action must mark the no-real-value accord tally proof.');
   assert(snapshot.routeWaystone.includes('Jade Cloudbell Waystone'), 'HUD waystone label must show the completed route waystone proof.');
   assert(snapshot.state.routeWaystoneProof === true, 'HUD waystone action must record route waystone proof.');
   assert(snapshot.state.routeWaystoneId === 'jade-cloudbell-waystone', 'HUD waystone action must record the route waystone id.');
@@ -1424,6 +1451,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
   assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');
   assert(chat.some((line) => String(line).includes('Jade Court Craft Writ complete')), 'HUD chat state must record the craft writ action.');
+  assert(chat.some((line) => String(line).includes('Jade Exchange Accord complete')), 'HUD chat state must record the exchange accord action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Waystone activated')), 'HUD chat state must record the route waystone action.');
   assert(chat.some((line) => String(line).includes('Jade Moonwell Nurture Rite complete')), 'HUD chat state must record the nurture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Teahouse Recovery complete')), 'HUD chat state must record the recovery tea action.');

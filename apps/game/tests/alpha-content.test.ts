@@ -31,6 +31,7 @@ import {
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TOURNAMENT_BRACKETS,
+  TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
@@ -81,7 +82,8 @@ import {
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTournamentBracket,
-  resolveSpiritTraitAttunement
+  resolveSpiritTraitAttunement,
+  resolveTradeExchangeAccord
 } from '../src/alpha/content';
 
 const fullRoster = ['lirabao', 'jintari', 'aozhen'] as const;
@@ -982,6 +984,63 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(craftWrit.message).toContain('No real value');
 
+    expect(TRADE_EXCHANGE_ACCORDS.map((accord) => accord.id)).toEqual(['jade-exchange-accord']);
+    const blockedExchangeAccord = resolveTradeExchangeAccord({
+      roster: fullRoster,
+      activeSpiritId: 'aozhen',
+      listedItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      offeredItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      marketProof: true,
+      tradeProof: false,
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Exchange accord ready.']
+    });
+    expect(blockedExchangeAccord).toMatchObject({
+      exchanged: false,
+      accordId: 'jade-exchange-accord',
+      missing: ['direct-trade']
+    });
+
+    const exchangeAccord = resolveTradeExchangeAccord({
+      roster: fullRoster,
+      activeSpiritId: 'aozhen',
+      listedItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      offeredItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      marketProof: true,
+      tradeProof: true,
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Exchange accord ready.']
+    });
+    expect(exchangeAccord).toMatchObject({
+      exchanged: true,
+      accordId: 'jade-exchange-accord',
+      accordName: 'Jade Exchange Accord',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: [...fullRoster],
+      itemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      localPresenceCount: 2,
+      score: 42,
+      requiredScore: 34,
+      rewardItemId: ALPHA_ITEMS.exchangeAccordTally.id,
+      source: 'trade-exchange-accord'
+    });
+    expect(exchangeAccord.message).toContain('No real value');
+
     expect(SPIRIT_ROUTE_WAYSTONES.map((waystone) => waystone.id)).toEqual(['jade-cloudbell-waystone']);
     const blockedWaystone = resolveSpiritRouteWaystone({
       discoveredRoutes: firstRouteIds,
@@ -1423,6 +1482,7 @@ describe('Mochi Spirits alpha content contract', () => {
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       affinityMatrixProof: true,
       commissionProof: true,
       rallyProof: true,
@@ -1476,6 +1536,7 @@ describe('Mochi Spirits alpha content contract', () => {
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       affinityMatrixProof: true,
       commissionProof: true,
       rallyProof: true,
@@ -1506,7 +1567,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 115,
+      score: 118,
       requiredScore: 70,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -1521,6 +1582,7 @@ describe('Mochi Spirits alpha content contract', () => {
       wayfarerChronicleProof: false,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       affinityMatrixProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
@@ -1560,6 +1622,7 @@ describe('Mochi Spirits alpha content contract', () => {
       wayfarerChronicleProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      exchangeAccordProof: true,
       affinityMatrixProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
@@ -1590,7 +1653,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 80,
+      score: 83,
       requiredScore: 59,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
