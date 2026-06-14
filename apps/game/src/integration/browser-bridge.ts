@@ -16,6 +16,7 @@ import {
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_CRAFT_WRITS,
+  SPIRIT_ENCOUNTER_ATLASES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -55,6 +56,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritCraftWrit,
+  resolveSpiritEncounterAtlas,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -235,6 +237,16 @@ interface AlphaHudState {
   routeEcologySpeciesIds: string[];
   routeEcologyInvitedSpiritIds: string[];
   routeEcologyMapClaimed: boolean;
+  encounterAtlasProof: boolean;
+  encounterAtlasId?: string;
+  encounterAtlasName: string;
+  encounterAtlasScore: number;
+  encounterAtlasRequiredScore: number;
+  encounterAtlasRouteIds: string[];
+  encounterAtlasSpiritIds: string[];
+  encounterAtlasCapturedSpiritIds: string[];
+  encounterAtlasRarityTiers: string[];
+  encounterAtlasClaimed: boolean;
   craftWritProof: boolean;
   craftWritId?: string;
   craftWritName: string;
@@ -864,6 +876,15 @@ function defaultAlphaState(): AlphaHudState {
     routeEcologySpeciesIds: [],
     routeEcologyInvitedSpiritIds: [],
     routeEcologyMapClaimed: false,
+    encounterAtlasProof: false,
+    encounterAtlasName: 'Unindexed',
+    encounterAtlasScore: 0,
+    encounterAtlasRequiredScore: 0,
+    encounterAtlasRouteIds: [],
+    encounterAtlasSpiritIds: [],
+    encounterAtlasCapturedSpiritIds: [],
+    encounterAtlasRarityTiers: [],
+    encounterAtlasClaimed: false,
     craftWritProof: false,
     craftWritName: 'Uncrafted',
     craftWritScore: 0,
@@ -1122,6 +1143,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
+      <span class="mochi-hud__hint" data-encounter-atlas-label>Atlas: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
@@ -1174,6 +1196,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
+      <button type="button" data-alpha-action="world.encounter_atlas" aria-label="Record the no-real-value Jade Encounter Atlas">Atlas</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
@@ -1245,6 +1268,7 @@ function createHud() {
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
+  const encounterAtlasLabel = hud.querySelector('[data-encounter-atlas-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
@@ -1398,6 +1422,11 @@ function createHud() {
       routeEcologyLabel.textContent = state.routeEcologyProof
         ? `Ecology: ${state.routeEcologyName}, ${state.routeEcologyRouteIds.length} routes, ${state.routeEcologyInvitedSpiritIds.length} invites`
         : 'Ecology: pending';
+    }
+    if (encounterAtlasLabel) {
+      encounterAtlasLabel.textContent = state.encounterAtlasProof
+        ? `Atlas: ${state.encounterAtlasName}, ${state.encounterAtlasSpiritIds.length} spirits, ${state.encounterAtlasRarityTiers.length} tiers`
+        : 'Atlas: pending';
     }
     if (craftWritLabel) {
       craftWritLabel.textContent = state.craftWritProof
@@ -1740,6 +1769,10 @@ function readAlphaState(): AlphaHudState {
       routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
       routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
+      encounterAtlasRouteIds: Array.isArray(parsed?.encounterAtlasRouteIds) ? parsed.encounterAtlasRouteIds.map(String) : [],
+      encounterAtlasSpiritIds: Array.isArray(parsed?.encounterAtlasSpiritIds) ? parsed.encounterAtlasSpiritIds.map(String) : [],
+      encounterAtlasCapturedSpiritIds: Array.isArray(parsed?.encounterAtlasCapturedSpiritIds) ? parsed.encounterAtlasCapturedSpiritIds.map(String) : [],
+      encounterAtlasRarityTiers: Array.isArray(parsed?.encounterAtlasRarityTiers) ? parsed.encounterAtlasRarityTiers.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       routeWaystoneRouteIds: Array.isArray(parsed?.routeWaystoneRouteIds) ? parsed.routeWaystoneRouteIds.map(String) : [],
@@ -2451,6 +2484,30 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.encounter_atlas') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      atlasId: SPIRIT_ENCOUNTER_ATLASES[0].id,
+      discoveredRoutes: state.discoveredRouteIds,
+      encounteredSpiritIds: roster,
+      capturedSpiritIds: state.captureRiteSpiritIds.length ? state.captureRiteSpiritIds : roster,
+      rarityTiers: Array.from(new Set(MOCHI_SPIRITS.map((spirit) => spirit.capture.rarity))),
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      captureRiteProof: state.captureRiteProof,
+      captureRiteId: state.captureRiteId,
+      fieldAlmanacProof: state.fieldAlmanacProof,
+      fieldAlmanacId: state.fieldAlmanacId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'item.craft_writ') {
     const roster = state.attunedSpiritIds;
     return {
@@ -2676,6 +2733,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       localPresenceCount: presenceCount,
       captureProof: state.captureProof,
       captureRiteProof: state.captureRiteProof,
+      encounterAtlasProof: state.encounterAtlasProof,
       routeMasteryProof: state.routeMasteryProof,
       routePatrolProof: state.routePatrolProof,
       routeEcologyProof: state.routeEcologyProof,
@@ -3559,6 +3617,46 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'world.encounter_atlas') {
+    const result = resolveSpiritEncounterAtlas(
+      {
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        encounteredSpiritIds: Array.isArray(payload.encounteredSpiritIds) ? payload.encounteredSpiritIds.map(String) : state.attunedSpiritIds,
+        capturedSpiritIds: Array.isArray(payload.capturedSpiritIds) ? payload.capturedSpiritIds.map(String) : state.captureRiteSpiritIds,
+        rarityTiers: Array.isArray(payload.rarityTiers) ? payload.rarityTiers.map(String) : Array.from(new Set(MOCHI_SPIRITS.map((spirit) => spirit.capture.rarity))),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
+        captureRiteId: String(payload.captureRiteId || state.captureRiteId || ''),
+        fieldAlmanacProof: Boolean(payload.fieldAlmanacProof ?? state.fieldAlmanacProof),
+        fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.atlasId || SPIRIT_ENCOUNTER_ATLASES[0].id)
+    );
+    if (result.recorded) {
+      state.encounterAtlasProof = true;
+      state.encounterAtlasId = result.atlasId;
+      state.encounterAtlasName = result.atlasName;
+      state.encounterAtlasScore = result.score;
+      state.encounterAtlasRequiredScore = result.requiredScore;
+      state.encounterAtlasRouteIds = result.routeIds;
+      state.encounterAtlasSpiritIds = result.encounteredSpiritIds;
+      state.encounterAtlasCapturedSpiritIds = result.capturedSpiritIds;
+      state.encounterAtlasRarityTiers = result.rarityTiers;
+      state.encounterAtlasClaimed = result.rewardItemId === 'jade-encounter-atlas';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.attunedSpiritIds = Array.from(new Set([...state.attunedSpiritIds, ...result.encounteredSpiritIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'item.craft_writ') {
     const result = resolveSpiritCraftWrit(
       {
@@ -3895,6 +3993,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         captureProof: Boolean(payload.captureProof ?? state.captureProof),
         captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
+        encounterAtlasProof: Boolean(payload.encounterAtlasProof ?? state.encounterAtlasProof),
         routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),

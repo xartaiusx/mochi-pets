@@ -17,6 +17,7 @@ import {
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_CRAFT_WRITS,
+  SPIRIT_ENCOUNTER_ATLASES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -47,6 +48,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritCraftWrit,
+  resolveSpiritEncounterAtlas,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -118,6 +120,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
@@ -188,6 +191,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
+    expect(ALPHA_ACTION_TYPES).toContain('world.encounter_atlas');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
@@ -921,6 +925,60 @@ describe('alpha contract', () => {
       chatLines: ['Route ecology ready.']
     }).surveyed).toBe(false);
 
+    expect(SPIRIT_ENCOUNTER_ATLASES.map((atlas) => atlas.id)).toEqual(['jade-encounter-atlas']);
+    const encounterAtlas = resolveSpiritEncounterAtlas({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounteredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      rarityTiers: ['common', 'uncommon', 'rare'],
+      journalDiscoveredCount: 3,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter atlas ready.']
+    });
+    expect(encounterAtlas).toMatchObject({
+      ok: true,
+      recorded: true,
+      atlasId: 'jade-encounter-atlas',
+      atlasName: 'Jade Encounter Atlas',
+      title: 'First-Court Encounter Index',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounteredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      rarityTiers: ['common', 'uncommon', 'rare'],
+      score: 54,
+      requiredScore: 44,
+      rewardItemId: 'jade-encounter-atlas',
+      source: 'spirit-encounter-atlas'
+    });
+    expect(encounterAtlas.message).toContain('No real value');
+    expect(resolveSpiritEncounterAtlas({
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      encounteredSpiritIds: ['lirabao'],
+      capturedSpiritIds: ['lirabao'],
+      rarityTiers: ['common'],
+      journalDiscoveredCount: 1,
+      routeEcologyProof: false,
+      routeEcologyId: 'jade-route-ecology-survey',
+      captureRiteProof: false,
+      captureRiteId: 'jade-court-capture-rite',
+      fieldAlmanacProof: false,
+      fieldAlmanacId: 'jade-field-almanac',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter atlas blocked.']
+    }).recorded).toBe(false);
+
     expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
     const craftWrit = resolveSpiritCraftWrit({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -1414,6 +1472,7 @@ describe('alpha contract', () => {
       localPresenceCount: 2,
       captureProof: true,
       captureRiteProof: true,
+      encounterAtlasProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1460,8 +1519,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 106,
-      requiredScore: 67,
+      score: 109,
+      requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1474,6 +1533,7 @@ describe('alpha contract', () => {
       localPresenceCount: 2,
       captureProof: true,
       captureRiteProof: true,
+      encounterAtlasProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,

@@ -11,6 +11,7 @@ import {
   SPIRIT_CARE_CYCLES,
   SPIRIT_CAPTURE_RITES,
   SPIRIT_CRAFT_WRITS,
+  SPIRIT_ENCOUNTER_ATLASES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -44,6 +45,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritCraftWrit,
+  resolveSpiritEncounterAtlas,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -844,6 +846,68 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(routeEcology.message).toContain('No real value');
 
+    expect(SPIRIT_ENCOUNTER_ATLASES.map((atlas) => atlas.id)).toEqual(['jade-encounter-atlas']);
+    const blockedEncounterAtlas = resolveSpiritEncounterAtlas({
+      discoveredRoutes: firstRouteIds,
+      encounteredSpiritIds: fullRoster,
+      capturedSpiritIds: ['lirabao'],
+      rarityTiers: ['common'],
+      journalDiscoveredCount: 3,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      captureRiteProof: false,
+      captureRiteId: 'jade-court-capture-rite',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Atlas notes need witnesses.']
+    });
+    expect(blockedEncounterAtlas.recorded).toBe(false);
+    expect(blockedEncounterAtlas.missing).toEqual(expect.arrayContaining([
+      'capture:jintari',
+      'capture:aozhen',
+      'rarity:uncommon',
+      'rarity:rare',
+      'capture-rite:jade-court-capture-rite',
+      'presence:1/2'
+    ]));
+
+    const encounterAtlas = resolveSpiritEncounterAtlas({
+      discoveredRoutes: firstRouteIds,
+      encounteredSpiritIds: fullRoster,
+      capturedSpiritIds: fullRoster,
+      rarityTiers: ['common', 'uncommon', 'rare'],
+      journalDiscoveredCount: 3,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter atlas ready.']
+    });
+    expect(encounterAtlas).toMatchObject({
+      recorded: true,
+      atlasId: 'jade-encounter-atlas',
+      atlasName: 'Jade Encounter Atlas',
+      routeIds: [...firstRouteIds],
+      encounteredSpiritIds: [...fullRoster],
+      capturedSpiritIds: [...fullRoster],
+      rarityTiers: ['common', 'uncommon', 'rare'],
+      score: 54,
+      requiredScore: 44,
+      rewardItemId: ALPHA_ITEMS.encounterAtlas.id,
+      source: 'spirit-encounter-atlas'
+    });
+    expect(encounterAtlas.message).toContain('No real value');
+
     expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
     const blockedCraftWrit = resolveSpiritCraftWrit({
       roster: fullRoster,
@@ -1195,6 +1259,7 @@ describe('Mochi Spirits alpha content contract', () => {
       localPresenceCount: 1,
       captureProof: true,
       captureRiteProof: true,
+      encounterAtlasProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1245,6 +1310,7 @@ describe('Mochi Spirits alpha content contract', () => {
       localPresenceCount: 2,
       captureProof: true,
       captureRiteProof: true,
+      encounterAtlasProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1285,8 +1351,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 106,
-      requiredScore: 67,
+      score: 109,
+      requiredScore: 70,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });

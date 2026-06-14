@@ -208,6 +208,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.nurture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.kinship_album"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
@@ -242,6 +243,7 @@ async function exerciseAlphaHud(page) {
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
+      const encounterAtlas = document.querySelector('[data-encounter-atlas-label]')?.textContent || '';
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
       const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
       const nurtureRite = document.querySelector('[data-nurture-rite-label]')?.textContent || '';
@@ -297,6 +299,7 @@ async function exerciseAlphaHud(page) {
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
+        && encounterAtlas.includes('Jade Encounter Atlas')
         && craftWrit.includes('Jade Court Craft Writ')
         && routeWaystone.includes('Jade Cloudbell Waystone')
         && nurtureRite.includes('Jade Moonwell Nurture Rite')
@@ -583,11 +586,32 @@ async function exerciseAlphaHud(page) {
         && state.captureRiteLureItemIds.includes('lantern-harmony-tea')
         && state.captureRiteLureItemIds.includes('jade-thread-charm')
         && state.captureRiteClaimed === true
+        && state.encounterAtlasProof === true
+        && state.encounterAtlasId === 'jade-encounter-atlas'
+        && state.encounterAtlasName === 'Jade Encounter Atlas'
+        && state.encounterAtlasScore >= 44
+        && state.encounterAtlasRequiredScore === 44
+        && Array.isArray(state.encounterAtlasRouteIds)
+        && state.encounterAtlasRouteIds.includes('moonbridge-bamboo-trail')
+        && state.encounterAtlasRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.encounterAtlasSpiritIds)
+        && state.encounterAtlasSpiritIds.includes('lirabao')
+        && state.encounterAtlasSpiritIds.includes('jintari')
+        && state.encounterAtlasSpiritIds.includes('aozhen')
+        && Array.isArray(state.encounterAtlasCapturedSpiritIds)
+        && state.encounterAtlasCapturedSpiritIds.includes('lirabao')
+        && state.encounterAtlasCapturedSpiritIds.includes('jintari')
+        && state.encounterAtlasCapturedSpiritIds.includes('aozhen')
+        && Array.isArray(state.encounterAtlasRarityTiers)
+        && state.encounterAtlasRarityTiers.includes('common')
+        && state.encounterAtlasRarityTiers.includes('uncommon')
+        && state.encounterAtlasRarityTiers.includes('rare')
+        && state.encounterAtlasClaimed === true
         && state.wayfarerChronicleProof === true
         && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
         && state.wayfarerChronicleName === 'Jade Wayfarer Chronicle'
-        && state.wayfarerChronicleScore >= 67
-        && state.wayfarerChronicleRequiredScore === 67
+        && state.wayfarerChronicleScore >= 70
+        && state.wayfarerChronicleRequiredScore === 70
         && state.wayfarerChronicleClaspClaimed === true
         && state.guildAscensionProof === true
         && state.guildAscensionTrialId === 'jade-court-ascension-trial'
@@ -726,6 +750,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Moonwell Nurture Rite complete')
         && chat.includes('Jade Kinship Album recorded')
+        && chat.includes('Jade Encounter Atlas recorded')
         && chat.includes('Jade Banner Tournament cleared')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
@@ -764,6 +789,7 @@ async function exerciseAlphaHud(page) {
       temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
+      encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
       routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
       nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
@@ -816,6 +842,7 @@ async function exerciseAlphaHud(page) {
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
     routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
+    encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent?.trim() || '',
     craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
     routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
     nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
@@ -886,6 +913,24 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.captureRiteLureItemIds) && snapshot.state.captureRiteLureItemIds.includes('lantern-harmony-tea'), 'HUD capture rite action must preserve Lantern Harmony Tea lure proof.');
   assert(Array.isArray(snapshot.state.captureRiteLureItemIds) && snapshot.state.captureRiteLureItemIds.includes('jade-thread-charm'), 'HUD capture rite action must preserve Jade Thread Charm lure proof.');
   assert(snapshot.state.captureRiteClaimed === true, 'HUD capture rite action must mark the no-real-value capture tally proof.');
+  assert(snapshot.encounterAtlas.includes('Jade Encounter Atlas'), 'HUD encounter atlas label must show the completed encounter atlas.');
+  assert(snapshot.state.encounterAtlasProof === true, 'HUD encounter atlas action must record encounter atlas proof.');
+  assert(snapshot.state.encounterAtlasId === 'jade-encounter-atlas', 'HUD encounter atlas action must record the atlas id.');
+  assert(snapshot.state.encounterAtlasName === 'Jade Encounter Atlas', 'HUD encounter atlas action must record the atlas name.');
+  assert(snapshot.state.encounterAtlasScore >= 44, 'HUD encounter atlas action must record a passing atlas score.');
+  assert(snapshot.state.encounterAtlasRequiredScore === 44, 'HUD encounter atlas action must record the atlas requirement.');
+  assert(Array.isArray(snapshot.state.encounterAtlasRouteIds) && snapshot.state.encounterAtlasRouteIds.includes('moonbridge-bamboo-trail'), 'HUD encounter atlas action must preserve the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.encounterAtlasRouteIds) && snapshot.state.encounterAtlasRouteIds.includes('cloudbell-reed-bank'), 'HUD encounter atlas action must preserve the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.encounterAtlasSpiritIds) && snapshot.state.encounterAtlasSpiritIds.includes('lirabao'), 'HUD encounter atlas action must preserve Lirabao encounter proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasSpiritIds) && snapshot.state.encounterAtlasSpiritIds.includes('jintari'), 'HUD encounter atlas action must preserve Jintari encounter proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasSpiritIds) && snapshot.state.encounterAtlasSpiritIds.includes('aozhen'), 'HUD encounter atlas action must preserve Aozhen encounter proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasCapturedSpiritIds) && snapshot.state.encounterAtlasCapturedSpiritIds.includes('lirabao'), 'HUD encounter atlas action must preserve Lirabao capture proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasCapturedSpiritIds) && snapshot.state.encounterAtlasCapturedSpiritIds.includes('jintari'), 'HUD encounter atlas action must preserve Jintari capture proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasCapturedSpiritIds) && snapshot.state.encounterAtlasCapturedSpiritIds.includes('aozhen'), 'HUD encounter atlas action must preserve Aozhen capture proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasRarityTiers) && snapshot.state.encounterAtlasRarityTiers.includes('common'), 'HUD encounter atlas action must preserve common rarity proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasRarityTiers) && snapshot.state.encounterAtlasRarityTiers.includes('uncommon'), 'HUD encounter atlas action must preserve uncommon rarity proof.');
+  assert(Array.isArray(snapshot.state.encounterAtlasRarityTiers) && snapshot.state.encounterAtlasRarityTiers.includes('rare'), 'HUD encounter atlas action must preserve rare rarity proof.');
+  assert(snapshot.state.encounterAtlasClaimed === true, 'HUD encounter atlas action must mark the no-real-value atlas proof.');
   assert(snapshot.fieldAccord.includes('Cloudbell Skyvow Accord'), 'HUD field accord label must show the cleared Cloudbell accord.');
   assert(snapshot.state.fieldAccordProof === true, 'HUD field accord action must record field accord proof.');
   assert(snapshot.state.fieldAccordId === 'cloudbell-skyvow-accord', 'HUD field accord action must record the Cloudbell accord id.');
@@ -1097,8 +1142,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.wayfarerChronicleProof === true, 'HUD chronicle action must record first-court alpha chronicle proof.');
   assert(snapshot.state.wayfarerChronicleId === 'jade-wayfarer-chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle id.');
   assert(snapshot.state.wayfarerChronicleName === 'Jade Wayfarer Chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle name.');
-  assert(snapshot.state.wayfarerChronicleScore >= 67, 'HUD chronicle action must record a passing chronicle score.');
-  assert(snapshot.state.wayfarerChronicleRequiredScore === 67, 'HUD chronicle action must record the chronicle requirement.');
+  assert(snapshot.state.wayfarerChronicleScore >= 70, 'HUD chronicle action must record a passing chronicle score.');
+  assert(snapshot.state.wayfarerChronicleRequiredScore === 70, 'HUD chronicle action must record the chronicle requirement.');
   assert(snapshot.state.wayfarerChronicleClaspClaimed === true, 'HUD chronicle action must mark the no-real-value chronicle clasp proof.');
   assert(snapshot.ascension.includes('Jade Court Ascension Trial'), 'HUD ascension label must show the completed guild capstone trial.');
   assert(snapshot.state.guildAscensionProof === true, 'HUD ascension action must record closed-alpha guild capstone proof.');
@@ -1242,6 +1287,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Moonwell Nurture Rite complete')), 'HUD chat state must record the nurture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Kinship Album recorded')), 'HUD chat state must record the kinship album action.');
   assert(chat.some((line) => String(line).includes('Jade Capture Rite recorded')), 'HUD chat state must record the capture rite action.');
+  assert(chat.some((line) => String(line).includes('Jade Encounter Atlas recorded')), 'HUD chat state must record the encounter atlas action.');
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');

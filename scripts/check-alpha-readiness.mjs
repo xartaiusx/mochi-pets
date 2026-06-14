@@ -116,36 +116,72 @@ const checks = [
     includes: ['Jade Insignia Case proof', 'guild-insignia-case', 'story, insignia case, chronicle']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['world.encounter_atlas', 'Jade Encounter Atlas', 'encounter atlas']
+  },
+  {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Jade Insignia Case proof', 'guild-insignia-case']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Encounter Atlas proof', 'encounter-atlas']
   },
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Insignia Case', 'Jade Insignia Case proof']
   },
   {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Encounter Atlas', 'Jade Encounter Atlas proof']
+  },
+  {
     file: 'docs/game-art-bible.md',
     includes: ['Jade Insignia Case contribution', 'content-only Jade Insignia Case proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Encounter Atlas contribution', 'content-only Jade Encounter Atlas proof']
   },
   {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Insignia Case proof', 'insignia case']
   },
   {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Encounter Atlas proof', 'encounter atlas']
+  },
+  {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Insignia Case', 'Jade Insignia Case proof']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Encounter Atlas', 'Jade Encounter Atlas proof']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Insignia Case proof', 'seal the Jade Insignia Case']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Encounter Atlas proof', 'record the Jade Encounter Atlas']
+  },
+  {
     file: 'docs/asset-pipeline-contract.md',
     includes: ['Jade Insignia Case', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Encounter Atlas', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Insignia Case', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Encounter Atlas', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'AGENTS.md',
@@ -201,7 +237,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritCraftWrits: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'item.craft_writ'", "'world.route_waystone'", "'spirit.nurture_rite'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
+    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritEncounterAtlases: true', 'spiritCraftWrits: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.encounter_atlas'", "'item.craft_writ'", "'world.route_waystone'", "'spirit.nurture_rite'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -210,6 +246,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['routeEcologySurveys: true', "'world.route_ecology'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritEncounterAtlases: true', "'world.encounter_atlas'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -265,6 +305,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_ENCOUNTER_ATLASES', 'resolveSpiritEncounterAtlas', 'data-alpha-action="world.encounter_atlas"', 'data-encounter-atlas-label', 'encounterAtlasProof', 'encounterAtlasClaimed', 'Jade Encounter Atlas']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_CRAFT_WRITS', 'resolveSpiritCraftWrit', 'data-alpha-action="item.craft_writ"', 'data-craft-writ-label', 'craftWritProof', 'craftWritClaimed', 'Jade Court Craft Writ']
   },
   {
@@ -317,6 +361,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Encounter Atlas', 'jade-encounter-atlas', 'resolveSpiritEncounterAtlas', 'spirit-encounter-atlas', 'encounterAtlasProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Court Craft Writ', 'jade-court-craft-writ', 'resolveSpiritCraftWrit', 'spirit-craft-writ', 'craftWritProof']
   },
   {
@@ -349,7 +397,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'questChains: true', 'routeMastery: true', 'fieldAccords: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritCraftWrits: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'battleRoundTranscripts: true', 'spirit.capture', 'spirit.route_invite', 'world.route_mastery', 'spirit.habitat_bond', 'spirit.sanctuary_rite', 'spirit.research', 'spirit.compendium_complete', 'spirit.roster_archive', 'spirit.care_cycle', 'item.craft_writ', 'world.route_waystone', 'spirit.nurture_rite', 'battle.tournament_bracket', 'item.provision_satchel', 'guild.commission_complete', 'guild.social_rally', 'guild.wayfarer_chronicle', 'guild.ascension_trial', 'spirit.attune', 'spirit.journal', 'world.expedition', 'spirit.technique', 'spirit.technique_loadout', 'spirit.trait_attune', 'battle.condition_weave', 'battle.tactic_scroll', 'guild.rank_trial', 'spirit.growth_rite', 'party.set', 'party.harmony_form', 'battle.harmony_trial', 'battle.team_spar_match', 'battle.mentor_challenge', 'battle.affinity_trial', 'battle.spar_ladder', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'chain.deposit_request', 'configured-preview-stub']
+    includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'questChains: true', 'routeMastery: true', 'fieldAccords: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritEncounterAtlases: true', 'spiritCraftWrits: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'battleRoundTranscripts: true', 'spirit.capture', 'spirit.route_invite', 'world.route_mastery', 'spirit.habitat_bond', 'spirit.sanctuary_rite', 'spirit.research', 'spirit.compendium_complete', 'spirit.roster_archive', 'spirit.care_cycle', 'world.encounter_atlas', 'item.craft_writ', 'world.route_waystone', 'spirit.nurture_rite', 'battle.tournament_bracket', 'item.provision_satchel', 'guild.commission_complete', 'guild.social_rally', 'guild.wayfarer_chronicle', 'guild.ascension_trial', 'spirit.attune', 'spirit.journal', 'world.expedition', 'spirit.technique', 'spirit.technique_loadout', 'spirit.trait_attune', 'battle.condition_weave', 'battle.tactic_scroll', 'guild.rank_trial', 'spirit.growth_rite', 'party.set', 'party.harmony_form', 'battle.harmony_trial', 'battle.team_spar_match', 'battle.mentor_challenge', 'battle.affinity_trial', 'battle.spar_ladder', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'chain.deposit_request', 'configured-preview-stub']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -362,6 +410,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['routeEcologySurveys: true', 'world.route_ecology']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritEncounterAtlases: true', 'world.encounter_atlas']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -433,6 +485,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['world.encounter_atlas', 'jade-encounter-atlas', 'spiritEncounterAtlases', 'Jade Encounter Atlas', 'encounterAtlasProof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['item.craft_writ', 'jade-court-craft-writ', 'spiritCraftWrits', 'Jade Court Craft Writ', 'craftWritProof']
   },
   {
@@ -478,6 +534,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="world.route_ecology"', 'data-route-ecology-label', 'routeEcologyProof', 'routeEcologyMapClaimed', 'Jade Route Ecology Survey complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="world.encounter_atlas"', 'data-encounter-atlas-label', 'encounterAtlasProof', 'encounterAtlasClaimed', 'Jade Encounter Atlas recorded']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -562,6 +622,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['routeEcologyProof', 'routeEcologyMapClaimed', 'Jade Route Ecology Survey', 'jade-route-ecology-map', 'spirit-route-ecology', 'route ecology']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['encounterAtlasProof', 'encounterAtlasClaimed', 'Jade Encounter Atlas', 'jade-encounter-atlas', 'spirit-encounter-atlas', 'encounter atlas']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
