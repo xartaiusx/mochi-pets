@@ -96,6 +96,10 @@ const checks = [
     includes: ['routePatrols: true', "'world.route_patrol'"]
   },
   {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['routeEcologySurveys: true', "'world.route_ecology'"]
+  },
+  {
     file: 'apps/game/src/integration/enjin-canary.ts',
     includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
@@ -108,12 +112,20 @@ const checks = [
     includes: ['SPIRIT_ROUTE_PATROLS', 'resolveSpiritRoutePatrol', 'data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed']
   },
   {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_ROUTE_ECOLOGY_SURVEYS', 'resolveSpiritRouteEcologySurvey', 'data-alpha-action="world.route_ecology"', 'data-route-ecology-label', 'routeInvitedSpiritIds', 'routeEcologyProof', 'routeEcologyMapClaimed', 'Jade Route Ecology Survey']
+  },
+  {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['cloudbell-reed-bank', 'aozhen', 'Moonbridge Goldleaf Accord', 'Cloudbell Skyvow Accord', 'jade-field-accord-talisman', 'resolveSpiritFieldAccord', 'spirit-field-accord', 'Jade Cloudbell Circuit', 'cloudbell-route-knot', 'resolveSpiritRouteMastery', 'world-route-mastery', 'Jade Court Habitat Bond', 'jade-court-habitat-tassel', 'resolveSpiritHabitatBond', 'spirit-habitat-bond', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'resolveSpiritSanctuaryRite', 'spirit-sanctuary-rite', 'Jade Court Research Folio', 'jade-court-research-folio', 'resolveSpiritResearchFolio', 'spirit-research-folio', 'Jade Court Spirit Compendium', 'jade-court-compendium-seal', 'resolveSpiritCompendiumCompletion', 'spirit-compendium', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'resolveSpiritRosterArchive', 'spirit-roster-archive', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'resolveSpiritCareCycle', 'spirit-care-cycle', 'Jade Temperament Concord', 'jade-temperament-charm', 'resolveSpiritTemperamentConcord', 'spirit-temperament-concord', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'resolveSpiritFieldAlmanac', 'spirit-field-almanac', 'Jade Court Provision Satchel', 'jade-court-provision-satchel', 'Jade Mooncake Box', 'jade-mooncake-box', 'resolveSpiritProvisionSatchel', 'item-provision-satchel', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'resolveGuildSocialRally', 'guild-social-rally', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'resolveGuildWayfarerChronicle', 'guild-wayfarer-chronicle', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'resolveGuildAscensionTrial', 'guild-ascension-trial', 'Jade Step Loadout', 'jade-step-loadout-slip', 'resolveSpiritTechniqueLoadout', 'spirit-technique-loadout', 'Jade Heart Trait Attunement', 'jade-heart-trait-thread', 'resolveSpiritTraitAttunement', 'spirit-trait-attunement', 'Jade Mirror Condition Weave', 'jade-mirror-condition-charm', 'Lantern Ward', 'Goldleaf Tempo', 'Skybell Guard', 'resolveSpiritConditionWeave', 'battle-condition-weave', 'Silk Banner Mentor Drill', 'silk-banner-mentor-seal', 'resolveSpiritMentorChallenge', 'battle-mentor-challenge', 'Silk Market Kindness', 'Skybell Spar', 'selectMochiSpiritQuest', 'resolveMochiSpiritQuestProgress', 'quest-chain']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Cloudbell Patrol', 'jade-route-patrol-pennant', 'resolveSpiritRoutePatrol', 'world-route-patrol']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Route Ecology Survey', 'jade-route-ecology-map', 'resolveSpiritRouteEcologySurvey', 'spirit-route-ecology', 'routeEcologyProof']
   },
   {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
@@ -134,6 +146,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritTemperamentConcords: true', 'spirit.temperament_concord', 'spiritFieldAlmanacs: true', 'spirit.field_almanac']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['routeEcologySurveys: true', 'world.route_ecology']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -172,6 +188,10 @@ const checks = [
     includes: ['world.route_patrol', 'jade-cloudbell-patrol', 'routePatrols', 'Jade Cloudbell Patrol', 'two-tester presence proof']
   },
   {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['world.route_ecology', 'jade-route-ecology-survey', 'routeEcologySurveys', 'Jade Route Ecology Survey', 'routeEcologyProof', 'jade-route-ecology-map']
+  },
+  {
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'simulated testers', 'HTTP alpha contract load smoke']
   },
@@ -182,6 +202,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed', 'Jade Cloudbell Patrol complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="world.route_ecology"', 'data-route-ecology-label', 'routeEcologyProof', 'routeEcologyMapClaimed', 'Jade Route Ecology Survey complete']
   },
   {
     file: 'scripts/check-alpha-visual-snapshot.mjs',
@@ -230,6 +254,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['temperamentConcordProof', 'temperamentCharmClaimed', 'Jade Temperament Concord', 'jade-temperament-charm', 'spirit-temperament-concord', 'temperament concord', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'spirit-field-almanac', 'field almanac']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['routeEcologyProof', 'routeEcologyMapClaimed', 'Jade Route Ecology Survey', 'jade-route-ecology-map', 'spirit-route-ecology', 'route ecology']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',

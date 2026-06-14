@@ -22,6 +22,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
@@ -65,6 +66,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRosterArchive,
   resolveSpiritRouteInvitation,
+  resolveSpiritRouteEcologySurvey,
   resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
   resolveSpiritRoutePatrol,
@@ -120,6 +122,7 @@ interface AlphaHudState {
   routeInviteProof: boolean;
   lastRouteInviteRouteId?: string;
   lastRouteInviteSpiritId?: string;
+  routeInvitedSpiritIds: string[];
   fieldAccordProof: boolean;
   fieldAccordId?: string;
   fieldAccordName: string;
@@ -198,6 +201,15 @@ interface AlphaHudState {
   fieldAlmanacRouteIds: string[];
   fieldAlmanacSpeciesIds: string[];
   fieldAlmanacClaspClaimed: boolean;
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  routeEcologyName: string;
+  routeEcologyScore: number;
+  routeEcologyRequiredScore: number;
+  routeEcologyRouteIds: string[];
+  routeEcologySpeciesIds: string[];
+  routeEcologyInvitedSpiritIds: string[];
+  routeEcologyMapClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -689,6 +701,7 @@ function defaultAlphaState(): AlphaHudState {
     discoveredRouteIds: [],
     routeRibbonClaimed: false,
     routeInviteProof: false,
+    routeInvitedSpiritIds: [],
     fieldAccordProof: false,
     fieldAccordName: 'Pending',
     fieldAccordScore: 0,
@@ -753,6 +766,14 @@ function defaultAlphaState(): AlphaHudState {
     fieldAlmanacRouteIds: [],
     fieldAlmanacSpeciesIds: [],
     fieldAlmanacClaspClaimed: false,
+    routeEcologyProof: false,
+    routeEcologyName: 'Unsurveyed',
+    routeEcologyScore: 0,
+    routeEcologyRequiredScore: 0,
+    routeEcologyRouteIds: [],
+    routeEcologySpeciesIds: [],
+    routeEcologyInvitedSpiritIds: [],
+    routeEcologyMapClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -959,6 +980,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
+      <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -1001,6 +1023,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
+      <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1064,6 +1087,7 @@ function createHud() {
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
+  const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1190,6 +1214,11 @@ function createHud() {
       fieldAlmanacLabel.textContent = state.fieldAlmanacProof
         ? `Almanac: ${state.fieldAlmanacName}, ${state.fieldAlmanacSpeciesIds.length} spirits, ${state.fieldAlmanacRouteIds.length} routes`
         : 'Almanac: pending';
+    }
+    if (routeEcologyLabel) {
+      routeEcologyLabel.textContent = state.routeEcologyProof
+        ? `Ecology: ${state.routeEcologyName}, ${state.routeEcologyRouteIds.length} routes, ${state.routeEcologyInvitedSpiritIds.length} invites`
+        : 'Ecology: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1497,9 +1526,13 @@ function readAlphaState(): AlphaHudState {
       ...defaultAlphaState(),
       ...(parsed || {}),
       attunedSpiritIds: Array.isArray(parsed?.attunedSpiritIds) ? parsed.attunedSpiritIds.map(String) : [],
+      routeInvitedSpiritIds: Array.isArray(parsed?.routeInvitedSpiritIds) ? parsed.routeInvitedSpiritIds.map(String) : [],
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
       conditionIds: Array.isArray(parsed?.conditionIds) ? parsed.conditionIds.map(String) : [],
+      routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
+      routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
+      routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-48).map(String) : []
@@ -1678,6 +1711,9 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.routeInviteProof = patch.routeInvite.proof || state.routeInviteProof;
     state.lastRouteInviteRouteId = patch.routeInvite.routeId || state.lastRouteInviteRouteId;
     state.lastRouteInviteSpiritId = patch.routeInvite.spiritId || state.lastRouteInviteSpiritId;
+    if (patch.routeInvite.spiritId && !state.routeInvitedSpiritIds.includes(patch.routeInvite.spiritId)) {
+      state.routeInvitedSpiritIds.push(patch.routeInvite.spiritId);
+    }
     state.captureProof = true;
     state.lastCaptureSpiritId = patch.routeInvite.spiritId || state.lastCaptureSpiritId;
     state.spiritId = patch.routeInvite.spiritId || state.spiritId;
@@ -2135,6 +2171,34 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.route_ecology') {
+    const roster = state.attunedSpiritIds;
+    return {
+      surveyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      discoveredRoutes: state.discoveredRouteIds,
+      routeInvitedSpiritIds: state.routeInvitedSpiritIds.length
+        ? state.routeInvitedSpiritIds
+        : roster.filter((rosterSpiritId) => rosterSpiritId === 'jintari' || rosterSpiritId === 'aozhen'),
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      fieldAlmanacProof: state.fieldAlmanacProof,
+      fieldAlmanacId: state.fieldAlmanacId,
+      fieldAccordProof: state.fieldAccordProof,
+      fieldAccordId: state.fieldAccordId,
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId,
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2185,6 +2249,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       captureProof: state.captureProof,
       routeMasteryProof: state.routeMasteryProof,
       routePatrolProof: state.routePatrolProof,
+      routeEcologyProof: state.routeEcologyProof,
       habitatBondProof: state.habitatBondProof,
       researchProof: state.researchProof,
       compendiumProof: state.compendiumProof,
@@ -2942,6 +3007,48 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'world.route_ecology') {
+    const result = resolveSpiritRouteEcologySurvey(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        routeInvitedSpiritIds: Array.isArray(payload.routeInvitedSpiritIds) ? payload.routeInvitedSpiritIds.map(String) : state.routeInvitedSpiritIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        fieldAlmanacProof: Boolean(payload.fieldAlmanacProof ?? state.fieldAlmanacProof),
+        fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
+        fieldAccordProof: Boolean(payload.fieldAccordProof ?? state.fieldAccordProof),
+        fieldAccordId: String(payload.fieldAccordId || state.fieldAccordId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.surveyId || SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id)
+    );
+    if (result.surveyed) {
+      state.routeEcologyProof = true;
+      state.routeEcologyId = result.surveyId;
+      state.routeEcologyName = result.surveyName;
+      state.routeEcologyScore = result.score;
+      state.routeEcologyRequiredScore = result.requiredScore;
+      state.routeEcologyRouteIds = result.routeIds;
+      state.routeEcologySpeciesIds = result.speciesIds;
+      state.routeEcologyInvitedSpiritIds = result.routeInvitedSpiritIds;
+      state.routeEcologyMapClaimed = result.rewardItemId === 'jade-route-ecology-map';
+      state.routeInvitedSpiritIds = Array.from(new Set([...state.routeInvitedSpiritIds, ...result.routeInvitedSpiritIds]));
+      state.attunedSpiritIds = result.speciesIds;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -3018,6 +3125,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         captureProof: Boolean(payload.captureProof ?? state.captureProof),
         routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
         habitatBondProof: Boolean(payload.habitatBondProof ?? state.habitatBondProof),
         researchProof: Boolean(payload.researchProof ?? state.researchProof),
         compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
@@ -3173,6 +3281,9 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         state.routeInviteProof = true;
         state.lastRouteInviteRouteId = result.routeId;
         state.lastRouteInviteSpiritId = result.spiritId;
+        if (!state.routeInvitedSpiritIds.includes(result.spiritId)) {
+          state.routeInvitedSpiritIds.push(result.spiritId);
+        }
         state.captureProof = true;
         state.lastCaptureSpiritId = result.spiritId;
         state.spiritId = result.spiritId;

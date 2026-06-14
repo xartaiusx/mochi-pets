@@ -66,6 +66,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritCareCycles === true, 'Manifest must expose Mochi Spirit care cycles.');
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
+  assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -107,6 +108,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritCareCycles === true, 'Alpha status must expose Mochi Spirit care cycles.');
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
+  assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -705,6 +707,34 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-route-ecology`,
+      type: 'world.route_ecology',
+      payload: {
+        surveyId: 'jade-route-ecology-survey',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        routeInvitedSpiritIds: ['jintari', 'aozhen'],
+        journalDiscoveredCount: 3,
+        fieldAlmanacProof: true,
+        fieldAlmanacId: 'jade-field-almanac',
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        routePatrolProof: true,
+        routePatrolId: 'jade-cloudbell-patrol',
+        routeMasteryProof: true,
+        routeMasteryId: 'jade-cloudbell-circuit',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-route-ecology-map',
+        chatLines: ['Route ecology ready.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -774,6 +804,7 @@ async function run() {
         captureProof: true,
         routeMasteryProof: true,
         routePatrolProof: true,
+        routeEcologyProof: true,
         habitatBondProof: true,
         researchProof: true,
         compendiumProof: true,
@@ -924,10 +955,22 @@ async function run() {
   assert(fieldAlmanac?.payload?.temperamentConcordProof === true, 'Field almanac ledger entry must preserve temperament proof.');
   assert(fieldAlmanac?.payload?.conditionWeaveProof === true, 'Field almanac ledger entry must preserve condition weave proof.');
   assert(fieldAlmanac?.payload?.noRealValue === true, 'Field almanac ledger entry must remain no-real-value.');
+  const routeEcology = entriesById.get(`${runId}-route-ecology`);
+  assert(routeEcology?.payload?.surveyId === 'jade-route-ecology-survey', 'Route ecology ledger entry must preserve the Jade Route Ecology Survey id.');
+  assert(Array.isArray(routeEcology?.payload?.roster) && routeEcology.payload.roster.length === 3, 'Route ecology ledger entry must preserve full roster proof.');
+  assert(Array.isArray(routeEcology?.payload?.discoveredRoutes) && routeEcology.payload.discoveredRoutes.length === 2, 'Route ecology ledger entry must preserve Moonbridge and Cloudbell route proof.');
+  assert(Array.isArray(routeEcology?.payload?.routeInvitedSpiritIds) && routeEcology.payload.routeInvitedSpiritIds.includes('jintari') && routeEcology.payload.routeInvitedSpiritIds.includes('aozhen'), 'Route ecology ledger entry must preserve both route spirit invitation proofs.');
+  assert(routeEcology?.payload?.fieldAlmanacProof === true, 'Route ecology ledger entry must preserve field almanac proof.');
+  assert(routeEcology?.payload?.routePatrolProof === true, 'Route ecology ledger entry must preserve route patrol proof.');
+  assert(routeEcology?.payload?.routeMasteryProof === true, 'Route ecology ledger entry must preserve route mastery proof.');
+  assert(routeEcology?.payload?.conditionWeaveProof === true, 'Route ecology ledger entry must preserve condition weave proof.');
+  assert(routeEcology?.payload?.rewardItemId === 'jade-route-ecology-map', 'Route ecology ledger entry must preserve the no-real-value ecology map proof.');
+  assert(routeEcology?.payload?.noRealValue === true, 'Route ecology ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
   assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
+  assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');

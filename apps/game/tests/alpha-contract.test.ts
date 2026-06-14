@@ -22,6 +22,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
   SPIRIT_ROSTER_ARCHIVES,
@@ -50,6 +51,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBondMilestone,
   resolveSpiritRouteInvitation,
+  resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
   resolveMochiSpiritQuestProgress,
@@ -99,6 +101,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritCareCycles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -159,6 +162,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.care_cycle');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -797,6 +801,68 @@ describe('alpha contract', () => {
       chatLines: ['Field almanac ready.']
     }).recorded).toBe(false);
 
+    expect(SPIRIT_ROUTE_ECOLOGY_SURVEYS.map((survey) => survey.id)).toEqual(['jade-route-ecology-survey']);
+    const routeEcology = resolveSpiritRouteEcologySurvey({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Route ecology ready.']
+    });
+    expect(routeEcology).toMatchObject({
+      ok: true,
+      surveyed: true,
+      surveyId: 'jade-route-ecology-survey',
+      surveyName: 'Jade Route Ecology Survey',
+      title: 'First-Court Encounter Ecology Survey',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      speciesIds: ['lirabao', 'jintari', 'aozhen'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      score: 45,
+      requiredScore: 42,
+      rewardItemId: 'jade-route-ecology-map',
+      source: 'spirit-route-ecology'
+    });
+    expect(routeEcology.message).toContain('No real value');
+    expect(resolveSpiritRouteEcologySurvey({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      fieldAlmanacProof: false,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Route ecology ready.']
+    }).surveyed).toBe(false);
+
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -898,6 +964,7 @@ describe('alpha contract', () => {
       captureProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
+      routeEcologyProof: true,
       habitatBondProof: true,
       researchProof: true,
       compendiumProof: true,
@@ -934,7 +1001,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 79,
+      score: 82,
       requiredScore: 52,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -949,6 +1016,7 @@ describe('alpha contract', () => {
       captureProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
+      routeEcologyProof: true,
       habitatBondProof: true,
       researchProof: true,
       compendiumProof: true,

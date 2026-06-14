@@ -12,6 +12,7 @@ import {
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
+  SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
   SPIRIT_ROSTER_ARCHIVES,
@@ -44,6 +45,7 @@ import {
   resolveSpiritProvisionSatchel,
   resolveSpiritResearchFolio,
   resolveSpiritRouteInvitation,
+  resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
   resolveSpiritRosterArchive,
@@ -703,6 +705,69 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(almanac.message).toContain('No real value');
 
+    expect(SPIRIT_ROUTE_ECOLOGY_SURVEYS.map((survey) => survey.id)).toEqual(['jade-route-ecology-survey']);
+    const blockedRouteEcology = resolveSpiritRouteEcologySurvey({
+      roster: fullRoster,
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: firstRouteIds,
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      fieldAlmanacProof: false,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Route ecology ready.']
+    });
+    expect(blockedRouteEcology).toMatchObject({
+      surveyed: false,
+      surveyId: 'jade-route-ecology-survey',
+      missing: ['field-almanac:jade-field-almanac']
+    });
+
+    const routeEcology = resolveSpiritRouteEcologySurvey({
+      roster: fullRoster,
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: firstRouteIds,
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Route ecology ready.']
+    });
+    expect(routeEcology).toMatchObject({
+      surveyed: true,
+      surveyId: 'jade-route-ecology-survey',
+      surveyName: 'Jade Route Ecology Survey',
+      routeIds: [...firstRouteIds],
+      speciesIds: [...fullRoster],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      score: 45,
+      requiredScore: 42,
+      rewardItemId: ALPHA_ITEMS.routeEcologyMap.id,
+      source: 'spirit-route-ecology'
+    });
+    expect(routeEcology.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -756,6 +821,7 @@ describe('Mochi Spirits alpha content contract', () => {
       captureProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
+      routeEcologyProof: true,
       habitatBondProof: true,
       researchProof: true,
       compendiumProof: true,
@@ -797,6 +863,7 @@ describe('Mochi Spirits alpha content contract', () => {
       captureProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
+      routeEcologyProof: true,
       habitatBondProof: true,
       researchProof: true,
       compendiumProof: true,
@@ -827,7 +894,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 79,
+      score: 82,
       requiredScore: 52,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'

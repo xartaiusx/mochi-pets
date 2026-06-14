@@ -809,6 +809,69 @@ export interface SpiritFieldAlmanacResult {
   source: string;
 }
 
+export interface SpiritRouteEcologySurvey {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredRouteIds: readonly string[];
+  requiredRouteSpiritIds: readonly string[];
+  requiredJournalCount: number;
+  requiredFieldAlmanacId: string;
+  requiredFieldAccordId: string;
+  requiredRoutePatrolId: string;
+  requiredRouteMasteryId: string;
+  requiredConditionWeaveId: string;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRouteEcologyProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  discoveredRoutes: readonly string[];
+  routeInvitedSpiritIds: readonly string[];
+  journalDiscoveredCount: number;
+  fieldAlmanacProof: boolean;
+  fieldAlmanacId?: string;
+  fieldAccordProof: boolean;
+  fieldAccordId?: string;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  conditionWeaveProof: boolean;
+  conditionWeaveId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritRouteEcologyResult {
+  ok: boolean;
+  surveyed: boolean;
+  surveyId: string;
+  surveyName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  routeIds: string[];
+  speciesIds: string[];
+  routeInvitedSpiritIds: string[];
+  journalDiscoveredCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -925,6 +988,7 @@ export interface GuildWayfarerChronicleProgress {
   captureProof: boolean;
   routeMasteryProof: boolean;
   routePatrolProof: boolean;
+  routeEcologyProof: boolean;
   habitatBondProof: boolean;
   researchProof: boolean;
   compendiumProof: boolean;
@@ -1918,6 +1982,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Field Almanac Clasp',
     description: 'A no-real-value field almanac proof for closed-alpha Mochirii route, roster, and spirit research.'
   },
+  routeEcologyMap: {
+    id: 'jade-route-ecology-map',
+    name: 'Jade Route Ecology Map',
+    description: 'A no-real-value route ecology proof for closed-alpha Mochirii encounter signs, patrol notes, and habitat study.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2404,6 +2473,28 @@ export const SPIRIT_FIELD_ALMANACS: readonly SpiritFieldAlmanac[] = [
     requiredScore: 38,
     rewardItemId: ALPHA_ITEMS.fieldAlmanacClasp.id,
     summary: 'A no-real-value field almanac proof for testers who connect original first-court Mochi Spirit species, route signs, no-injury field accords, patrol notes, compendium seals, temperament identity, and battle-condition study.'
+  }
+];
+
+export const SPIRIT_ROUTE_ECOLOGY_SURVEYS: readonly SpiritRouteEcologySurvey[] = [
+  {
+    id: 'jade-route-ecology-survey',
+    name: 'Jade Route Ecology Survey',
+    title: 'First-Court Encounter Ecology Survey',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredRouteSpiritIds: ['jintari', 'aozhen'],
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
+    requiredFieldAccordId: 'cloudbell-skyvow-accord',
+    requiredRoutePatrolId: SPIRIT_ROUTE_PATROLS[0].id,
+    requiredRouteMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+    requiredConditionWeaveId: 'jade-mirror-condition-weave',
+    requiredChatLines: 1,
+    requiredScore: 42,
+    rewardItemId: ALPHA_ITEMS.routeEcologyMap.id,
+    summary: 'A no-real-value route ecology proof for testers who connect original Mochirii route invitations, encounter signs, field almanac notes, patrol safety, route mastery, and no-injury battle conditions.'
   }
 ];
 
@@ -3801,6 +3892,131 @@ export function resolveSpiritFieldAlmanac(
   };
 }
 
+export function resolveSpiritRouteEcologySurvey(
+  progress: SpiritRouteEcologyProgress,
+  surveyId: string = SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id
+): SpiritRouteEcologyResult {
+  const survey = SPIRIT_ROUTE_ECOLOGY_SURVEYS.find((entry) => entry.id === surveyId) || SPIRIT_ROUTE_ECOLOGY_SURVEYS[0];
+  const requiredSpiritIds = new Set(survey.requiredSpiritIds);
+  const requiredRouteIds = new Set(survey.requiredRouteIds);
+  const requiredRouteSpiritIds = new Set(survey.requiredRouteSpiritIds);
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const speciesIds = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const routeInvitedSpiritIds = Array.from(new Set(progress.routeInvitedSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredRouteSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && speciesIds.includes(progress.activeSpiritId) ? progress.activeSpiritId : speciesIds[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const missing: string[] = [];
+
+  for (const spiritId of survey.requiredSpiritIds) {
+    if (!speciesIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const routeId of survey.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  for (const spiritId of survey.requiredRouteSpiritIds) {
+    if (!routeInvitedSpiritIds.includes(spiritId)) {
+      missing.push(`route-invite:${spiritId}`);
+    }
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < survey.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${survey.requiredJournalCount}`);
+  }
+
+  const fieldAlmanacReady = progress.fieldAlmanacProof && progress.fieldAlmanacId === survey.requiredFieldAlmanacId;
+  if (!fieldAlmanacReady) {
+    missing.push(`field-almanac:${survey.requiredFieldAlmanacId}`);
+  }
+
+  const fieldAccordReady = progress.fieldAccordProof && progress.fieldAccordId === survey.requiredFieldAccordId;
+  if (!fieldAccordReady) {
+    missing.push(`field-accord:${survey.requiredFieldAccordId}`);
+  }
+
+  const routePatrolReady = progress.routePatrolProof && progress.routePatrolId === survey.requiredRoutePatrolId;
+  if (!routePatrolReady) {
+    missing.push(`route-patrol:${survey.requiredRoutePatrolId}`);
+  }
+
+  const routeMasteryReady = progress.routeMasteryProof && progress.routeMasteryId === survey.requiredRouteMasteryId;
+  if (!routeMasteryReady) {
+    missing.push(`route-mastery:${survey.requiredRouteMasteryId}`);
+  }
+
+  const conditionReady = progress.conditionWeaveProof && progress.conditionWeaveId === survey.requiredConditionWeaveId;
+  if (!conditionReady) {
+    missing.push(`condition-weave:${survey.requiredConditionWeaveId}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < survey.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${survey.requiredChatLines}`);
+  }
+
+  const score =
+    Math.min(speciesIds.length, survey.requiredSpiritIds.length) * 2 +
+    Math.min(routeIds.length, survey.requiredRouteIds.length) * 3 +
+    Math.min(routeInvitedSpiritIds.length, survey.requiredRouteSpiritIds.length) * 2 +
+    Math.min(6, journalCount * 2) +
+    (fieldAlmanacReady ? 5 : 0) +
+    (fieldAccordReady ? 3 : 0) +
+    (routePatrolReady ? 4 : 0) +
+    (routeMasteryReady ? 4 : 0) +
+    (conditionReady ? 3 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const surveyed = missing.length === 0 && score >= survey.requiredScore;
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unscouted routes';
+  const invitedNames = routeInvitedSpiritIds.length
+    ? routeInvitedSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ')
+    : 'uninvited route spirits';
+
+  return {
+    ok: true,
+    surveyed,
+    surveyId: survey.id,
+    surveyName: survey.name,
+    title: survey.title,
+    habitat: survey.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    routeIds,
+    speciesIds,
+    routeInvitedSpiritIds,
+    journalDiscoveredCount: journalCount,
+    score,
+    requiredScore: survey.requiredScore,
+    missing,
+    rewardItemId: survey.rewardItemId,
+    message: surveyed
+      ? `${survey.name} complete: ${activeSpirit.name} maps ${routeSummary} ecology with ${invitedNames}, field almanac signs, patrol safety, route mastery, and no-injury condition notes. No real value.`
+      : `${survey.name} needs ${missing.join(', ')} before first-court route ecology can be recorded.`,
+    source: 'spirit-route-ecology'
+  };
+}
+
 export function resolveGuildCommission(
   progress: GuildCommissionProgress,
   commissionId: string = GUILD_COMMISSIONS[0].id
@@ -4000,6 +4216,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.captureProof) missing.push('capture');
   if (!progress.routeMasteryProof) missing.push('route-mastery');
   if (!progress.routePatrolProof) missing.push('route-patrol');
+  if (!progress.routeEcologyProof) missing.push('route-ecology');
   if (!progress.habitatBondProof) missing.push('habitat-bond');
   if (!progress.researchProof) missing.push('research');
   if (!progress.compendiumProof) missing.push('compendium');
@@ -4033,6 +4250,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.captureProof ? 2 : 0) +
     (progress.routeMasteryProof ? 3 : 0) +
     (progress.routePatrolProof ? 3 : 0) +
+    (progress.routeEcologyProof ? 3 : 0) +
     (progress.habitatBondProof ? 2 : 0) +
     (progress.researchProof ? 2 : 0) +
     (progress.compendiumProof ? 3 : 0) +
@@ -4075,7 +4293,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };

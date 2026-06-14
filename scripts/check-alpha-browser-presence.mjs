@@ -202,6 +202,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.care_cycle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.temperament_concord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -232,6 +233,7 @@ async function exerciseAlphaHud(page) {
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
+      const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -278,6 +280,7 @@ async function exerciseAlphaHud(page) {
         && careCycle.includes('Jade Court Care Cycle')
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
+        && routeEcology.includes('Jade Route Ecology Survey')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -326,6 +329,9 @@ async function exerciseAlphaHud(page) {
         && state.routeInviteProof === true
         && state.lastRouteInviteRouteId === 'cloudbell-reed-bank'
         && state.lastRouteInviteSpiritId === 'aozhen'
+        && Array.isArray(state.routeInvitedSpiritIds)
+        && state.routeInvitedSpiritIds.includes('jintari')
+        && state.routeInvitedSpiritIds.includes('aozhen')
         && state.fieldAccordProof === true
         && state.fieldAccordId === 'cloudbell-skyvow-accord'
         && state.fieldAccordName === 'Cloudbell Skyvow Accord'
@@ -419,6 +425,22 @@ async function exerciseAlphaHud(page) {
         && state.fieldAlmanacSpeciesIds.includes('jintari')
         && state.fieldAlmanacSpeciesIds.includes('aozhen')
         && state.fieldAlmanacClaspClaimed === true
+        && state.routeEcologyProof === true
+        && state.routeEcologyId === 'jade-route-ecology-survey'
+        && state.routeEcologyName === 'Jade Route Ecology Survey'
+        && state.routeEcologyScore >= 42
+        && state.routeEcologyRequiredScore === 42
+        && Array.isArray(state.routeEcologyRouteIds)
+        && state.routeEcologyRouteIds.includes('moonbridge-bamboo-trail')
+        && state.routeEcologyRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.routeEcologySpeciesIds)
+        && state.routeEcologySpeciesIds.includes('lirabao')
+        && state.routeEcologySpeciesIds.includes('jintari')
+        && state.routeEcologySpeciesIds.includes('aozhen')
+        && Array.isArray(state.routeEcologyInvitedSpiritIds)
+        && state.routeEcologyInvitedSpiritIds.includes('jintari')
+        && state.routeEcologyInvitedSpiritIds.includes('aozhen')
+        && state.routeEcologyMapClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -570,6 +592,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Roster Archive sealed')
         && chat.includes('Jade Court Care Cycle complete')
         && chat.includes('Jade Temperament Concord complete')
+        && chat.includes('Jade Route Ecology Survey complete')
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
@@ -606,6 +629,7 @@ async function exerciseAlphaHud(page) {
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
+      routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -649,6 +673,7 @@ async function exerciseAlphaHud(page) {
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
+      routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -696,6 +721,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.routeInviteProof === true, 'HUD route invitation action must record route invitation proof.');
   assert(snapshot.state.lastRouteInviteRouteId === 'cloudbell-reed-bank', 'HUD route invitation must record the Cloudbell route.');
   assert(snapshot.state.lastRouteInviteSpiritId === 'aozhen', 'HUD route invitation must record Aozhen as the route spirit.');
+  assert(Array.isArray(snapshot.state.routeInvitedSpiritIds) && snapshot.state.routeInvitedSpiritIds.includes('jintari'), 'HUD route invitation history must record Jintari.');
+  assert(Array.isArray(snapshot.state.routeInvitedSpiritIds) && snapshot.state.routeInvitedSpiritIds.includes('aozhen'), 'HUD route invitation history must record Aozhen.');
   assert(snapshot.fieldAccord.includes('Cloudbell Skyvow Accord'), 'HUD field accord label must show the cleared Cloudbell accord.');
   assert(snapshot.state.fieldAccordProof === true, 'HUD field accord action must record field accord proof.');
   assert(snapshot.state.fieldAccordId === 'cloudbell-skyvow-accord', 'HUD field accord action must record the Cloudbell accord id.');
@@ -793,6 +820,20 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.fieldAlmanacSpeciesIds) && snapshot.state.fieldAlmanacSpeciesIds.includes('jintari'), 'HUD almanac action must record Jintari.');
   assert(Array.isArray(snapshot.state.fieldAlmanacSpeciesIds) && snapshot.state.fieldAlmanacSpeciesIds.includes('aozhen'), 'HUD almanac action must record Aozhen.');
   assert(snapshot.state.fieldAlmanacClaspClaimed === true, 'HUD almanac action must mark the no-real-value almanac clasp proof.');
+  assert(snapshot.routeEcology.includes('Jade Route Ecology Survey'), 'HUD ecology label must show the completed route ecology proof.');
+  assert(snapshot.state.routeEcologyProof === true, 'HUD ecology action must record route ecology proof.');
+  assert(snapshot.state.routeEcologyId === 'jade-route-ecology-survey', 'HUD ecology action must record the route ecology survey id.');
+  assert(snapshot.state.routeEcologyName === 'Jade Route Ecology Survey', 'HUD ecology action must record the route ecology survey name.');
+  assert(snapshot.state.routeEcologyScore >= 42, 'HUD ecology action must record a passing route ecology score.');
+  assert(snapshot.state.routeEcologyRequiredScore === 42, 'HUD ecology action must record the route ecology requirement.');
+  assert(Array.isArray(snapshot.state.routeEcologyRouteIds) && snapshot.state.routeEcologyRouteIds.includes('moonbridge-bamboo-trail'), 'HUD ecology action must record the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.routeEcologyRouteIds) && snapshot.state.routeEcologyRouteIds.includes('cloudbell-reed-bank'), 'HUD ecology action must record the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.routeEcologySpeciesIds) && snapshot.state.routeEcologySpeciesIds.includes('lirabao'), 'HUD ecology action must record Lirabao.');
+  assert(Array.isArray(snapshot.state.routeEcologySpeciesIds) && snapshot.state.routeEcologySpeciesIds.includes('jintari'), 'HUD ecology action must record Jintari.');
+  assert(Array.isArray(snapshot.state.routeEcologySpeciesIds) && snapshot.state.routeEcologySpeciesIds.includes('aozhen'), 'HUD ecology action must record Aozhen.');
+  assert(Array.isArray(snapshot.state.routeEcologyInvitedSpiritIds) && snapshot.state.routeEcologyInvitedSpiritIds.includes('jintari'), 'HUD ecology action must record Jintari route invitation proof.');
+  assert(Array.isArray(snapshot.state.routeEcologyInvitedSpiritIds) && snapshot.state.routeEcologyInvitedSpiritIds.includes('aozhen'), 'HUD ecology action must record Aozhen route invitation proof.');
+  assert(snapshot.state.routeEcologyMapClaimed === true, 'HUD ecology action must mark the no-real-value ecology map proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -950,6 +991,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
   assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');
   assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
+  assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');
