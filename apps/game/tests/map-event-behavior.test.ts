@@ -1013,11 +1013,33 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.world.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
     expect(player.variables.get('mochiSocial.world.lastRouteInvitationSpirit')).toBe('jintari');
     expect(player.variables.get('mochiSocial.world.routeInvitationProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.world.fieldAccordProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.world.lastFieldAccord')).toBe('moonbridge-goldleaf-accord');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccordRoute')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccordSpirit')).toBe('jintari');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccordScore')).toBe(7);
+    expect(player.variables.get('mochiSocial.world.fieldAccordTalismanClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Route spirit invited');
     expect(player.saves.at(-1)?.options.source).toBe('route-invitation-altar');
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
       value: {
+        fieldAccord: {
+          accordId: 'moonbridge-goldleaf-accord',
+          accordName: 'Moonbridge Goldleaf Accord',
+          title: 'First Route Encounter Accord',
+          routeId: 'moonbridge-bamboo-trail',
+          routeName: 'Moonbridge Bamboo Trail',
+          spiritId: 'jintari',
+          spiritName: 'Jintari',
+          partyIds: ['lirabao'],
+          score: 7,
+          requiredScore: 7,
+          harmonyScore: 3,
+          rewardItemId: 'jade-field-accord-talisman',
+          proof: true,
+          message: "Moonbridge Goldleaf Accord cleared: Lirabao read Jintari's Moonbridge Bamboo Trail signs with score 7/7. Jintari follows generous market steps, calm lure timing, and no-injury focus before accepting an invitation. No-injury field accord only; no real value."
+        },
         routeInvite: {
           routeId: 'moonbridge-bamboo-trail',
           routeName: 'Moonbridge Bamboo Trail',
@@ -1070,9 +1092,29 @@ describe('Mochi town event behavior', () => {
     expect(player.variables.get('mochiSocial.spirit.aozhen.lastRouteInvitation')).toBe('cloudbell-reed-bank');
     expect(player.variables.get('mochiSocial.world.lastRouteInvitation')).toBe('cloudbell-reed-bank');
     expect(player.variables.get('mochiSocial.world.lastRouteInvitationSpirit')).toBe('aozhen');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccord')).toBe('cloudbell-skyvow-accord');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccordRoute')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccordSpirit')).toBe('aozhen');
+    expect(player.variables.get('mochiSocial.world.lastFieldAccordScore')).toBe(15);
     expect(player.emitted.at(-1)).toEqual({
       type: 'mochi-social-alpha-state',
       value: {
+        fieldAccord: {
+          accordId: 'cloudbell-skyvow-accord',
+          accordName: 'Cloudbell Skyvow Accord',
+          title: 'Second Route Encounter Accord',
+          routeId: 'cloudbell-reed-bank',
+          routeName: 'Cloudbell Reed Bank',
+          spiritId: 'aozhen',
+          spiritName: 'Aozhen',
+          partyIds: ['jintari', 'lirabao'],
+          score: 15,
+          requiredScore: 12,
+          harmonyScore: 6,
+          rewardItemId: 'jade-field-accord-talisman',
+          proof: true,
+          message: "Cloudbell Skyvow Accord cleared: Jintari, Lirabao read Aozhen's Cloudbell Reed Bank signs with score 15/12. Aozhen listens for a full route vow, safe scouting rhythm, and a party that can guard without injury. No-injury field accord only; no real value."
+        },
         routeInvite: {
           routeId: 'cloudbell-reed-bank',
           routeName: 'Cloudbell Reed Bank',

@@ -17,6 +17,7 @@ import {
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_FIELD_ACCORDS,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -31,6 +32,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
+  resolveSpiritFieldAccord,
   resolveGuildCommission,
   resolveGuildSocialRally,
   resolveGuildRankTrial,
@@ -78,6 +80,22 @@ type AlphaHudStatePatch = {
     routeName: string;
     roster: string[];
     spiritId: string;
+  };
+  fieldAccord?: {
+    accordId: string;
+    accordName: string;
+    harmonyScore: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    routeId: string;
+    routeName: string;
+    score: number;
+    spiritId: string;
+    spiritName: string;
+    title: string;
   };
   routeMastery?: {
     masteryId: string;
@@ -1006,7 +1024,42 @@ export function RouteInvitationAltar(): EventDefinition {
       const bond = activeSpirit ? Number(player.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 1;
       const expeditionCount = Number(player.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
       const harmonyScore = bond + Math.max(1, roster.length) + partyIds(player).length + expeditionCount;
-      const invitation = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes);
+      if (!discoveredRoutes.includes(route.id)) {
+        const unscouted = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes);
+        showAlphaPrompt(player, unscouted.message);
+        return;
+      }
+      const accord = resolveSpiritFieldAccord(
+        {
+          routeId: route.id,
+          roster,
+          activeSpiritId: activeSpirit,
+          discoveredRoutes,
+          harmonyScore,
+          bondBySpiritId: bondMap(player, roster),
+          tacticProof: Boolean(player.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+          affinityProof: Number(player.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+          journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0)
+        },
+        SPIRIT_FIELD_ACCORDS.find((entry) => entry.routeId === route.id)?.id
+      );
+
+      if (!accord.cleared) {
+        showAlphaPrompt(player, accord.message);
+        return;
+      }
+
+      player.setVariable('mochiSocial.world.fieldAccordProof', true);
+      player.setVariable('mochiSocial.world.lastFieldAccord', accord.accordId);
+      player.setVariable('mochiSocial.world.lastFieldAccordRoute', accord.routeId);
+      player.setVariable('mochiSocial.world.lastFieldAccordSpirit', accord.targetSpiritId);
+      player.setVariable('mochiSocial.world.lastFieldAccordScore', accord.score);
+      if (!player.getVariable<boolean>('mochiSocial.world.fieldAccordTalismanClaimed')) {
+        player.addItem(ALPHA_ITEMS.fieldAccordTalisman, 1);
+        player.setVariable('mochiSocial.world.fieldAccordTalismanClaimed', true);
+      }
+
+      const invitation = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes, true);
 
       if (!invitation.ok) {
         showAlphaPrompt(player, invitation.message);
@@ -1026,6 +1079,22 @@ export function RouteInvitationAltar(): EventDefinition {
 
       player.showNotification('Route spirit invited', { time: 1800, icon: 'route-invitation-altar' });
       emitAlphaHudState(player, {
+        fieldAccord: {
+          accordId: accord.accordId,
+          accordName: accord.accordName,
+          title: accord.title,
+          routeId: accord.routeId,
+          routeName: accord.routeName,
+          spiritId: accord.targetSpiritId,
+          spiritName: accord.spiritName,
+          partyIds: accord.partyIds,
+          score: accord.score,
+          requiredScore: accord.requiredScore,
+          harmonyScore: accord.harmonyScore,
+          rewardItemId: accord.rewardItemId,
+          proof: true,
+          message: accord.message
+        },
         routeInvite: {
           routeId: invitation.routeId,
           routeName: invitation.routeName,
@@ -1045,7 +1114,7 @@ export function RouteInvitationAltar(): EventDefinition {
       await player.save('auto', { title: 'Mochirii route spirit invited' }, { reason: 'auto', source: 'route-invitation-altar' });
       showAlphaPrompt(
         player,
-        `${invitation.message} Route invitations are Mochirii-original, consent-based, no-real-value alpha capture progress.`
+        `${accord.message} ${invitation.message} Route invitations are Mochirii-original, consent-based, no-real-value alpha capture progress.`
       );
     }
   };

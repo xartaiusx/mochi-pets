@@ -139,6 +139,10 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('Jade Cloudbell Circuit');
     expect(alphaContentSource).toContain('cloudbell-route-knot');
     expect(alphaContentSource).toContain('world-route-mastery');
+    expect(alphaContentSource).toContain('Moonbridge Goldleaf Accord');
+    expect(alphaContentSource).toContain('Cloudbell Skyvow Accord');
+    expect(alphaContentSource).toContain('jade-field-accord-talisman');
+    expect(alphaContentSource).toContain('spirit-field-accord');
     expect(alphaContentSource).toContain('Jade Court Habitat Bond');
     expect(alphaContentSource).toContain('jade-court-habitat-tassel');
     expect(alphaContentSource).toContain('spirit-habitat-bond');
@@ -202,6 +206,10 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('Jade Cloudbell Circuit');
     expect(runtimeServerSource).toContain('cloudbell-route-knot');
     expect(runtimeServerSource).toContain('world-route-mastery');
+    expect(runtimeServerSource).toContain('Moonbridge Goldleaf Accord');
+    expect(runtimeServerSource).toContain('Cloudbell Skyvow Accord');
+    expect(runtimeServerSource).toContain('jade-field-accord-talisman');
+    expect(runtimeServerSource).toContain('spirit-field-accord');
     expect(runtimeServerSource).toContain('Jade Court Habitat Bond');
     expect(runtimeServerSource).toContain('jade-court-habitat-tassel');
     expect(runtimeServerSource).toContain('spirit-habitat-bond');

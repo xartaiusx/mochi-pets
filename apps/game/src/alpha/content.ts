@@ -273,6 +273,51 @@ export interface SpiritRouteInvitationResult {
   source: string;
 }
 
+export interface SpiritFieldAccord {
+  id: string;
+  name: string;
+  title: string;
+  routeId: string;
+  targetSpiritId: string;
+  requiredHarmony: number;
+  requiredRosterCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  accordNote: string;
+}
+
+export interface SpiritFieldAccordProgress {
+  routeId?: string;
+  roster: readonly string[];
+  activeSpiritId?: string;
+  discoveredRoutes: readonly string[];
+  harmonyScore: number;
+  bondBySpiritId?: Record<string, number>;
+  tacticProof?: boolean;
+  affinityProof?: boolean;
+  journalDiscoveredCount?: number;
+}
+
+export interface SpiritFieldAccordResult {
+  ok: boolean;
+  cleared: boolean;
+  accordId: string;
+  accordName: string;
+  title: string;
+  routeId: string;
+  routeName: string;
+  targetSpiritId: string;
+  spiritName: string;
+  partyIds: string[];
+  score: number;
+  requiredScore: number;
+  harmonyScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritHabitatBond {
   id: string;
   name: string;
@@ -1427,6 +1472,11 @@ export const ALPHA_ITEMS = {
     name: 'Cloudbell Route Knot',
     description: 'A no-real-value field mastery proof for completing the first Mochirii route circuit.'
   },
+  fieldAccordTalisman: {
+    id: 'jade-field-accord-talisman',
+    name: 'Jade Field Accord Talisman',
+    description: 'A no-real-value route encounter accord proof for original Mochirii spirit invitations.'
+  },
   researchFolio: {
     id: 'jade-court-research-folio',
     name: 'Jade Court Research Folio',
@@ -1660,6 +1710,33 @@ export const SPIRIT_EXPEDITION_ROUTES: readonly SpiritExpeditionRoute[] = [
     recommendedItemId: ALPHA_ITEMS.harmonyTea.id,
     rewardItemId: ALPHA_ITEMS.trailRibbon.id,
     routeNote: 'A quiet reed bank under guild bells where Aozhen listens for careful wayfarers.'
+  }
+];
+
+export const SPIRIT_FIELD_ACCORDS: readonly SpiritFieldAccord[] = [
+  {
+    id: 'moonbridge-goldleaf-accord',
+    name: 'Moonbridge Goldleaf Accord',
+    title: 'First Route Encounter Accord',
+    routeId: 'moonbridge-bamboo-trail',
+    targetSpiritId: 'jintari',
+    requiredHarmony: 3,
+    requiredRosterCount: 1,
+    requiredScore: 7,
+    rewardItemId: ALPHA_ITEMS.fieldAccordTalisman.id,
+    accordNote: 'Jintari follows generous market steps, calm lure timing, and no-injury focus before accepting an invitation.'
+  },
+  {
+    id: 'cloudbell-skyvow-accord',
+    name: 'Cloudbell Skyvow Accord',
+    title: 'Second Route Encounter Accord',
+    routeId: 'cloudbell-reed-bank',
+    targetSpiritId: 'aozhen',
+    requiredHarmony: 4,
+    requiredRosterCount: 2,
+    requiredScore: 12,
+    rewardItemId: ALPHA_ITEMS.fieldAccordTalisman.id,
+    accordNote: 'Aozhen listens for a full route vow, safe scouting rhythm, and a party that can guard without injury.'
   }
 ];
 
@@ -3133,12 +3210,93 @@ export function resolveSpiritMentorChallenge(
   };
 }
 
+export function resolveSpiritFieldAccord(
+  progress: SpiritFieldAccordProgress,
+  accordId?: string
+): SpiritFieldAccordResult {
+  const route =
+    SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === progress.routeId) ||
+    SPIRIT_EXPEDITION_ROUTES.find((entry) => progress.discoveredRoutes.includes(entry.id)) ||
+    SPIRIT_EXPEDITION_ROUTES[0];
+  const accord =
+    SPIRIT_FIELD_ACCORDS.find((entry) => entry.id === accordId) ||
+    SPIRIT_FIELD_ACCORDS.find((entry) => entry.routeId === route.id) ||
+    SPIRIT_FIELD_ACCORDS[0];
+  const targetSpirit = getMochiSpirit(accord.targetSpiritId) || getMochiSpirit(route.encounterSpiritId);
+  const knownRoster = Array.from(new Set(progress.roster.filter((spiritId) => Boolean(getMochiSpirit(spiritId)))));
+  const partyIds = resolveSpiritParty(knownRoster, progress.activeSpiritId).partyIds;
+  const discoveredRoutes = Array.from(new Set(progress.discoveredRoutes.filter(Boolean)));
+  const boundedHarmony = Math.max(0, Math.floor(progress.harmonyScore || 0));
+  const missing: string[] = [];
+
+  if (!discoveredRoutes.includes(route.id)) {
+    missing.push(`route:${route.id}`);
+  }
+
+  if (!targetSpirit || targetSpirit.id !== route.encounterSpiritId) {
+    missing.push(`spirit:${accord.targetSpiritId}`);
+  }
+
+  if (boundedHarmony < accord.requiredHarmony) {
+    missing.push(`harmony:${boundedHarmony}/${accord.requiredHarmony}`);
+  }
+
+  if (knownRoster.length < accord.requiredRosterCount) {
+    missing.push(`roster:${knownRoster.length}/${accord.requiredRosterCount}`);
+  }
+
+  if (!partyIds.length) {
+    missing.push('party');
+  }
+
+  const bondBySpiritId = progress.bondBySpiritId || {};
+  const bondScore = partyIds.reduce((total, spiritId) => {
+    return total + Math.max(1, Math.min(5, Math.floor(bondBySpiritId[spiritId] || 1)));
+  }, 0);
+  const roleVariety = new Set(partyIds.map((spiritId) => getMochiSpirit(spiritId)?.battle.role).filter(Boolean)).size;
+  const journalScore = Math.min(MOCHI_SPIRITS.length, Math.max(0, Math.floor(progress.journalDiscoveredCount || 0)));
+  const score =
+    Math.min(boundedHarmony, accord.requiredHarmony + 2) +
+    Math.min(partyIds.length, accord.requiredRosterCount + 1) * 2 +
+    Math.min(4, bondScore) +
+    roleVariety +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.affinityProof ? 2 : 0) +
+    journalScore;
+  const cleared = missing.length === 0 && score >= accord.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ') || 'No party';
+  const spiritName = targetSpirit?.name || accord.targetSpiritId;
+
+  return {
+    ok: true,
+    cleared,
+    accordId: accord.id,
+    accordName: accord.name,
+    title: accord.title,
+    routeId: route.id,
+    routeName: route.name,
+    targetSpiritId: targetSpirit?.id || accord.targetSpiritId,
+    spiritName,
+    partyIds,
+    score,
+    requiredScore: accord.requiredScore,
+    harmonyScore: boundedHarmony,
+    missing,
+    rewardItemId: accord.rewardItemId,
+    message: cleared
+      ? `${accord.name} cleared: ${partyNames} read ${spiritName}'s ${route.name} signs with score ${score}/${accord.requiredScore}. ${accord.accordNote} No-injury field accord only; no real value.`
+      : `${accord.name} needs ${missing.join(', ')} before ${spiritName} can accept a route invitation.`,
+    source: 'spirit-field-accord'
+  };
+}
+
 export function resolveSpiritRouteInvitation(
   routeId: string = SPIRIT_EXPEDITION_ROUTES[0].id,
   offeredItemId = '',
   harmonyScore = 1,
   roster: readonly string[] = [],
-  discoveredRoutes: readonly string[] = []
+  discoveredRoutes: readonly string[] = [],
+  fieldAccordProof = false
 ): SpiritRouteInvitationResult {
   const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === routeId) || SPIRIT_EXPEDITION_ROUTES[0];
   const spirit = getMochiSpirit(route.encounterSpiritId);
@@ -3187,6 +3345,15 @@ export function resolveSpiritRouteInvitation(
       bond: 1,
       roster: knownRoster,
       message: `${spirit.name} already trusts your Mochirii roster and answers the ${route.name} field invitation calmly.`
+    };
+  }
+
+  if (!fieldAccordProof) {
+    return {
+      ...base,
+      ok: false,
+      alreadyRostered: false,
+      message: `${spirit.name} needs a cleared Mochirii field accord before accepting the ${route.name} route invitation.`
     };
   }
 

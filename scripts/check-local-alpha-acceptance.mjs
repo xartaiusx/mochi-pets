@@ -203,7 +203,18 @@ async function run() {
     {
       requestId: `${runId}-route-invite`,
       type: 'spirit.route_invite',
-      payload: { routeId: 'moonbridge-bamboo-trail', offeredItemId: 'jade-thread-charm', harmonyScore: 3, roster: ['lirabao'], discoveredRoutes: ['moonbridge-bamboo-trail'] }
+      payload: {
+        routeId: 'moonbridge-bamboo-trail',
+        offeredItemId: 'jade-thread-charm',
+        harmonyScore: 3,
+        roster: ['lirabao'],
+        discoveredRoutes: ['moonbridge-bamboo-trail'],
+        fieldAccordProof: true,
+        fieldAccordId: 'moonbridge-goldleaf-accord',
+        fieldAccordScore: 7,
+        fieldAccordRewardItemId: 'jade-field-accord-talisman',
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-cloudbell-expedition`,
@@ -213,7 +224,18 @@ async function run() {
     {
       requestId: `${runId}-cloudbell-route-invite`,
       type: 'spirit.route_invite',
-      payload: { routeId: 'cloudbell-reed-bank', offeredItemId: 'lantern-harmony-tea', harmonyScore: 4, roster: ['lirabao', 'jintari'], discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'] }
+      payload: {
+        routeId: 'cloudbell-reed-bank',
+        offeredItemId: 'lantern-harmony-tea',
+        harmonyScore: 4,
+        roster: ['lirabao', 'jintari'],
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        fieldAccordScore: 12,
+        fieldAccordRewardItemId: 'jade-field-accord-talisman',
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-route-mastery`,
@@ -529,6 +551,9 @@ async function run() {
         marketProof: true,
         tradeProof: true,
         routeInviteProof: true,
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        fieldAccordRewardItemId: 'jade-field-accord-talisman',
         careStreak: 1,
         completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
         noRealValue: true
@@ -621,6 +646,11 @@ async function run() {
     assert(entry.payload && typeof entry.payload === 'object', `Ledger entry ${action.requestId} must preserve the action payload.`);
     assert(typeof entry.receivedAt === 'string', `Ledger entry ${action.requestId} must include receivedAt.`);
   }
+
+  const cloudbellInvite = entriesById.get(`${runId}-cloudbell-route-invite`);
+  assert(cloudbellInvite?.payload?.fieldAccordProof === true, 'Cloudbell route invite ledger entry must preserve field accord proof.');
+  assert(cloudbellInvite?.payload?.fieldAccordId === 'cloudbell-skyvow-accord', 'Cloudbell route invite ledger entry must preserve the field accord id.');
+  assert(cloudbellInvite?.payload?.fieldAccordRewardItemId === 'jade-field-accord-talisman', 'Cloudbell route invite ledger entry must preserve the no-real-value field accord talisman proof.');
 }
 
 async function getOk(path, name) {

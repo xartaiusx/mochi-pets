@@ -11,6 +11,7 @@ import {
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_GROWTH_RITES,
+  SPIRIT_FIELD_ACCORDS,
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
@@ -27,6 +28,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
+  resolveSpiritFieldAccord,
   resolveGuildCommission,
   resolveGuildSocialRally,
   resolveSpiritJournal,
@@ -89,6 +91,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
@@ -213,12 +216,34 @@ describe('alpha contract', () => {
     expect(resolveSpiritExpedition('moonbridge-bamboo-trail', [], undefined, 2, []).ok).toBe(false);
     expect(resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao'], 'lirabao', 2, []).ok).toBe(false);
 
+    expect(SPIRIT_FIELD_ACCORDS.map((accord) => accord.id)).toEqual([
+      'moonbridge-goldleaf-accord',
+      'cloudbell-skyvow-accord'
+    ]);
+    const moonbridgeAccord = resolveSpiritFieldAccord({
+      routeId: 'moonbridge-bamboo-trail',
+      roster: ['lirabao'],
+      activeSpiritId: 'lirabao',
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      harmonyScore: 3,
+      bondBySpiritId: { lirabao: 2 },
+      journalDiscoveredCount: 1
+    });
+    expect(moonbridgeAccord).toMatchObject({
+      cleared: true,
+      accordId: 'moonbridge-goldleaf-accord',
+      targetSpiritId: 'jintari',
+      rewardItemId: 'jade-field-accord-talisman',
+      source: 'spirit-field-accord'
+    });
+
     const routeInvitation = resolveSpiritRouteInvitation(
       'moonbridge-bamboo-trail',
       'jade-thread-charm',
       3,
       ['lirabao'],
-      ['moonbridge-bamboo-trail']
+      ['moonbridge-bamboo-trail'],
+      true
     );
     expect(routeInvitation).toMatchObject({
       ok: true,
@@ -236,8 +261,9 @@ describe('alpha contract', () => {
     });
     expect(routeInvitation.message).toContain('joins your Mochirii roster by consent');
     expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 3, ['lirabao'], []).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 3, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
     expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'lantern-harmony-tea', 3, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
-    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 2, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 2, ['lirabao'], ['moonbridge-bamboo-trail'], true).ok).toBe(false);
 
     const cloudbell = resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao', 'jintari'], 'jintari', 4, ['moonbridge-bamboo-trail']);
     expect(cloudbell).toMatchObject({
@@ -254,7 +280,8 @@ describe('alpha contract', () => {
       'lantern-harmony-tea',
       4,
       ['lirabao', 'jintari'],
-      ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']
+      ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      true
     );
     expect(cloudbellInvitation).toMatchObject({
       ok: true,

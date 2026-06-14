@@ -5,6 +5,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_EXPEDITION_ROUTES,
+  SPIRIT_FIELD_ACCORDS,
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
   SPIRIT_ROUTE_MASTERIES,
@@ -20,6 +21,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
+  resolveSpiritFieldAccord,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
@@ -117,7 +119,7 @@ describe('Mochi Spirits alpha content contract', () => {
     });
   });
 
-  it('gates capture, route scouting, route invitations, and journal discovery by original Mochirii rules', () => {
+  it('gates capture, route scouting, field accords, route invitations, and journal discovery by original Mochirii rules', () => {
     expect(resolveSpiritCapture('aozhen', ALPHA_ITEMS.harmonyTea.id, 3, [])).toMatchObject({
       ok: false,
       spiritId: 'aozhen',
@@ -153,7 +155,57 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(blockedInvite.message).toContain('Scout the Cloudbell Reed Bank');
 
-    const routeInvite = resolveSpiritRouteInvitation('cloudbell-reed-bank', ALPHA_ITEMS.harmonyTea.id, 4, ['lirabao', 'jintari'], firstRouteIds);
+    const blockedWithoutAccord = resolveSpiritRouteInvitation('cloudbell-reed-bank', ALPHA_ITEMS.harmonyTea.id, 4, ['lirabao', 'jintari'], firstRouteIds);
+    expect(blockedWithoutAccord).toMatchObject({
+      ok: false,
+      routeId: 'cloudbell-reed-bank',
+      spiritId: 'aozhen'
+    });
+    expect(blockedWithoutAccord.message).toContain('field accord');
+
+    expect(SPIRIT_FIELD_ACCORDS.map((accord) => accord.id)).toEqual([
+      'moonbridge-goldleaf-accord',
+      'cloudbell-skyvow-accord'
+    ]);
+
+    const moonbridgeAccord = resolveSpiritFieldAccord({
+      routeId: 'moonbridge-bamboo-trail',
+      roster: ['lirabao'],
+      activeSpiritId: 'lirabao',
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      harmonyScore: 3,
+      bondBySpiritId: { lirabao: 2 },
+      journalDiscoveredCount: 1
+    });
+    expect(moonbridgeAccord).toMatchObject({
+      cleared: true,
+      accordId: 'moonbridge-goldleaf-accord',
+      targetSpiritId: 'jintari',
+      rewardItemId: ALPHA_ITEMS.fieldAccordTalisman.id,
+      source: 'spirit-field-accord'
+    });
+    expect(moonbridgeAccord.message).toContain('No-injury field accord');
+
+    const cloudbellAccord = resolveSpiritFieldAccord({
+      routeId: 'cloudbell-reed-bank',
+      roster: ['lirabao', 'jintari'],
+      activeSpiritId: 'jintari',
+      discoveredRoutes: firstRouteIds,
+      harmonyScore: 5,
+      bondBySpiritId: { lirabao: 3, jintari: 3 },
+      tacticProof: true,
+      affinityProof: true,
+      journalDiscoveredCount: 3
+    });
+    expect(cloudbellAccord).toMatchObject({
+      cleared: true,
+      accordId: 'cloudbell-skyvow-accord',
+      targetSpiritId: 'aozhen',
+      score: 22,
+      requiredScore: 12
+    });
+
+    const routeInvite = resolveSpiritRouteInvitation('cloudbell-reed-bank', ALPHA_ITEMS.harmonyTea.id, 4, ['lirabao', 'jintari'], firstRouteIds, true);
     expect(routeInvite).toMatchObject({
       ok: true,
       alreadyRostered: false,

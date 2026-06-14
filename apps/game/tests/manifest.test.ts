@@ -58,6 +58,7 @@ describe('game manifest', () => {
         battleRoundTranscripts: true,
         conditionWeaves: true,
         fieldExpeditions: true,
+        fieldAccords: true,
         sparringLadder: true,
         trainingBattles: true,
         techniqueMastery: true,

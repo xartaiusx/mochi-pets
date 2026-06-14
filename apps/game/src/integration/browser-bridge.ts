@@ -10,6 +10,7 @@ import {
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_EXPEDITION_ROUTES,
+  SPIRIT_FIELD_ACCORDS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
@@ -35,6 +36,7 @@ import {
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
+  resolveSpiritFieldAccord,
   resolveGuildCommission,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
@@ -102,6 +104,14 @@ interface AlphaHudState {
   routeInviteProof: boolean;
   lastRouteInviteRouteId?: string;
   lastRouteInviteSpiritId?: string;
+  fieldAccordProof: boolean;
+  fieldAccordId?: string;
+  fieldAccordName: string;
+  fieldAccordScore: number;
+  fieldAccordRequiredScore: number;
+  lastFieldAccordRouteId?: string;
+  lastFieldAccordSpiritId?: string;
+  fieldAccordTalismanClaimed: boolean;
   routeMasteryProof: boolean;
   routeMasteryId?: string;
   routeMasteryTitle: string;
@@ -251,6 +261,22 @@ export interface AlphaWorldStatePatch {
     routeName: string;
     roster: string[];
     spiritId: string;
+  };
+  fieldAccord?: {
+    accordId: string;
+    accordName: string;
+    harmonyScore: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    routeId: string;
+    routeName: string;
+    score: number;
+    spiritId: string;
+    spiritName: string;
+    title: string;
   };
   routeMastery?: {
     masteryId: string;
@@ -591,6 +617,11 @@ function defaultAlphaState(): AlphaHudState {
     discoveredRouteIds: [],
     routeRibbonClaimed: false,
     routeInviteProof: false,
+    fieldAccordProof: false,
+    fieldAccordName: 'Pending',
+    fieldAccordScore: 0,
+    fieldAccordRequiredScore: 0,
+    fieldAccordTalismanClaimed: false,
     routeMasteryProof: false,
     routeMasteryTitle: 'Unmastered',
     routeMasteryScore: 0,
@@ -796,6 +827,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
       <span class="mochi-hud__hint" data-route-invite-label>Route Invite: pending</span>
+      <span class="mochi-hud__hint" data-field-accord-label>Field Accord: pending</span>
       <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
       <span class="mochi-hud__hint" data-habitat-bond-label>Habitat Bond: pending</span>
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
@@ -884,6 +916,7 @@ function createHud() {
   const journalLabel = hud.querySelector('[data-journal-label]');
   const expeditionLabel = hud.querySelector('[data-expedition-label]');
   const routeInviteLabel = hud.querySelector('[data-route-invite-label]');
+  const fieldAccordLabel = hud.querySelector('[data-field-accord-label]');
   const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
   const habitatBondLabel = hud.querySelector('[data-habitat-bond-label]');
   const researchLabel = hud.querySelector('[data-research-label]');
@@ -943,6 +976,11 @@ function createHud() {
       routeInviteLabel.textContent = state.routeInviteProof
         ? `Route Invite: ${state.lastRouteInviteSpiritId || 'recorded'}`
         : 'Route Invite: pending';
+    }
+    if (fieldAccordLabel) {
+      fieldAccordLabel.textContent = state.fieldAccordProof
+        ? `Field Accord: ${state.fieldAccordName}, score ${state.fieldAccordScore}/${state.fieldAccordRequiredScore}`
+        : 'Field Accord: pending';
     }
     if (routeMasteryLabel) {
       routeMasteryLabel.textContent = state.routeMasteryProof
@@ -1438,6 +1476,18 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.expeditionCount = Math.max(state.expeditionCount, Number(patch.expedition.count) || state.discoveredRouteIds.length);
     state.routeRibbonClaimed = state.routeRibbonClaimed || patch.expedition.rewardItemId === 'moonbridge-field-ribbon';
     appendUniqueAlphaChat(state, patch.expedition.message || `Route scouted: ${patch.expedition.routeName}.`);
+  }
+
+  if (patch.fieldAccord) {
+    state.fieldAccordProof = patch.fieldAccord.proof || state.fieldAccordProof;
+    state.fieldAccordId = patch.fieldAccord.accordId || state.fieldAccordId;
+    state.fieldAccordName = patch.fieldAccord.accordName || state.fieldAccordName;
+    state.fieldAccordScore = Math.max(state.fieldAccordScore, Number(patch.fieldAccord.score) || 0);
+    state.fieldAccordRequiredScore = Math.max(state.fieldAccordRequiredScore, Number(patch.fieldAccord.requiredScore) || 0);
+    state.lastFieldAccordRouteId = patch.fieldAccord.routeId || state.lastFieldAccordRouteId;
+    state.lastFieldAccordSpiritId = patch.fieldAccord.spiritId || state.lastFieldAccordSpiritId;
+    state.fieldAccordTalismanClaimed = state.fieldAccordTalismanClaimed || patch.fieldAccord.rewardItemId === 'jade-field-accord-talisman';
+    appendUniqueAlphaChat(state, patch.fieldAccord.message || `${state.fieldAccordName} recorded as no-real-value field accord proof.`);
   }
 
   if (patch.routeInvite) {
@@ -2421,29 +2471,58 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === String(payload.routeId || '')) ||
       SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === state.lastExpeditionRouteId) ||
       SPIRIT_EXPEDITION_ROUTES[0];
-    const result = resolveSpiritRouteInvitation(
-      route.id,
-      String(payload.offeredItemId || route.recommendedItemId),
-      Number(payload.harmonyScore || (state.bond || 1) + Math.max(1, roster.length) + state.partyIds.length + state.expeditionCount),
-      roster,
-      Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds
+    const harmonyScore = Number(payload.harmonyScore || (state.bond || 1) + Math.max(1, roster.length) + state.partyIds.length + state.expeditionCount);
+    const accord = resolveSpiritFieldAccord(
+      {
+        routeId: route.id,
+        roster,
+        activeSpiritId: state.spiritId || roster[0],
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        harmonyScore,
+        bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, state.bond || 1])),
+        tacticProof: state.tacticProof,
+        affinityProof: state.affinityProof,
+        journalDiscoveredCount: state.journalDiscoveredCount
+      },
+      SPIRIT_FIELD_ACCORDS.find((entry) => entry.routeId === route.id)?.id
     );
-    if (result.ok) {
-      state.routeInviteProof = true;
-      state.lastRouteInviteRouteId = result.routeId;
-      state.lastRouteInviteSpiritId = result.spiritId;
-      state.captureProof = true;
-      state.lastCaptureSpiritId = result.spiritId;
-      state.spiritId = result.spiritId;
-      for (const spiritId of result.roster) {
-        if (!state.attunedSpiritIds.includes(spiritId)) {
-          state.attunedSpiritIds.push(spiritId);
-        }
-      }
-      state.bond = Math.max(state.bond, result.bond);
-      state.growth = result.growth;
+    if (accord.cleared) {
+      state.fieldAccordProof = true;
+      state.fieldAccordId = accord.accordId;
+      state.fieldAccordName = accord.accordName;
+      state.fieldAccordScore = accord.score;
+      state.fieldAccordRequiredScore = accord.requiredScore;
+      state.lastFieldAccordRouteId = accord.routeId;
+      state.lastFieldAccordSpiritId = accord.targetSpiritId;
+      state.fieldAccordTalismanClaimed = accord.rewardItemId === 'jade-field-accord-talisman';
     }
-    state.chat.push(result.message);
+    state.chat.push(accord.message);
+    if (accord.cleared) {
+      const result = resolveSpiritRouteInvitation(
+        route.id,
+        String(payload.offeredItemId || route.recommendedItemId),
+        harmonyScore,
+        roster,
+        Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        true
+      );
+      if (result.ok) {
+        state.routeInviteProof = true;
+        state.lastRouteInviteRouteId = result.routeId;
+        state.lastRouteInviteSpiritId = result.spiritId;
+        state.captureProof = true;
+        state.lastCaptureSpiritId = result.spiritId;
+        state.spiritId = result.spiritId;
+        for (const spiritId of result.roster) {
+          if (!state.attunedSpiritIds.includes(spiritId)) {
+            state.attunedSpiritIds.push(spiritId);
+          }
+        }
+        state.bond = Math.max(state.bond, result.bond);
+        state.growth = result.growth;
+      }
+      state.chat.push(result.message);
+    }
   }
 
   if (type === 'world.route_mastery') {

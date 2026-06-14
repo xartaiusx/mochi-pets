@@ -41,6 +41,7 @@ export const ALPHA_FEATURES = {
     battleRoundTranscripts: true,
     conditionWeaves: true,
     fieldExpeditions: true,
+    fieldAccords: true,
     itemProvisions: true,
     guildCommissions: true,
     socialRallies: true,

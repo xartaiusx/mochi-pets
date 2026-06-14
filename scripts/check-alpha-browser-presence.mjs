@@ -212,6 +212,7 @@ async function exerciseAlphaHud(page) {
       const journal = document.querySelector('[data-journal-label]')?.textContent || '';
       const expedition = document.querySelector('[data-expedition-label]')?.textContent || '';
       const routeInvite = document.querySelector('[data-route-invite-label]')?.textContent || '';
+      const fieldAccord = document.querySelector('[data-field-accord-label]')?.textContent || '';
       const routeMastery = document.querySelector('[data-route-mastery-label]')?.textContent || '';
       const habitatBond = document.querySelector('[data-habitat-bond-label]')?.textContent || '';
       const research = document.querySelector('[data-research-label]')?.textContent || '';
@@ -249,6 +250,7 @@ async function exerciseAlphaHud(page) {
         && !expedition.includes('not scouted')
         && routeInvite.includes('Route Invite:')
         && routeInvite.includes('aozhen')
+        && fieldAccord.includes('Cloudbell Skyvow Accord')
         && routeMastery.includes('Jade Cloudbell Circuit')
         && habitatBond.includes('Jade Court Habitat Bond')
         && research.includes('Jade Court Research Folio')
@@ -300,6 +302,14 @@ async function exerciseAlphaHud(page) {
         && state.routeInviteProof === true
         && state.lastRouteInviteRouteId === 'cloudbell-reed-bank'
         && state.lastRouteInviteSpiritId === 'aozhen'
+        && state.fieldAccordProof === true
+        && state.fieldAccordId === 'cloudbell-skyvow-accord'
+        && state.fieldAccordName === 'Cloudbell Skyvow Accord'
+        && state.fieldAccordScore >= 12
+        && state.fieldAccordRequiredScore === 12
+        && state.lastFieldAccordRouteId === 'cloudbell-reed-bank'
+        && state.lastFieldAccordSpiritId === 'aozhen'
+        && state.fieldAccordTalismanClaimed === true
         && state.routeMasteryProof === true
         && state.routeMasteryId === 'jade-cloudbell-circuit'
         && state.routeMasteryTitle === 'Jade Cloudbell Circuit'
@@ -457,6 +467,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Canary certificate request staged')
         && chat.includes('Jade Vault Return Proof staged')
         && chat.includes('Cloudbell Reed Bank')
+        && chat.includes('Cloudbell Skyvow Accord cleared')
         && chat.includes('Skybell Vow Invitation')
         && chat.includes('Jade Cloudbell Circuit mastered')
         && chat.includes('Jade Court Habitat Bond recorded')
@@ -484,6 +495,7 @@ async function exerciseAlphaHud(page) {
       journal: document.querySelector('[data-journal-label]')?.textContent || '',
       expedition: document.querySelector('[data-expedition-label]')?.textContent || '',
       routeInvite: document.querySelector('[data-route-invite-label]')?.textContent || '',
+      fieldAccord: document.querySelector('[data-field-accord-label]')?.textContent || '',
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent || '',
       research: document.querySelector('[data-research-label]')?.textContent || '',
@@ -518,6 +530,7 @@ async function exerciseAlphaHud(page) {
       journal: document.querySelector('[data-journal-label]')?.textContent?.trim() || '',
       expedition: document.querySelector('[data-expedition-label]')?.textContent?.trim() || '',
       routeInvite: document.querySelector('[data-route-invite-label]')?.textContent?.trim() || '',
+      fieldAccord: document.querySelector('[data-field-accord-label]')?.textContent?.trim() || '',
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent?.trim() || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent?.trim() || '',
       research: document.querySelector('[data-research-label]')?.textContent?.trim() || '',
@@ -568,6 +581,15 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.routeInviteProof === true, 'HUD route invitation action must record route invitation proof.');
   assert(snapshot.state.lastRouteInviteRouteId === 'cloudbell-reed-bank', 'HUD route invitation must record the Cloudbell route.');
   assert(snapshot.state.lastRouteInviteSpiritId === 'aozhen', 'HUD route invitation must record Aozhen as the route spirit.');
+  assert(snapshot.fieldAccord.includes('Cloudbell Skyvow Accord'), 'HUD field accord label must show the cleared Cloudbell accord.');
+  assert(snapshot.state.fieldAccordProof === true, 'HUD field accord action must record field accord proof.');
+  assert(snapshot.state.fieldAccordId === 'cloudbell-skyvow-accord', 'HUD field accord action must record the Cloudbell accord id.');
+  assert(snapshot.state.fieldAccordName === 'Cloudbell Skyvow Accord', 'HUD field accord action must record the Cloudbell accord name.');
+  assert(snapshot.state.fieldAccordScore >= 12, 'HUD field accord action must record a passing accord score.');
+  assert(snapshot.state.fieldAccordRequiredScore === 12, 'HUD field accord action must record the Cloudbell accord requirement.');
+  assert(snapshot.state.lastFieldAccordRouteId === 'cloudbell-reed-bank', 'HUD field accord action must record the Cloudbell route.');
+  assert(snapshot.state.lastFieldAccordSpiritId === 'aozhen', 'HUD field accord action must record Aozhen as the accord spirit.');
+  assert(snapshot.state.fieldAccordTalismanClaimed === true, 'HUD field accord action must mark the no-real-value accord talisman proof.');
   assert(snapshot.routeMastery.includes('Jade Cloudbell Circuit'), 'HUD route mastery label must show the completed circuit.');
   assert(snapshot.state.routeMasteryProof === true, 'HUD route mastery action must record route mastery proof.');
   assert(snapshot.state.routeMasteryId === 'jade-cloudbell-circuit', 'HUD route mastery action must record the circuit id.');
@@ -731,6 +753,7 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.canaryReturnRequested === true, 'HUD Canary return action must stage a no-real-value return preview.');
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
   assert(chat.some((line) => String(line).includes('Cloudbell Reed Bank')), 'HUD chat state must record the second field expedition action.');
+  assert(chat.some((line) => String(line).includes('Cloudbell Skyvow Accord cleared')), 'HUD chat state must record the no-injury field accord action.');
   assert(chat.some((line) => String(line).includes('Skybell Vow Invitation')), 'HUD chat state must record the Aozhen route invitation action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Circuit mastered')), 'HUD chat state must record the route mastery action.');
   assert(chat.some((line) => String(line).includes('Jade Court Habitat Bond recorded')), 'HUD chat state must record the habitat bond action.');
