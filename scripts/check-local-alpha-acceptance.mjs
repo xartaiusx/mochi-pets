@@ -80,6 +80,7 @@ async function run() {
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
   assert(manifest.body.gameplay?.teamSparMatches === true, 'Manifest must expose Mochi Spirit team spar matches.');
   assert(manifest.body.gameplay?.mentorChallenges === true, 'Manifest must expose Mochi Spirit mentor challenges.');
+  assert(manifest.body.gameplay?.spiritTournamentBrackets === true, 'Manifest must expose Mochi Spirit tournament brackets.');
   assert(manifest.body.gameplay?.battleRoundTranscripts === true, 'Manifest must expose Mochi Spirit battle round transcripts.');
   assert(manifest.body.gameplay?.conditionWeaves === true, 'Manifest must expose Mochi Spirit condition weaves.');
   assert(manifest.body.gameplay?.fieldExpeditions === true, 'Manifest must expose Mochi Spirit field expeditions.');
@@ -125,6 +126,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
   assert(alphaStatus.body.gameplay?.teamSparMatches === true, 'Alpha status must expose Mochi Spirit team spar matches.');
   assert(alphaStatus.body.gameplay?.mentorChallenges === true, 'Alpha status must expose Mochi Spirit mentor challenges.');
+  assert(alphaStatus.body.gameplay?.spiritTournamentBrackets === true, 'Alpha status must expose Mochi Spirit tournament brackets.');
   assert(alphaStatus.body.gameplay?.battleRoundTranscripts === true, 'Alpha status must expose Mochi Spirit battle round transcripts.');
   assert(alphaStatus.body.gameplay?.conditionWeaves === true, 'Alpha status must expose Mochi Spirit condition weaves.');
   assert(alphaStatus.body.gameplay?.fieldExpeditions === true, 'Alpha status must expose Mochi Spirit field expeditions.');
@@ -825,6 +827,37 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-tournament-bracket`,
+      type: 'battle.tournament_bracket',
+      payload: {
+        bracketId: 'jade-banner-tournament',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        mentorChallengeProof: true,
+        mentorChallengeId: 'silk-banner-mentor-drill',
+        mentorChallengeScore: 28,
+        teamSparMatchProof: true,
+        teamSparMatchId: 'jade-mirror-team-match',
+        teamSparMatchScore: 32,
+        harmonyTrialProof: true,
+        harmonyTrialId: 'jade-echo-concord',
+        conditionWeaveProof: true,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 31,
+        battleRoundOpponentScore: 18,
+        localPresenceCount: 2,
+        routePatrolProof: true,
+        nurtureRiteProof: true,
+        guildRankProof: true,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-banner-tournament-pennant',
+        chatLines: ['Local acceptance tournament bracket proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -913,6 +946,7 @@ async function run() {
         harmonyTrialProof: true,
         teamSparMatchProof: true,
         mentorChallengeProof: true,
+        tournamentProof: true,
         battleRoundProof: true,
         battleRoundVictory: true,
         questChainProof: true,
@@ -937,6 +971,7 @@ async function run() {
         wayfarerChronicleProof: true,
         routePatrolProof: true,
         mentorChallengeProof: true,
+        tournamentProof: true,
         battleRoundProof: true,
         battleRoundVictory: true,
         battleRoundFocusScore: 18,
@@ -1102,6 +1137,22 @@ async function run() {
   assert(nurtureRite?.payload?.sparLadderXp >= 5, 'Nurture rite ledger entry must preserve spar ladder XP proof.');
   assert(nurtureRite?.payload?.rewardItemId === 'jade-moonwell-nurture-ribbon', 'Nurture rite ledger entry must preserve the no-real-value nurture ribbon proof.');
   assert(nurtureRite?.payload?.noRealValue === true, 'Nurture rite ledger entry must remain no-real-value.');
+  const tournament = entriesById.get(`${runId}-tournament-bracket`);
+  assert(tournament?.payload?.bracketId === 'jade-banner-tournament', 'Tournament ledger entry must preserve the Jade Banner Tournament id.');
+  assert(Array.isArray(tournament?.payload?.partyIds) && tournament.payload.partyIds.length === 3, 'Tournament ledger entry must preserve full-party proof.');
+  assert(tournament?.payload?.mentorChallengeProof === true, 'Tournament ledger entry must preserve mentor challenge proof.');
+  assert(tournament?.payload?.mentorChallengeId === 'silk-banner-mentor-drill', 'Tournament ledger entry must preserve the mentor challenge id.');
+  assert(tournament?.payload?.teamSparMatchProof === true, 'Tournament ledger entry must preserve team spar match proof.');
+  assert(tournament?.payload?.teamSparMatchId === 'jade-mirror-team-match', 'Tournament ledger entry must preserve the team spar match id.');
+  assert(tournament?.payload?.harmonyTrialProof === true, 'Tournament ledger entry must preserve harmony trial proof.');
+  assert(tournament?.payload?.conditionWeaveProof === true, 'Tournament ledger entry must preserve condition weave proof.');
+  assert(tournament?.payload?.battleRoundVictory === true, 'Tournament ledger entry must preserve no-injury battle victory proof.');
+  assert(tournament?.payload?.localPresenceCount === 2, 'Tournament ledger entry must preserve two-tester presence proof.');
+  assert(tournament?.payload?.routePatrolProof === true, 'Tournament ledger entry must preserve route patrol proof.');
+  assert(tournament?.payload?.nurtureRiteProof === true, 'Tournament ledger entry must preserve nurture rite proof.');
+  assert(tournament?.payload?.guildRankProof === true, 'Tournament ledger entry must preserve guild rank proof.');
+  assert(tournament?.payload?.rewardItemId === 'jade-banner-tournament-pennant', 'Tournament ledger entry must preserve the no-real-value tournament pennant proof.');
+  assert(tournament?.payload?.noRealValue === true, 'Tournament ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
@@ -1110,6 +1161,7 @@ async function run() {
   assert(chronicle?.payload?.craftWritProof === true, 'Wayfarer chronicle ledger entry must preserve craft writ proof.');
   assert(chronicle?.payload?.routeWaystoneProof === true, 'Wayfarer chronicle ledger entry must preserve route waystone proof.');
   assert(chronicle?.payload?.nurtureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve nurture rite proof.');
+  assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
@@ -1118,6 +1170,7 @@ async function run() {
   assert(ascension?.payload?.localPresenceCount === 2, 'Ascension trial ledger entry must preserve two-tester presence proof.');
   assert(ascension?.payload?.wayfarerChronicleProof === true, 'Ascension trial ledger entry must preserve wayfarer chronicle proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');
+  assert(ascension?.payload?.tournamentProof === true, 'Ascension trial ledger entry must preserve tournament proof.');
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
   assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
   assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');

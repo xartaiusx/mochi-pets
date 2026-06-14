@@ -67,6 +67,7 @@ describe('game manifest', () => {
         harmonyTrials: true,
         teamSparMatches: true,
         mentorChallenges: true,
+        spiritTournamentBrackets: true,
         battleRoundTranscripts: true,
         conditionWeaves: true,
         fieldExpeditions: true,

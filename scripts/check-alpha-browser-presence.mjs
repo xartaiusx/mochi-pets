@@ -206,6 +206,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_waystone"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.nurture_rite"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -240,6 +241,7 @@ async function exerciseAlphaHud(page) {
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
       const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
       const nurtureRite = document.querySelector('[data-nurture-rite-label]')?.textContent || '';
+      const tournament = document.querySelector('[data-tournament-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -290,6 +292,7 @@ async function exerciseAlphaHud(page) {
         && craftWrit.includes('Jade Court Craft Writ')
         && routeWaystone.includes('Jade Cloudbell Waystone')
         && nurtureRite.includes('Jade Moonwell Nurture Rite')
+        && tournament.includes('Jade Banner Tournament')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -489,6 +492,17 @@ async function exerciseAlphaHud(page) {
         && state.nurtureRiteCaredSpiritIds.includes('jintari')
         && state.nurtureRiteCaredSpiritIds.includes('aozhen')
         && state.nurtureRibbonClaimed === true
+        && state.tournamentProof === true
+        && state.tournamentId === 'jade-banner-tournament'
+        && state.tournamentName === 'Jade Banner Tournament'
+        && state.tournamentScore >= 38
+        && state.tournamentRequiredScore === 38
+        && Array.isArray(state.tournamentPartyIds)
+        && state.tournamentPartyIds.includes('lirabao')
+        && state.tournamentPartyIds.includes('jintari')
+        && state.tournamentPartyIds.includes('aozhen')
+        && state.tournamentPresenceCount >= 2
+        && state.tournamentPennantClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -504,14 +518,14 @@ async function exerciseAlphaHud(page) {
         && state.wayfarerChronicleProof === true
         && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
         && state.wayfarerChronicleName === 'Jade Wayfarer Chronicle'
-        && state.wayfarerChronicleScore >= 52
-        && state.wayfarerChronicleRequiredScore === 52
+        && state.wayfarerChronicleScore >= 55
+        && state.wayfarerChronicleRequiredScore === 55
         && state.wayfarerChronicleClaspClaimed === true
         && state.guildAscensionProof === true
         && state.guildAscensionTrialId === 'jade-court-ascension-trial'
         && state.guildAscensionTrialName === 'Jade Court Ascension Trial'
-        && state.guildAscensionScore >= 44
-        && state.guildAscensionRequiredScore === 44
+        && state.guildAscensionScore >= 47
+        && state.guildAscensionRequiredScore === 47
         && state.guildAscensionRibbonClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
@@ -643,6 +657,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Route Ecology Survey complete')
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Moonwell Nurture Rite complete')
+        && chat.includes('Jade Banner Tournament cleared')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
         && chat.includes('Jade Wayfarer Chronicle complete')
@@ -682,6 +697,7 @@ async function exerciseAlphaHud(page) {
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
       routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
       nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
+      tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -729,6 +745,7 @@ async function exerciseAlphaHud(page) {
     craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
     routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
     nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
+    tournament: document.querySelector('[data-tournament-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -925,6 +942,17 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.nurtureRiteCaredSpiritIds) && snapshot.state.nurtureRiteCaredSpiritIds.includes('jintari'), 'HUD nurture action must record Jintari care proof.');
   assert(Array.isArray(snapshot.state.nurtureRiteCaredSpiritIds) && snapshot.state.nurtureRiteCaredSpiritIds.includes('aozhen'), 'HUD nurture action must record Aozhen care proof.');
   assert(snapshot.state.nurtureRibbonClaimed === true, 'HUD nurture action must mark the no-real-value nurture ribbon proof.');
+  assert(snapshot.tournament.includes('Jade Banner Tournament'), 'HUD tournament label must show the cleared no-injury battle bracket.');
+  assert(snapshot.state.tournamentProof === true, 'HUD tournament action must record tournament proof.');
+  assert(snapshot.state.tournamentId === 'jade-banner-tournament', 'HUD tournament action must record the tournament id.');
+  assert(snapshot.state.tournamentName === 'Jade Banner Tournament', 'HUD tournament action must record the tournament name.');
+  assert(snapshot.state.tournamentScore >= 38, 'HUD tournament action must record a passing tournament score.');
+  assert(snapshot.state.tournamentRequiredScore === 38, 'HUD tournament action must record the tournament requirement.');
+  assert(Array.isArray(snapshot.state.tournamentPartyIds) && snapshot.state.tournamentPartyIds.includes('lirabao'), 'HUD tournament action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.tournamentPartyIds) && snapshot.state.tournamentPartyIds.includes('jintari'), 'HUD tournament action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.tournamentPartyIds) && snapshot.state.tournamentPartyIds.includes('aozhen'), 'HUD tournament action must record Aozhen party proof.');
+  assert(snapshot.state.tournamentPresenceCount >= 2, 'HUD tournament action must record two local tester presences.');
+  assert(snapshot.state.tournamentPennantClaimed === true, 'HUD tournament action must mark the no-real-value tournament pennant proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -943,15 +971,15 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.wayfarerChronicleProof === true, 'HUD chronicle action must record first-court alpha chronicle proof.');
   assert(snapshot.state.wayfarerChronicleId === 'jade-wayfarer-chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle id.');
   assert(snapshot.state.wayfarerChronicleName === 'Jade Wayfarer Chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle name.');
-  assert(snapshot.state.wayfarerChronicleScore >= 52, 'HUD chronicle action must record a passing chronicle score.');
-  assert(snapshot.state.wayfarerChronicleRequiredScore === 52, 'HUD chronicle action must record the chronicle requirement.');
+  assert(snapshot.state.wayfarerChronicleScore >= 55, 'HUD chronicle action must record a passing chronicle score.');
+  assert(snapshot.state.wayfarerChronicleRequiredScore === 55, 'HUD chronicle action must record the chronicle requirement.');
   assert(snapshot.state.wayfarerChronicleClaspClaimed === true, 'HUD chronicle action must mark the no-real-value chronicle clasp proof.');
   assert(snapshot.ascension.includes('Jade Court Ascension Trial'), 'HUD ascension label must show the completed guild capstone trial.');
   assert(snapshot.state.guildAscensionProof === true, 'HUD ascension action must record closed-alpha guild capstone proof.');
   assert(snapshot.state.guildAscensionTrialId === 'jade-court-ascension-trial', 'HUD ascension action must record the Jade Court Ascension Trial id.');
   assert(snapshot.state.guildAscensionTrialName === 'Jade Court Ascension Trial', 'HUD ascension action must record the Jade Court Ascension Trial name.');
-  assert(snapshot.state.guildAscensionScore >= 44, 'HUD ascension action must record a passing ascension score.');
-  assert(snapshot.state.guildAscensionRequiredScore === 44, 'HUD ascension action must record the ascension score requirement.');
+  assert(snapshot.state.guildAscensionScore >= 47, 'HUD ascension action must record a passing ascension score.');
+  assert(snapshot.state.guildAscensionRequiredScore === 47, 'HUD ascension action must record the ascension score requirement.');
   assert(snapshot.state.guildAscensionRibbonClaimed === true, 'HUD ascension action must mark the no-real-value ascension ribbon proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
@@ -1086,6 +1114,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Craft Writ complete')), 'HUD chat state must record the craft writ action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Waystone activated')), 'HUD chat state must record the route waystone action.');
   assert(chat.some((line) => String(line).includes('Jade Moonwell Nurture Rite complete')), 'HUD chat state must record the nurture rite action.');
+  assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');

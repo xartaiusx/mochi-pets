@@ -33,6 +33,7 @@ import {
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_LOADOUTS,
+  SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
   growthStageFromBond,
   resolveSpiritAttunement,
@@ -75,6 +76,7 @@ import {
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueLoadout,
+  resolveSpiritTournamentBracket,
   resolveSpiritTraitAttunement,
   selectSpiritRaisingNeed,
   selectMochiSpiritQuest,
@@ -125,6 +127,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
     expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
@@ -194,6 +197,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
     expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
@@ -1176,6 +1180,7 @@ describe('alpha contract', () => {
       harmonyTrialProof: true,
       teamSparMatchProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1197,8 +1202,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 91,
-      requiredScore: 52,
+      score: 94,
+      requiredScore: 55,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1231,6 +1236,7 @@ describe('alpha contract', () => {
       harmonyTrialProof: true,
       teamSparMatchProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1253,6 +1259,7 @@ describe('alpha contract', () => {
       wayfarerChronicleProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1282,8 +1289,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 59,
-      requiredScore: 44,
+      score: 62,
+      requiredScore: 47,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -1295,6 +1302,7 @@ describe('alpha contract', () => {
       wayfarerChronicleProof: false,
       routePatrolProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1691,6 +1699,66 @@ describe('alpha contract', () => {
       techniqueMasteryXp: 0,
       tacticMasteryXp: 0,
       raisingCareStreak: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_TOURNAMENT_BRACKETS.map((bracket) => bracket.id)).toEqual(['jade-banner-tournament']);
+    const tournament = resolveSpiritTournamentBracket({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: 32,
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      routePatrolProof: true,
+      nurtureRiteProof: true,
+      guildRankProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the bracket.']
+    });
+    expect(tournament).toMatchObject({
+      ok: true,
+      cleared: true,
+      bracketId: 'jade-banner-tournament',
+      bracketName: 'Jade Banner Tournament',
+      title: 'First Closed-Alpha Battle Circuit',
+      hostName: 'Jade Banner Marshal',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      localPresenceCount: 2,
+      score: 49,
+      requiredScore: 38,
+      rewardItemId: 'jade-banner-tournament-pennant',
+      source: 'battle-tournament-bracket'
+    });
+    expect(tournament.message).toContain('No real value');
+    expect(resolveSpiritTournamentBracket({
+      partyIds: ['aozhen'],
+      mentorChallengeProof: false,
+      mentorChallengeScore: 0,
+      teamSparMatchProof: false,
+      teamSparMatchScore: 0,
+      harmonyTrialProof: false,
+      conditionWeaveProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      localPresenceCount: 1,
+      routePatrolProof: false,
+      nurtureRiteProof: false,
+      guildRankProof: false,
       profileViewed: false,
       guildBuddyProof: false
     }).cleared).toBe(false);

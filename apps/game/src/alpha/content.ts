@@ -1186,6 +1186,7 @@ export interface GuildWayfarerChronicleProgress {
   harmonyTrialProof: boolean;
   teamSparMatchProof: boolean;
   mentorChallengeProof: boolean;
+  tournamentProof: boolean;
   battleRoundProof: boolean;
   battleRoundVictory: boolean;
   questChainProof: boolean;
@@ -1236,6 +1237,7 @@ export interface GuildAscensionTrialProgress {
   wayfarerChronicleProof: boolean;
   routePatrolProof: boolean;
   mentorChallengeProof: boolean;
+  tournamentProof: boolean;
   battleRoundProof: boolean;
   battleRoundVictory: boolean;
   battleRoundFocusScore?: number;
@@ -1448,6 +1450,63 @@ export interface SpiritMentorChallengeResult {
   title: string;
   mentorName: string;
   partyIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
+export interface SpiritTournamentBracket {
+  id: string;
+  name: string;
+  title: string;
+  hostName: string;
+  requiredSpiritIds: readonly string[];
+  requiredMentorChallengeId: string;
+  requiredTeamMatchId: string;
+  requiredHarmonyTrialId: string;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritTournamentBracketProgress {
+  partyIds: readonly string[];
+  mentorChallengeProof: boolean;
+  mentorChallengeId?: string;
+  mentorChallengeScore: number;
+  teamSparMatchProof: boolean;
+  teamSparMatchId?: string;
+  teamSparMatchScore: number;
+  harmonyTrialProof: boolean;
+  harmonyTrialId?: string;
+  conditionWeaveProof: boolean;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore: number;
+  battleRoundOpponentScore: number;
+  localPresenceCount: number;
+  routePatrolProof: boolean;
+  nurtureRiteProof: boolean;
+  guildRankProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritTournamentBracketResult {
+  ok: boolean;
+  cleared: boolean;
+  bracketId: string;
+  bracketName: string;
+  title: string;
+  hostName: string;
+  partyIds: string[];
+  localPresenceCount: number;
   score: number;
   requiredScore: number;
   missing: string[];
@@ -2184,6 +2243,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Moonwell Nurture Ribbon',
     description: 'A no-real-value raising proof for closed-alpha Mochirii care, growth, supplies, and safe practice.'
   },
+  tournamentPennant: {
+    id: 'jade-banner-tournament-pennant',
+    name: 'Jade Banner Tournament Pennant',
+    description: 'A no-real-value battle-circuit proof for closed-alpha Mochirii team brackets and social spar readiness.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2797,7 +2861,7 @@ export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
     requiredJournalCount: MOCHI_SPIRITS.length,
     requiredQuestCount: MOCHI_SPIRIT_QUESTS.length,
     requiredPresenceCount: 2,
-    requiredScore: 52,
+    requiredScore: 55,
     rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
     summary: 'A no-real-value alpha passport proof for testers who complete the first-court capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
   }
@@ -2811,7 +2875,7 @@ export const GUILD_ASCENSION_TRIALS: readonly GuildAscensionTrial[] = [
     habitat: SPIRIT_HABITATS.jadeLanternCourt,
     requiredSpiritCount: MOCHI_SPIRITS.length,
     requiredPresenceCount: 2,
-    requiredScore: 44,
+    requiredScore: 47,
     rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
     summary: 'A no-real-value guild capstone for testers who complete the first Mochirii chronicle, social party proof, no-injury battle proof, route patrol, and Canary preview.'
   }
@@ -2878,6 +2942,23 @@ export const SPIRIT_MENTOR_CHALLENGES: readonly SpiritMentorChallenge[] = [
     requiredScore: 28,
     rewardItemId: ALPHA_ITEMS.mentorSeal.id,
     summary: 'A no-injury mentor challenge proving the first Mochirii party can blend care, tactics, technique, team sparring, and local social coordination.'
+  }
+];
+
+export const SPIRIT_TOURNAMENT_BRACKETS: readonly SpiritTournamentBracket[] = [
+  {
+    id: 'jade-banner-tournament',
+    name: 'Jade Banner Tournament',
+    title: 'First Closed-Alpha Battle Circuit',
+    hostName: 'Jade Banner Marshal',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredMentorChallengeId: SPIRIT_MENTOR_CHALLENGES[0].id,
+    requiredTeamMatchId: SPIRIT_TEAM_SPAR_MATCHES[0].id,
+    requiredHarmonyTrialId: SPIRIT_HARMONY_TRIALS[0].id,
+    requiredPresenceCount: 2,
+    requiredScore: 38,
+    rewardItemId: ALPHA_ITEMS.tournamentPennant.id,
+    summary: 'A no-injury closed-alpha battle bracket for testers who prove party harmony, mentor readiness, route patrol, nurture, rank, and social presence.'
   }
 ];
 
@@ -4813,6 +4894,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.harmonyTrialProof) missing.push('concord');
   if (!progress.teamSparMatchProof) missing.push('team-match');
   if (!progress.mentorChallengeProof) missing.push('mentor');
+  if (!progress.tournamentProof) missing.push('tournament');
   if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
   if (!progress.marketProof) missing.push('market');
   if (!progress.tradeProof) missing.push('trade');
@@ -4850,6 +4932,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.harmonyTrialProof ? 2 : 0) +
     (progress.teamSparMatchProof ? 2 : 0) +
     (progress.mentorChallengeProof ? 2 : 0) +
+    (progress.tournamentProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory ? 2 : 0) +
     (progress.marketProof ? 1 : 0) +
     (progress.tradeProof ? 1 : 0) +
@@ -4877,7 +4960,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, nurturing, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, nurturing, tournament battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -4906,6 +4989,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.wayfarerChronicleProof) missing.push('chronicle');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.mentorChallengeProof) missing.push('mentor');
+  if (!progress.tournamentProof) missing.push('tournament');
   if (!progress.battleRoundProof || !progress.battleRoundVictory || !scoreLeadReady) missing.push('battle-round');
   if (!progress.conditionWeaveProof) missing.push('condition-weave');
   if (!progress.harmonyFormProof) missing.push('harmony');
@@ -4929,6 +5013,7 @@ export function resolveGuildAscensionTrial(
     (progress.wayfarerChronicleProof ? 5 : 0) +
     (progress.routePatrolProof ? 4 : 0) +
     (progress.mentorChallengeProof ? 4 : 0) +
+    (progress.tournamentProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory && scoreLeadReady ? 4 : 0) +
     (progress.conditionWeaveProof ? 3 : 0) +
     (progress.harmonyFormProof ? 2 : 0) +
@@ -5298,6 +5383,93 @@ export function resolveSpiritMentorChallenge(
       ? `${challenge.name} cleared: ${challenge.mentorName} records ${partyNames} as no-injury mentor-ready with care, tactics, technique, team sparring, and social proof.`
       : `${challenge.name} needs ${missing.join(', ')} before mentor readiness can be recorded.`,
     source: 'battle-mentor-challenge'
+  };
+}
+
+export function resolveSpiritTournamentBracket(
+  progress: SpiritTournamentBracketProgress,
+  bracketId: string = SPIRIT_TOURNAMENT_BRACKETS[0].id
+): SpiritTournamentBracketResult {
+  const bracket = SPIRIT_TOURNAMENT_BRACKETS.find((entry) => entry.id === bracketId) || SPIRIT_TOURNAMENT_BRACKETS[0];
+  const requiredSpiritIds = new Set(bracket.requiredSpiritIds);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const focusScore = Math.max(0, Math.floor(progress.battleRoundFocusScore || 0));
+  const opponentScore = Math.max(0, Math.floor(progress.battleRoundOpponentScore || 0));
+  const scoreLeadReady = focusScore >= opponentScore && focusScore > 0 && opponentScore > 0;
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of bracket.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  if (localPresenceCount < bracket.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${bracket.requiredPresenceCount}`);
+
+  const mentorReady = progress.mentorChallengeProof && progress.mentorChallengeId === bracket.requiredMentorChallengeId;
+  if (!mentorReady) missing.push(`mentor:${bracket.requiredMentorChallengeId}`);
+
+  const teamMatchReady = progress.teamSparMatchProof && progress.teamSparMatchId === bracket.requiredTeamMatchId;
+  if (!teamMatchReady) missing.push(`team-match:${bracket.requiredTeamMatchId}`);
+
+  const harmonyReady = progress.harmonyTrialProof && progress.harmonyTrialId === bracket.requiredHarmonyTrialId;
+  if (!harmonyReady) missing.push(`concord:${bracket.requiredHarmonyTrialId}`);
+
+  if (!progress.conditionWeaveProof) missing.push('condition-weave');
+  if (!progress.battleRoundProof || !progress.battleRoundVictory || !scoreLeadReady) missing.push('battle-round');
+  if (!progress.routePatrolProof) missing.push('route-patrol');
+  if (!progress.nurtureRiteProof) missing.push('nurture-rite');
+  if (!progress.guildRankProof) missing.push('rank');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const mentorScore = Math.max(0, Math.floor(progress.mentorChallengeScore || 0));
+  const teamScore = Math.max(0, Math.floor(progress.teamSparMatchScore || 0));
+  const score =
+    Math.min(partyIds.length, bracket.requiredSpiritIds.length) * 3 +
+    Math.min(localPresenceCount, bracket.requiredPresenceCount) * 3 +
+    (mentorReady ? 6 : 0) +
+    (teamMatchReady ? 4 : 0) +
+    (harmonyReady ? 3 : 0) +
+    (progress.conditionWeaveProof ? 3 : 0) +
+    (progress.battleRoundProof && progress.battleRoundVictory && scoreLeadReady ? 4 : 0) +
+    (progress.routePatrolProof ? 2 : 0) +
+    (progress.nurtureRiteProof ? 2 : 0) +
+    (progress.guildRankProof ? 2 : 0) +
+    Math.min(2, Math.floor(mentorScore / 14)) +
+    Math.min(2, Math.floor(teamScore / 15)) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const cleared = missing.length === 0 && score >= bracket.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cleared,
+    bracketId: bracket.id,
+    bracketName: bracket.name,
+    title: bracket.title,
+    hostName: bracket.hostName,
+    partyIds,
+    localPresenceCount,
+    score,
+    requiredScore: bracket.requiredScore,
+    missing,
+    rewardItemId: bracket.rewardItemId,
+    message: cleared
+      ? `${bracket.name} cleared: ${bracket.hostName} records ${partyNames} through a no-injury social battle circuit with mentor, team-match, route patrol, nurture, rank, and chat proof. No real value.`
+      : `${bracket.name} needs ${missing.join(', ')} before the closed-alpha tournament bracket can be recorded.`,
+    source: 'battle-tournament-bracket'
   };
 }
 

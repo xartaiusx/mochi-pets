@@ -21,6 +21,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEMPERAMENT_CONCORDS,
+  SPIRIT_TOURNAMENT_BRACKETS,
   growthStageFromBond,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
@@ -61,6 +62,7 @@ import {
   resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
+  resolveSpiritTournamentBracket,
   resolveSpiritTraitAttunement
 } from '../src/alpha/content';
 
@@ -1037,6 +1039,7 @@ describe('Mochi Spirits alpha content contract', () => {
       harmonyTrialProof: true,
       teamSparMatchProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1082,6 +1085,7 @@ describe('Mochi Spirits alpha content contract', () => {
       harmonyTrialProof: true,
       teamSparMatchProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       questChainProof: true,
@@ -1097,8 +1101,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 91,
-      requiredScore: 52,
+      score: 94,
+      requiredScore: 55,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1112,6 +1116,7 @@ describe('Mochi Spirits alpha content contract', () => {
       wayfarerChronicleProof: false,
       routePatrolProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1144,6 +1149,7 @@ describe('Mochi Spirits alpha content contract', () => {
       wayfarerChronicleProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
+      tournamentProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 18,
@@ -1167,8 +1173,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 59,
-      requiredScore: 44,
+      score: 62,
+      requiredScore: 47,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });
@@ -1402,6 +1408,42 @@ describe('Mochi Spirits alpha content contract', () => {
       score: 49,
       rewardItemId: ALPHA_ITEMS.conditionCharm.id
     });
+
+    expect(SPIRIT_TOURNAMENT_BRACKETS.map((bracket) => bracket.id)).toEqual(['jade-banner-tournament']);
+    const tournament = resolveSpiritTournamentBracket({
+      partyIds: fullRoster,
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: teamMatch.score,
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      localPresenceCount: 2,
+      routePatrolProof: true,
+      nurtureRiteProof: true,
+      guildRankProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Tournament ready.']
+    });
+    expect(tournament).toMatchObject({
+      cleared: true,
+      bracketId: 'jade-banner-tournament',
+      bracketName: 'Jade Banner Tournament',
+      score: 49,
+      requiredScore: 38,
+      rewardItemId: ALPHA_ITEMS.tournamentPennant.id,
+      source: 'battle-tournament-bracket'
+    });
+    expect(tournament.message).toContain('No real value');
 
     expect(growthStageFromBond(2)).toBe('seed');
     expect(growthStageFromBond(3)).toBe('sprout');
