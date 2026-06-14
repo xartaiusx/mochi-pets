@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
+    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
@@ -19,7 +19,15 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
+    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury']
+  },
+  {
+    file: 'docs/monero-treasury.md',
+    includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch']
+  },
+  {
+    file: 'scripts/check-monero-treasury-guardrails.mjs',
+    includes: ['Monero treasury guardrails OK', 'forbiddenTrackedFilePatterns', 'Monero wallet password assignment', 'Monero private spend key assignment', 'Exchange API secret assignment', 'monero-wallet-cli.exe', 'xmrig.exe', 'p2pool.exe']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -80,6 +88,10 @@ const checks = [
     includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritResearch: true', 'spiritCompendium: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.research'", "'spirit.compendium_complete'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
   },
   {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['routePatrols: true', "'world.route_patrol'"]
+  },
+  {
     file: 'apps/game/src/integration/enjin-canary.ts',
     includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
@@ -88,8 +100,16 @@ const checks = [
     includes: ['BRIDGE_EVENTS.auth', 'Authorization', 'lirabao-canary-certificate', 'chain.withdraw_request', 'chain.deposit_request', 'data-alpha-action="chain.deposit_request"', 'canaryReturnRequested', 'data-presence-label', 'data-profile-label', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-guild-label', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-rank-label', 'guildRankProof', 'data-growth-label', 'data-alpha-action="spirit.growth_rite"', 'growthRiteProof', 'data-status-label', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-action="spirit.capture"', 'captureProof', 'data-alpha-action="spirit.route_invite"', 'routeInviteProof', 'data-field-accord-label', 'fieldAccordProof', 'fieldAccordTalismanClaimed', 'SPIRIT_FIELD_ACCORDS', 'resolveSpiritFieldAccord', 'data-alpha-action="world.route_mastery"', 'routeMasteryProof', 'data-alpha-action="spirit.habitat_bond"', 'habitatBondProof', 'data-alpha-action="spirit.research"', 'researchProof', 'data-alpha-action="spirit.compendium_complete"', 'data-compendium-label', 'compendiumProof', 'data-alpha-action="item.provision_satchel"', 'data-provision-label', 'provisionProof', 'data-alpha-action="guild.commission_complete"', 'commissionProof', 'data-alpha-action="guild.social_rally"', 'data-rally-label', 'guildSocialRally', 'rallyProof', 'emoteProof', 'Jade Courtyard Rally', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.journal"', 'journalProof', 'data-alpha-action="world.expedition"', 'expeditionProof', 'data-alpha-action="spirit.technique"', 'techniqueProof', 'data-alpha-action="spirit.technique_loadout"', 'techniqueLoadoutProof', 'data-loadout-label', 'data-alpha-action="spirit.trait_attune"', 'traitAttunementProof', 'data-trait-label', 'data-alpha-action="battle.condition_weave"', 'conditionWeaveProof', 'data-condition-label', 'data-alpha-action="battle.tactic_scroll"', 'tacticProof', 'data-alpha-action="guild.rank_trial"', 'data-alpha-action="battle.affinity_trial"', 'affinityProof', 'data-alpha-action="party.set"', 'partyIds', 'data-alpha-action="party.harmony_form"', 'harmonyFormProof', 'data-alpha-action="battle.harmony_trial"', 'harmonyTrialProof', 'data-alpha-action="battle.team_spar_match"', 'teamSparMatchProof', 'data-alpha-action="battle.mentor_challenge"', 'mentorChallengeProof', 'data-mentor-label', 'data-battle-round-label', 'battleRoundProof', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="battle.spar_ladder"', 'sparLadderXp', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'completedQuestIds', 'questChainProof', 'configured-preview-stub']
   },
   {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_ROUTE_PATROLS', 'resolveSpiritRoutePatrol', 'data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed']
+  },
+  {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['cloudbell-reed-bank', 'aozhen', 'Moonbridge Goldleaf Accord', 'Cloudbell Skyvow Accord', 'jade-field-accord-talisman', 'resolveSpiritFieldAccord', 'spirit-field-accord', 'Jade Cloudbell Circuit', 'cloudbell-route-knot', 'resolveSpiritRouteMastery', 'world-route-mastery', 'Jade Court Habitat Bond', 'jade-court-habitat-tassel', 'resolveSpiritHabitatBond', 'spirit-habitat-bond', 'Jade Court Research Folio', 'jade-court-research-folio', 'resolveSpiritResearchFolio', 'spirit-research-folio', 'Jade Court Spirit Compendium', 'jade-court-compendium-seal', 'resolveSpiritCompendiumCompletion', 'spirit-compendium', 'Jade Court Provision Satchel', 'jade-court-provision-satchel', 'Jade Mooncake Box', 'jade-mooncake-box', 'resolveSpiritProvisionSatchel', 'item-provision-satchel', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'resolveGuildSocialRally', 'guild-social-rally', 'Jade Step Loadout', 'jade-step-loadout-slip', 'resolveSpiritTechniqueLoadout', 'spirit-technique-loadout', 'Jade Heart Trait Attunement', 'jade-heart-trait-thread', 'resolveSpiritTraitAttunement', 'spirit-trait-attunement', 'Jade Mirror Condition Weave', 'jade-mirror-condition-charm', 'Lantern Ward', 'Goldleaf Tempo', 'Skybell Guard', 'resolveSpiritConditionWeave', 'battle-condition-weave', 'Silk Banner Mentor Drill', 'silk-banner-mentor-seal', 'resolveSpiritMentorChallenge', 'battle-mentor-challenge', 'Silk Market Kindness', 'Skybell Spar', 'selectMochiSpiritQuest', 'resolveMochiSpiritQuestProgress', 'quest-chain']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Cloudbell Patrol', 'jade-route-patrol-pennant', 'resolveSpiritRoutePatrol', 'world-route-patrol']
   },
   {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
@@ -102,6 +122,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'questChains: true', 'routeMastery: true', 'fieldAccords: true', 'habitatBonds: true', 'spiritResearch: true', 'spiritCompendium: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'battleRoundTranscripts: true', 'spirit.capture', 'spirit.route_invite', 'world.route_mastery', 'spirit.habitat_bond', 'spirit.research', 'spirit.compendium_complete', 'item.provision_satchel', 'guild.commission_complete', 'guild.social_rally', 'spirit.attune', 'spirit.journal', 'world.expedition', 'spirit.technique', 'spirit.technique_loadout', 'spirit.trait_attune', 'battle.condition_weave', 'battle.tactic_scroll', 'guild.rank_trial', 'spirit.growth_rite', 'party.set', 'party.harmony_form', 'battle.harmony_trial', 'battle.team_spar_match', 'battle.mentor_challenge', 'battle.affinity_trial', 'battle.spar_ladder', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'chain.deposit_request', 'configured-preview-stub']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['routePatrols: true', 'world.route_patrol']
   },
   {
     file: 'apps/game/tests/enjin-canary.test.ts',
@@ -136,12 +160,20 @@ const checks = [
     includes: ['chain.withdraw_request', 'chain.deposit_request', 'confirmNoCreditUntilFinalized', 'spirit.capture', 'spirit.route_invite', 'cloudbell-reed-bank', 'fieldAccordProof', 'cloudbell-skyvow-accord', 'jade-field-accord-talisman', 'world.route_mastery', 'jade-cloudbell-circuit', 'spirit.habitat_bond', 'jade-court-habitat-bond', 'spirit.research', 'jade-court-research-folio', 'spirit.compendium_complete', 'jade-court-spirit-compendium', 'item.provision_satchel', 'jade-court-provision-satchel', 'guild.commission_complete', 'jade-court-commission-ledger', 'guild.social_rally', 'jade-courtyard-rally', 'party.harmony_form', 'triune-jade-harmony', 'battle.harmony_trial', 'jade-echo-concord', 'battle.team_spar_match', 'jade-mirror-team-match', 'battle.mentor_challenge', 'silk-banner-mentor-drill', 'spirit.technique_loadout', 'jade-step-loadout', 'spirit.trait_attune', 'jade-heart-trait', 'battle.condition_weave', 'jade-mirror-condition-weave', 'spirit.attune', 'spirit.journal', 'world.expedition', 'spirit.technique', 'battle.tactic_scroll', 'guild.rank_trial', 'spirit.growth_rite', 'battle.affinity_trial', 'party.set', 'battle.spar_ladder', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'skybell-spar', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'canvasMovement.changedAfterFirstTabMove=true', 'lirabao-canary-certificate', '/integration/alpha/enjin/submit', 'invalid_game_server_token', 'configured-preview-stub']
   },
   {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['world.route_patrol', 'jade-cloudbell-patrol', 'routePatrols', 'Jade Cloudbell Patrol', 'two-tester presence proof']
+  },
+  {
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['MOCHI_SOCIAL_LOAD_PLAYERS', 'local-alpha-ledger', 'ledgerVersion=1', 'alphaStopPoint', 'chainNetwork', 'simulated testers', 'HTTP alpha contract load smoke']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="spirit.capture"', 'captureProof', 'data-alpha-action="spirit.route_invite"', 'routeInviteProof', 'data-field-accord-label', 'fieldAccordProof', 'cloudbell-skyvow-accord', 'Cloudbell Skyvow Accord cleared', 'fieldAccordTalismanClaimed', 'data-alpha-action="world.route_mastery"', 'routeMasteryProof', 'data-alpha-action="spirit.habitat_bond"', 'habitatBondProof', 'data-alpha-action="spirit.research"', 'researchProof', 'data-alpha-action="spirit.compendium_complete"', 'compendiumProof', 'data-alpha-action="item.provision_satchel"', 'provisionProof', 'jade-court-provision-satchel', 'data-alpha-action="guild.commission_complete"', 'commissionProof', 'jade-court-commission-ledger', 'data-alpha-action="guild.social_rally"', 'rallyProof', 'emoteProof', 'Jade Courtyard Rally', 'jade-court-spirit-compendium', 'jade-cloudbell-circuit', 'jade-court-habitat-bond', 'jade-court-research-folio', 'cloudbell-reed-bank', 'aozhen', 'data-alpha-action="party.harmony_form"', 'harmonyFormProof', 'triune-jade-harmony', 'data-alpha-action="battle.harmony_trial"', 'harmonyTrialProof', 'jade-echo-concord', 'data-alpha-action="battle.team_spar_match"', 'teamSparMatchProof', 'jade-mirror-team-match', 'data-alpha-action="battle.mentor_challenge"', 'mentorChallengeProof', 'silk-banner-mentor-drill', 'data-alpha-action="spirit.technique_loadout"', 'techniqueLoadoutProof', 'jade-step-loadout', 'data-alpha-action="spirit.trait_attune"', 'traitAttunementProof', 'jade-heart-trait', 'data-alpha-action="battle.condition_weave"', 'conditionWeaveProof', 'jade-mirror-condition-weave', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.journal"', 'journalProof', 'data-alpha-action="world.expedition"', 'expeditionProof', 'data-alpha-action="spirit.technique"', 'techniqueProof', 'data-alpha-action="battle.tactic_scroll"', 'tacticProof', 'data-alpha-action="guild.rank_trial"', 'guildRankProof', 'data-alpha-action="spirit.growth_rite"', 'growthRiteProof', 'data-alpha-action="battle.affinity_trial"', 'affinityProof', 'data-alpha-action="party.set"', 'partyIds', 'data-alpha-action="spirit.care"', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="battle.spar_ladder"', 'sparLadderXp', 'battleRoundProof', 'battleRoundTranscript', 'data-battle-round-label', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'completedQuestIds', 'questChainProof', 'chain.withdraw_request', 'chain.deposit_request', 'canaryReturnRequested', 'Jade Vault Return Proof staged', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowLeft', 'ArrowDown', 'canvas']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed', 'Jade Cloudbell Patrol complete']
   },
   {
     file: 'scripts/check-alpha-visual-snapshot.mjs',
@@ -182,6 +214,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'fieldExpedition', 'fieldAccord', 'fieldAccordProof', 'routeInvitation', 'habitatBond', 'habitatBondProof', 'spiritResearch', 'researchProof', 'spiritCompendium', 'compendiumProof', 'provisionSatchel', 'provisionProof', 'guildCommission', 'commissionProof', 'socialRally', 'guildSocialRally', 'rallyProof', 'emoteProof', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'techniqueMastery', 'battleTactic', 'guildRank', 'growthRite', 'partyHarmony', 'harmonyFormProof', 'harmonyTrial', 'harmonyTrialProof', 'teamSparMatch', 'teamSparMatchProof', 'mentorChallengeProof', 'conditionWeaveProof', 'battleConditionWeave', 'canaryReturnPreview', 'canaryReturnRequested', 'battleRoundTranscript', 'battleRoundProof', 'affinityTrial', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'Jade Lantern Court']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['routePatrolProof', 'routePatrolPennantClaimed', 'Jade Cloudbell Patrol', 'jade-route-patrol-pennant', 'world-route-patrol', 'route patrol']
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',

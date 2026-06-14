@@ -9,6 +9,7 @@ import {
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
   SPIRIT_ROUTE_MASTERIES,
+  SPIRIT_ROUTE_PATROLS,
   growthStageFromBond,
   resolveGuildCommission,
   resolveGuildRankTrial,
@@ -33,6 +34,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteMastery,
+  resolveSpiritRoutePatrol,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
@@ -215,6 +217,57 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'spirit-route-invite'
     });
     expect(routeInvite.message).toContain('joins your Mochirii roster by consent');
+
+    expect(SPIRIT_ROUTE_PATROLS.map((patrol) => patrol.id)).toEqual(['jade-cloudbell-patrol']);
+    const blockedPatrol = resolveSpiritRoutePatrol({
+      routeId: 'cloudbell-reed-bank',
+      partyIds: fullRoster,
+      localPresenceCount: 1,
+      routeMasteryProof: true,
+      routeMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 12,
+      battleRoundOpponentScore: 8,
+      chatLines: ['Local patrol proof.']
+    });
+    expect(blockedPatrol).toMatchObject({
+      patrolled: false,
+      patrolId: 'jade-cloudbell-patrol',
+      missing: ['presence:1/2']
+    });
+
+    const patrol = resolveSpiritRoutePatrol({
+      routeId: 'cloudbell-reed-bank',
+      partyIds: fullRoster,
+      localPresenceCount: 2,
+      routeMasteryProof: true,
+      routeMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      harmonyFormProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      chatLines: ['Local patrol proof.']
+    });
+    expect(patrol).toMatchObject({
+      patrolled: true,
+      patrolId: 'jade-cloudbell-patrol',
+      patrolName: 'Jade Cloudbell Patrol',
+      routeId: 'cloudbell-reed-bank',
+      localPresenceCount: 2,
+      score: 33,
+      requiredScore: 24,
+      rewardItemId: ALPHA_ITEMS.routePatrolPennant.id,
+      source: 'world-route-patrol'
+    });
+    expect(patrol.message).toContain('No real value');
 
     const journal = resolveSpiritJournal(fullRoster, 'aozhen', fullBondMap, { lirabao: 'glow', jintari: 'sprout', aozhen: 'sprout' });
     expect(journal).toMatchObject({

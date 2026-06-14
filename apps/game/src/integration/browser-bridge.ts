@@ -19,6 +19,7 @@ import {
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
+  SPIRIT_ROUTE_PATROLS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TRAIT_ATTUNEMENTS,
@@ -53,6 +54,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRouteInvitation,
   resolveSpiritSparLadder,
+  resolveSpiritRoutePatrol,
   resolveSpiritTeamSparMatch,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
@@ -117,6 +119,12 @@ interface AlphaHudState {
   routeMasteryTitle: string;
   routeMasteryScore: number;
   routeMasteryKnotClaimed: boolean;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  routePatrolName: string;
+  routePatrolScore: number;
+  routePatrolRequiredScore: number;
+  routePatrolPennantClaimed: boolean;
   habitatBondProof: boolean;
   habitatBondId?: string;
   habitatBondName: string;
@@ -626,6 +634,11 @@ function defaultAlphaState(): AlphaHudState {
     routeMasteryTitle: 'Unmastered',
     routeMasteryScore: 0,
     routeMasteryKnotClaimed: false,
+    routePatrolProof: false,
+    routePatrolName: 'Unpatrolled',
+    routePatrolScore: 0,
+    routePatrolRequiredScore: 0,
+    routePatrolPennantClaimed: false,
     habitatBondProof: false,
     habitatBondName: 'Unbonded',
     habitatBondScore: 0,
@@ -829,6 +842,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-route-invite-label>Route Invite: pending</span>
       <span class="mochi-hud__hint" data-field-accord-label>Field Accord: pending</span>
       <span class="mochi-hud__hint" data-route-mastery-label>Route Mastery: pending</span>
+      <span class="mochi-hud__hint" data-route-patrol-label>Route Patrol: pending</span>
       <span class="mochi-hud__hint" data-habitat-bond-label>Habitat Bond: pending</span>
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
@@ -873,6 +887,7 @@ function createHud() {
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
+      <button type="button" data-alpha-action="world.route_patrol" aria-label="Record a two-tester no-injury route patrol proof">Patrol</button>
       <button type="button" data-alpha-action="spirit.technique" aria-label="Practice a Mochirii spirit technique">Dojo</button>
       <button type="button" data-alpha-action="battle.tactic_scroll" aria-label="Study a no-injury Mochirii tactic scroll">Tactic</button>
       <button type="button" data-alpha-action="spirit.technique_loadout" aria-label="Prepare the three-spirit Mochirii move loadout">Moves</button>
@@ -918,6 +933,7 @@ function createHud() {
   const routeInviteLabel = hud.querySelector('[data-route-invite-label]');
   const fieldAccordLabel = hud.querySelector('[data-field-accord-label]');
   const routeMasteryLabel = hud.querySelector('[data-route-mastery-label]');
+  const routePatrolLabel = hud.querySelector('[data-route-patrol-label]');
   const habitatBondLabel = hud.querySelector('[data-habitat-bond-label]');
   const researchLabel = hud.querySelector('[data-research-label]');
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
@@ -986,6 +1002,11 @@ function createHud() {
       routeMasteryLabel.textContent = state.routeMasteryProof
         ? `Route Mastery: ${state.routeMasteryTitle}, score ${state.routeMasteryScore}`
         : 'Route Mastery: pending';
+    }
+    if (routePatrolLabel) {
+      routePatrolLabel.textContent = state.routePatrolProof
+        ? `Route Patrol: ${state.routePatrolName}, score ${state.routePatrolScore}/${state.routePatrolRequiredScore}`
+        : 'Route Patrol: pending';
     }
     if (habitatBondLabel) {
       habitatBondLabel.textContent = state.habitatBondProof
@@ -1927,6 +1948,28 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.route_patrol') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || 1);
+    return {
+      patrolId: SPIRIT_ROUTE_PATROLS[0].id,
+      routeId: state.lastExpeditionRouteId || SPIRIT_ROUTE_PATROLS[0].routeId,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      localPresenceCount: presenceCount,
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId,
+      fieldAccordProof: state.fieldAccordProof,
+      fieldAccordId: state.fieldAccordId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      harmonyFormProof: state.harmonyFormProof,
+      teamSparMatchProof: state.teamSparMatchProof,
+      mentorChallengeProof: state.mentorChallengeProof,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'spirit.technique') {
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === state.spiritId) || MOCHI_SPIRITS[0];
     return {
@@ -2543,6 +2586,41 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.routeMasteryTitle = result.title;
       state.routeMasteryScore = result.score;
       state.routeMasteryKnotClaimed = result.rewardItemId === 'cloudbell-route-knot';
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'world.route_patrol') {
+    const result = resolveSpiritRoutePatrol(
+      {
+        routeId: String(payload.routeId || state.lastExpeditionRouteId || SPIRIT_ROUTE_PATROLS[0].routeId),
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        fieldAccordProof: Boolean(payload.fieldAccordProof ?? state.fieldAccordProof),
+        fieldAccordId: String(payload.fieldAccordId || state.fieldAccordId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.patrolId || SPIRIT_ROUTE_PATROLS[0].id)
+    );
+    if (result.patrolled) {
+      state.routePatrolProof = true;
+      state.routePatrolId = result.patrolId;
+      state.routePatrolName = result.patrolName;
+      state.routePatrolScore = result.score;
+      state.routePatrolRequiredScore = result.requiredScore;
+      state.routePatrolPennantClaimed = result.rewardItemId === 'jade-route-patrol-pennant';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
   }

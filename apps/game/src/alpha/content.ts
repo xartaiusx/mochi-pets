@@ -256,6 +256,56 @@ export interface SpiritRouteMasteryResult {
   source: string;
 }
 
+export interface SpiritRoutePatrol {
+  id: string;
+  name: string;
+  title: string;
+  routeId: string;
+  requiredMasteryId: string;
+  requiredFieldAccordId: string;
+  requiredPartySize: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  patrolNote: string;
+}
+
+export interface SpiritRoutePatrolProgress {
+  routeId?: string;
+  partyIds: readonly string[];
+  localPresenceCount: number;
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  fieldAccordProof: boolean;
+  fieldAccordId?: string;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore?: number;
+  battleRoundOpponentScore?: number;
+  harmonyFormProof?: boolean;
+  teamSparMatchProof?: boolean;
+  mentorChallengeProof?: boolean;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritRoutePatrolResult {
+  ok: boolean;
+  patrolled: boolean;
+  patrolId: string;
+  patrolName: string;
+  title: string;
+  routeId: string;
+  routeName: string;
+  partyIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritRouteInvitationResult {
   ok: boolean;
   alreadyRostered: boolean;
@@ -1477,6 +1527,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Field Accord Talisman',
     description: 'A no-real-value route encounter accord proof for original Mochirii spirit invitations.'
   },
+  routePatrolPennant: {
+    id: 'jade-route-patrol-pennant',
+    name: 'Jade Route Patrol Pennant',
+    description: 'A no-real-value two-tester route patrol proof for closed-alpha Mochirii overworld play.'
+  },
   researchFolio: {
     id: 'jade-court-research-folio',
     name: 'Jade Court Research Folio',
@@ -1751,6 +1806,22 @@ export const SPIRIT_ROUTE_MASTERIES: readonly SpiritRouteMastery[] = [
     requiredRankTrialId: GUILD_RANK_TRIALS[0].id,
     rewardItemId: ALPHA_ITEMS.routeKnot.id,
     summary: 'A no-real-value field mastery proof for wayfarers who complete the first Mochirii route circuit with a full spirit roster.'
+  }
+];
+
+export const SPIRIT_ROUTE_PATROLS: readonly SpiritRoutePatrol[] = [
+  {
+    id: 'jade-cloudbell-patrol',
+    name: 'Jade Cloudbell Patrol',
+    title: 'First Two-Tester Route Patrol',
+    routeId: 'cloudbell-reed-bank',
+    requiredMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+    requiredFieldAccordId: 'cloudbell-skyvow-accord',
+    requiredPartySize: MOCHI_SPIRITS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 24,
+    rewardItemId: ALPHA_ITEMS.routePatrolPennant.id,
+    patrolNote: 'Wayfarers keep the reed bank safe by pairing route mastery, field accord trust, chat, and no-injury party battle rhythm.'
   }
 ];
 
@@ -3207,6 +3278,86 @@ export function resolveSpiritMentorChallenge(
       ? `${challenge.name} cleared: ${challenge.mentorName} records ${partyNames} as no-injury mentor-ready with care, tactics, technique, team sparring, and social proof.`
       : `${challenge.name} needs ${missing.join(', ')} before mentor readiness can be recorded.`,
     source: 'battle-mentor-challenge'
+  };
+}
+
+export function resolveSpiritRoutePatrol(
+  progress: SpiritRoutePatrolProgress,
+  patrolId: string = SPIRIT_ROUTE_PATROLS[0].id
+): SpiritRoutePatrolResult {
+  const patrol = SPIRIT_ROUTE_PATROLS.find((entry) => entry.id === patrolId) || SPIRIT_ROUTE_PATROLS[0];
+  const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === (progress.routeId || patrol.routeId)) || SPIRIT_EXPEDITION_ROUTES[0];
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => Boolean(getMochiSpirit(spiritId)));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const battleRoundFocusScore = Math.max(0, Math.floor(progress.battleRoundFocusScore || 0));
+  const battleRoundOpponentScore = Math.max(0, Math.floor(progress.battleRoundOpponentScore || 0));
+  const battleScoreReady =
+    progress.battleRoundVictory &&
+    battleRoundFocusScore > 0 &&
+    battleRoundOpponentScore > 0 &&
+    battleRoundFocusScore >= battleRoundOpponentScore;
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (route.id !== patrol.routeId) {
+    missing.push(`route:${patrol.routeId}`);
+  }
+
+  if (partyIds.length < patrol.requiredPartySize) {
+    missing.push(`party:${partyIds.length}/${patrol.requiredPartySize}`);
+  }
+
+  if (localPresenceCount < patrol.requiredPresenceCount) {
+    missing.push(`presence:${localPresenceCount}/${patrol.requiredPresenceCount}`);
+  }
+
+  if (!progress.routeMasteryProof || progress.routeMasteryId !== patrol.requiredMasteryId) {
+    missing.push(`mastery:${patrol.requiredMasteryId}`);
+  }
+
+  if (!progress.fieldAccordProof || progress.fieldAccordId !== patrol.requiredFieldAccordId) {
+    missing.push(`accord:${patrol.requiredFieldAccordId}`);
+  }
+
+  if (!progress.battleRoundProof || !battleScoreReady) {
+    missing.push('battle-round');
+  }
+
+  if (!chatLines.length) {
+    missing.push('chat');
+  }
+
+  const score =
+    Math.min(partyIds.length, patrol.requiredPartySize) * 3 +
+    Math.min(localPresenceCount, patrol.requiredPresenceCount) * 3 +
+    (progress.routeMasteryProof && progress.routeMasteryId === patrol.requiredMasteryId ? 4 : 0) +
+    (progress.fieldAccordProof && progress.fieldAccordId === patrol.requiredFieldAccordId ? 3 : 0) +
+    (progress.battleRoundProof && battleScoreReady ? 4 : 0) +
+    (progress.harmonyFormProof ? 2 : 0) +
+    (progress.teamSparMatchProof ? 2 : 0) +
+    (progress.mentorChallengeProof ? 2 : 0) +
+    (chatLines.length ? 1 : 0);
+  const patrolled = missing.length === 0 && score >= patrol.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    patrolled,
+    patrolId: patrol.id,
+    patrolName: patrol.name,
+    title: patrol.title,
+    routeId: route.id,
+    routeName: route.name,
+    partyIds,
+    localPresenceCount,
+    score,
+    requiredScore: patrol.requiredScore,
+    missing,
+    rewardItemId: patrol.rewardItemId,
+    message: patrolled
+      ? `${patrol.name} complete: ${partyNames} patrol ${route.name} with ${localPresenceCount} local testers, route mastery, field accord trust, chat, and a no-injury battle transcript. ${patrol.patrolNote} No real value.`
+      : `${patrol.name} needs ${missing.join(', ')} before the shared route patrol can be recorded.`,
+    source: 'world-route-patrol'
   };
 }
 

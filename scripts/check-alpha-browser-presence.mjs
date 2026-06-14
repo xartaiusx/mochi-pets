@@ -188,6 +188,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="battle.harmony_trial"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.team_spar_match"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.mentor_challenge"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.route_patrol"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.trait_attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.condition_weave"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
@@ -214,6 +215,7 @@ async function exerciseAlphaHud(page) {
       const routeInvite = document.querySelector('[data-route-invite-label]')?.textContent || '';
       const fieldAccord = document.querySelector('[data-field-accord-label]')?.textContent || '';
       const routeMastery = document.querySelector('[data-route-mastery-label]')?.textContent || '';
+      const routePatrol = document.querySelector('[data-route-patrol-label]')?.textContent || '';
       const habitatBond = document.querySelector('[data-habitat-bond-label]')?.textContent || '';
       const research = document.querySelector('[data-research-label]')?.textContent || '';
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
@@ -315,6 +317,13 @@ async function exerciseAlphaHud(page) {
         && state.routeMasteryTitle === 'Jade Cloudbell Circuit'
         && state.routeMasteryScore >= 21
         && state.routeMasteryKnotClaimed === true
+        && routePatrol.includes('Jade Cloudbell Patrol')
+        && state.routePatrolProof === true
+        && state.routePatrolId === 'jade-cloudbell-patrol'
+        && state.routePatrolName === 'Jade Cloudbell Patrol'
+        && state.routePatrolScore >= 24
+        && state.routePatrolRequiredScore === 24
+        && state.routePatrolPennantClaimed === true
         && state.habitatBondProof === true
         && state.habitatBondId === 'jade-court-habitat-bond'
         && state.habitatBondName === 'Jade Court Habitat Bond'
@@ -470,6 +479,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Cloudbell Skyvow Accord cleared')
         && chat.includes('Skybell Vow Invitation')
         && chat.includes('Jade Cloudbell Circuit mastered')
+        && chat.includes('Jade Cloudbell Patrol complete')
         && chat.includes('Jade Court Habitat Bond recorded')
         && chat.includes('Jade Court Research Folio recorded')
         && chat.includes('Jade Court Spirit Compendium complete')
@@ -497,6 +507,7 @@ async function exerciseAlphaHud(page) {
       routeInvite: document.querySelector('[data-route-invite-label]')?.textContent || '',
       fieldAccord: document.querySelector('[data-field-accord-label]')?.textContent || '',
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent || '',
+      routePatrol: document.querySelector('[data-route-patrol-label]')?.textContent || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent || '',
       research: document.querySelector('[data-research-label]')?.textContent || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
@@ -532,6 +543,7 @@ async function exerciseAlphaHud(page) {
       routeInvite: document.querySelector('[data-route-invite-label]')?.textContent?.trim() || '',
       fieldAccord: document.querySelector('[data-field-accord-label]')?.textContent?.trim() || '',
       routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent?.trim() || '',
+      routePatrol: document.querySelector('[data-route-patrol-label]')?.textContent?.trim() || '',
       habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent?.trim() || '',
       research: document.querySelector('[data-research-label]')?.textContent?.trim() || '',
       compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
@@ -596,6 +608,13 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.routeMasteryTitle === 'Jade Cloudbell Circuit', 'HUD route mastery action must record the circuit title.');
   assert(snapshot.state.routeMasteryScore >= 21, 'HUD route mastery action must record a passing circuit score.');
   assert(snapshot.state.routeMasteryKnotClaimed === true, 'HUD route mastery action must mark the no-real-value route knot proof.');
+  assert(snapshot.routePatrol.includes('Jade Cloudbell Patrol'), 'HUD route patrol label must show the completed patrol.');
+  assert(snapshot.state.routePatrolProof === true, 'HUD route patrol action must record route patrol proof.');
+  assert(snapshot.state.routePatrolId === 'jade-cloudbell-patrol', 'HUD route patrol action must record the patrol id.');
+  assert(snapshot.state.routePatrolName === 'Jade Cloudbell Patrol', 'HUD route patrol action must record the patrol name.');
+  assert(snapshot.state.routePatrolScore >= 24, 'HUD route patrol action must record a passing patrol score.');
+  assert(snapshot.state.routePatrolRequiredScore === 24, 'HUD route patrol action must record the patrol requirement.');
+  assert(snapshot.state.routePatrolPennantClaimed === true, 'HUD route patrol action must mark the no-real-value patrol pennant proof.');
   assert(snapshot.habitatBond.includes('Jade Court Habitat Bond'), 'HUD habitat bond label must show the completed shared habitat proof.');
   assert(snapshot.state.habitatBondProof === true, 'HUD habitat bond action must record habitat bond proof.');
   assert(snapshot.state.habitatBondId === 'jade-court-habitat-bond', 'HUD habitat bond action must record the habitat bond id.');
@@ -756,6 +775,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Cloudbell Skyvow Accord cleared')), 'HUD chat state must record the no-injury field accord action.');
   assert(chat.some((line) => String(line).includes('Skybell Vow Invitation')), 'HUD chat state must record the Aozhen route invitation action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Circuit mastered')), 'HUD chat state must record the route mastery action.');
+  assert(chat.some((line) => String(line).includes('Jade Cloudbell Patrol complete')), 'HUD chat state must record the route patrol action.');
   assert(chat.some((line) => String(line).includes('Jade Court Habitat Bond recorded')), 'HUD chat state must record the habitat bond action.');
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');

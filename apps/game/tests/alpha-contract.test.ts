@@ -19,6 +19,7 @@ import {
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_ROUTE_MASTERIES,
+  SPIRIT_ROUTE_PATROLS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TRAIT_ATTUNEMENTS,
@@ -39,6 +40,7 @@ import {
   resolveSpiritBondMilestone,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteMastery,
+  resolveSpiritRoutePatrol,
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
@@ -74,6 +76,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routePatrols).toBe(true);
     expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
@@ -126,6 +129,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_patrol');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
@@ -319,6 +323,49 @@ describe('alpha contract', () => {
       completedQuestIds: ['first-lantern-vow'],
       guildRankProof: false
     }).mastered).toBe(false);
+
+    expect(SPIRIT_ROUTE_PATROLS.map((patrol) => patrol.id)).toEqual(['jade-cloudbell-patrol']);
+    const routePatrol = resolveSpiritRoutePatrol({
+      routeId: 'cloudbell-reed-bank',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      harmonyFormProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      chatLines: ['Local route patrol proof.']
+    });
+    expect(routePatrol).toMatchObject({
+      ok: true,
+      patrolled: true,
+      patrolId: 'jade-cloudbell-patrol',
+      patrolName: 'Jade Cloudbell Patrol',
+      routeId: 'cloudbell-reed-bank',
+      score: 33,
+      requiredScore: 24,
+      rewardItemId: 'jade-route-patrol-pennant',
+      source: 'world-route-patrol'
+    });
+    expect(resolveSpiritRoutePatrol({
+      routeId: 'cloudbell-reed-bank',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      routeMasteryProof: false,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      chatLines: ['Local route patrol proof.']
+    }).patrolled).toBe(false);
 
     expect(SPIRIT_HABITAT_BONDS.map((bond) => bond.id)).toEqual(['jade-court-habitat-bond']);
     const habitatBond = resolveSpiritHabitatBond({

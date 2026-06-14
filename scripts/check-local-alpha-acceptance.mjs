@@ -57,6 +57,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
   assert(manifest.body.gameplay?.routeMastery === true, 'Manifest must expose Mochi Spirit route mastery.');
+  assert(manifest.body.gameplay?.routePatrols === true, 'Manifest must expose Mochi Spirit route patrols.');
   assert(manifest.body.gameplay?.habitatBonds === true, 'Manifest must expose Mochi Spirit habitat bonds.');
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
@@ -90,6 +91,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
+  assert(alphaStatus.body.gameplay?.routePatrols === true, 'Alpha status must expose Mochi Spirit route patrols.');
   assert(alphaStatus.body.gameplay?.habitatBonds === true, 'Alpha status must expose Mochi Spirit habitat bonds.');
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
@@ -248,6 +250,29 @@ async function run() {
         completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
         guildRankProof: true,
         rankTrialId: 'jade-court-initiate',
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-route-patrol`,
+      type: 'world.route_patrol',
+      payload: {
+        patrolId: 'jade-cloudbell-patrol',
+        routeId: 'cloudbell-reed-bank',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        localPresenceCount: 2,
+        routeMasteryProof: true,
+        routeMasteryId: 'jade-cloudbell-circuit',
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 18,
+        battleRoundOpponentScore: 8,
+        harmonyFormProof: true,
+        teamSparMatchProof: true,
+        mentorChallengeProof: true,
+        chatLines: ['Local acceptance route patrol proof.'],
         noRealValue: true
       }
     },
@@ -651,6 +676,13 @@ async function run() {
   assert(cloudbellInvite?.payload?.fieldAccordProof === true, 'Cloudbell route invite ledger entry must preserve field accord proof.');
   assert(cloudbellInvite?.payload?.fieldAccordId === 'cloudbell-skyvow-accord', 'Cloudbell route invite ledger entry must preserve the field accord id.');
   assert(cloudbellInvite?.payload?.fieldAccordRewardItemId === 'jade-field-accord-talisman', 'Cloudbell route invite ledger entry must preserve the no-real-value field accord talisman proof.');
+  const routePatrol = entriesById.get(`${runId}-route-patrol`);
+  assert(routePatrol?.payload?.patrolId === 'jade-cloudbell-patrol', 'Route patrol ledger entry must preserve the Jade Cloudbell Patrol id.');
+  assert(routePatrol?.payload?.localPresenceCount === 2, 'Route patrol ledger entry must preserve the two-tester presence proof.');
+  assert(routePatrol?.payload?.routeMasteryProof === true, 'Route patrol ledger entry must preserve route mastery proof.');
+  assert(routePatrol?.payload?.fieldAccordProof === true, 'Route patrol ledger entry must preserve field accord proof.');
+  assert(routePatrol?.payload?.battleRoundProof === true, 'Route patrol ledger entry must preserve battle round proof.');
+  assert(routePatrol?.payload?.noRealValue === true, 'Route patrol ledger entry must remain no-real-value.');
 }
 
 async function getOk(path, name) {
