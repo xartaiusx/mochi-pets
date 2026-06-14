@@ -201,6 +201,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care_cycle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.temperament_concord"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -230,6 +231,7 @@ async function exerciseAlphaHud(page) {
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
+      const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -275,6 +277,7 @@ async function exerciseAlphaHud(page) {
         && provision.includes('Jade Court Provision Satchel')
         && careCycle.includes('Jade Court Care Cycle')
         && temperament.includes('Jade Temperament Concord')
+        && fieldAlmanac.includes('Jade Field Almanac')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -403,6 +406,19 @@ async function exerciseAlphaHud(page) {
         && state.temperamentConcordLabels.includes('curious')
         && state.temperamentConcordTotalBond >= 9
         && state.temperamentCharmClaimed === true
+        && state.fieldAlmanacProof === true
+        && state.fieldAlmanacId === 'jade-field-almanac'
+        && state.fieldAlmanacName === 'Jade Field Almanac'
+        && state.fieldAlmanacScore >= 38
+        && state.fieldAlmanacRequiredScore === 38
+        && Array.isArray(state.fieldAlmanacRouteIds)
+        && state.fieldAlmanacRouteIds.includes('moonbridge-bamboo-trail')
+        && state.fieldAlmanacRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.fieldAlmanacSpeciesIds)
+        && state.fieldAlmanacSpeciesIds.includes('lirabao')
+        && state.fieldAlmanacSpeciesIds.includes('jintari')
+        && state.fieldAlmanacSpeciesIds.includes('aozhen')
+        && state.fieldAlmanacClaspClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -589,6 +605,7 @@ async function exerciseAlphaHud(page) {
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
+      fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -631,6 +648,7 @@ async function exerciseAlphaHud(page) {
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
+      fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -763,6 +781,18 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.temperamentConcordLabels) && snapshot.state.temperamentConcordLabels.includes('curious'), 'HUD temperament action must record Aozhen temperament.');
   assert(snapshot.state.temperamentConcordTotalBond >= 9, 'HUD temperament action must record enough full-roster bond proof.');
   assert(snapshot.state.temperamentCharmClaimed === true, 'HUD temperament action must mark the no-real-value temperament charm proof.');
+  assert(snapshot.fieldAlmanac.includes('Jade Field Almanac'), 'HUD almanac label must show the completed field almanac proof.');
+  assert(snapshot.state.fieldAlmanacProof === true, 'HUD almanac action must record field almanac proof.');
+  assert(snapshot.state.fieldAlmanacId === 'jade-field-almanac', 'HUD almanac action must record the field almanac id.');
+  assert(snapshot.state.fieldAlmanacName === 'Jade Field Almanac', 'HUD almanac action must record the field almanac name.');
+  assert(snapshot.state.fieldAlmanacScore >= 38, 'HUD almanac action must record a passing field almanac score.');
+  assert(snapshot.state.fieldAlmanacRequiredScore === 38, 'HUD almanac action must record the field almanac requirement.');
+  assert(Array.isArray(snapshot.state.fieldAlmanacRouteIds) && snapshot.state.fieldAlmanacRouteIds.includes('moonbridge-bamboo-trail'), 'HUD almanac action must record the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.fieldAlmanacRouteIds) && snapshot.state.fieldAlmanacRouteIds.includes('cloudbell-reed-bank'), 'HUD almanac action must record the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.fieldAlmanacSpeciesIds) && snapshot.state.fieldAlmanacSpeciesIds.includes('lirabao'), 'HUD almanac action must record Lirabao.');
+  assert(Array.isArray(snapshot.state.fieldAlmanacSpeciesIds) && snapshot.state.fieldAlmanacSpeciesIds.includes('jintari'), 'HUD almanac action must record Jintari.');
+  assert(Array.isArray(snapshot.state.fieldAlmanacSpeciesIds) && snapshot.state.fieldAlmanacSpeciesIds.includes('aozhen'), 'HUD almanac action must record Aozhen.');
+  assert(snapshot.state.fieldAlmanacClaspClaimed === true, 'HUD almanac action must mark the no-real-value almanac clasp proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -919,6 +949,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
   assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');
+  assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');

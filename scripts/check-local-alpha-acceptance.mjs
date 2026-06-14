@@ -65,6 +65,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritRosterArchives === true, 'Manifest must expose Mochi Spirit roster archives.');
   assert(manifest.body.gameplay?.spiritCareCycles === true, 'Manifest must expose Mochi Spirit care cycles.');
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
+  assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -105,6 +106,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritRosterArchives === true, 'Alpha status must expose Mochi Spirit roster archives.');
   assert(alphaStatus.body.gameplay?.spiritCareCycles === true, 'Alpha status must expose Mochi Spirit care cycles.');
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
+  assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -677,6 +679,32 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-field-almanac`,
+      type: 'spirit.field_almanac',
+      payload: {
+        almanacId: 'jade-field-almanac',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        journalDiscoveredCount: 3,
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        routePatrolProof: true,
+        routePatrolId: 'jade-cloudbell-patrol',
+        compendiumProof: true,
+        compendiumId: 'jade-court-spirit-compendium',
+        temperamentConcordProof: true,
+        temperamentConcordId: 'jade-temperament-concord',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Field almanac ready.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -886,6 +914,16 @@ async function run() {
   assert(temperamentConcord?.payload?.guildBuddyProof === true, 'Temperament concord ledger entry must preserve guild buddy proof.');
   assert(temperamentConcord?.payload?.statusMood === 'cozy', 'Temperament concord ledger entry must preserve social status proof.');
   assert(temperamentConcord?.payload?.noRealValue === true, 'Temperament concord ledger entry must remain no-real-value.');
+  const fieldAlmanac = entriesById.get(`${runId}-field-almanac`);
+  assert(fieldAlmanac?.payload?.almanacId === 'jade-field-almanac', 'Field almanac ledger entry must preserve the Jade Field Almanac id.');
+  assert(Array.isArray(fieldAlmanac?.payload?.roster) && fieldAlmanac.payload.roster.length === 3, 'Field almanac ledger entry must preserve full roster proof.');
+  assert(Array.isArray(fieldAlmanac?.payload?.discoveredRoutes) && fieldAlmanac.payload.discoveredRoutes.length === 2, 'Field almanac ledger entry must preserve Moonbridge and Cloudbell route proof.');
+  assert(fieldAlmanac?.payload?.fieldAccordProof === true, 'Field almanac ledger entry must preserve field accord proof.');
+  assert(fieldAlmanac?.payload?.routePatrolProof === true, 'Field almanac ledger entry must preserve route patrol proof.');
+  assert(fieldAlmanac?.payload?.compendiumProof === true, 'Field almanac ledger entry must preserve compendium proof.');
+  assert(fieldAlmanac?.payload?.temperamentConcordProof === true, 'Field almanac ledger entry must preserve temperament proof.');
+  assert(fieldAlmanac?.payload?.conditionWeaveProof === true, 'Field almanac ledger entry must preserve condition weave proof.');
+  assert(fieldAlmanac?.payload?.noRealValue === true, 'Field almanac ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');

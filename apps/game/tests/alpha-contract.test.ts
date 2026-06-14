@@ -15,6 +15,7 @@ import {
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_GROWTH_RITES,
   SPIRIT_FIELD_ACCORDS,
+  SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
@@ -37,6 +38,7 @@ import {
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
+  resolveSpiritFieldAlmanac,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
   resolveGuildSocialRally,
@@ -96,6 +98,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritRosterArchives).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCareCycles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -155,6 +158,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_archive');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.care_cycle');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -733,6 +737,65 @@ describe('alpha contract', () => {
       statusMood: 'cozy',
       chatLines: ['Temperament concord ready.']
     }).concorded).toBe(false);
+
+    expect(SPIRIT_FIELD_ALMANACS.map((almanac) => almanac.id)).toEqual(['jade-field-almanac']);
+    const almanac = resolveSpiritFieldAlmanac({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Field almanac ready.']
+    });
+    expect(almanac).toMatchObject({
+      ok: true,
+      recorded: true,
+      almanacId: 'jade-field-almanac',
+      almanacName: 'Jade Field Almanac',
+      title: 'First-Court Field Almanac',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      speciesIds: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      score: 44,
+      requiredScore: 38,
+      rewardItemId: 'jade-field-almanac-clasp',
+      source: 'spirit-field-almanac'
+    });
+    expect(almanac.message).toContain('No real value');
+    expect(resolveSpiritFieldAlmanac({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      journalDiscoveredCount: 3,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Field almanac ready.']
+    }).recorded).toBe(false);
 
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({

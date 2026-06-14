@@ -749,6 +749,66 @@ export interface SpiritTemperamentConcordResult {
   source: string;
 }
 
+export interface SpiritFieldAlmanac {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredRouteIds: readonly string[];
+  requiredJournalCount: number;
+  requiredFieldAccordId: string;
+  requiredRoutePatrolId: string;
+  requiredCompendiumId: string;
+  requiredTemperamentConcordId: string;
+  requiredConditionWeaveId: string;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritFieldAlmanacProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  discoveredRoutes: readonly string[];
+  journalDiscoveredCount: number;
+  fieldAccordProof: boolean;
+  fieldAccordId?: string;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  compendiumProof: boolean;
+  compendiumId?: string;
+  temperamentConcordProof: boolean;
+  temperamentConcordId?: string;
+  conditionWeaveProof: boolean;
+  conditionWeaveId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritFieldAlmanacResult {
+  ok: boolean;
+  recorded: boolean;
+  almanacId: string;
+  almanacName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  routeIds: string[];
+  speciesIds: string[];
+  journalDiscoveredCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -1853,6 +1913,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Temperament Charm',
     description: 'A no-real-value temperament concord proof for closed-alpha Mochirii spirit identity, care, and battle rhythm.'
   },
+  fieldAlmanacClasp: {
+    id: 'jade-field-almanac-clasp',
+    name: 'Jade Field Almanac Clasp',
+    description: 'A no-real-value field almanac proof for closed-alpha Mochirii route, roster, and spirit research.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2318,6 +2383,27 @@ export const SPIRIT_TEMPERAMENT_CONCORDS: readonly SpiritTemperamentConcord[] = 
     requiredScore: 36,
     rewardItemId: ALPHA_ITEMS.temperamentCharm.id,
     summary: 'A no-real-value temperament identity proof for testers who connect every first-court Mochi Spirit personality with care-cycle trust, trait attunement, battle condition weaving, and guild social presence.'
+  }
+];
+
+export const SPIRIT_FIELD_ALMANACS: readonly SpiritFieldAlmanac[] = [
+  {
+    id: 'jade-field-almanac',
+    name: 'Jade Field Almanac',
+    title: 'First-Court Field Almanac',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredFieldAccordId: 'cloudbell-skyvow-accord',
+    requiredRoutePatrolId: SPIRIT_ROUTE_PATROLS[0].id,
+    requiredCompendiumId: SPIRIT_COMPENDIUMS[0].id,
+    requiredTemperamentConcordId: SPIRIT_TEMPERAMENT_CONCORDS[0].id,
+    requiredConditionWeaveId: 'jade-mirror-condition-weave',
+    requiredChatLines: 1,
+    requiredScore: 38,
+    rewardItemId: ALPHA_ITEMS.fieldAlmanacClasp.id,
+    summary: 'A no-real-value field almanac proof for testers who connect original first-court Mochi Spirit species, route signs, no-injury field accords, patrol notes, compendium seals, temperament identity, and battle-condition study.'
   }
 ];
 
@@ -3599,6 +3685,119 @@ export function resolveSpiritTemperamentConcord(
       ? `${concord.name} complete: ${activeSpirit.name} anchors ${temperamentSummary} temperaments through care-cycle trust, trait identity, condition weaving, and local guild presence. No real value.`
       : `${concord.name} needs ${missing.join(', ')} before the first-court temperament identity can be recorded.`,
     source: 'spirit-temperament-concord'
+  };
+}
+
+export function resolveSpiritFieldAlmanac(
+  progress: SpiritFieldAlmanacProgress,
+  almanacId: string = SPIRIT_FIELD_ALMANACS[0].id
+): SpiritFieldAlmanacResult {
+  const almanac = SPIRIT_FIELD_ALMANACS.find((entry) => entry.id === almanacId) || SPIRIT_FIELD_ALMANACS[0];
+  const requiredSpiritIds = new Set(almanac.requiredSpiritIds);
+  const requiredRouteIds = new Set(almanac.requiredRouteIds);
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const speciesIds = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && speciesIds.includes(progress.activeSpiritId) ? progress.activeSpiritId : speciesIds[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const missing: string[] = [];
+
+  for (const spiritId of almanac.requiredSpiritIds) {
+    if (!speciesIds.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const routeId of almanac.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  const journalCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  if (journalCount < almanac.requiredJournalCount) {
+    missing.push(`journal:${journalCount}/${almanac.requiredJournalCount}`);
+  }
+
+  const fieldAccordReady = progress.fieldAccordProof && progress.fieldAccordId === almanac.requiredFieldAccordId;
+  if (!fieldAccordReady) {
+    missing.push(`field-accord:${almanac.requiredFieldAccordId}`);
+  }
+
+  const routePatrolReady = progress.routePatrolProof && progress.routePatrolId === almanac.requiredRoutePatrolId;
+  if (!routePatrolReady) {
+    missing.push(`route-patrol:${almanac.requiredRoutePatrolId}`);
+  }
+
+  const compendiumReady = progress.compendiumProof && progress.compendiumId === almanac.requiredCompendiumId;
+  if (!compendiumReady) {
+    missing.push(`compendium:${almanac.requiredCompendiumId}`);
+  }
+
+  const temperamentReady = progress.temperamentConcordProof && progress.temperamentConcordId === almanac.requiredTemperamentConcordId;
+  if (!temperamentReady) {
+    missing.push(`temperament:${almanac.requiredTemperamentConcordId}`);
+  }
+
+  const conditionReady = progress.conditionWeaveProof && progress.conditionWeaveId === almanac.requiredConditionWeaveId;
+  if (!conditionReady) {
+    missing.push(`condition-weave:${almanac.requiredConditionWeaveId}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < almanac.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${almanac.requiredChatLines}`);
+  }
+
+  const score =
+    Math.min(speciesIds.length, almanac.requiredSpiritIds.length) * 3 +
+    Math.min(routeIds.length, almanac.requiredRouteIds.length) * 3 +
+    Math.min(6, journalCount * 2) +
+    (fieldAccordReady ? 3 : 0) +
+    (routePatrolReady ? 4 : 0) +
+    (compendiumReady ? 5 : 0) +
+    (temperamentReady ? 4 : 0) +
+    (conditionReady ? 3 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const recorded = missing.length === 0 && score >= almanac.requiredScore;
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unscouted routes';
+  const speciesSummary = speciesIds.length
+    ? speciesIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ')
+    : 'unrecorded spirits';
+
+  return {
+    ok: true,
+    recorded,
+    almanacId: almanac.id,
+    almanacName: almanac.name,
+    title: almanac.title,
+    habitat: almanac.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    routeIds,
+    speciesIds,
+    journalDiscoveredCount: journalCount,
+    score,
+    requiredScore: almanac.requiredScore,
+    missing,
+    rewardItemId: almanac.rewardItemId,
+    message: recorded
+      ? `${almanac.name} recorded: ${activeSpirit.name} cross-links ${speciesSummary} with ${routeSummary}, field accord notes, patrol signs, compendium seals, temperament identity, and condition weaving. No real value.`
+      : `${almanac.name} needs ${missing.join(', ')} before the first-court field almanac can be recorded.`,
+    source: 'spirit-field-almanac'
   };
 }
 

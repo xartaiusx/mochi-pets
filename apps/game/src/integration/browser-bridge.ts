@@ -14,6 +14,7 @@ import {
   SPIRIT_CONDITION_WEAVES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
+  SPIRIT_FIELD_ALMANACS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
@@ -45,6 +46,7 @@ import {
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
+  resolveSpiritFieldAlmanac,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
   resolveGuildRankTrial,
@@ -188,6 +190,14 @@ interface AlphaHudState {
   temperamentConcordLabels: string[];
   temperamentConcordTotalBond: number;
   temperamentCharmClaimed: boolean;
+  fieldAlmanacProof: boolean;
+  fieldAlmanacId?: string;
+  fieldAlmanacName: string;
+  fieldAlmanacScore: number;
+  fieldAlmanacRequiredScore: number;
+  fieldAlmanacRouteIds: string[];
+  fieldAlmanacSpeciesIds: string[];
+  fieldAlmanacClaspClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -736,6 +746,13 @@ function defaultAlphaState(): AlphaHudState {
     temperamentConcordLabels: [],
     temperamentConcordTotalBond: 0,
     temperamentCharmClaimed: false,
+    fieldAlmanacProof: false,
+    fieldAlmanacName: 'Unrecorded',
+    fieldAlmanacScore: 0,
+    fieldAlmanacRequiredScore: 0,
+    fieldAlmanacRouteIds: [],
+    fieldAlmanacSpeciesIds: [],
+    fieldAlmanacClaspClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -941,6 +958,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
+      <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -982,6 +1000,7 @@ function createHud() {
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
+      <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1044,6 +1063,7 @@ function createHud() {
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
+  const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1165,6 +1185,11 @@ function createHud() {
       temperamentLabel.textContent = state.temperamentConcordProof
         ? `Temperament: ${state.temperamentConcordName}, ${state.temperamentConcordLabels.length} moods, score ${state.temperamentConcordScore}/${state.temperamentConcordRequiredScore}`
         : 'Temperament: pending';
+    }
+    if (fieldAlmanacLabel) {
+      fieldAlmanacLabel.textContent = state.fieldAlmanacProof
+        ? `Almanac: ${state.fieldAlmanacName}, ${state.fieldAlmanacSpeciesIds.length} spirits, ${state.fieldAlmanacRouteIds.length} routes`
+        : 'Almanac: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -2085,6 +2110,31 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.field_almanac') {
+    const roster = state.attunedSpiritIds;
+    return {
+      almanacId: SPIRIT_FIELD_ALMANACS[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      discoveredRoutes: state.discoveredRouteIds,
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      fieldAccordProof: state.fieldAccordProof,
+      fieldAccordId: state.fieldAccordId,
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId,
+      compendiumProof: state.compendiumProof,
+      compendiumId: state.compendiumId,
+      temperamentConcordProof: state.temperamentConcordProof,
+      temperamentConcordId: state.temperamentConcordId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2848,6 +2898,45 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.temperamentConcordTotalBond = result.totalBond;
       state.temperamentCharmClaimed = result.rewardItemId === 'jade-temperament-charm';
       state.attunedSpiritIds = result.roster;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.field_almanac') {
+    const result = resolveSpiritFieldAlmanac(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        fieldAccordProof: Boolean(payload.fieldAccordProof ?? state.fieldAccordProof),
+        fieldAccordId: String(payload.fieldAccordId || state.fieldAccordId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        compendiumId: String(payload.compendiumId || state.compendiumId || ''),
+        temperamentConcordProof: Boolean(payload.temperamentConcordProof ?? state.temperamentConcordProof),
+        temperamentConcordId: String(payload.temperamentConcordId || state.temperamentConcordId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.almanacId || SPIRIT_FIELD_ALMANACS[0].id)
+    );
+    if (result.recorded) {
+      state.fieldAlmanacProof = true;
+      state.fieldAlmanacId = result.almanacId;
+      state.fieldAlmanacName = result.almanacName;
+      state.fieldAlmanacScore = result.score;
+      state.fieldAlmanacRequiredScore = result.requiredScore;
+      state.fieldAlmanacRouteIds = result.routeIds;
+      state.fieldAlmanacSpeciesIds = result.speciesIds;
+      state.fieldAlmanacClaspClaimed = result.rewardItemId === 'jade-field-almanac-clasp';
+      state.attunedSpiritIds = result.speciesIds;
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);

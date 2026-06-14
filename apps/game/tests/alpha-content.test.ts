@@ -9,6 +9,7 @@ import {
   SPIRIT_CARE_CYCLES,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
+  SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
   SPIRIT_ROUTE_MASTERIES,
@@ -32,6 +33,7 @@ import {
   resolveSpiritConditionWeave,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
+  resolveSpiritFieldAlmanac,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
@@ -638,6 +640,68 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'spirit-temperament-concord'
     });
     expect(temperament.message).toContain('No real value');
+
+    expect(SPIRIT_FIELD_ALMANACS.map((almanac) => almanac.id)).toEqual(['jade-field-almanac']);
+    const blockedAlmanac = resolveSpiritFieldAlmanac({
+      roster: fullRoster,
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: firstRouteIds,
+      journalDiscoveredCount: 3,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: false,
+      routePatrolId: 'jade-cloudbell-patrol',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Almanac notes ready.']
+    });
+    expect(blockedAlmanac).toMatchObject({
+      recorded: false,
+      almanacId: 'jade-field-almanac',
+      missing: ['route-patrol:jade-cloudbell-patrol']
+    });
+
+    const almanac = resolveSpiritFieldAlmanac({
+      roster: fullRoster,
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: firstRouteIds,
+      journalDiscoveredCount: 3,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Almanac notes ready.']
+    });
+    expect(almanac).toMatchObject({
+      recorded: true,
+      almanacId: 'jade-field-almanac',
+      almanacName: 'Jade Field Almanac',
+      activeSpiritId: 'aozhen',
+      routeIds: [...firstRouteIds],
+      speciesIds: [...fullRoster],
+      journalDiscoveredCount: 3,
+      score: 44,
+      requiredScore: 38,
+      rewardItemId: ALPHA_ITEMS.fieldAlmanacClasp.id,
+      source: 'spirit-field-almanac'
+    });
+    expect(almanac.message).toContain('No real value');
 
     const commission = resolveGuildCommission({
       roster: fullRoster,
