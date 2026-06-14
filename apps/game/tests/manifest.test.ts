@@ -60,6 +60,7 @@ describe('game manifest', () => {
         spiritRivalCircles: true,
         routeWaystones: true,
         spiritNurtureRites: true,
+        spiritRecoveryTeas: true,
         spiritKinshipAlbums: true,
         itemProvisions: true,
         guildCommissions: true,

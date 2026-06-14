@@ -126,6 +126,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritRivalCircles === true, 'Alpha status must expose Mochi Spirit rival circles.');
   assert(alphaStatus.body.gameplay?.routeWaystones === true, 'Alpha status must expose Mochi Spirit route waystones.');
   assert(alphaStatus.body.gameplay?.spiritNurtureRites === true, 'Alpha status must expose Mochi Spirit nurture rites.');
+  assert(alphaStatus.body.gameplay?.spiritRecoveryTeas === true, 'Alpha status must expose Mochi Spirit recovery tea proofs.');
   assert(alphaStatus.body.gameplay?.spiritKinshipAlbums === true, 'Alpha status must expose Mochi Spirit kinship albums.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
@@ -889,6 +890,34 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-recovery-tea`,
+      type: 'spirit.recovery_tea',
+      payload: {
+        teaId: 'jade-teahouse-recovery',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'lirabao',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        sanctuaryRiteProof: true,
+        sanctuaryRiteId: 'jade-court-sanctuary-rite',
+        nurtureRiteProof: true,
+        nurtureRiteId: 'jade-moonwell-nurture-rite',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 31,
+        battleRoundOpponentScore: 18,
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-teahouse-recovery-cup',
+        chatLines: ['Local acceptance recovery tea proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-kinship-album`,
       type: 'spirit.kinship_album',
       payload: {
@@ -1347,6 +1376,18 @@ async function run() {
   assert(nurtureRite?.payload?.sparLadderXp >= 5, 'Nurture rite ledger entry must preserve spar ladder XP proof.');
   assert(nurtureRite?.payload?.rewardItemId === 'jade-moonwell-nurture-ribbon', 'Nurture rite ledger entry must preserve the no-real-value nurture ribbon proof.');
   assert(nurtureRite?.payload?.noRealValue === true, 'Nurture rite ledger entry must remain no-real-value.');
+  const recoveryTea = entriesById.get(`${runId}-recovery-tea`);
+  assert(recoveryTea?.payload?.teaId === 'jade-teahouse-recovery', 'Recovery tea ledger entry must preserve the Jade Teahouse Recovery id.');
+  assert(Array.isArray(recoveryTea?.payload?.roster) && recoveryTea.payload.roster.length === 3, 'Recovery tea ledger entry must preserve full-roster proof.');
+  assert(Array.isArray(recoveryTea?.payload?.partyIds) && recoveryTea.payload.partyIds.length === 3, 'Recovery tea ledger entry must preserve full-party proof.');
+  assert(Array.isArray(recoveryTea?.payload?.caredSpiritIds) && recoveryTea.payload.caredSpiritIds.length === 3, 'Recovery tea ledger entry must preserve full care proof.');
+  assert(recoveryTea?.payload?.careCycleProof === true, 'Recovery tea ledger entry must preserve care cycle proof.');
+  assert(recoveryTea?.payload?.sanctuaryRiteProof === true, 'Recovery tea ledger entry must preserve sanctuary rite proof.');
+  assert(recoveryTea?.payload?.nurtureRiteProof === true, 'Recovery tea ledger entry must preserve nurture rite proof.');
+  assert(recoveryTea?.payload?.battleRoundVictory === true, 'Recovery tea ledger entry must preserve no-injury battle victory proof.');
+  assert(recoveryTea?.payload?.localPresenceCount === 2, 'Recovery tea ledger entry must preserve two-tester presence proof.');
+  assert(recoveryTea?.payload?.rewardItemId === 'jade-teahouse-recovery-cup', 'Recovery tea ledger entry must preserve the no-real-value recovery cup proof.');
+  assert(recoveryTea?.payload?.noRealValue === true, 'Recovery tea ledger entry must remain no-real-value.');
   const kinshipAlbum = entriesById.get(`${runId}-kinship-album`);
   assert(kinshipAlbum?.payload?.albumId === 'jade-kinship-album', 'Kinship album ledger entry must preserve the Jade Kinship Album id.');
   assert(Array.isArray(kinshipAlbum?.payload?.roster) && kinshipAlbum.payload.roster.length === 3, 'Kinship album ledger entry must preserve full roster proof.');

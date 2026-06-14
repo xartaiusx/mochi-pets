@@ -28,6 +28,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
+  SPIRIT_RECOVERY_TEAS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
@@ -81,6 +82,7 @@ import {
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
+  resolveSpiritRecoveryTea,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
@@ -126,6 +128,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRecoveryTeas).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritKinshipAlbums).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
@@ -198,6 +201,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.recovery_tea');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.kinship_album');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
@@ -1140,6 +1144,68 @@ describe('alpha contract', () => {
       source: 'spirit-nurture-rite'
     });
     expect(nurtureRite.message).toContain('No real value');
+
+    expect(SPIRIT_RECOVERY_TEAS.map((entry) => entry.id)).toEqual(['jade-teahouse-recovery']);
+    const recoveryTea = resolveSpiritRecoveryTea({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'lirabao',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for recovery tea.']
+    });
+    expect(recoveryTea).toMatchObject({
+      ok: true,
+      recovered: true,
+      teaId: 'jade-teahouse-recovery',
+      teaName: 'Jade Teahouse Recovery',
+      title: 'First-Court Party Recovery Table',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'lirabao',
+      activeSpiritName: 'Lirabao',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 43,
+      requiredScore: 36,
+      rewardItemId: 'jade-teahouse-recovery-cup',
+      source: 'spirit-recovery-tea'
+    });
+    expect(recoveryTea.message).toContain('No real value');
+    expect(resolveSpiritRecoveryTea({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: false,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for recovery tea.']
+    }).recovered).toBe(false);
 
     expect(SPIRIT_KINSHIP_ALBUMS.map((entry) => entry.id)).toEqual(['jade-kinship-album']);
     const kinshipAlbum = resolveSpiritKinshipAlbum({

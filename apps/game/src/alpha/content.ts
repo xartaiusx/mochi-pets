@@ -1110,6 +1110,64 @@ export interface SpiritNurtureRiteResult {
   source: string;
 }
 
+export interface SpiritRecoveryTea {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredCareCycleId: string;
+  requiredSanctuaryRiteId: string;
+  requiredNurtureRiteId: string;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRecoveryTeaProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  caredSpiritIds: readonly string[];
+  activeSpiritId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  sanctuaryRiteProof: boolean;
+  sanctuaryRiteId?: string;
+  nurtureRiteProof: boolean;
+  nurtureRiteId?: string;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore?: number;
+  battleRoundOpponentScore?: number;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritRecoveryTeaResult {
+  ok: boolean;
+  recovered: boolean;
+  teaId: string;
+  teaName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  partyIds: string[];
+  caredSpiritIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritKinshipAlbum {
   id: string;
   name: string;
@@ -2620,6 +2678,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Moonwell Nurture Ribbon',
     description: 'A no-real-value raising proof for closed-alpha Mochirii care, growth, supplies, and safe practice.'
   },
+  recoveryTeaCup: {
+    id: 'jade-teahouse-recovery-cup',
+    name: 'Jade Teahouse Recovery Cup',
+    description: 'A no-real-value party recovery proof for closed-alpha Mochirii care rhythm, sanctuary rest, nurture rites, and safe battle readiness.'
+  },
   kinshipAlbum: {
     id: 'jade-kinship-album',
     name: 'Jade Kinship Album',
@@ -3252,6 +3315,23 @@ export const SPIRIT_NURTURE_RITES: readonly SpiritNurtureRite[] = [
     requiredScore: 40,
     rewardItemId: ALPHA_ITEMS.nurtureRibbon.id,
     summary: 'A no-real-value first-court raising proof for testers who connect care, growth, supplies, temperament, bond milestones, and safe training.'
+  }
+];
+
+export const SPIRIT_RECOVERY_TEAS: readonly SpiritRecoveryTea[] = [
+  {
+    id: 'jade-teahouse-recovery',
+    name: 'Jade Teahouse Recovery',
+    title: 'First-Court Party Recovery Table',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredSanctuaryRiteId: SPIRIT_SANCTUARY_RITES[0].id,
+    requiredNurtureRiteId: SPIRIT_NURTURE_RITES[0].id,
+    requiredPresenceCount: 2,
+    requiredScore: 36,
+    rewardItemId: ALPHA_ITEMS.recoveryTeaCup.id,
+    summary: 'A no-real-value first-court recovery proof for testers who connect care rhythm, sanctuary rest, nurture, battle safety, and social witness before the next route or rival bout.'
   }
 ];
 
@@ -5365,6 +5445,96 @@ export function resolveSpiritNurtureRite(
       ? `${rite.name} complete: ${activeSpirit.name} guides ${caredNames || 'the first-court roster'} through care, growth, supplies, temperament, safe sparring, and bond practice.${milestoneText} No real value.`
       : `${rite.name} needs ${missing.join(', ')} before first-court nurture can be sealed.`,
     source: 'spirit-nurture-rite'
+  };
+}
+
+export function resolveSpiritRecoveryTea(
+  progress: SpiritRecoveryTeaProgress,
+  teaId: string = SPIRIT_RECOVERY_TEAS[0].id
+): SpiritRecoveryTeaResult {
+  const tea = SPIRIT_RECOVERY_TEAS.find((entry) => entry.id === teaId) || SPIRIT_RECOVERY_TEAS[0];
+  const requiredSpiritIds = new Set(tea.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const caredSpiritIds = Array.from(new Set(progress.caredSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId =
+    progress.activeSpiritId && roster.includes(progress.activeSpiritId)
+      ? progress.activeSpiritId
+      : partyIds[0] || roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const battleFocus = Math.max(0, Math.floor(progress.battleRoundFocusScore || 0));
+  const battleOpponent = Math.max(0, Math.floor(progress.battleRoundOpponentScore || 0));
+  const battleReady = progress.battleRoundProof && progress.battleRoundVictory && battleFocus > battleOpponent;
+  const missing: string[] = [];
+
+  if (roster.length < tea.requiredSpiritIds.length) missing.push(`roster:${roster.length}/${tea.requiredSpiritIds.length}`);
+  if (partyIds.length < tea.requiredSpiritIds.length) missing.push(`party:${partyIds.length}/${tea.requiredSpiritIds.length}`);
+  if (caredSpiritIds.length < tea.requiredSpiritIds.length) missing.push(`care:${caredSpiritIds.length}/${tea.requiredSpiritIds.length}`);
+  if (localPresenceCount < tea.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${tea.requiredPresenceCount}`);
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === tea.requiredCareCycleId;
+  if (!careCycleReady) missing.push(`care-cycle:${tea.requiredCareCycleId}`);
+
+  const sanctuaryReady = progress.sanctuaryRiteProof && progress.sanctuaryRiteId === tea.requiredSanctuaryRiteId;
+  if (!sanctuaryReady) missing.push(`sanctuary:${tea.requiredSanctuaryRiteId}`);
+
+  const nurtureReady = progress.nurtureRiteProof && progress.nurtureRiteId === tea.requiredNurtureRiteId;
+  if (!nurtureReady) missing.push(`nurture:${tea.requiredNurtureRiteId}`);
+
+  if (!battleReady) missing.push('battle-round-victory');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat:0/1');
+
+  const score =
+    Math.min(roster.length, tea.requiredSpiritIds.length) * 2 +
+    Math.min(partyIds.length, tea.requiredSpiritIds.length) * 2 +
+    Math.min(caredSpiritIds.length, tea.requiredSpiritIds.length) +
+    (careCycleReady ? 4 : 0) +
+    (sanctuaryReady ? 5 : 0) +
+    (nurtureReady ? 4 : 0) +
+    (battleReady ? 5 : 0) +
+    (localPresenceCount >= tea.requiredPresenceCount ? 4 : 0) +
+    (battleReady && battleFocus - battleOpponent >= 8 ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const recovered = missing.length === 0 && score >= tea.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    recovered,
+    teaId: tea.id,
+    teaName: tea.name,
+    title: tea.title,
+    habitat: tea.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    partyIds,
+    caredSpiritIds,
+    localPresenceCount,
+    score,
+    requiredScore: tea.requiredScore,
+    missing,
+    rewardItemId: tea.rewardItemId,
+    message: recovered
+      ? `${tea.name} complete: ${activeSpirit.name} settles ${partyNames || 'the first-court party'} with care tea, sanctuary rest, nurture notes, and no-injury battle review. No real value.`
+      : `${tea.name} needs ${missing.join(', ')} before the party recovery table can be sealed.`,
+    source: 'spirit-recovery-tea'
   };
 }
 

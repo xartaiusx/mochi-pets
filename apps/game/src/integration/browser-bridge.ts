@@ -28,6 +28,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
+  SPIRIT_RECOVERY_TEAS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
@@ -80,6 +81,7 @@ import {
   resolveSpiritBondMilestone,
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
+  resolveSpiritRecoveryTea,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
@@ -273,6 +275,14 @@ interface AlphaHudState {
   nurtureRiteRosterIds: string[];
   nurtureRiteCaredSpiritIds: string[];
   nurtureRibbonClaimed: boolean;
+  recoveryTeaProof: boolean;
+  recoveryTeaId?: string;
+  recoveryTeaName: string;
+  recoveryTeaScore: number;
+  recoveryTeaRequiredScore: number;
+  recoveryTeaPartyIds: string[];
+  recoveryTeaCaredSpiritIds: string[];
+  recoveryTeaCupClaimed: boolean;
   kinshipAlbumProof: boolean;
   kinshipAlbumId?: string;
   kinshipAlbumName: string;
@@ -916,6 +926,13 @@ function defaultAlphaState(): AlphaHudState {
     nurtureRiteRosterIds: [],
     nurtureRiteCaredSpiritIds: [],
     nurtureRibbonClaimed: false,
+    recoveryTeaProof: false,
+    recoveryTeaName: 'Unserved',
+    recoveryTeaScore: 0,
+    recoveryTeaRequiredScore: 0,
+    recoveryTeaPartyIds: [],
+    recoveryTeaCaredSpiritIds: [],
+    recoveryTeaCupClaimed: false,
     kinshipAlbumProof: false,
     kinshipAlbumName: 'Unrecorded',
     kinshipAlbumScore: 0,
@@ -1164,6 +1181,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
+      <span class="mochi-hud__hint" data-recovery-tea-label>Recovery: pending</span>
       <span class="mochi-hud__hint" data-kinship-album-label>Kinship: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
@@ -1219,6 +1237,7 @@ function createHud() {
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
+      <button type="button" data-alpha-action="spirit.recovery_tea" aria-label="Record the no-real-value Jade Teahouse Recovery">Recover</button>
       <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
@@ -1291,6 +1310,7 @@ function createHud() {
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
+  const recoveryTeaLabel = hud.querySelector('[data-recovery-tea-label]');
   const kinshipAlbumLabel = hud.querySelector('[data-kinship-album-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
@@ -1462,6 +1482,11 @@ function createHud() {
       nurtureRiteLabel.textContent = state.nurtureRiteProof
         ? `Nurture: ${state.nurtureRiteName}, ${state.nurtureRiteCaredSpiritIds.length} spirits, score ${state.nurtureRiteScore}/${state.nurtureRiteRequiredScore}`
         : 'Nurture: pending';
+    }
+    if (recoveryTeaLabel) {
+      recoveryTeaLabel.textContent = state.recoveryTeaProof
+        ? `Recovery: ${state.recoveryTeaName}, ${state.recoveryTeaPartyIds.length} spirits, score ${state.recoveryTeaScore}/${state.recoveryTeaRequiredScore}`
+        : 'Recovery: pending';
     }
     if (kinshipAlbumLabel) {
       kinshipAlbumLabel.textContent = state.kinshipAlbumProof
@@ -1804,6 +1829,8 @@ function readAlphaState(): AlphaHudState {
       routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
       nurtureRiteRosterIds: Array.isArray(parsed?.nurtureRiteRosterIds) ? parsed.nurtureRiteRosterIds.map(String) : [],
       nurtureRiteCaredSpiritIds: Array.isArray(parsed?.nurtureRiteCaredSpiritIds) ? parsed.nurtureRiteCaredSpiritIds.map(String) : [],
+      recoveryTeaPartyIds: Array.isArray(parsed?.recoveryTeaPartyIds) ? parsed.recoveryTeaPartyIds.map(String) : [],
+      recoveryTeaCaredSpiritIds: Array.isArray(parsed?.recoveryTeaCaredSpiritIds) ? parsed.recoveryTeaCaredSpiritIds.map(String) : [],
       kinshipAlbumSpiritIds: Array.isArray(parsed?.kinshipAlbumSpiritIds) ? parsed.kinshipAlbumSpiritIds.map(String) : [],
       kinshipAlbumCaredSpiritIds: Array.isArray(parsed?.kinshipAlbumCaredSpiritIds) ? parsed.kinshipAlbumCaredSpiritIds.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
@@ -2605,6 +2632,39 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       bond: state.bond,
       trainingXp: state.trainingXp,
       sparLadderXp: state.sparLadderXp,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
+  if (type === 'spirit.recovery_tea') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean);
+    const partyIds = state.partyIds.length ? state.partyIds : roster.slice(0, 3);
+    const caredSpiritIds = state.nurtureRiteCaredSpiritIds.length
+      ? state.nurtureRiteCaredSpiritIds
+      : state.careCycleCaredSpiritIds.length
+        ? state.careCycleCaredSpiritIds
+        : roster;
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      teaId: SPIRIT_RECOVERY_TEAS[0].id,
+      roster,
+      partyIds,
+      caredSpiritIds,
+      activeSpiritId: state.spiritId || partyIds[0] || roster[0],
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      sanctuaryRiteProof: state.sanctuaryRiteProof,
+      sanctuaryRiteId: state.sanctuaryRiteId,
+      nurtureRiteProof: state.nurtureRiteProof,
+      nurtureRiteId: state.nurtureRiteId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      localPresenceCount: presenceCount,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
       statusMood: state.statusMood,
@@ -3834,6 +3894,51 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.attunedSpiritIds = result.roster;
       state.careCycleCaredSpiritIds = Array.from(new Set([...state.careCycleCaredSpiritIds, ...result.caredSpiritIds]));
       state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.recovery_tea') {
+    const result = resolveSpiritRecoveryTea(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds,
+        caredSpiritIds: Array.isArray(payload.caredSpiritIds) ? payload.caredSpiritIds.map(String) : state.nurtureRiteCaredSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.partyIds[0] || state.attunedSpiritIds[0] || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        sanctuaryRiteProof: Boolean(payload.sanctuaryRiteProof ?? state.sanctuaryRiteProof),
+        sanctuaryRiteId: String(payload.sanctuaryRiteId || state.sanctuaryRiteId || ''),
+        nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
+        nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.teaId || SPIRIT_RECOVERY_TEAS[0].id)
+    );
+    if (result.recovered) {
+      state.recoveryTeaProof = true;
+      state.recoveryTeaId = result.teaId;
+      state.recoveryTeaName = result.teaName;
+      state.recoveryTeaScore = result.score;
+      state.recoveryTeaRequiredScore = result.requiredScore;
+      state.recoveryTeaPartyIds = result.partyIds;
+      state.recoveryTeaCaredSpiritIds = result.caredSpiritIds;
+      state.recoveryTeaCupClaimed = result.rewardItemId === 'jade-teahouse-recovery-cup';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.careCycleCaredSpiritIds = Array.from(new Set([...state.careCycleCaredSpiritIds, ...result.caredSpiritIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
   }

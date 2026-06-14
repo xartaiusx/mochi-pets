@@ -19,6 +19,7 @@ import {
   SPIRIT_MOVES,
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_NURTURE_RITES,
+  SPIRIT_RECOVERY_TEAS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
@@ -60,6 +61,7 @@ import {
   resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritProvisionSatchel,
+  resolveSpiritRecoveryTea,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRouteInvitation,
@@ -1100,6 +1102,72 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'spirit-nurture-rite'
     });
     expect(nurtureRite.message).toContain('No real value');
+
+    expect(SPIRIT_RECOVERY_TEAS.map((entry) => entry.id)).toEqual(['jade-teahouse-recovery']);
+    const blockedRecoveryTea = resolveSpiritRecoveryTea({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      caredSpiritIds: fullRoster,
+      activeSpiritId: 'lirabao',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: false,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Recovery tea ready.']
+    });
+    expect(blockedRecoveryTea).toMatchObject({
+      recovered: false,
+      teaId: 'jade-teahouse-recovery',
+      missing: ['sanctuary:jade-court-sanctuary-rite']
+    });
+
+    const recoveryTea = resolveSpiritRecoveryTea({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      caredSpiritIds: fullRoster,
+      activeSpiritId: 'lirabao',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Recovery tea ready.']
+    });
+    expect(recoveryTea).toMatchObject({
+      recovered: true,
+      teaId: 'jade-teahouse-recovery',
+      teaName: 'Jade Teahouse Recovery',
+      activeSpiritId: 'lirabao',
+      activeSpiritName: 'Lirabao',
+      roster: [...fullRoster],
+      partyIds: [...fullRoster],
+      caredSpiritIds: [...fullRoster],
+      localPresenceCount: 2,
+      score: 43,
+      requiredScore: 36,
+      rewardItemId: ALPHA_ITEMS.recoveryTeaCup.id,
+      source: 'spirit-recovery-tea'
+    });
+    expect(recoveryTea.message).toContain('No real value');
 
     expect(SPIRIT_KINSHIP_ALBUMS.map((entry) => entry.id)).toEqual(['jade-kinship-album']);
     const kinshipAlbum = resolveSpiritKinshipAlbum({

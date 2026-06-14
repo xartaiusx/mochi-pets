@@ -221,7 +221,47 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/kinship/capture-rite/bracket', 'capture rite proof']
+    includes: ['Jade Teahouse Recovery proof', 'nurture/recover/kinship', 'recovery tea proof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.recovery_tea', 'Jade Teahouse Recovery proof', 'nurture-rite/recovery-tea']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Teahouse Recovery proof', 'recovery-tea']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Teahouse Recovery', 'Jade Teahouse Recovery proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Teahouse Recovery contribution', 'content-only Jade Teahouse Recovery Cup proof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Teahouse Recovery proof', 'recover', 'content-only']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Teahouse Recovery', 'Jade Teahouse Recovery proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Teahouse Recovery proof', 'record the Jade Teahouse Recovery', 'no-real-value Jade Teahouse Recovery']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Teahouse Recovery', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Teahouse Recovery', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'AGENTS.md',
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/capture-rite/bracket', 'capture rite proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -301,6 +341,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritRecoveryTeas: true', "'spirit.recovery_tea'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritKinshipAlbums: true', "'spirit.kinship_album'"]
   },
   {
@@ -358,6 +402,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_NURTURE_RITES', 'resolveSpiritNurtureRite', 'data-alpha-action="spirit.nurture_rite"', 'data-nurture-rite-label', 'nurtureRiteProof', 'nurtureRibbonClaimed', 'Jade Moonwell Nurture Rite']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_RECOVERY_TEAS', 'resolveSpiritRecoveryTea', 'data-alpha-action="spirit.recovery_tea"', 'data-recovery-tea-label', 'recoveryTeaProof', 'recoveryTeaCupClaimed', 'Jade Teahouse Recovery']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -425,6 +473,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Teahouse Recovery', 'jade-teahouse-recovery-cup', 'resolveSpiritRecoveryTea', 'spirit-recovery-tea', 'recoveryTeaCup']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Kinship Album', 'jade-kinship-album', 'resolveSpiritKinshipAlbum', 'spirit-kinship-album', 'kinshipAlbumProof']
   },
   {
@@ -474,6 +526,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritNurtureRites: true', 'spirit.nurture_rite']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritRecoveryTeas: true', 'spirit.recovery_tea']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -553,6 +609,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.recovery_tea', 'jade-teahouse-recovery', 'spiritRecoveryTeas', 'Jade Teahouse Recovery', 'recoveryTea']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.kinship_album', 'jade-kinship-album', 'spiritKinshipAlbums', 'Jade Kinship Album', 'kinshipAlbumProof']
   },
   {
@@ -606,6 +666,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.nurture_rite"', 'data-nurture-rite-label', 'nurtureRiteProof', 'nurtureRibbonClaimed', 'Jade Moonwell Nurture Rite complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.recovery_tea"', 'data-recovery-tea-label', 'recoveryTeaProof', 'recoveryTeaCupClaimed', 'Jade Teahouse Recovery complete']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -698,6 +762,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['nurtureRiteProof', 'nurtureRibbonClaimed', 'Jade Moonwell Nurture Rite', 'jade-moonwell-nurture-ribbon', 'spirit-nurture-rite', 'nurture rite']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['recoveryTeaProof', 'recoveryTeaCupClaimed', 'Jade Teahouse Recovery', 'jade-teahouse-recovery-cup', 'spirit-recovery-tea', 'recovery tea']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
