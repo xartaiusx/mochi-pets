@@ -13,6 +13,7 @@ import {
   SPIRIT_CARE_CYCLES,
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
+  SPIRIT_CRAFT_WRITS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -37,6 +38,7 @@ import {
   resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
+  resolveSpiritCraftWrit,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -102,6 +104,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -163,6 +166,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
+    expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -863,6 +867,69 @@ describe('alpha contract', () => {
       chatLines: ['Route ecology ready.']
     }).surveyed).toBe(false);
 
+    expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
+    const craftWrit = resolveSpiritCraftWrit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'jintari',
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      marketProof: true,
+      tradeProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Craft writ ready.']
+    });
+    expect(craftWrit).toMatchObject({
+      ok: true,
+      crafted: true,
+      writId: 'jade-court-craft-writ',
+      writName: 'Jade Court Craft Writ',
+      title: 'First-Court Craft Ledger',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'jintari',
+      activeSpiritName: 'Jintari',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      score: 47,
+      requiredScore: 44,
+      rewardItemId: 'jade-court-craft-writ',
+      source: 'spirit-craft-writ'
+    });
+    expect(craftWrit.message).toContain('No real value');
+    expect(resolveSpiritCraftWrit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      routeEcologyProof: false,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      marketProof: true,
+      tradeProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Craft writ ready.']
+    }).crafted).toBe(false);
+
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -969,6 +1036,7 @@ describe('alpha contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      craftWritProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1001,7 +1069,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 82,
+      score: 85,
       requiredScore: 52,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1021,6 +1089,7 @@ describe('alpha contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      craftWritProof: true,
       commissionProof: true,
       rallyProof: false,
       techniqueLoadoutProof: true,

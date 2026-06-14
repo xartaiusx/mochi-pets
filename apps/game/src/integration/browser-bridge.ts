@@ -12,6 +12,7 @@ import {
   SPIRIT_CARE_CYCLES,
   SPIRIT_COMPENDIUMS,
   SPIRIT_CONDITION_WEAVES,
+  SPIRIT_CRAFT_WRITS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -45,6 +46,7 @@ import {
   resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
+  resolveSpiritCraftWrit,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -210,6 +212,14 @@ interface AlphaHudState {
   routeEcologySpeciesIds: string[];
   routeEcologyInvitedSpiritIds: string[];
   routeEcologyMapClaimed: boolean;
+  craftWritProof: boolean;
+  craftWritId?: string;
+  craftWritName: string;
+  craftWritScore: number;
+  craftWritRequiredScore: number;
+  craftWritRecipeIds: string[];
+  craftWritStockItemIds: string[];
+  craftWritClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -774,6 +784,13 @@ function defaultAlphaState(): AlphaHudState {
     routeEcologySpeciesIds: [],
     routeEcologyInvitedSpiritIds: [],
     routeEcologyMapClaimed: false,
+    craftWritProof: false,
+    craftWritName: 'Uncrafted',
+    craftWritScore: 0,
+    craftWritRequiredScore: 0,
+    craftWritRecipeIds: [],
+    craftWritStockItemIds: [],
+    craftWritClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -981,6 +998,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
+      <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -1024,6 +1042,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
+      <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1088,6 +1107,7 @@ function createHud() {
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
+  const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1219,6 +1239,11 @@ function createHud() {
       routeEcologyLabel.textContent = state.routeEcologyProof
         ? `Ecology: ${state.routeEcologyName}, ${state.routeEcologyRouteIds.length} routes, ${state.routeEcologyInvitedSpiritIds.length} invites`
         : 'Ecology: pending';
+    }
+    if (craftWritLabel) {
+      craftWritLabel.textContent = state.craftWritProof
+        ? `Craft: ${state.craftWritName}, ${state.craftWritRecipeIds.length} recipes, score ${state.craftWritScore}/${state.craftWritRequiredScore}`
+        : 'Craft: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1533,6 +1558,8 @@ function readAlphaState(): AlphaHudState {
       routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
       routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
+      craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
+      craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-48).map(String) : []
@@ -2199,6 +2226,33 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'item.craft_writ') {
+    const roster = state.attunedSpiritIds;
+    return {
+      writId: SPIRIT_CRAFT_WRITS[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      recipeIds: state.craftWritRecipeIds.length ? state.craftWritRecipeIds : SPIRIT_CRAFT_WRITS[0].requiredRecipeIds,
+      stockItemIds: state.provisionStockItemIds.length ? state.provisionStockItemIds : SPIRIT_CRAFT_WRITS[0].requiredStockItemIds,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      fieldAlmanacProof: state.fieldAlmanacProof,
+      fieldAlmanacId: state.fieldAlmanacId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      temperamentConcordProof: state.temperamentConcordProof,
+      temperamentConcordId: state.temperamentConcordId,
+      marketProof: state.charmListed,
+      tradeProof: state.tradeProof,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2254,6 +2308,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       researchProof: state.researchProof,
       compendiumProof: state.compendiumProof,
       provisionProof: state.provisionProof,
+      craftWritProof: state.craftWritProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       techniqueLoadoutProof: state.techniqueLoadoutProof,
@@ -3049,6 +3104,47 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'item.craft_writ') {
+    const result = resolveSpiritCraftWrit(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        recipeIds: Array.isArray(payload.recipeIds) ? payload.recipeIds.map(String) : SPIRIT_CRAFT_WRITS[0].requiredRecipeIds,
+        stockItemIds: Array.isArray(payload.stockItemIds) ? payload.stockItemIds.map(String) : state.provisionStockItemIds,
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        fieldAlmanacProof: Boolean(payload.fieldAlmanacProof ?? state.fieldAlmanacProof),
+        fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        temperamentConcordProof: Boolean(payload.temperamentConcordProof ?? state.temperamentConcordProof),
+        temperamentConcordId: String(payload.temperamentConcordId || state.temperamentConcordId || ''),
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.writId || SPIRIT_CRAFT_WRITS[0].id)
+    );
+    if (result.crafted) {
+      state.craftWritProof = true;
+      state.craftWritId = result.writId;
+      state.craftWritName = result.writName;
+      state.craftWritScore = result.score;
+      state.craftWritRequiredScore = result.requiredScore;
+      state.craftWritRecipeIds = result.recipeIds;
+      state.craftWritStockItemIds = result.stockItemIds;
+      state.craftWritClaimed = result.rewardItemId === 'jade-court-craft-writ';
+      state.attunedSpiritIds = result.roster;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -3130,6 +3226,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         researchProof: Boolean(payload.researchProof ?? state.researchProof),
         compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
         provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),

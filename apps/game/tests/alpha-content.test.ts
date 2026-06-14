@@ -7,6 +7,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_CARE_CYCLES,
+  SPIRIT_CRAFT_WRITS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -32,6 +33,7 @@ import {
   resolveSpiritCareCycle,
   resolveSpiritCompendiumCompletion,
   resolveSpiritConditionWeave,
+  resolveSpiritCraftWrit,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -768,6 +770,72 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(routeEcology.message).toContain('No real value');
 
+    expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
+    const blockedCraftWrit = resolveSpiritCraftWrit({
+      roster: fullRoster,
+      activeSpiritId: 'jintari',
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      routeEcologyProof: false,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      marketProof: true,
+      tradeProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Craft writ ready.']
+    });
+    expect(blockedCraftWrit).toMatchObject({
+      crafted: false,
+      writId: 'jade-court-craft-writ',
+      missing: ['route-ecology:jade-route-ecology-survey']
+    });
+
+    const craftWrit = resolveSpiritCraftWrit({
+      roster: fullRoster,
+      activeSpiritId: 'jintari',
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      marketProof: true,
+      tradeProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Craft writ ready.']
+    });
+    expect(craftWrit).toMatchObject({
+      crafted: true,
+      writId: 'jade-court-craft-writ',
+      writName: 'Jade Court Craft Writ',
+      activeSpiritId: 'jintari',
+      activeSpiritName: 'Jintari',
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      score: 47,
+      requiredScore: 44,
+      rewardItemId: ALPHA_ITEMS.craftWrit.id,
+      source: 'spirit-craft-writ'
+    });
+    expect(craftWrit.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -826,6 +894,7 @@ describe('Mochi Spirits alpha content contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      craftWritProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -868,6 +937,7 @@ describe('Mochi Spirits alpha content contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      craftWritProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -894,7 +964,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 82,
+      score: 85,
       requiredScore: 52,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'

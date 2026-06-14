@@ -872,6 +872,68 @@ export interface SpiritRouteEcologyResult {
   source: string;
 }
 
+export interface SpiritCraftWrit {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredRecipeIds: readonly string[];
+  requiredStockItemIds: readonly string[];
+  requiredProvisionSatchelId: string;
+  requiredRouteEcologyId: string;
+  requiredFieldAlmanacId: string;
+  requiredCareCycleId: string;
+  requiredTemperamentConcordId: string;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritCraftWritProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  recipeIds: readonly string[];
+  stockItemIds: readonly string[];
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  fieldAlmanacProof: boolean;
+  fieldAlmanacId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  temperamentConcordProof: boolean;
+  temperamentConcordId?: string;
+  marketProof: boolean;
+  tradeProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritCraftWritResult {
+  ok: boolean;
+  crafted: boolean;
+  writId: string;
+  writName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  recipeIds: string[];
+  stockItemIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -993,6 +1055,7 @@ export interface GuildWayfarerChronicleProgress {
   researchProof: boolean;
   compendiumProof: boolean;
   provisionProof: boolean;
+  craftWritProof: boolean;
   commissionProof: boolean;
   rallyProof: boolean;
   techniqueLoadoutProof: boolean;
@@ -1987,6 +2050,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Route Ecology Map',
     description: 'A no-real-value route ecology proof for closed-alpha Mochirii encounter signs, patrol notes, and habitat study.'
   },
+  craftWrit: {
+    id: 'jade-court-craft-writ',
+    name: 'Jade Court Craft Writ',
+    description: 'A no-real-value crafting proof for closed-alpha Mochirii supplies, route ecology, care notes, and guild exchange.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2495,6 +2563,27 @@ export const SPIRIT_ROUTE_ECOLOGY_SURVEYS: readonly SpiritRouteEcologySurvey[] =
     requiredScore: 42,
     rewardItemId: ALPHA_ITEMS.routeEcologyMap.id,
     summary: 'A no-real-value route ecology proof for testers who connect original Mochirii route invitations, encounter signs, field almanac notes, patrol safety, route mastery, and no-injury battle conditions.'
+  }
+];
+
+export const SPIRIT_CRAFT_WRITS: readonly SpiritCraftWrit[] = [
+  {
+    id: 'jade-court-craft-writ',
+    name: 'Jade Court Craft Writ',
+    title: 'First-Court Craft Ledger',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredRecipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+    requiredStockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+    requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredTemperamentConcordId: SPIRIT_TEMPERAMENT_CONCORDS[0].id,
+    requiredChatLines: 1,
+    requiredScore: 44,
+    rewardItemId: ALPHA_ITEMS.craftWrit.id,
+    summary: 'A no-real-value craft writ proof for testers who turn original Mochirii provisions, route ecology, care-cycle notes, and market/trade handoff into guild-ready supplies.'
   }
 ];
 
@@ -4017,6 +4106,126 @@ export function resolveSpiritRouteEcologySurvey(
   };
 }
 
+export function resolveSpiritCraftWrit(
+  progress: SpiritCraftWritProgress,
+  writId: string = SPIRIT_CRAFT_WRITS[0].id
+): SpiritCraftWritResult {
+  const writ = SPIRIT_CRAFT_WRITS.find((entry) => entry.id === writId) || SPIRIT_CRAFT_WRITS[0];
+  const requiredSpiritIds = new Set(writ.requiredSpiritIds);
+  const requiredRecipeIds = new Set(writ.requiredRecipeIds);
+  const requiredStockItemIds = new Set(writ.requiredStockItemIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const recipeIds = Array.from(new Set(progress.recipeIds.filter(Boolean))).filter((recipeId) => requiredRecipeIds.has(recipeId));
+  const stockItemIds = Array.from(new Set(progress.stockItemIds.filter(Boolean))).filter((itemId) => {
+    return requiredStockItemIds.has(itemId) && Object.values(ALPHA_ITEMS).some((item) => item.id === itemId);
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const missing: string[] = [];
+
+  for (const spiritId of writ.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const recipeId of writ.requiredRecipeIds) {
+    if (!recipeIds.includes(recipeId)) {
+      missing.push(`recipe:${recipeId}`);
+    }
+  }
+
+  for (const itemId of writ.requiredStockItemIds) {
+    if (!stockItemIds.includes(itemId)) {
+      missing.push(`stock:${itemId}`);
+    }
+  }
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === writ.requiredProvisionSatchelId;
+  if (!provisionReady) {
+    missing.push(`provision:${writ.requiredProvisionSatchelId}`);
+  }
+
+  const routeEcologyReady = progress.routeEcologyProof && progress.routeEcologyId === writ.requiredRouteEcologyId;
+  if (!routeEcologyReady) {
+    missing.push(`route-ecology:${writ.requiredRouteEcologyId}`);
+  }
+
+  const fieldAlmanacReady = progress.fieldAlmanacProof && progress.fieldAlmanacId === writ.requiredFieldAlmanacId;
+  if (!fieldAlmanacReady) {
+    missing.push(`field-almanac:${writ.requiredFieldAlmanacId}`);
+  }
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === writ.requiredCareCycleId;
+  if (!careCycleReady) {
+    missing.push(`care-cycle:${writ.requiredCareCycleId}`);
+  }
+
+  const temperamentReady = progress.temperamentConcordProof && progress.temperamentConcordId === writ.requiredTemperamentConcordId;
+  if (!temperamentReady) {
+    missing.push(`temperament:${writ.requiredTemperamentConcordId}`);
+  }
+
+  if (!progress.marketProof) missing.push('market-listing');
+  if (!progress.tradeProof) missing.push('direct-trade');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < writ.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${writ.requiredChatLines}`);
+  }
+
+  const score =
+    Math.min(roster.length, writ.requiredSpiritIds.length) * 3 +
+    Math.min(recipeIds.length, writ.requiredRecipeIds.length) * 2 +
+    Math.min(stockItemIds.length, writ.requiredStockItemIds.length) * 2 +
+    (provisionReady ? 5 : 0) +
+    (routeEcologyReady ? 5 : 0) +
+    (fieldAlmanacReady ? 4 : 0) +
+    (careCycleReady ? 3 : 0) +
+    (temperamentReady ? 3 : 0) +
+    (progress.marketProof ? 2 : 0) +
+    (progress.tradeProof ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const crafted = missing.length === 0 && score >= writ.requiredScore;
+  const recipeSummary = recipeIds.length ? recipeIds.join(', ') : 'unprepared recipes';
+  const stockSummary = stockItemIds.length ? stockItemIds.join(', ') : 'unstocked supplies';
+
+  return {
+    ok: true,
+    crafted,
+    writId: writ.id,
+    writName: writ.name,
+    title: writ.title,
+    habitat: writ.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    recipeIds,
+    stockItemIds,
+    score,
+    requiredScore: writ.requiredScore,
+    missing,
+    rewardItemId: writ.rewardItemId,
+    message: crafted
+      ? `${writ.name} complete: ${activeSpirit.name} binds ${recipeSummary} with ${stockSummary}, route ecology, care rhythm, temperament notes, and market/trade handoff. No real value.`
+      : `${writ.name} needs ${missing.join(', ')} before the first-court craft ledger can be recorded.`,
+    source: 'spirit-craft-writ'
+  };
+}
+
 export function resolveGuildCommission(
   progress: GuildCommissionProgress,
   commissionId: string = GUILD_COMMISSIONS[0].id
@@ -4221,6 +4430,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.researchProof) missing.push('research');
   if (!progress.compendiumProof) missing.push('compendium');
   if (!progress.provisionProof) missing.push('provision');
+  if (!progress.craftWritProof) missing.push('craft-writ');
   if (!progress.commissionProof) missing.push('commission');
   if (!progress.rallyProof) missing.push('rally');
   if (!progress.techniqueLoadoutProof) missing.push('loadout');
@@ -4255,6 +4465,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.researchProof ? 2 : 0) +
     (progress.compendiumProof ? 3 : 0) +
     (progress.provisionProof ? 2 : 0) +
+    (progress.craftWritProof ? 3 : 0) +
     (progress.commissionProof ? 2 : 0) +
     (progress.rallyProof ? 3 : 0) +
     (progress.techniqueLoadoutProof ? 2 : 0) +
@@ -4293,7 +4504,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };

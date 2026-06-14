@@ -67,6 +67,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
   assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
+  assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -109,6 +110,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
   assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
+  assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -735,6 +737,35 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-craft-writ`,
+      type: 'item.craft_writ',
+      payload: {
+        writId: 'jade-court-craft-writ',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'jintari',
+        recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+        stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        routeEcologyProof: true,
+        routeEcologyId: 'jade-route-ecology-survey',
+        fieldAlmanacProof: true,
+        fieldAlmanacId: 'jade-field-almanac',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        temperamentConcordProof: true,
+        temperamentConcordId: 'jade-temperament-concord',
+        marketProof: true,
+        tradeProof: true,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-court-craft-writ',
+        chatLines: ['Local acceptance craft writ proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -809,6 +840,7 @@ async function run() {
         researchProof: true,
         compendiumProof: true,
         provisionProof: true,
+        craftWritProof: true,
         commissionProof: true,
         rallyProof: true,
         techniqueLoadoutProof: true,
@@ -966,11 +998,27 @@ async function run() {
   assert(routeEcology?.payload?.conditionWeaveProof === true, 'Route ecology ledger entry must preserve condition weave proof.');
   assert(routeEcology?.payload?.rewardItemId === 'jade-route-ecology-map', 'Route ecology ledger entry must preserve the no-real-value ecology map proof.');
   assert(routeEcology?.payload?.noRealValue === true, 'Route ecology ledger entry must remain no-real-value.');
+  const craftWrit = entriesById.get(`${runId}-craft-writ`);
+  assert(craftWrit?.payload?.writId === 'jade-court-craft-writ', 'Craft writ ledger entry must preserve the Jade Court Craft Writ id.');
+  assert(Array.isArray(craftWrit?.payload?.roster) && craftWrit.payload.roster.length === 3, 'Craft writ ledger entry must preserve full roster proof.');
+  assert(Array.isArray(craftWrit?.payload?.recipeIds) && craftWrit.payload.recipeIds.includes('lantern-tea-threading'), 'Craft writ ledger entry must preserve the lantern tea recipe proof.');
+  assert(Array.isArray(craftWrit?.payload?.recipeIds) && craftWrit.payload.recipeIds.includes('moonbridge-provision-wrap'), 'Craft writ ledger entry must preserve the Moonbridge provision recipe proof.');
+  assert(Array.isArray(craftWrit?.payload?.stockItemIds) && craftWrit.payload.stockItemIds.includes('jade-thread-charm'), 'Craft writ ledger entry must preserve the Jade Thread Charm stock proof.');
+  assert(Array.isArray(craftWrit?.payload?.stockItemIds) && craftWrit.payload.stockItemIds.includes('lantern-harmony-tea'), 'Craft writ ledger entry must preserve Lantern Harmony Tea stock proof.');
+  assert(Array.isArray(craftWrit?.payload?.stockItemIds) && craftWrit.payload.stockItemIds.includes('jade-mooncake-box'), 'Craft writ ledger entry must preserve Jade Mooncake Box stock proof.');
+  assert(craftWrit?.payload?.provisionProof === true, 'Craft writ ledger entry must preserve provision proof.');
+  assert(craftWrit?.payload?.routeEcologyProof === true, 'Craft writ ledger entry must preserve route ecology proof.');
+  assert(craftWrit?.payload?.fieldAlmanacProof === true, 'Craft writ ledger entry must preserve field almanac proof.');
+  assert(craftWrit?.payload?.careCycleProof === true, 'Craft writ ledger entry must preserve care cycle proof.');
+  assert(craftWrit?.payload?.temperamentConcordProof === true, 'Craft writ ledger entry must preserve temperament concord proof.');
+  assert(craftWrit?.payload?.rewardItemId === 'jade-court-craft-writ', 'Craft writ ledger entry must preserve the no-real-value craft writ proof.');
+  assert(craftWrit?.payload?.noRealValue === true, 'Craft writ ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
   assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
   assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');
+  assert(chronicle?.payload?.craftWritProof === true, 'Wayfarer chronicle ledger entry must preserve craft writ proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');

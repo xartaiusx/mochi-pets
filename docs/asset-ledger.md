@@ -4,6 +4,8 @@ All current runtime art is original Mochirii High-Fidelity Wuxia art generated f
 
 Generation note: smooth illustrated 2D Mochirii guild/wuxia art with soft lantern lighting, jade, lacquer, gold, silk, and paper materials, clear gameplay silhouettes, no baked-in text, no logos, no real-value implication, and Enjin Canary kept as a configured preview stub. Assets ship under the repository MIT license as project-authored/generated-for-project work.
 
+Content-only HUD and ledger proofs, including the Jade Court Craft Writ, do not receive asset rows until a runtime art file and matching source card are generated.
+
 | Asset | Runtime Location | Runtime Dimensions | Source Card | Role | Source | License |
 | --- | --- | --- | --- | --- | --- | --- |
 | Wayfarer spritesheet | `apps/game/public/spritesheets/wayfarer.png` | 384x768 | `assets/source/game/hd/wayfarer.source.json` | Mochirii Wayfarer player avatar with silk travel robes and jade guild sash | Sharp-generated project source master | MIT with project |

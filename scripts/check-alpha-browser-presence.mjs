@@ -203,6 +203,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.temperament_concord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -234,6 +235,7 @@ async function exerciseAlphaHud(page) {
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
+      const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -281,6 +283,7 @@ async function exerciseAlphaHud(page) {
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
+        && craftWrit.includes('Jade Court Craft Writ')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -441,6 +444,19 @@ async function exerciseAlphaHud(page) {
         && state.routeEcologyInvitedSpiritIds.includes('jintari')
         && state.routeEcologyInvitedSpiritIds.includes('aozhen')
         && state.routeEcologyMapClaimed === true
+        && state.craftWritProof === true
+        && state.craftWritId === 'jade-court-craft-writ'
+        && state.craftWritName === 'Jade Court Craft Writ'
+        && state.craftWritScore >= 44
+        && state.craftWritRequiredScore === 44
+        && Array.isArray(state.craftWritRecipeIds)
+        && state.craftWritRecipeIds.includes('lantern-tea-threading')
+        && state.craftWritRecipeIds.includes('moonbridge-provision-wrap')
+        && Array.isArray(state.craftWritStockItemIds)
+        && state.craftWritStockItemIds.includes('jade-thread-charm')
+        && state.craftWritStockItemIds.includes('lantern-harmony-tea')
+        && state.craftWritStockItemIds.includes('jade-mooncake-box')
+        && state.craftWritClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -630,6 +646,7 @@ async function exerciseAlphaHud(page) {
       temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
+      craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -674,6 +691,7 @@ async function exerciseAlphaHud(page) {
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
+      craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -834,6 +852,18 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.routeEcologyInvitedSpiritIds) && snapshot.state.routeEcologyInvitedSpiritIds.includes('jintari'), 'HUD ecology action must record Jintari route invitation proof.');
   assert(Array.isArray(snapshot.state.routeEcologyInvitedSpiritIds) && snapshot.state.routeEcologyInvitedSpiritIds.includes('aozhen'), 'HUD ecology action must record Aozhen route invitation proof.');
   assert(snapshot.state.routeEcologyMapClaimed === true, 'HUD ecology action must mark the no-real-value ecology map proof.');
+  assert(snapshot.craftWrit.includes('Jade Court Craft Writ'), 'HUD craft label must show the completed no-real-value craft writ.');
+  assert(snapshot.state.craftWritProof === true, 'HUD craft action must record craft writ proof.');
+  assert(snapshot.state.craftWritId === 'jade-court-craft-writ', 'HUD craft action must record the craft writ id.');
+  assert(snapshot.state.craftWritName === 'Jade Court Craft Writ', 'HUD craft action must record the craft writ name.');
+  assert(snapshot.state.craftWritScore >= 44, 'HUD craft action must record a passing craft writ score.');
+  assert(snapshot.state.craftWritRequiredScore === 44, 'HUD craft action must record the craft writ requirement.');
+  assert(Array.isArray(snapshot.state.craftWritRecipeIds) && snapshot.state.craftWritRecipeIds.includes('lantern-tea-threading'), 'HUD craft action must record the lantern tea recipe.');
+  assert(Array.isArray(snapshot.state.craftWritRecipeIds) && snapshot.state.craftWritRecipeIds.includes('moonbridge-provision-wrap'), 'HUD craft action must record the Moonbridge provision recipe.');
+  assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('jade-thread-charm'), 'HUD craft action must record the Jade Thread Charm stock.');
+  assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('lantern-harmony-tea'), 'HUD craft action must record Lantern Harmony Tea stock.');
+  assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('jade-mooncake-box'), 'HUD craft action must record Jade Mooncake Box stock.');
+  assert(snapshot.state.craftWritClaimed === true, 'HUD craft action must mark the no-real-value craft writ proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -992,6 +1022,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');
   assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
   assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Craft Writ complete')), 'HUD chat state must record the craft writ action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');
