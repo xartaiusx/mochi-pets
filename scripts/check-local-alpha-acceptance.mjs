@@ -64,6 +64,7 @@ async function run() {
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
+  assert(manifest.body.gameplay?.wayfarerChronicles === true, 'Manifest must expose the Mochirii wayfarer chronicle.');
   assert(manifest.body.gameplay?.partyFormation === true, 'Manifest must expose Mochi Spirit party formation.');
   assert(manifest.body.gameplay?.partyHarmony === true, 'Manifest must expose Mochi Spirit party harmony.');
   assert(manifest.body.gameplay?.harmonyTrials === true, 'Manifest must expose Mochi Spirit harmony trials.');
@@ -98,6 +99,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
+  assert(alphaStatus.body.gameplay?.wayfarerChronicles === true, 'Alpha status must expose the Mochirii wayfarer chronicle.');
   assert(alphaStatus.body.gameplay?.partyFormation === true, 'Alpha status must expose Mochi Spirit party formation.');
   assert(alphaStatus.body.gameplay?.partyHarmony === true, 'Alpha status must expose Mochi Spirit party harmony.');
   assert(alphaStatus.body.gameplay?.harmonyTrials === true, 'Alpha status must expose Mochi Spirit harmony trials.');
@@ -640,6 +642,47 @@ async function run() {
         priorRequestStaged: true,
         confirmNoCreditUntilFinalized: true
       }
+    },
+    {
+      requestId: `${runId}-wayfarer-chronicle`,
+      type: 'guild.wayfarer_chronicle',
+      payload: {
+        chronicleId: 'jade-wayfarer-chronicle',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        journalDiscoveredCount: 3,
+        completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        localPresenceCount: 2,
+        captureProof: true,
+        routeMasteryProof: true,
+        routePatrolProof: true,
+        habitatBondProof: true,
+        researchProof: true,
+        compendiumProof: true,
+        provisionProof: true,
+        commissionProof: true,
+        rallyProof: true,
+        techniqueLoadoutProof: true,
+        traitAttunementProof: true,
+        conditionWeaveProof: true,
+        guildRankProof: true,
+        growthRiteProof: true,
+        harmonyFormProof: true,
+        harmonyTrialProof: true,
+        teamSparMatchProof: true,
+        mentorChallengeProof: true,
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        questChainProof: true,
+        marketProof: true,
+        tradeProof: true,
+        canaryPreviewProof: true,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance wayfarer chronicle proof.'],
+        noRealValue: true
+      }
     }
   ];
 
@@ -683,6 +726,13 @@ async function run() {
   assert(routePatrol?.payload?.fieldAccordProof === true, 'Route patrol ledger entry must preserve field accord proof.');
   assert(routePatrol?.payload?.battleRoundProof === true, 'Route patrol ledger entry must preserve battle round proof.');
   assert(routePatrol?.payload?.noRealValue === true, 'Route patrol ledger entry must remain no-real-value.');
+  const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
+  assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
+  assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
+  assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
+  assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
+  assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
+  assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
 }
 
 async function getOk(path, name) {

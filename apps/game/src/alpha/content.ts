@@ -637,6 +637,75 @@ export interface GuildSocialRallyResult {
   source: string;
 }
 
+export interface GuildWayfarerChronicle {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritCount: number;
+  requiredJournalCount: number;
+  requiredQuestCount: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface GuildWayfarerChronicleProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  journalDiscoveredCount: number;
+  completedQuestIds: readonly string[];
+  localPresenceCount: number;
+  captureProof: boolean;
+  routeMasteryProof: boolean;
+  routePatrolProof: boolean;
+  habitatBondProof: boolean;
+  researchProof: boolean;
+  compendiumProof: boolean;
+  provisionProof: boolean;
+  commissionProof: boolean;
+  rallyProof: boolean;
+  techniqueLoadoutProof: boolean;
+  traitAttunementProof: boolean;
+  conditionWeaveProof: boolean;
+  guildRankProof: boolean;
+  growthRiteProof: boolean;
+  harmonyFormProof: boolean;
+  harmonyTrialProof: boolean;
+  teamSparMatchProof: boolean;
+  mentorChallengeProof: boolean;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  questChainProof: boolean;
+  marketProof: boolean;
+  tradeProof: boolean;
+  canaryPreviewProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface GuildWayfarerChronicleResult {
+  ok: boolean;
+  chronicled: boolean;
+  chronicleId: string;
+  chronicleName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  partyIds: string[];
+  completedQuestIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritPartyFormation {
   ok: boolean;
   activeSpiritId?: string;
@@ -1602,6 +1671,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Courtyard Rally Knot',
     description: 'A no-real-value two-tester guild rally proof for closed-alpha Mochirii social play.'
   },
+  wayfarerChronicleClasp: {
+    id: 'jade-wayfarer-chronicle-clasp',
+    name: 'Jade Wayfarer Chronicle Clasp',
+    description: 'A no-real-value closed-alpha completion clasp for the first Mochirii wayfarer chronicle.'
+  },
   certificate: {
     id: 'lirabao-canary-certificate',
     name: 'Lirabao Canary Certificate',
@@ -1917,6 +1991,22 @@ export const GUILD_SOCIAL_RALLIES: readonly GuildSocialRally[] = [
     requiredScore: 22,
     rewardItemId: ALPHA_ITEMS.rallyKnot.id,
     summary: 'A no-real-value social rally proof for testers who coordinate two local presences, chat, emote, guild buddy, commission, and full-party Mochi Spirit readiness.'
+  }
+];
+
+export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
+  {
+    id: 'jade-wayfarer-chronicle',
+    name: 'Jade Wayfarer Chronicle',
+    title: 'First-Court Alpha Chronicle',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritCount: MOCHI_SPIRITS.length,
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredQuestCount: MOCHI_SPIRIT_QUESTS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 52,
+    rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
+    summary: 'A no-real-value alpha passport proof for testers who complete the first-court capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
   }
 ];
 
@@ -2945,6 +3035,113 @@ export function resolveGuildSocialRally(
       ? `${rally.name} complete: ${partyNames} rally with ${localPresenceCount} local testers, chat, emote, commission, and no-injury party proof. No-real-value social proof only.`
       : `${rally.name} needs ${missing.join(', ')} before the two-tester guild rally can be recorded.`,
     source: 'guild-social-rally'
+  };
+}
+
+export function resolveGuildWayfarerChronicle(
+  progress: GuildWayfarerChronicleProgress,
+  chronicleId: string = GUILD_WAYFARER_CHRONICLES[0].id
+): GuildWayfarerChronicleResult {
+  const chronicle = GUILD_WAYFARER_CHRONICLES.find((entry) => entry.id === chronicleId) || GUILD_WAYFARER_CHRONICLES[0];
+  const knownSpiritIds = new Set<string>(MOCHI_SPIRITS.map((spirit) => spirit.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => knownSpiritIds.has(spiritId));
+  const completedQuestIds = Array.from(new Set(progress.completedQuestIds.filter(Boolean))).filter((questId) => {
+    return MOCHI_SPIRIT_QUESTS.some((quest) => quest.id === questId);
+  });
+  const journalDiscoveredCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (roster.length < chronicle.requiredSpiritCount) missing.push(`roster:${roster.length}/${chronicle.requiredSpiritCount}`);
+  if (partyIds.length < chronicle.requiredSpiritCount) missing.push(`party:${partyIds.length}/${chronicle.requiredSpiritCount}`);
+  if (journalDiscoveredCount < chronicle.requiredJournalCount) missing.push(`journal:${journalDiscoveredCount}/${chronicle.requiredJournalCount}`);
+  if (completedQuestIds.length < chronicle.requiredQuestCount || !progress.questChainProof) missing.push(`quests:${completedQuestIds.length}/${chronicle.requiredQuestCount}`);
+  if (localPresenceCount < chronicle.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${chronicle.requiredPresenceCount}`);
+  if (!progress.captureProof) missing.push('capture');
+  if (!progress.routeMasteryProof) missing.push('route-mastery');
+  if (!progress.routePatrolProof) missing.push('route-patrol');
+  if (!progress.habitatBondProof) missing.push('habitat-bond');
+  if (!progress.researchProof) missing.push('research');
+  if (!progress.compendiumProof) missing.push('compendium');
+  if (!progress.provisionProof) missing.push('provision');
+  if (!progress.commissionProof) missing.push('commission');
+  if (!progress.rallyProof) missing.push('rally');
+  if (!progress.techniqueLoadoutProof) missing.push('loadout');
+  if (!progress.traitAttunementProof) missing.push('trait');
+  if (!progress.conditionWeaveProof) missing.push('condition-weave');
+  if (!progress.guildRankProof) missing.push('rank');
+  if (!progress.growthRiteProof) missing.push('growth');
+  if (!progress.harmonyFormProof) missing.push('harmony');
+  if (!progress.harmonyTrialProof) missing.push('concord');
+  if (!progress.teamSparMatchProof) missing.push('team-match');
+  if (!progress.mentorChallengeProof) missing.push('mentor');
+  if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
+  if (!progress.marketProof) missing.push('market');
+  if (!progress.tradeProof) missing.push('trade');
+  if (!progress.canaryPreviewProof) missing.push('canary-preview');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(roster.length, chronicle.requiredSpiritCount) * 2 +
+    Math.min(partyIds.length, chronicle.requiredSpiritCount) * 2 +
+    Math.min(journalDiscoveredCount, chronicle.requiredJournalCount) * 2 +
+    Math.min(completedQuestIds.length, chronicle.requiredQuestCount) * 2 +
+    Math.min(localPresenceCount, chronicle.requiredPresenceCount) * 3 +
+    (progress.captureProof ? 2 : 0) +
+    (progress.routeMasteryProof ? 3 : 0) +
+    (progress.routePatrolProof ? 3 : 0) +
+    (progress.habitatBondProof ? 2 : 0) +
+    (progress.researchProof ? 2 : 0) +
+    (progress.compendiumProof ? 3 : 0) +
+    (progress.provisionProof ? 2 : 0) +
+    (progress.commissionProof ? 2 : 0) +
+    (progress.rallyProof ? 3 : 0) +
+    (progress.techniqueLoadoutProof ? 2 : 0) +
+    (progress.traitAttunementProof ? 2 : 0) +
+    (progress.conditionWeaveProof ? 2 : 0) +
+    (progress.guildRankProof ? 2 : 0) +
+    (progress.growthRiteProof ? 2 : 0) +
+    (progress.harmonyFormProof ? 2 : 0) +
+    (progress.harmonyTrialProof ? 2 : 0) +
+    (progress.teamSparMatchProof ? 2 : 0) +
+    (progress.mentorChallengeProof ? 2 : 0) +
+    (progress.battleRoundProof && progress.battleRoundVictory ? 2 : 0) +
+    (progress.marketProof ? 1 : 0) +
+    (progress.tradeProof ? 1 : 0) +
+    (progress.canaryPreviewProof ? 1 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const chronicled = missing.length === 0 && score >= chronicle.requiredScore;
+  const rosterNames = roster.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    chronicled,
+    chronicleId: chronicle.id,
+    chronicleName: chronicle.name,
+    title: chronicle.title,
+    habitat: chronicle.habitat,
+    roster,
+    partyIds,
+    completedQuestIds,
+    localPresenceCount,
+    score,
+    requiredScore: chronicle.requiredScore,
+    missing,
+    rewardItemId: chronicle.rewardItemId,
+    message: chronicled
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
+    source: 'guild-wayfarer-chronicle'
   };
 }
 

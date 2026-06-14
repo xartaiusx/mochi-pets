@@ -2,6 +2,7 @@ import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
 import {
   GUILD_COMMISSIONS,
   GUILD_SOCIAL_RALLIES,
+  GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -41,6 +42,7 @@ import {
   resolveGuildCommission,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
+  resolveGuildWayfarerChronicle,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
@@ -158,6 +160,12 @@ interface AlphaHudState {
   rallyScore: number;
   rallyPresenceCount: number;
   rallyKnotClaimed: boolean;
+  wayfarerChronicleProof: boolean;
+  wayfarerChronicleId?: string;
+  wayfarerChronicleName: string;
+  wayfarerChronicleScore: number;
+  wayfarerChronicleRequiredScore: number;
+  wayfarerChronicleClaspClaimed: boolean;
   techniqueProof: boolean;
   techniqueMoveId?: string;
   techniqueMasteryXp: number;
@@ -666,6 +674,11 @@ function defaultAlphaState(): AlphaHudState {
     rallyScore: 0,
     rallyPresenceCount: 1,
     rallyKnotClaimed: false,
+    wayfarerChronicleProof: false,
+    wayfarerChronicleName: 'Unchronicled',
+    wayfarerChronicleScore: 0,
+    wayfarerChronicleRequiredScore: 0,
+    wayfarerChronicleClaspClaimed: false,
     techniqueProof: false,
     techniqueMasteryXp: 0,
     techniqueMasteryLevel: 'novice',
@@ -849,6 +862,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
+      <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
       <span class="mochi-hud__hint" data-technique-label>Technique: novice, 0 XP</span>
       <span class="mochi-hud__hint" data-tactic-label>Tactic: not set</span>
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
@@ -884,6 +898,7 @@ function createHud() {
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
+      <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
       <button type="button" data-alpha-action="world.expedition" aria-label="Scout a Mochirii field route">Scout</button>
       <button type="button" data-alpha-action="spirit.route_invite" aria-label="Invite the scouted route spirit">Route</button>
       <button type="button" data-alpha-action="world.route_mastery" aria-label="Record Mochirii route mastery proof">Circuit</button>
@@ -940,6 +955,7 @@ function createHud() {
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
+  const chronicleLabel = hud.querySelector('[data-chronicle-label]');
   const techniqueLabel = hud.querySelector('[data-technique-label]');
   const tacticLabel = hud.querySelector('[data-tactic-label]');
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
@@ -1007,6 +1023,11 @@ function createHud() {
       routePatrolLabel.textContent = state.routePatrolProof
         ? `Route Patrol: ${state.routePatrolName}, score ${state.routePatrolScore}/${state.routePatrolRequiredScore}`
         : 'Route Patrol: pending';
+    }
+    if (chronicleLabel) {
+      chronicleLabel.textContent = state.wayfarerChronicleProof
+        ? `Chronicle: ${state.wayfarerChronicleName}, score ${state.wayfarerChronicleScore}/${state.wayfarerChronicleRequiredScore}`
+        : 'Chronicle: pending';
     }
     if (habitatBondLabel) {
       habitatBondLabel.textContent = state.habitatBondProof
@@ -1909,6 +1930,46 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'guild.wayfarer_chronicle') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      chronicleId: GUILD_WAYFARER_CHRONICLES[0].id,
+      roster: state.attunedSpiritIds,
+      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      journalDiscoveredCount: state.journalDiscoveredCount,
+      completedQuestIds: state.completedQuestIds,
+      localPresenceCount: presenceCount,
+      captureProof: state.captureProof,
+      routeMasteryProof: state.routeMasteryProof,
+      routePatrolProof: state.routePatrolProof,
+      habitatBondProof: state.habitatBondProof,
+      researchProof: state.researchProof,
+      compendiumProof: state.compendiumProof,
+      provisionProof: state.provisionProof,
+      commissionProof: state.commissionProof,
+      rallyProof: state.rallyProof,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      traitAttunementProof: state.traitAttunementProof,
+      conditionWeaveProof: state.conditionWeaveProof,
+      guildRankProof: state.guildRankProof,
+      growthRiteProof: state.growthRiteProof,
+      harmonyFormProof: state.harmonyFormProof,
+      harmonyTrialProof: state.harmonyTrialProof,
+      teamSparMatchProof: state.teamSparMatchProof,
+      mentorChallengeProof: state.mentorChallengeProof,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      questChainProof: state.questChainProof,
+      marketProof: state.charmListed,
+      tradeProof: state.tradeProof,
+      canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'world.expedition') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : state.spiritId ? [state.spiritId] : [];
     const route = SPIRIT_EXPEDITION_ROUTES[state.expeditionCount % SPIRIT_EXPEDITION_ROUTES.length] || SPIRIT_EXPEDITION_ROUTES[0];
@@ -2483,6 +2544,61 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0] || state.activePartyId;
       state.spiritId = result.partyIds[0] || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'guild.wayfarer_chronicle') {
+    const result = resolveGuildWayfarerChronicle(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        captureProof: Boolean(payload.captureProof ?? state.captureProof),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        habitatBondProof: Boolean(payload.habitatBondProof ?? state.habitatBondProof),
+        researchProof: Boolean(payload.researchProof ?? state.researchProof),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
+        rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        guildRankProof: Boolean(payload.guildRankProof ?? state.guildRankProof),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        harmonyTrialProof: Boolean(payload.harmonyTrialProof ?? state.harmonyTrialProof),
+        teamSparMatchProof: Boolean(payload.teamSparMatchProof ?? state.teamSparMatchProof),
+        mentorChallengeProof: Boolean(payload.mentorChallengeProof ?? state.mentorChallengeProof),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.chronicleId || GUILD_WAYFARER_CHRONICLES[0].id)
+    );
+    if (result.chronicled) {
+      state.wayfarerChronicleProof = true;
+      state.wayfarerChronicleId = result.chronicleId;
+      state.wayfarerChronicleName = result.chronicleName;
+      state.wayfarerChronicleScore = result.score;
+      state.wayfarerChronicleRequiredScore = result.requiredScore;
+      state.wayfarerChronicleClaspClaimed = result.rewardItemId === 'jade-wayfarer-chronicle-clasp';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.completedQuestIds = result.completedQuestIds;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
   }

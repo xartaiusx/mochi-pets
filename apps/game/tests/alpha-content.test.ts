@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ALPHA_ITEMS,
+  GUILD_WAYFARER_CHRONICLES,
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BOND_MILESTONES,
@@ -14,6 +15,7 @@ import {
   resolveGuildCommission,
   resolveGuildRankTrial,
   resolveGuildSocialRally,
+  resolveGuildWayfarerChronicle,
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleRound,
@@ -477,6 +479,94 @@ describe('Mochi Spirits alpha content contract', () => {
       score: 30,
       rewardItemId: ALPHA_ITEMS.rallyKnot.id
     });
+
+    expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
+    const blockedChronicle = resolveGuildWayfarerChronicle({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      journalDiscoveredCount: 3,
+      completedQuestIds,
+      localPresenceCount: 1,
+      captureProof: true,
+      routeMasteryProof: true,
+      routePatrolProof: true,
+      habitatBondProof: true,
+      researchProof: true,
+      compendiumProof: true,
+      provisionProof: true,
+      commissionProof: true,
+      rallyProof: true,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      conditionWeaveProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Chronicle ready.']
+    });
+    expect(blockedChronicle).toMatchObject({
+      chronicled: false,
+      chronicleId: 'jade-wayfarer-chronicle',
+      missing: ['presence:1/2']
+    });
+
+    const chronicle = resolveGuildWayfarerChronicle({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      journalDiscoveredCount: 3,
+      completedQuestIds,
+      localPresenceCount: 2,
+      captureProof: true,
+      routeMasteryProof: true,
+      routePatrolProof: true,
+      habitatBondProof: true,
+      researchProof: true,
+      compendiumProof: true,
+      provisionProof: true,
+      commissionProof: true,
+      rallyProof: true,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      conditionWeaveProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Chronicle ready.']
+    });
+    expect(chronicle).toMatchObject({
+      chronicled: true,
+      chronicleId: 'jade-wayfarer-chronicle',
+      chronicleName: 'Jade Wayfarer Chronicle',
+      score: 79,
+      requiredScore: 52,
+      rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
+      source: 'guild-wayfarer-chronicle'
+    });
+    expect(chronicle.message).toContain('No real value');
   });
 
   it('proves the no-injury battle, loadout, trait, condition, growth, and mentor readiness chain', () => {

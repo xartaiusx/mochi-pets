@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   GUILD_COMMISSIONS,
   GUILD_SOCIAL_RALLIES,
+  GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -32,6 +33,7 @@ import {
   resolveSpiritFieldAccord,
   resolveGuildCommission,
   resolveGuildSocialRally,
+  resolveGuildWayfarerChronicle,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
@@ -83,6 +85,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
@@ -136,6 +139,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.wayfarer_chronicle');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
     expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
@@ -612,6 +616,96 @@ describe('alpha contract', () => {
     });
     expect(missingRally.rallied).toBe(false);
     expect(missingRally.missing).toContain('presence:1/2');
+
+    expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
+    const chronicle = resolveGuildWayfarerChronicle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      localPresenceCount: 2,
+      captureProof: true,
+      routeMasteryProof: true,
+      routePatrolProof: true,
+      habitatBondProof: true,
+      researchProof: true,
+      compendiumProof: true,
+      provisionProof: true,
+      commissionProof: true,
+      rallyProof: true,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      conditionWeaveProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first wayfarer chronicle.']
+    });
+    expect(chronicle).toMatchObject({
+      ok: true,
+      chronicled: true,
+      chronicleId: 'jade-wayfarer-chronicle',
+      chronicleName: 'Jade Wayfarer Chronicle',
+      title: 'First-Court Alpha Chronicle',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 79,
+      requiredScore: 52,
+      rewardItemId: 'jade-wayfarer-chronicle-clasp',
+      source: 'guild-wayfarer-chronicle'
+    });
+    expect(chronicle.message).toContain('No real value');
+    const missingChronicle = resolveGuildWayfarerChronicle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      localPresenceCount: 2,
+      captureProof: true,
+      routeMasteryProof: true,
+      routePatrolProof: true,
+      habitatBondProof: true,
+      researchProof: true,
+      compendiumProof: true,
+      provisionProof: true,
+      commissionProof: true,
+      rallyProof: false,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      conditionWeaveProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      questChainProof: true,
+      marketProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first wayfarer chronicle.']
+    });
+    expect(missingChronicle.chronicled).toBe(false);
+    expect(missingChronicle.missing).toContain('rally');
 
     expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
     const harmonyForm = resolveSpiritHarmonyForm({

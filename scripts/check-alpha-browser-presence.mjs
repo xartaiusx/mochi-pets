@@ -201,6 +201,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.deposit_request"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="guild.wayfarer_chronicle"]', { timeout: timeoutMs });
 
   try {
     await page.waitForFunction(
@@ -222,6 +223,7 @@ async function exerciseAlphaHud(page) {
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
+      const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
       const technique = document.querySelector('[data-technique-label]')?.textContent || '';
       const tactic = document.querySelector('[data-tactic-label]')?.textContent || '';
       const loadout = document.querySelector('[data-loadout-label]')?.textContent || '';
@@ -260,6 +262,7 @@ async function exerciseAlphaHud(page) {
         && provision.includes('Jade Court Provision Satchel')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
+        && chronicle.includes('Jade Wayfarer Chronicle')
         && technique.includes('Technique:')
         && technique.includes('XP')
         && tactic.includes('Tactic:')
@@ -360,6 +363,12 @@ async function exerciseAlphaHud(page) {
         && state.rallyScore >= 22
         && state.rallyPresenceCount >= 2
         && state.rallyKnotClaimed === true
+        && state.wayfarerChronicleProof === true
+        && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
+        && state.wayfarerChronicleName === 'Jade Wayfarer Chronicle'
+        && state.wayfarerChronicleScore >= 52
+        && state.wayfarerChronicleRequiredScore === 52
+        && state.wayfarerChronicleClaspClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
         && state.harmonyFormName === 'Triune Jade Harmony'
@@ -486,6 +495,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
+        && chat.includes('Jade Wayfarer Chronicle complete')
         && chat.includes('Jade Step Loadout prepared')
         && chat.includes('Jade Heart Trait Attunement')
         && chat.includes('Jade Mirror Condition Weave complete')
@@ -514,6 +524,7 @@ async function exerciseAlphaHud(page) {
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
+      chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
       trait: document.querySelector('[data-trait-label]')?.textContent || '',
       condition: document.querySelector('[data-condition-label]')?.textContent || '',
@@ -550,6 +561,7 @@ async function exerciseAlphaHud(page) {
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
+      chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
       technique: document.querySelector('[data-technique-label]')?.textContent?.trim() || '',
       tactic: document.querySelector('[data-tactic-label]')?.textContent?.trim() || '',
       loadout: document.querySelector('[data-loadout-label]')?.textContent?.trim() || '',
@@ -656,6 +668,13 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.rallyScore >= 22, 'HUD rally action must record a passing rally score.');
   assert(snapshot.state.rallyPresenceCount >= 2, 'HUD rally action must record two local tester presences.');
   assert(snapshot.state.rallyKnotClaimed === true, 'HUD rally action must mark the no-real-value rally knot proof.');
+  assert(snapshot.chronicle.includes('Jade Wayfarer Chronicle'), 'HUD chronicle label must show the completed first-court alpha chronicle.');
+  assert(snapshot.state.wayfarerChronicleProof === true, 'HUD chronicle action must record first-court alpha chronicle proof.');
+  assert(snapshot.state.wayfarerChronicleId === 'jade-wayfarer-chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle id.');
+  assert(snapshot.state.wayfarerChronicleName === 'Jade Wayfarer Chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle name.');
+  assert(snapshot.state.wayfarerChronicleScore >= 52, 'HUD chronicle action must record a passing chronicle score.');
+  assert(snapshot.state.wayfarerChronicleRequiredScore === 52, 'HUD chronicle action must record the chronicle requirement.');
+  assert(snapshot.state.wayfarerChronicleClaspClaimed === true, 'HUD chronicle action must mark the no-real-value chronicle clasp proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
   assert(snapshot.state.harmonyFormId === 'triune-jade-harmony', 'HUD harmony action must record the harmony form id.');
@@ -782,6 +801,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
+  assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');
   assert(chat.some((line) => String(line).includes('Jade Step Loadout prepared')), 'HUD chat state must record the technique loadout action.');
   assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Condition Weave complete')), 'HUD chat state must record the condition weave action.');
