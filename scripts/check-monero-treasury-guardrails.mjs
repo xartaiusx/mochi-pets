@@ -10,11 +10,11 @@ const textFileSkip = /\.(png|jpg|jpeg|webp|gif|ico|mp3|wav|ogg|zip|7z|exe|dll|md
 const requiredSnippets = [
   {
     file: 'package.json',
-    includes: ['"alpha:monero-treasury"']
+    includes: ['"alpha:monero-treasury"', '"alpha:monero-operator-handoff"']
   },
   {
     file: 'AGENTS.md',
-    includes: ['Monero treasury', 'operator-only', 'No browser mining', 'mining binaries', 'alpha:monero-treasury']
+    includes: ['Monero treasury', 'operator-only', 'No browser mining', 'mining binaries', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
   },
   {
     file: 'docs/monero-treasury.md',
@@ -31,7 +31,9 @@ const requiredSnippets = [
       'Do not try to convert XMR into cENJ',
       'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations',
       'admin kill switch',
-      'A crypto wallet cannot cap those bills'
+      'A crypto wallet cannot cap those bills',
+      'npm run alpha:monero-operator-handoff',
+      'fails if Monero/P2Pool/XMRig wallet or mining processes are already running'
     ]
   },
   {
@@ -43,8 +45,27 @@ const requiredSnippets = [
       'Avoid gameplay/map/HUD/asset files',
       'Do not run `npm run prepare-assets`',
       'Do not run destructive Git commands',
+      'npm run alpha:monero-operator-handoff',
       'availableBudget = min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations',
+      'monero-operator-handoff.json',
       'No miner, wallet, exchange, provider, Enjin, Fly, Vercel, Supabase, Discord, hosted check, or chain action was started'
+    ]
+  },
+  {
+    file: 'scripts/write-monero-operator-handoff.mjs',
+    includes: [
+      'Wrote no-secret Monero operator handoff',
+      'C:\\\\Users\\\\xtyty\\\\Documents\\\\Mochi Social Ops',
+      'monero-operator-handoff.json',
+      'monero-operator-handoff.md',
+      'forbiddenProcessNames',
+      'monerod.exe',
+      'xmrig.exe',
+      'noMiningStarted: true',
+      'noProviderMutation: true',
+      'officialProcedures',
+      'withdrawalCapFormula',
+      'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations'
     ]
   },
   {

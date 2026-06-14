@@ -20,6 +20,7 @@
     "secret-scan": "node scripts/check-secrets.mjs",
     "alpha:readiness": "node scripts/check-alpha-readiness.mjs",
     "alpha:monero-treasury": "node scripts/check-monero-treasury-guardrails.mjs",
+    "alpha:monero-operator-handoff": "node scripts/write-monero-operator-handoff.mjs",
     "alpha:local-acceptance": "node scripts/check-local-alpha-acceptance.mjs",
     "alpha:load-smoke": "node scripts/check-alpha-load-smoke.mjs",
     "alpha:browser-presence": "node scripts/check-alpha-browser-presence.mjs",

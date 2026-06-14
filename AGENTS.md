@@ -12,6 +12,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Secret scan: `npm run secret-scan`
 - Alpha readiness: `npm run alpha:readiness`
 - Monero treasury guardrails: `npm run alpha:monero-treasury`
+- Monero operator handoff: `npm run alpha:monero-operator-handoff`
 - Local alpha acceptance against a running server: `npm run alpha:local-acceptance`
 - Local 10-25 tester HTTP load smoke against a running server: `npm run alpha:load-smoke`
 - Local two-tab browser presence smoke against a running server: `npm run alpha:browser-presence`

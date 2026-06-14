@@ -57,14 +57,17 @@ A second agent may be working on Mochi Social game development in parallel. This
 3. Keep or create `scripts/check-monero-treasury-guardrails.mjs` to block tracked mining binaries, wallet files, node data, and secret-shaped Monero/exchange material.
 4. Keep `scripts/check-secrets.mjs` hardened for Monero wallet material, miner archives/binaries, exchange credentials, Enjin secrets, and Supabase service-role keys.
 5. Ensure `package.json` exposes `npm run alpha:monero-treasury`.
-6. Create or verify local-only operator folders outside Git. Do not download, extract, or run miner binaries unless a later action-time approval explicitly asks for it.
-7. Run local checks:
+6. Ensure `package.json` exposes `npm run alpha:monero-operator-handoff`.
+7. Create or verify local-only operator folders outside Git. Do not download, extract, or run miner binaries unless a later action-time approval explicitly asks for it.
+8. Run `npm run alpha:monero-operator-handoff` to write no-secret local handoff files under `C:\Users\xtyty\Documents\Mochi Social Ops\reports`.
+9. Run local checks:
    - `npm run alpha:monero-treasury`
+   - `npm run alpha:monero-operator-handoff`
    - `npm run secret-scan`
    - `npm run alpha:readiness`
    - `npm run clean-room-scan`
    - `git diff --check`
-8. Commit and push public-repo changes. Public pushes are allowed; provider mutations and cost-bearing actions are not.
+10. Commit and push public-repo changes. Public pushes are allowed; provider mutations and cost-bearing actions are not.
 
 ## Future Operator Lane
 
@@ -91,6 +94,7 @@ Reject if budget cannot be verified. Use idempotency keys. Credit inventory only
 
 - `docs/monero-treasury.md` and this goal file explain the external treasury lane and no-real-value Enjin separation.
 - Guardrail scripts reject tracked wallet files, mining binaries, node data, Monero private keys, wallet passwords, exchange credentials, and tax/accounting material.
-- `npm run alpha:monero-treasury`, `npm run secret-scan`, `npm run alpha:readiness`, `npm run clean-room-scan`, and `git diff --check` pass locally.
+- `npm run alpha:monero-treasury`, `npm run alpha:monero-operator-handoff`, `npm run secret-scan`, `npm run alpha:readiness`, `npm run clean-room-scan`, and `git diff --check` pass locally.
 - Local operator folders exist outside Git.
+- No-secret operator handoff files exist at `C:\Users\xtyty\Documents\Mochi Social Ops\reports\monero-operator-handoff.json` and `.md`.
 - No miner, wallet, exchange, provider, Enjin, Fly, Vercel, Supabase, Discord, hosted check, or chain action was started.

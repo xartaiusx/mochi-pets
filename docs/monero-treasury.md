@@ -76,6 +76,14 @@ No-secret mining evidence may record:
 
 Do not publish wallet balance, wallet file paths with private context, exchange account details, tax records, or raw logs unless the operator intentionally keeps them in a private location outside Git.
 
+Before handing this lane to an operator, run:
+
+```powershell
+npm run alpha:monero-operator-handoff
+```
+
+That command writes ignored, no-secret handoff files under `C:\Users\xtyty\Documents\Mochi Social Ops\reports`, creates missing ops folders, records official procedure links, records the withdrawal cap formula, and fails if Monero/P2Pool/XMRig wallet or mining processes are already running. It never downloads binaries, opens wallets, starts miners, starts Wallet Daemon signing, contacts Enjin, mutates providers, or reads secret values.
+
 ## Canary Funding Lane
 
 Alpha remains no-real-value. Enjin Canary testing uses cENJ/Fuel Tank tooling, not mined XMR. Do not try to convert XMR into cENJ, do not set dummy `ENJIN_COLLECTION_ID` or `ENJIN_FUEL_TANK_ID`, and do not clear funded-chain gates until real cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality proof are approved and verified.
