@@ -10,6 +10,7 @@ import {
   SPIRIT_BOND_MILESTONES,
   SPIRIT_CARE_CYCLES,
   SPIRIT_CAPTURE_RITES,
+  SPIRIT_AFFINITY_MATRICES,
   SPIRIT_CRAFT_WRITS,
   SPIRIT_ENCOUNTER_ATLASES,
   SPIRIT_EXPEDITION_ROUTES,
@@ -39,6 +40,7 @@ import {
   resolveGuildWayfarerChronicle,
   resolveMochiStoryChapter,
   resolveMochiSpiritQuestProgress,
+  resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleRound,
   resolveSpiritBondMilestone,
@@ -1421,6 +1423,7 @@ describe('Mochi Spirits alpha content contract', () => {
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      affinityMatrixProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1473,6 +1476,7 @@ describe('Mochi Spirits alpha content contract', () => {
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      affinityMatrixProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1502,7 +1506,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 112,
+      score: 115,
       requiredScore: 70,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -1517,6 +1521,7 @@ describe('Mochi Spirits alpha content contract', () => {
       wayfarerChronicleProof: false,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      affinityMatrixProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1555,6 +1560,7 @@ describe('Mochi Spirits alpha content contract', () => {
       wayfarerChronicleProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
+      affinityMatrixProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1584,7 +1590,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 77,
+      score: 80,
       requiredScore: 59,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
@@ -1820,6 +1826,78 @@ describe('Mochi Spirits alpha content contract', () => {
       rewardItemId: ALPHA_ITEMS.conditionCharm.id
     });
 
+    expect(SPIRIT_AFFINITY_MATRICES.map((matrix) => matrix.id)).toEqual(['jade-affinity-matrix']);
+    const blockedAffinityMatrix = resolveSpiritAffinityMatrix({
+      partyIds: fullRoster,
+      activeSpiritId: 'lirabao',
+      affinityLabels: ['blossom', 'citrus-gold', 'sky-jade'],
+      conditionIds: conditionWeave.conditionIds,
+      affinityProof: false,
+      affinityTrialId: 'silk-cinder-trial',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      tacticProof: true,
+      harmonyFormProof: true,
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the affinity matrix.']
+    });
+    expect(blockedAffinityMatrix).toMatchObject({
+      mapped: false,
+      matrixId: 'jade-affinity-matrix',
+      missing: ['trial:silk-cinder-trial']
+    });
+
+    const affinityMatrix = resolveSpiritAffinityMatrix({
+      partyIds: fullRoster,
+      activeSpiritId: 'lirabao',
+      affinityLabels: ['blossom', 'citrus-gold', 'sky-jade'],
+      conditionIds: conditionWeave.conditionIds,
+      affinityProof: true,
+      affinityTrialId: 'silk-cinder-trial',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      tacticProof: true,
+      harmonyFormProof: true,
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the affinity matrix.']
+    });
+    expect(affinityMatrix).toMatchObject({
+      mapped: true,
+      matrixId: 'jade-affinity-matrix',
+      matrixName: 'Jade Affinity Matrix',
+      affinityLabels: ['blossom', 'citrus-gold', 'sky-jade'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      score: 56,
+      requiredScore: 44,
+      rewardItemId: ALPHA_ITEMS.affinityMatrixSeal.id,
+      source: 'battle-affinity-matrix'
+    });
+    expect(affinityMatrix.message).toContain('No real value');
+
     expect(SPIRIT_TOURNAMENT_BRACKETS.map((bracket) => bracket.id)).toEqual(['jade-banner-tournament']);
     const tournament = resolveSpiritTournamentBracket({
       partyIds: fullRoster,
@@ -1832,6 +1910,7 @@ describe('Mochi Spirits alpha content contract', () => {
       harmonyTrialProof: true,
       harmonyTrialId: 'jade-echo-concord',
       conditionWeaveProof: true,
+      affinityMatrixProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: battleRound.focusScore,
@@ -1849,7 +1928,7 @@ describe('Mochi Spirits alpha content contract', () => {
       cleared: true,
       bracketId: 'jade-banner-tournament',
       bracketName: 'Jade Banner Tournament',
-      score: 49,
+      score: 52,
       requiredScore: 38,
       rewardItemId: ALPHA_ITEMS.tournamentPennant.id,
       source: 'battle-tournament-bracket'
@@ -1874,6 +1953,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleRoundOpponentScore: battleRound.opponentScore,
       conditionWeaveProof: true,
       conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
       techniqueLoadoutProof: true,
       traitAttunementProof: true,
       guildRankProof: true,
@@ -1907,6 +1987,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleRoundOpponentScore: battleRound.opponentScore,
       conditionWeaveProof: true,
       conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
       techniqueLoadoutProof: true,
       traitAttunementProof: true,
       guildRankProof: true,
@@ -1923,7 +2004,7 @@ describe('Mochi Spirits alpha content contract', () => {
       circleName: 'Jade Rival Circle',
       rivalName: 'Qinghei Banner Circle',
       partyIds: [...fullRoster],
-      score: 55,
+      score: 58,
       requiredScore: 46,
       rewardItemId: ALPHA_ITEMS.rivalCircleMark.id,
       source: 'battle-rival-circle'

@@ -9,6 +9,7 @@ import {
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_AFFINITY_MATRICES,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_BATTLE_CONDITIONS,
@@ -76,6 +77,7 @@ import {
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
   resolveMochiSpiritQuestProgress,
+  resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleTactic,
   resolveGuildRankTrial,
@@ -141,6 +143,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildAscensionTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.affinityMatrices).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
@@ -232,6 +235,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
     expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_matrix');
     expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
@@ -1637,6 +1641,7 @@ describe('alpha contract', () => {
       techniqueLoadoutProof: true,
       traitAttunementProof: true,
       conditionWeaveProof: true,
+      affinityMatrixProof: true,
       guildRankProof: true,
       growthRiteProof: true,
       harmonyFormProof: true,
@@ -1667,7 +1672,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 112,
+      score: 115,
       requiredScore: 70,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1699,6 +1704,7 @@ describe('alpha contract', () => {
       techniqueLoadoutProof: true,
       traitAttunementProof: true,
       conditionWeaveProof: true,
+      affinityMatrixProof: true,
       guildRankProof: true,
       growthRiteProof: true,
       harmonyFormProof: true,
@@ -1741,6 +1747,7 @@ describe('alpha contract', () => {
       battleRoundFocusScore: 18,
       battleRoundOpponentScore: 8,
       conditionWeaveProof: true,
+      affinityMatrixProof: true,
       harmonyFormProof: true,
       harmonyTrialProof: true,
       teamSparMatchProof: true,
@@ -1765,7 +1772,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 77,
+      score: 80,
       requiredScore: 59,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -1789,6 +1796,7 @@ describe('alpha contract', () => {
       battleRoundFocusScore: 18,
       battleRoundOpponentScore: 8,
       conditionWeaveProof: true,
+      affinityMatrixProof: true,
       harmonyFormProof: true,
       harmonyTrialProof: true,
       teamSparMatchProof: true,
@@ -2196,6 +2204,7 @@ describe('alpha contract', () => {
       harmonyTrialProof: true,
       harmonyTrialId: 'jade-echo-concord',
       conditionWeaveProof: true,
+      affinityMatrixProof: true,
       battleRoundProof: true,
       battleRoundVictory: true,
       battleRoundFocusScore: 31,
@@ -2218,7 +2227,7 @@ describe('alpha contract', () => {
       hostName: 'Jade Banner Marshal',
       partyIds: ['aozhen', 'lirabao', 'jintari'],
       localPresenceCount: 2,
-      score: 49,
+      score: 52,
       requiredScore: 38,
       rewardItemId: 'jade-banner-tournament-pennant',
       source: 'battle-tournament-bracket'
@@ -2232,6 +2241,7 @@ describe('alpha contract', () => {
       teamSparMatchScore: 0,
       harmonyTrialProof: false,
       conditionWeaveProof: false,
+      affinityMatrixProof: false,
       battleRoundProof: false,
       battleRoundVictory: false,
       battleRoundFocusScore: 0,
@@ -2262,6 +2272,7 @@ describe('alpha contract', () => {
       battleRoundOpponentScore: 18,
       conditionWeaveProof: true,
       conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
       techniqueLoadoutProof: true,
       traitAttunementProof: true,
       guildRankProof: true,
@@ -2281,7 +2292,7 @@ describe('alpha contract', () => {
       rivalName: 'Qinghei Banner Circle',
       partyIds: ['aozhen', 'lirabao', 'jintari'],
       localPresenceCount: 2,
-      score: 55,
+      score: 58,
       requiredScore: 46,
       rewardItemId: 'jade-rival-circle-mark',
       source: 'battle-rival-circle'
@@ -2300,6 +2311,7 @@ describe('alpha contract', () => {
       battleRoundFocusScore: 0,
       battleRoundOpponentScore: 1,
       conditionWeaveProof: false,
+      affinityMatrixProof: false,
       techniqueLoadoutProof: false,
       traitAttunementProof: false,
       guildRankProof: false,
@@ -2391,6 +2403,78 @@ describe('alpha contract', () => {
       source: 'battle-condition-weave'
     });
     expect(conditionWeave.message).toContain('no-injury battle conditions');
+
+    expect(SPIRIT_AFFINITY_MATRICES.map((matrix) => matrix.id)).toEqual(['jade-affinity-matrix']);
+    const affinityMatrix = resolveSpiritAffinityMatrix({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      affinityLabels: ['sky-jade', 'blossom', 'citrus-gold'],
+      conditionIds: conditionWeave.conditionIds,
+      affinityProof: true,
+      affinityTrialId: 'silk-cinder-trial',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      tacticProof: true,
+      harmonyFormProof: true,
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Affinity matrix ready.']
+    });
+    expect(affinityMatrix).toMatchObject({
+      ok: true,
+      mapped: true,
+      matrixId: 'jade-affinity-matrix',
+      matrixName: 'Jade Affinity Matrix',
+      title: 'First Three-Spirit Matchup Matrix',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      affinityLabels: ['sky-jade', 'blossom', 'citrus-gold'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      score: 56,
+      requiredScore: 44,
+      rewardItemId: 'jade-affinity-matrix-seal',
+      source: 'battle-affinity-matrix'
+    });
+    expect(affinityMatrix.message).toContain('No real value');
+    expect(resolveSpiritAffinityMatrix({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      affinityLabels: ['sky-jade', 'blossom', 'citrus-gold'],
+      conditionIds: conditionWeave.conditionIds,
+      affinityProof: false,
+      affinityTrialId: 'silk-cinder-trial',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      tacticProof: true,
+      harmonyFormProof: true,
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Affinity matrix ready.']
+    }).mapped).toBe(false);
+
     expect(resolveSpiritConditionWeave({
       partyIds: ['lirabao'],
       tacticProof: false,

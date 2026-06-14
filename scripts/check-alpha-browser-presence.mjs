@@ -191,6 +191,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.route_patrol"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.trait_attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.condition_weave"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="battle.affinity_matrix"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.sanctuary_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.roster_archive"]', { timeout: timeoutMs });
   await page.fill('[data-chat-input]', chatMessage, { timeout: timeoutMs });
@@ -267,6 +268,7 @@ async function exerciseAlphaHud(page) {
       const loadout = document.querySelector('[data-loadout-label]')?.textContent || '';
       const trait = document.querySelector('[data-trait-label]')?.textContent || '';
       const condition = document.querySelector('[data-condition-label]')?.textContent || '';
+      const affinityMatrix = document.querySelector('[data-affinity-matrix-label]')?.textContent || '';
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const harmony = document.querySelector('[data-harmony-label]')?.textContent || '';
@@ -707,6 +709,25 @@ async function exerciseAlphaHud(page) {
         && state.conditionIds.includes('goldleaf-tempo')
         && state.conditionIds.includes('skybell-guard')
         && state.conditionCharmClaimed === true
+        && affinityMatrix.includes('Jade Affinity Matrix')
+        && state.affinityMatrixProof === true
+        && state.affinityMatrixId === 'jade-affinity-matrix'
+        && state.affinityMatrixName === 'Jade Affinity Matrix'
+        && state.affinityMatrixScore >= 44
+        && state.affinityMatrixRequiredScore === 44
+        && Array.isArray(state.affinityMatrixSpiritIds)
+        && state.affinityMatrixSpiritIds.includes('lirabao')
+        && state.affinityMatrixSpiritIds.includes('jintari')
+        && state.affinityMatrixSpiritIds.includes('aozhen')
+        && Array.isArray(state.affinityMatrixAffinityLabels)
+        && state.affinityMatrixAffinityLabels.includes('blossom')
+        && state.affinityMatrixAffinityLabels.includes('citrus-gold')
+        && state.affinityMatrixAffinityLabels.includes('sky-jade')
+        && Array.isArray(state.affinityMatrixConditionIds)
+        && state.affinityMatrixConditionIds.includes('lantern-ward')
+        && state.affinityMatrixConditionIds.includes('goldleaf-tempo')
+        && state.affinityMatrixConditionIds.includes('skybell-guard')
+        && state.affinityMatrixSealClaimed === true
         && state.techniqueProof === true
         && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
@@ -814,6 +835,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Step Loadout prepared')
         && chat.includes('Jade Heart Trait Attunement')
         && chat.includes('Jade Mirror Condition Weave complete')
+        && chat.includes('Jade Affinity Matrix mapped')
         && chat.includes('Triune Jade Harmony formed')
         && chat.includes('Jade Echo Concord Trial cleared')
         && chat.includes('Jade Mirror Team Match cleared')
@@ -861,6 +883,7 @@ async function exerciseAlphaHud(page) {
       loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
       trait: document.querySelector('[data-trait-label]')?.textContent || '',
       condition: document.querySelector('[data-condition-label]')?.textContent || '',
+      affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent || '',
@@ -919,6 +942,7 @@ async function exerciseAlphaHud(page) {
       loadout: document.querySelector('[data-loadout-label]')?.textContent?.trim() || '',
       trait: document.querySelector('[data-trait-label]')?.textContent?.trim() || '',
       condition: document.querySelector('[data-condition-label]')?.textContent?.trim() || '',
+      affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent?.trim() || '',
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent?.trim() || '',
@@ -1314,6 +1338,22 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.conditionIds) && snapshot.state.conditionIds.includes('goldleaf-tempo'), 'HUD condition action must include Goldleaf Tempo.');
   assert(Array.isArray(snapshot.state.conditionIds) && snapshot.state.conditionIds.includes('skybell-guard'), 'HUD condition action must include Skybell Guard.');
   assert(snapshot.state.conditionCharmClaimed === true, 'HUD condition action must mark the no-real-value condition charm proof.');
+  assert(snapshot.affinityMatrix.includes('Jade Affinity Matrix'), 'HUD affinity matrix label must show the mapped no-real-value matchup matrix.');
+  assert(snapshot.state.affinityMatrixProof === true, 'HUD affinity matrix action must record matrix proof.');
+  assert(snapshot.state.affinityMatrixId === 'jade-affinity-matrix', 'HUD affinity matrix action must record the Jade Affinity Matrix id.');
+  assert(snapshot.state.affinityMatrixName === 'Jade Affinity Matrix', 'HUD affinity matrix action must record the matrix name.');
+  assert(snapshot.state.affinityMatrixScore >= 44, 'HUD affinity matrix action must record a passing matrix score.');
+  assert(snapshot.state.affinityMatrixRequiredScore === 44, 'HUD affinity matrix action must record the matrix requirement.');
+  assert(Array.isArray(snapshot.state.affinityMatrixSpiritIds) && snapshot.state.affinityMatrixSpiritIds.includes('lirabao'), 'HUD affinity matrix action must record Lirabao in the matrix party.');
+  assert(Array.isArray(snapshot.state.affinityMatrixSpiritIds) && snapshot.state.affinityMatrixSpiritIds.includes('jintari'), 'HUD affinity matrix action must record Jintari in the matrix party.');
+  assert(Array.isArray(snapshot.state.affinityMatrixSpiritIds) && snapshot.state.affinityMatrixSpiritIds.includes('aozhen'), 'HUD affinity matrix action must record Aozhen in the matrix party.');
+  assert(Array.isArray(snapshot.state.affinityMatrixAffinityLabels) && snapshot.state.affinityMatrixAffinityLabels.includes('blossom'), 'HUD affinity matrix action must record the blossom affinity.');
+  assert(Array.isArray(snapshot.state.affinityMatrixAffinityLabels) && snapshot.state.affinityMatrixAffinityLabels.includes('citrus-gold'), 'HUD affinity matrix action must record the citrus-gold affinity.');
+  assert(Array.isArray(snapshot.state.affinityMatrixAffinityLabels) && snapshot.state.affinityMatrixAffinityLabels.includes('sky-jade'), 'HUD affinity matrix action must record the sky-jade affinity.');
+  assert(Array.isArray(snapshot.state.affinityMatrixConditionIds) && snapshot.state.affinityMatrixConditionIds.includes('lantern-ward'), 'HUD affinity matrix action must record Lantern Ward.');
+  assert(Array.isArray(snapshot.state.affinityMatrixConditionIds) && snapshot.state.affinityMatrixConditionIds.includes('goldleaf-tempo'), 'HUD affinity matrix action must record Goldleaf Tempo.');
+  assert(Array.isArray(snapshot.state.affinityMatrixConditionIds) && snapshot.state.affinityMatrixConditionIds.includes('skybell-guard'), 'HUD affinity matrix action must record Skybell Guard.');
+  assert(snapshot.state.affinityMatrixSealClaimed === true, 'HUD affinity matrix action must mark the no-real-value matrix seal proof.');
   assert(snapshot.affinity.includes('Affinity:'), 'HUD affinity label must show trial state.');
   assert(snapshot.state.affinityProof === true, 'HUD affinity action must record affinity trial proof.');
   assert(snapshot.state.lastAffinityTrialId === 'silk-cinder-trial', 'HUD affinity action must record the Silk Cinder trial.');
@@ -1401,6 +1441,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Step Loadout prepared')), 'HUD chat state must record the technique loadout action.');
   assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Condition Weave complete')), 'HUD chat state must record the condition weave action.');
+  assert(chat.some((line) => String(line).includes('Jade Affinity Matrix mapped')), 'HUD chat state must record the affinity matrix action.');
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');
   assert(chat.some((line) => String(line).includes('Jade Echo Concord Trial cleared')), 'HUD chat state must record the harmony trial action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Team Match cleared')), 'HUD chat state must record the team spar match action.');

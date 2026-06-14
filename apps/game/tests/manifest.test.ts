@@ -89,6 +89,7 @@ describe('game manifest', () => {
         guildRankTrials: true,
         spiritGrowthRites: true,
         affinityTrials: true,
+        affinityMatrices: true,
         raisingCare: true,
         roleplayQuests: true,
         questChains: true,

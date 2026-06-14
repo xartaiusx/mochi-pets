@@ -9,6 +9,7 @@ import {
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
+  SPIRIT_AFFINITY_MATRICES,
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_CARE_CYCLES,
@@ -50,6 +51,7 @@ import {
   selectMochiSpiritQuest,
   selectSpiritRaisingNeed,
   resolveSpiritAttunement,
+  resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
@@ -380,6 +382,15 @@ interface AlphaHudState {
   affinityAdvantage: boolean;
   affinityFocusScore: number;
   affinityTrialScore: number;
+  affinityMatrixProof: boolean;
+  affinityMatrixId?: string;
+  affinityMatrixName: string;
+  affinityMatrixScore: number;
+  affinityMatrixRequiredScore: number;
+  affinityMatrixSpiritIds: string[];
+  affinityMatrixAffinityLabels: string[];
+  affinityMatrixConditionIds: string[];
+  affinityMatrixSealClaimed: boolean;
   activePartyId?: string;
   partyIds: string[];
   supportSpiritIds: string[];
@@ -1023,6 +1034,14 @@ function defaultAlphaState(): AlphaHudState {
     affinityAdvantage: false,
     affinityFocusScore: 0,
     affinityTrialScore: 0,
+    affinityMatrixProof: false,
+    affinityMatrixName: 'Unmapped',
+    affinityMatrixScore: 0,
+    affinityMatrixRequiredScore: 0,
+    affinityMatrixSpiritIds: [],
+    affinityMatrixAffinityLabels: [],
+    affinityMatrixConditionIds: [],
+    affinityMatrixSealClaimed: false,
     partyIds: [],
     supportSpiritIds: [],
     harmonyFormProof: false,
@@ -1216,6 +1235,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-loadout-label>Loadout: pending</span>
       <span class="mochi-hud__hint" data-trait-label>Trait: pending</span>
       <span class="mochi-hud__hint" data-condition-label>Condition: pending</span>
+      <span class="mochi-hud__hint" data-affinity-matrix-label>Matrix: pending</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
@@ -1277,6 +1297,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.technique_loadout" aria-label="Prepare the three-spirit Mochirii move loadout">Moves</button>
       <button type="button" data-alpha-action="spirit.trait_attune" aria-label="Attune an original no-real-value Mochirii spirit trait">Trait</button>
       <button type="button" data-alpha-action="battle.condition_weave" aria-label="Weave original no-injury Mochirii battle conditions">Weave</button>
+      <button type="button" data-alpha-action="battle.affinity_matrix" aria-label="Record the no-real-value Jade Affinity Matrix">Matrix</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
@@ -1347,6 +1368,7 @@ function createHud() {
   const loadoutLabel = hud.querySelector('[data-loadout-label]');
   const traitLabel = hud.querySelector('[data-trait-label]');
   const conditionLabel = hud.querySelector('[data-condition-label]');
+  const affinityMatrixLabel = hud.querySelector('[data-affinity-matrix-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
@@ -1554,6 +1576,11 @@ function createHud() {
       conditionLabel.textContent = state.conditionWeaveProof
         ? `Condition: ${state.conditionWeaveName}, score ${state.conditionWeaveScore}`
         : 'Condition: pending';
+    }
+    if (affinityMatrixLabel) {
+      affinityMatrixLabel.textContent = state.affinityMatrixProof
+        ? `Matrix: ${state.affinityMatrixName}, ${state.affinityMatrixAffinityLabels.length} affinities, score ${state.affinityMatrixScore}/${state.affinityMatrixRequiredScore}`
+        : 'Matrix: pending';
     }
     if (affinityLabel) {
       affinityLabel.textContent = state.affinityProof
@@ -1845,6 +1872,9 @@ function readAlphaState(): AlphaHudState {
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
       conditionIds: Array.isArray(parsed?.conditionIds) ? parsed.conditionIds.map(String) : [],
+      affinityMatrixSpiritIds: Array.isArray(parsed?.affinityMatrixSpiritIds) ? parsed.affinityMatrixSpiritIds.map(String) : [],
+      affinityMatrixAffinityLabels: Array.isArray(parsed?.affinityMatrixAffinityLabels) ? parsed.affinityMatrixAffinityLabels.map(String) : [],
+      affinityMatrixConditionIds: Array.isArray(parsed?.affinityMatrixConditionIds) ? parsed.affinityMatrixConditionIds.map(String) : [],
       routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
       routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
@@ -2917,6 +2947,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       nurtureRiteProof: state.nurtureRiteProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
+      affinityMatrixProof: state.affinityMatrixProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       storyChapterProof: state.storyChapterProof,
@@ -2954,6 +2985,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       wayfarerChronicleProof: state.wayfarerChronicleProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
+      affinityMatrixProof: state.affinityMatrixProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
       rivalCircleProof: state.rivalCircleProof,
@@ -3126,6 +3158,40 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'battle.affinity_matrix') {
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    const affinityLabels = partyIds
+      .map((spiritId) => MOCHI_SPIRITS.find((entry) => entry.id === spiritId)?.affinity)
+      .filter(Boolean);
+    return {
+      matrixId: SPIRIT_AFFINITY_MATRICES[0].id,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0],
+      affinityLabels,
+      conditionIds: state.conditionIds.length ? state.conditionIds : SPIRIT_AFFINITY_MATRICES[0].requiredConditionIds,
+      affinityProof: state.affinityProof,
+      affinityTrialId: state.lastAffinityTrialId,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      techniqueLoadoutId: state.techniqueLoadoutId,
+      traitAttunementProof: state.traitAttunementProof,
+      traitAttunementId: state.traitAttunementId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      tacticProof: state.tacticProof,
+      harmonyFormProof: state.harmonyFormProof,
+      sparLadderWins: state.sparLadderWins,
+      trainingXp: state.trainingXp,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'party.set') {
     return {
       partyIds: state.attunedSpiritIds.slice(0, 3),
@@ -3195,6 +3261,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       harmonyTrialProof: state.harmonyTrialProof,
       harmonyTrialId: state.harmonyTrialId,
       conditionWeaveProof: state.conditionWeaveProof,
+      affinityMatrixProof: state.affinityMatrixProof,
       battleRoundProof: state.battleRoundProof,
       battleRoundVictory: state.battleRoundVictory,
       battleRoundFocusScore: state.battleRoundFocusScore,
@@ -3230,6 +3297,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       battleRoundOpponentScore: state.battleRoundOpponentScore,
       conditionWeaveProof: state.conditionWeaveProof,
       conditionWeaveId: state.conditionWeaveId,
+      affinityMatrixProof: state.affinityMatrixProof,
       techniqueLoadoutProof: state.techniqueLoadoutProof,
       traitAttunementProof: state.traitAttunementProof,
       guildRankProof: state.guildRankProof,
@@ -4314,6 +4382,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
@@ -4366,6 +4435,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),
@@ -4711,6 +4781,57 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'battle.affinity_matrix') {
+    const partyIds = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
+    const result = resolveSpiritAffinityMatrix(
+      {
+        partyIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || partyIds[0] || ''),
+        affinityLabels: Array.isArray(payload.affinityLabels)
+          ? payload.affinityLabels.map(String)
+          : partyIds.map((partySpiritId) => MOCHI_SPIRITS.find((entry) => entry.id === partySpiritId)?.affinity || ''),
+        conditionIds: Array.isArray(payload.conditionIds) ? payload.conditionIds.map(String) : state.conditionIds,
+        affinityProof: Boolean(payload.affinityProof ?? state.affinityProof),
+        affinityTrialId: String(payload.affinityTrialId || state.lastAffinityTrialId || ''),
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        techniqueLoadoutId: String(payload.techniqueLoadoutId || state.techniqueLoadoutId || ''),
+        traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
+        traitAttunementId: String(payload.traitAttunementId || state.traitAttunementId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        tacticProof: Boolean(payload.tacticProof ?? state.tacticProof),
+        harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
+        sparLadderWins: Number(payload.sparLadderWins ?? state.sparLadderWins ?? 0),
+        trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.matrixId || SPIRIT_AFFINITY_MATRICES[0].id)
+    );
+    if (result.mapped) {
+      state.affinityMatrixProof = true;
+      state.affinityMatrixId = result.matrixId;
+      state.affinityMatrixName = result.matrixName;
+      state.affinityMatrixScore = result.score;
+      state.affinityMatrixRequiredScore = result.requiredScore;
+      state.affinityMatrixSpiritIds = result.partyIds;
+      state.affinityMatrixAffinityLabels = result.affinityLabels;
+      state.affinityMatrixConditionIds = result.conditionIds;
+      state.affinityMatrixSealClaimed = result.rewardItemId === 'jade-affinity-matrix-seal';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'battle.affinity_trial') {
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === String(payload.spiritId || state.spiritId)) || MOCHI_SPIRITS[0];
     const moveId = String(payload.moveId || state.techniqueMoveId || spirit.battle.moves[0].id);
@@ -4890,6 +5011,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         harmonyTrialProof: Boolean(payload.harmonyTrialProof ?? state.harmonyTrialProof),
         harmonyTrialId: String(payload.harmonyTrialId || state.harmonyTrialId || ''),
         conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
         battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
         battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
@@ -4941,6 +5063,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
         conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
         conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
         traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
         guildRankProof: Boolean(payload.guildRankProof ?? state.guildRankProof),

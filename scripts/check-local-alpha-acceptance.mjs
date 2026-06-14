@@ -100,6 +100,7 @@ async function run() {
   assert(manifest.body.gameplay?.guildRankTrials === true, 'Manifest must expose Mochirii guild rank trials.');
   assert(manifest.body.gameplay?.spiritGrowthRites === true, 'Manifest must expose Mochi Spirit growth rites.');
   assert(manifest.body.gameplay?.affinityTrials === true, 'Manifest must expose Mochi Spirit affinity trials.');
+  assert(manifest.body.gameplay?.affinityMatrices === true, 'Manifest must expose Mochi Spirit affinity matrix planning.');
   assert(manifest.body.gameplay?.copiedUpstreamContent === false, 'Manifest must reject copied upstream content.');
 
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
@@ -154,6 +155,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.guildRankTrials === true, 'Alpha status must expose Mochirii guild rank trials.');
   assert(alphaStatus.body.gameplay?.spiritGrowthRites === true, 'Alpha status must expose Mochi Spirit growth rites.');
   assert(alphaStatus.body.gameplay?.affinityTrials === true, 'Alpha status must expose Mochi Spirit affinity trials.');
+  assert(alphaStatus.body.gameplay?.affinityMatrices === true, 'Alpha status must expose Mochi Spirit affinity matrix planning.');
   assert(alphaStatus.body.gameplay?.trainingBattles === true, 'Alpha status must expose training battles.');
   assert(alphaStatus.body.gameplay?.raisingCare === true, 'Alpha status must expose raising care.');
   assert(alphaStatus.body.gameplay?.roleplayQuests === true, 'Alpha status must expose roleplay quests.');
@@ -572,6 +574,39 @@ async function run() {
         guildBuddyProof: true,
         statusMood: 'cozy',
         chatLines: ['Local acceptance condition weave proof.'],
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-affinity-matrix`,
+      type: 'battle.affinity_matrix',
+      payload: {
+        matrixId: 'jade-affinity-matrix',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'lirabao',
+        affinityLabels: ['blossom', 'citrus-gold', 'sky-jade'],
+        conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+        affinityProof: true,
+        affinityTrialId: 'silk-cinder-trial',
+        techniqueLoadoutProof: true,
+        techniqueLoadoutId: 'jade-step-loadout',
+        traitAttunementProof: true,
+        traitAttunementId: 'jade-heart-trait',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 31,
+        battleRoundOpponentScore: 18,
+        tacticProof: true,
+        harmonyFormProof: true,
+        sparLadderWins: 1,
+        trainingXp: 3,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-affinity-matrix-seal',
+        chatLines: ['Local acceptance affinity matrix proof.'],
         noRealValue: true
       }
     },
@@ -996,6 +1031,8 @@ async function run() {
         harmonyTrialProof: true,
         harmonyTrialId: 'jade-echo-concord',
         conditionWeaveProof: true,
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
         battleRoundProof: true,
         battleRoundVictory: true,
         battleRoundFocusScore: 31,
@@ -1020,7 +1057,7 @@ async function run() {
         partyIds: ['lirabao', 'jintari', 'aozhen'],
         tournamentProof: true,
         tournamentId: 'jade-banner-tournament',
-        tournamentScore: 49,
+        tournamentScore: 52,
         mentorChallengeProof: true,
         mentorChallengeId: 'silk-banner-mentor-drill',
         mentorChallengeScore: 28,
@@ -1033,6 +1070,8 @@ async function run() {
         battleRoundOpponentScore: 18,
         conditionWeaveProof: true,
         conditionWeaveId: 'jade-mirror-condition-weave',
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
         techniqueLoadoutProof: true,
         traitAttunementProof: true,
         guildRankProof: true,
@@ -1198,6 +1237,8 @@ async function run() {
         techniqueLoadoutProof: true,
         traitAttunementProof: true,
         conditionWeaveProof: true,
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
         guildRankProof: true,
         growthRiteProof: true,
         harmonyFormProof: true,
@@ -1240,6 +1281,8 @@ async function run() {
         battleRoundFocusScore: 18,
         battleRoundOpponentScore: 8,
         conditionWeaveProof: true,
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
         harmonyFormProof: true,
         harmonyTrialProof: true,
         teamSparMatchProof: true,
@@ -1475,6 +1518,18 @@ async function run() {
   assert(captureRite?.payload?.battleRoundVictory === true, 'Capture rite ledger entry must preserve no-injury battle victory proof.');
   assert(captureRite?.payload?.rewardItemId === 'jade-capture-rite-tally', 'Capture rite ledger entry must preserve the no-real-value capture rite tally proof.');
   assert(captureRite?.payload?.noRealValue === true, 'Capture rite ledger entry must remain no-real-value.');
+  const affinityMatrix = entriesById.get(`${runId}-affinity-matrix`);
+  assert(affinityMatrix?.payload?.matrixId === 'jade-affinity-matrix', 'Affinity matrix ledger entry must preserve the Jade Affinity Matrix id.');
+  assert(Array.isArray(affinityMatrix?.payload?.partyIds) && affinityMatrix.payload.partyIds.length === 3, 'Affinity matrix ledger entry must preserve full-party proof.');
+  assert(Array.isArray(affinityMatrix?.payload?.affinityLabels) && affinityMatrix.payload.affinityLabels.includes('blossom') && affinityMatrix.payload.affinityLabels.includes('citrus-gold') && affinityMatrix.payload.affinityLabels.includes('sky-jade'), 'Affinity matrix ledger entry must preserve all first-court affinity labels.');
+  assert(Array.isArray(affinityMatrix?.payload?.conditionIds) && affinityMatrix.payload.conditionIds.includes('lantern-ward') && affinityMatrix.payload.conditionIds.includes('goldleaf-tempo') && affinityMatrix.payload.conditionIds.includes('skybell-guard'), 'Affinity matrix ledger entry must preserve all battle condition ids.');
+  assert(affinityMatrix?.payload?.affinityTrialId === 'silk-cinder-trial', 'Affinity matrix ledger entry must preserve the Silk Cinder trial proof.');
+  assert(affinityMatrix?.payload?.techniqueLoadoutProof === true, 'Affinity matrix ledger entry must preserve loadout proof.');
+  assert(affinityMatrix?.payload?.traitAttunementProof === true, 'Affinity matrix ledger entry must preserve trait proof.');
+  assert(affinityMatrix?.payload?.conditionWeaveProof === true, 'Affinity matrix ledger entry must preserve condition weave proof.');
+  assert(affinityMatrix?.payload?.battleRoundVictory === true, 'Affinity matrix ledger entry must preserve no-injury battle victory proof.');
+  assert(affinityMatrix?.payload?.rewardItemId === 'jade-affinity-matrix-seal', 'Affinity matrix ledger entry must preserve the no-real-value matrix seal proof.');
+  assert(affinityMatrix?.payload?.noRealValue === true, 'Affinity matrix ledger entry must remain no-real-value.');
   const tournament = entriesById.get(`${runId}-tournament-bracket`);
   assert(tournament?.payload?.bracketId === 'jade-banner-tournament', 'Tournament ledger entry must preserve the Jade Banner Tournament id.');
   assert(Array.isArray(tournament?.payload?.partyIds) && tournament.payload.partyIds.length === 3, 'Tournament ledger entry must preserve full-party proof.');
@@ -1484,6 +1539,8 @@ async function run() {
   assert(tournament?.payload?.teamSparMatchId === 'jade-mirror-team-match', 'Tournament ledger entry must preserve the team spar match id.');
   assert(tournament?.payload?.harmonyTrialProof === true, 'Tournament ledger entry must preserve harmony trial proof.');
   assert(tournament?.payload?.conditionWeaveProof === true, 'Tournament ledger entry must preserve condition weave proof.');
+  assert(tournament?.payload?.affinityMatrixProof === true, 'Tournament ledger entry must preserve affinity matrix proof.');
+  assert(tournament?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Tournament ledger entry must preserve the affinity matrix id.');
   assert(tournament?.payload?.battleRoundVictory === true, 'Tournament ledger entry must preserve no-injury battle victory proof.');
   assert(tournament?.payload?.localPresenceCount === 2, 'Tournament ledger entry must preserve two-tester presence proof.');
   assert(tournament?.payload?.routePatrolProof === true, 'Tournament ledger entry must preserve route patrol proof.');
@@ -1500,6 +1557,8 @@ async function run() {
   assert(rivalCircle?.payload?.teamSparMatchProof === true, 'Rival circle ledger entry must preserve team match proof.');
   assert(rivalCircle?.payload?.conditionWeaveProof === true, 'Rival circle ledger entry must preserve condition weave proof.');
   assert(rivalCircle?.payload?.conditionWeaveId === 'jade-mirror-condition-weave', 'Rival circle ledger entry must preserve condition weave id.');
+  assert(rivalCircle?.payload?.affinityMatrixProof === true, 'Rival circle ledger entry must preserve affinity matrix proof.');
+  assert(rivalCircle?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Rival circle ledger entry must preserve the affinity matrix id.');
   assert(rivalCircle?.payload?.battleRoundVictory === true, 'Rival circle ledger entry must preserve no-injury battle victory proof.');
   assert(rivalCircle?.payload?.techniqueLoadoutProof === true, 'Rival circle ledger entry must preserve technique loadout proof.');
   assert(rivalCircle?.payload?.traitAttunementProof === true, 'Rival circle ledger entry must preserve trait proof.');
@@ -1548,6 +1607,8 @@ async function run() {
   assert(chronicle?.payload?.kinshipAlbumProof === true, 'Wayfarer chronicle ledger entry must preserve kinship album proof.');
   assert(chronicle?.payload?.nurseryGroveProof === true, 'Wayfarer chronicle ledger entry must preserve nursery grove proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
+  assert(chronicle?.payload?.affinityMatrixProof === true, 'Wayfarer chronicle ledger entry must preserve affinity matrix proof.');
+  assert(chronicle?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Wayfarer chronicle ledger entry must preserve the affinity matrix id.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.storyChapterProof === true, 'Wayfarer chronicle ledger entry must preserve story chapter proof.');
   assert(chronicle?.payload?.insigniaCaseProof === true, 'Wayfarer chronicle ledger entry must preserve insignia case proof.');
@@ -1565,6 +1626,8 @@ async function run() {
   assert(ascension?.payload?.tournamentProof === true, 'Ascension trial ledger entry must preserve tournament proof.');
   assert(ascension?.payload?.rivalCircleProof === true, 'Ascension trial ledger entry must preserve rival circle proof.');
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
+  assert(ascension?.payload?.affinityMatrixProof === true, 'Ascension trial ledger entry must preserve affinity matrix proof.');
+  assert(ascension?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Ascension trial ledger entry must preserve the affinity matrix id.');
   assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
   assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');
 }

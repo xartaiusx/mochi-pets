@@ -332,12 +332,40 @@ const checks = [
     includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'record the Jade Capture Rite']
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Affinity Matrix proof', 'affinityMatrixProof', 'Jade Affinity Matrix Seal']
+  },
+  {
     file: 'docs/asset-pipeline-contract.md',
-    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Content-only proof loops']
+    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Jade Affinity Matrix', 'Content-only proof loops']
   },
   {
     file: 'docs/asset-ledger.md',
-    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Content-only HUD and ledger proofs']
+    includes: ['Jade Kinship Album', 'Jade Capture Rite', 'Jade Affinity Matrix', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['battle.affinity_matrix', 'Jade Affinity Matrix', 'affinityMatrixProof', 'Jade Affinity Matrix Seal']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Affinity Matrix proof', 'Jade Affinity Matrix Seal', 'no-real-value']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Affinity Matrix proof', 'battle.affinity_matrix', 'Jade Affinity Matrix Seal']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Affinity Matrix proof', 'matrix', 'content-only']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Affinity Matrix', 'Jade Affinity Matrix Seal', 'content-only party strategy proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['affinity-matrix', 'map the Jade Affinity Matrix proof']
   },
   {
     file: 'docs/site-integration.md',
@@ -358,6 +386,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['routePatrols: true', "'world.route_patrol'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -416,6 +448,10 @@ const checks = [
     includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
   },
   {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
+  },
+  {
     file: 'apps/game/src/integration/enjin-canary.ts',
     includes: ["network: 'CANARY'", 'fuelTank: config.fuelTankId', 'idempotencyKey: input.requestId', 'executeEnjinGraphqlPlan', 'submitHotToColdCertificateProof', 'submitFixedListingProof', 'createListing:', 'pollEnjinTransaction', 'normalizeEnjinTransactionState', 'canCreditHotInventory', 'config.fuelTankId']
   },
@@ -426,6 +462,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_ROUTE_PATROLS', 'resolveSpiritRoutePatrol', 'data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_AFFINITY_MATRICES', 'resolveSpiritAffinityMatrix', 'data-alpha-action="battle.affinity_matrix"', 'data-affinity-matrix-label', 'affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -486,6 +526,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Cloudbell Patrol', 'jade-route-patrol-pennant', 'resolveSpiritRoutePatrol', 'world-route-patrol']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Affinity Matrix', 'jade-affinity-matrix-seal', 'resolveSpiritAffinityMatrix', 'battle-affinity-matrix', 'affinityMatrixProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -620,6 +664,10 @@ const checks = [
     includes: ['allowlistRequired', 'noRealValue', 'finalityRequired']
   },
   {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['affinityMatrices: true']
+  },
+  {
     file: 'apps/game/tests/map-object-contract.test.ts',
     includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'guild-seal-chest', 'care-shrine', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Jade Vault Return Proof', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'guild-social-rally', 'Jade Lantern Court', '25 * 18']
   },
@@ -642,6 +690,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['world.route_patrol', 'jade-cloudbell-patrol', 'routePatrols', 'Jade Cloudbell Patrol', 'two-tester presence proof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.affinity_matrix', 'jade-affinity-matrix', 'affinityMatrices', 'Jade Affinity Matrix', 'affinityMatrixProof', 'jade-affinity-matrix-seal']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -706,6 +758,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed', 'Jade Cloudbell Patrol complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.affinity_matrix"', 'data-affinity-matrix-label', 'affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix mapped']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -802,6 +858,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['routePatrolProof', 'routePatrolPennantClaimed', 'Jade Cloudbell Patrol', 'jade-route-patrol-pennant', 'world-route-patrol', 'route patrol']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix', 'jade-affinity-matrix-seal', 'battle-affinity-matrix', 'affinity matrix']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

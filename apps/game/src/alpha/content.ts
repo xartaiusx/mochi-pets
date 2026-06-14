@@ -1549,6 +1549,7 @@ export interface GuildWayfarerChronicleProgress {
   nurtureRiteProof: boolean;
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
+  affinityMatrixProof: boolean;
   commissionProof: boolean;
   rallyProof: boolean;
   techniqueLoadoutProof: boolean;
@@ -1613,6 +1614,7 @@ export interface GuildAscensionTrialProgress {
   wayfarerChronicleProof: boolean;
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
+  affinityMatrixProof: boolean;
   routePatrolProof: boolean;
   mentorChallengeProof: boolean;
   tournamentProof: boolean;
@@ -1865,6 +1867,7 @@ export interface SpiritTournamentBracketProgress {
   harmonyTrialProof: boolean;
   harmonyTrialId?: string;
   conditionWeaveProof: boolean;
+  affinityMatrixProof: boolean;
   battleRoundProof: boolean;
   battleRoundVictory: boolean;
   battleRoundFocusScore: number;
@@ -1929,6 +1932,7 @@ export interface SpiritRivalCircleProgress {
   battleRoundOpponentScore: number;
   conditionWeaveProof: boolean;
   conditionWeaveId?: string;
+  affinityMatrixProof: boolean;
   techniqueLoadoutProof: boolean;
   traitAttunementProof: boolean;
   guildRankProof: boolean;
@@ -2116,6 +2120,70 @@ export interface SpiritConditionWeaveResult {
   partyIds: string[];
   conditionIds: string[];
   conditionNames: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
+export interface SpiritAffinityMatrix {
+  id: string;
+  name: string;
+  title: string;
+  requiredSpiritIds: readonly string[];
+  requiredAffinityLabels: readonly string[];
+  requiredConditionIds: readonly string[];
+  requiredTrialId: string;
+  requiredLoadoutId: string;
+  requiredTraitId: string;
+  requiredWeaveId: string;
+  requiredSparWins: number;
+  requiredTrainingXp: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritAffinityMatrixProgress {
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  affinityLabels?: readonly string[];
+  conditionIds: readonly string[];
+  affinityProof: boolean;
+  affinityTrialId?: string;
+  techniqueLoadoutProof: boolean;
+  techniqueLoadoutId?: string;
+  traitAttunementProof: boolean;
+  traitAttunementId?: string;
+  conditionWeaveProof: boolean;
+  conditionWeaveId?: string;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  battleRoundFocusScore: number;
+  battleRoundOpponentScore: number;
+  tacticProof: boolean;
+  harmonyFormProof: boolean;
+  sparLadderWins: number;
+  trainingXp: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritAffinityMatrixResult {
+  ok: boolean;
+  mapped: boolean;
+  matrixId: string;
+  matrixName: string;
+  title: string;
+  activeSpiritId: string;
+  activeSpiritName: string;
+  partyIds: string[];
+  affinityLabels: string[];
+  conditionIds: string[];
   score: number;
   requiredScore: number;
   missing: string[];
@@ -2863,6 +2931,11 @@ export const ALPHA_ITEMS = {
     id: 'jade-mirror-condition-charm',
     name: 'Jade Mirror Condition Charm',
     description: 'A no-real-value battle condition weave proof for closed-alpha Mochirii party rhythm.'
+  },
+  affinityMatrixSeal: {
+    id: 'jade-affinity-matrix-seal',
+    name: 'Jade Affinity Matrix Seal',
+    description: 'A no-real-value affinity matrix proof for closed-alpha Mochirii matchup planning, conditions, traits, and no-injury battle readiness.'
   },
   habitatTassel: {
     id: 'jade-court-habitat-tassel',
@@ -3818,6 +3891,26 @@ export const SPIRIT_CONDITION_WEAVES: readonly SpiritConditionWeave[] = [
     requiredScore: 34,
     rewardItemId: ALPHA_ITEMS.conditionCharm.id,
     summary: 'A no-real-value battle condition proof for testers who can coordinate a full Mochirii party, traits, move loadout, mentor readiness, and local social signals without injury.'
+  }
+];
+
+export const SPIRIT_AFFINITY_MATRICES: readonly SpiritAffinityMatrix[] = [
+  {
+    id: 'jade-affinity-matrix',
+    name: 'Jade Affinity Matrix',
+    title: 'First Three-Spirit Matchup Matrix',
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredAffinityLabels: Array.from(new Set(MOCHI_SPIRITS.map((spirit) => spirit.affinity))),
+    requiredConditionIds: SPIRIT_BATTLE_CONDITIONS.map((condition) => condition.id),
+    requiredTrialId: SPIRIT_AFFINITY_TRIALS[1].id,
+    requiredLoadoutId: SPIRIT_TECHNIQUE_LOADOUTS[0].id,
+    requiredTraitId: SPIRIT_TRAIT_ATTUNEMENTS[0].id,
+    requiredWeaveId: SPIRIT_CONDITION_WEAVES[0].id,
+    requiredSparWins: 1,
+    requiredTrainingXp: 3,
+    requiredScore: 44,
+    rewardItemId: ALPHA_ITEMS.affinityMatrixSeal.id,
+    summary: 'A no-real-value combat-planning proof for testers who map the first-court affinities, conditions, traits, move loadout, and no-injury battle evidence before brackets and rival bouts.'
   }
 ];
 
@@ -6223,6 +6316,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
+  if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.commissionProof) missing.push('commission');
   if (!progress.rallyProof) missing.push('rally');
   if (!progress.techniqueLoadoutProof) missing.push('loadout');
@@ -6267,6 +6361,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.nurtureRiteProof ? 3 : 0) +
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
+    (progress.affinityMatrixProof ? 3 : 0) +
     (progress.commissionProof ? 2 : 0) +
     (progress.rallyProof ? 3 : 0) +
     (progress.techniqueLoadoutProof ? 2 : 0) +
@@ -6308,7 +6403,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, waystone travel, nurturing, kinship, nursery care, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, waystone travel, nurturing, kinship, nursery care, affinity matrix planning, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -6337,6 +6432,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.wayfarerChronicleProof) missing.push('chronicle');
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
+  if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.mentorChallengeProof) missing.push('mentor');
   if (!progress.tournamentProof) missing.push('tournament');
@@ -6366,6 +6462,7 @@ export function resolveGuildAscensionTrial(
     (progress.wayfarerChronicleProof ? 5 : 0) +
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
+    (progress.affinityMatrixProof ? 3 : 0) +
     (progress.routePatrolProof ? 4 : 0) +
     (progress.mentorChallengeProof ? 4 : 0) +
     (progress.tournamentProof ? 3 : 0) +
@@ -6405,7 +6502,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, route patrol, mentor, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, affinity matrix, route patrol, mentor, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };
@@ -6780,6 +6877,7 @@ export function resolveSpiritTournamentBracket(
   if (!harmonyReady) missing.push(`concord:${bracket.requiredHarmonyTrialId}`);
 
   if (!progress.conditionWeaveProof) missing.push('condition-weave');
+  if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.battleRoundProof || !progress.battleRoundVictory || !scoreLeadReady) missing.push('battle-round');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
@@ -6798,6 +6896,7 @@ export function resolveSpiritTournamentBracket(
     (teamMatchReady ? 4 : 0) +
     (harmonyReady ? 3 : 0) +
     (progress.conditionWeaveProof ? 3 : 0) +
+    (progress.affinityMatrixProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory && scoreLeadReady ? 4 : 0) +
     (progress.routePatrolProof ? 2 : 0) +
     (progress.nurtureRiteProof ? 2 : 0) +
@@ -6825,7 +6924,7 @@ export function resolveSpiritTournamentBracket(
     missing,
     rewardItemId: bracket.rewardItemId,
     message: cleared
-      ? `${bracket.name} cleared: ${bracket.hostName} records ${partyNames} through a no-injury social battle circuit with mentor, team-match, route patrol, nurture, rank, and chat proof. No real value.`
+      ? `${bracket.name} cleared: ${bracket.hostName} records ${partyNames} through a no-injury social battle circuit with mentor, team-match, affinity matrix, route patrol, nurture, rank, and chat proof. No real value.`
       : `${bracket.name} needs ${missing.join(', ')} before the closed-alpha tournament bracket can be recorded.`,
     source: 'battle-tournament-bracket'
   };
@@ -6867,6 +6966,7 @@ export function resolveSpiritRivalCircle(
   const conditionReady = progress.conditionWeaveProof && progress.conditionWeaveId === circle.requiredConditionWeaveId;
   if (!conditionReady) missing.push(`condition:${circle.requiredConditionWeaveId}`);
 
+  if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.battleRoundProof || !progress.battleRoundVictory || !scoreLeadReady) missing.push('battle-round');
   if (!progress.techniqueLoadoutProof) missing.push('loadout');
   if (!progress.traitAttunementProof) missing.push('trait');
@@ -6887,6 +6987,7 @@ export function resolveSpiritRivalCircle(
     (mentorReady ? 4 : 0) +
     (teamMatchReady ? 3 : 0) +
     (conditionReady ? 3 : 0) +
+    (progress.affinityMatrixProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory && scoreLeadReady ? 5 : 0) +
     (progress.techniqueLoadoutProof ? 2 : 0) +
     (progress.traitAttunementProof ? 2 : 0) +
@@ -6916,7 +7017,7 @@ export function resolveSpiritRivalCircle(
     missing,
     rewardItemId: circle.rewardItemId,
     message: cleared
-      ? `${circle.name} cleared: ${partyNames} complete a no-injury rival bout against ${circle.rivalName} with tournament, mentor, team match, condition weave, and social witness proof. No real value.`
+      ? `${circle.name} cleared: ${partyNames} complete a no-injury rival bout against ${circle.rivalName} with tournament, mentor, team match, affinity matrix, condition weave, and social witness proof. No real value.`
       : `${circle.name} needs ${missing.join(', ')} before the no-injury rival circle can be recorded.`,
     source: 'battle-rival-circle'
   };
@@ -7807,6 +7908,120 @@ export function resolveSpiritConditionWeave(
       ? `${weave.name} complete: ${partyNames} coordinate ${conditionNames.join(', ')} as no-injury battle conditions for closed-alpha testing. No-real-value condition proof only.`
       : `${weave.name} needs ${missing.join(', ')} before non-injury battle conditions can be woven.`,
     source: 'battle-condition-weave'
+  };
+}
+
+export function resolveSpiritAffinityMatrix(
+  progress: SpiritAffinityMatrixProgress,
+  matrixId: string = SPIRIT_AFFINITY_MATRICES[0].id
+): SpiritAffinityMatrixResult {
+  const matrix = SPIRIT_AFFINITY_MATRICES.find((entry) => entry.id === matrixId) || SPIRIT_AFFINITY_MATRICES[0];
+  const requiredSpiritIds = new Set(matrix.requiredSpiritIds);
+  const requiredAffinityLabels = new Set<string>(matrix.requiredAffinityLabels);
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && partyIds.includes(progress.activeSpiritId) ? progress.activeSpiritId : partyIds[0] || matrix.requiredSpiritIds[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId) || MOCHI_SPIRITS[0];
+  const inferredAffinityLabels = partyIds
+    .map((spiritId) => getMochiSpirit(spiritId)?.affinity || '')
+    .filter((affinity) => affinity.length > 0);
+  const affinityLabels = Array.from(new Set((progress.affinityLabels?.length ? progress.affinityLabels : inferredAffinityLabels).filter(Boolean))).filter((affinity) => {
+    return requiredAffinityLabels.has(affinity);
+  });
+  const conditionIds = Array.from(new Set(progress.conditionIds.filter(Boolean))).filter((conditionId) => {
+    return matrix.requiredConditionIds.includes(conditionId);
+  });
+  const localConditionIds = new Set(conditionIds);
+  const missing: string[] = [];
+
+  for (const spiritId of matrix.requiredSpiritIds) {
+    if (!partyIds.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  for (const affinity of matrix.requiredAffinityLabels) {
+    if (!affinityLabels.includes(affinity)) missing.push(`affinity:${affinity}`);
+  }
+
+  for (const conditionId of matrix.requiredConditionIds) {
+    if (!localConditionIds.has(conditionId)) missing.push(`condition:${conditionId}`);
+  }
+
+  const affinityReady = progress.affinityProof && progress.affinityTrialId === matrix.requiredTrialId;
+  if (!affinityReady) missing.push(`trial:${matrix.requiredTrialId}`);
+
+  const loadoutReady = progress.techniqueLoadoutProof && progress.techniqueLoadoutId === matrix.requiredLoadoutId;
+  if (!loadoutReady) missing.push(`loadout:${matrix.requiredLoadoutId}`);
+
+  const traitReady = progress.traitAttunementProof && progress.traitAttunementId === matrix.requiredTraitId;
+  if (!traitReady) missing.push(`trait:${matrix.requiredTraitId}`);
+
+  const weaveReady = progress.conditionWeaveProof && progress.conditionWeaveId === matrix.requiredWeaveId;
+  if (!weaveReady) missing.push(`weave:${matrix.requiredWeaveId}`);
+
+  const focusScore = Math.max(0, Math.floor(progress.battleRoundFocusScore || 0));
+  const opponentScore = Math.max(0, Math.floor(progress.battleRoundOpponentScore || 0));
+  const battleReady = progress.battleRoundProof && progress.battleRoundVictory && focusScore >= opponentScore && focusScore > 0 && opponentScore > 0;
+  if (!battleReady) missing.push('battle-round');
+
+  if (!progress.tacticProof) missing.push('tactic');
+  if (!progress.harmonyFormProof) missing.push('harmony');
+
+  const sparWins = Math.max(0, Math.floor(progress.sparLadderWins || 0));
+  if (sparWins < matrix.requiredSparWins) missing.push(`spar-wins:${sparWins}/${matrix.requiredSparWins}`);
+
+  const trainingXp = Math.max(0, Math.floor(progress.trainingXp || 0));
+  if (trainingXp < matrix.requiredTrainingXp) missing.push(`training-xp:${trainingXp}/${matrix.requiredTrainingXp}`);
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) missing.push('status');
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(partyIds.length, matrix.requiredSpiritIds.length) * 3 +
+    Math.min(affinityLabels.length, matrix.requiredAffinityLabels.length) * 2 +
+    Math.min(conditionIds.length, matrix.requiredConditionIds.length) * 2 +
+    (affinityReady ? 5 : 0) +
+    (loadoutReady ? 4 : 0) +
+    (traitReady ? 4 : 0) +
+    (weaveReady ? 5 : 0) +
+    (battleReady ? 4 : 0) +
+    (progress.tacticProof ? 2 : 0) +
+    (progress.harmonyFormProof ? 2 : 0) +
+    Math.min(sparWins, matrix.requiredSparWins) * 2 +
+    Math.min(trainingXp, matrix.requiredTrainingXp) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const mapped = missing.length === 0 && score >= matrix.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    mapped,
+    matrixId: matrix.id,
+    matrixName: matrix.name,
+    title: matrix.title,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    partyIds,
+    affinityLabels,
+    conditionIds,
+    score,
+    requiredScore: matrix.requiredScore,
+    missing,
+    rewardItemId: matrix.rewardItemId,
+    message: mapped
+      ? `${matrix.name} mapped: ${partyNames} link ${affinityLabels.join(', ')} affinities with ${conditionIds.join(', ')} conditions before no-injury brackets and rival bouts. No real value.`
+      : `${matrix.name} needs ${missing.join(', ')} before matchup planning can be recorded.`,
+    source: 'battle-affinity-matrix'
   };
 }
 
