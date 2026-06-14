@@ -64,6 +64,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.spiritRosterArchives === true, 'Manifest must expose Mochi Spirit roster archives.');
   assert(manifest.body.gameplay?.spiritCareCycles === true, 'Manifest must expose Mochi Spirit care cycles.');
+  assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
@@ -103,6 +104,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.spiritRosterArchives === true, 'Alpha status must expose Mochi Spirit roster archives.');
   assert(alphaStatus.body.gameplay?.spiritCareCycles === true, 'Alpha status must expose Mochi Spirit care cycles.');
+  assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
@@ -654,6 +656,27 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-temperament-concord`,
+      type: 'spirit.temperament_concord',
+      payload: {
+        concordId: 'jade-temperament-concord',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'lirabao',
+        bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        traitAttunementProof: true,
+        traitAttunementId: 'jade-heart-trait',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Temperament concord ready.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-guild-commission`,
       type: 'guild.commission_complete',
       payload: {
@@ -850,6 +873,19 @@ async function run() {
   assert(careCycle?.payload?.sanctuaryRiteProof === true, 'Care cycle ledger entry must preserve sanctuary rite proof.');
   assert(careCycle?.payload?.raisingProof === true, 'Care cycle ledger entry must preserve raising proof.');
   assert(careCycle?.payload?.noRealValue === true, 'Care cycle ledger entry must remain no-real-value.');
+  const temperamentConcord = entriesById.get(`${runId}-temperament-concord`);
+  assert(temperamentConcord?.payload?.concordId === 'jade-temperament-concord', 'Temperament concord ledger entry must preserve the Jade Temperament Concord id.');
+  assert(Array.isArray(temperamentConcord?.payload?.roster) && temperamentConcord.payload.roster.length === 3, 'Temperament concord ledger entry must preserve full roster proof.');
+  assert(temperamentConcord?.payload?.bondBySpiritId?.lirabao >= 3, 'Temperament concord ledger entry must preserve Lirabao bond proof.');
+  assert(temperamentConcord?.payload?.bondBySpiritId?.jintari >= 3, 'Temperament concord ledger entry must preserve Jintari bond proof.');
+  assert(temperamentConcord?.payload?.bondBySpiritId?.aozhen >= 3, 'Temperament concord ledger entry must preserve Aozhen bond proof.');
+  assert(temperamentConcord?.payload?.careCycleProof === true, 'Temperament concord ledger entry must preserve care cycle proof.');
+  assert(temperamentConcord?.payload?.traitAttunementProof === true, 'Temperament concord ledger entry must preserve trait attunement proof.');
+  assert(temperamentConcord?.payload?.conditionWeaveProof === true, 'Temperament concord ledger entry must preserve condition weave proof.');
+  assert(temperamentConcord?.payload?.profileViewed === true, 'Temperament concord ledger entry must preserve profile proof.');
+  assert(temperamentConcord?.payload?.guildBuddyProof === true, 'Temperament concord ledger entry must preserve guild buddy proof.');
+  assert(temperamentConcord?.payload?.statusMood === 'cozy', 'Temperament concord ledger entry must preserve social status proof.');
+  assert(temperamentConcord?.payload?.noRealValue === true, 'Temperament concord ledger entry must remain no-real-value.');
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');

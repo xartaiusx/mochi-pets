@@ -200,6 +200,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="trade.direct_offer"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care_cycle"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.temperament_concord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -228,6 +229,7 @@ async function exerciseAlphaHud(page) {
       const archive = document.querySelector('[data-archive-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
+      const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -272,6 +274,7 @@ async function exerciseAlphaHud(page) {
         && archive.includes('Jade Court Roster Archive')
         && provision.includes('Jade Court Provision Satchel')
         && careCycle.includes('Jade Court Care Cycle')
+        && temperament.includes('Jade Temperament Concord')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -389,6 +392,17 @@ async function exerciseAlphaHud(page) {
         && state.careCycleCaredSpiritIds.length === 3
         && state.careCycleTotalBond >= 9
         && state.careCycleKnotClaimed === true
+        && state.temperamentConcordProof === true
+        && state.temperamentConcordId === 'jade-temperament-concord'
+        && state.temperamentConcordName === 'Jade Temperament Concord'
+        && state.temperamentConcordScore >= 36
+        && state.temperamentConcordRequiredScore === 36
+        && Array.isArray(state.temperamentConcordLabels)
+        && state.temperamentConcordLabels.includes('gentle')
+        && state.temperamentConcordLabels.includes('bright')
+        && state.temperamentConcordLabels.includes('curious')
+        && state.temperamentConcordTotalBond >= 9
+        && state.temperamentCharmClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -539,6 +553,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Spirit Compendium complete')
         && chat.includes('Jade Court Roster Archive sealed')
         && chat.includes('Jade Court Care Cycle complete')
+        && chat.includes('Jade Temperament Concord complete')
         && chat.includes('Jade Court Provision Satchel stocked')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
@@ -573,6 +588,7 @@ async function exerciseAlphaHud(page) {
       archive: document.querySelector('[data-archive-label]')?.textContent || '',
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent || '',
+      temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -614,6 +630,7 @@ async function exerciseAlphaHud(page) {
       archive: document.querySelector('[data-archive-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
+      temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -735,6 +752,17 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.careCycleCaredSpiritIds) && snapshot.state.careCycleCaredSpiritIds.length === 3, 'HUD care cycle action must record every cared spirit.');
   assert(snapshot.state.careCycleTotalBond >= 9, 'HUD care cycle action must record enough full-roster bond proof.');
   assert(snapshot.state.careCycleKnotClaimed === true, 'HUD care cycle action must mark the no-real-value care cycle knot proof.');
+  assert(snapshot.temperament.includes('Jade Temperament Concord'), 'HUD temperament label must show the completed temperament proof.');
+  assert(snapshot.state.temperamentConcordProof === true, 'HUD temperament action must record temperament concord proof.');
+  assert(snapshot.state.temperamentConcordId === 'jade-temperament-concord', 'HUD temperament action must record the temperament concord id.');
+  assert(snapshot.state.temperamentConcordName === 'Jade Temperament Concord', 'HUD temperament action must record the temperament concord name.');
+  assert(snapshot.state.temperamentConcordScore >= 36, 'HUD temperament action must record a passing temperament score.');
+  assert(snapshot.state.temperamentConcordRequiredScore === 36, 'HUD temperament action must record the temperament requirement.');
+  assert(Array.isArray(snapshot.state.temperamentConcordLabels) && snapshot.state.temperamentConcordLabels.includes('gentle'), 'HUD temperament action must record Lirabao temperament.');
+  assert(Array.isArray(snapshot.state.temperamentConcordLabels) && snapshot.state.temperamentConcordLabels.includes('bright'), 'HUD temperament action must record Jintari temperament.');
+  assert(Array.isArray(snapshot.state.temperamentConcordLabels) && snapshot.state.temperamentConcordLabels.includes('curious'), 'HUD temperament action must record Aozhen temperament.');
+  assert(snapshot.state.temperamentConcordTotalBond >= 9, 'HUD temperament action must record enough full-roster bond proof.');
+  assert(snapshot.state.temperamentCharmClaimed === true, 'HUD temperament action must mark the no-real-value temperament charm proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -890,6 +918,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Roster Archive sealed')), 'HUD chat state must record the roster archive action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
+  assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');

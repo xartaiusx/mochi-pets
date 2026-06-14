@@ -696,6 +696,59 @@ export interface SpiritCareCycleResult {
   source: string;
 }
 
+export interface SpiritTemperamentConcord {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredTemperaments: readonly string[];
+  requiredCareCycleId: string;
+  requiredTraitId: string;
+  requiredConditionWeaveId: string;
+  requiredBondPerSpirit: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritTemperamentConcordProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  bondBySpiritId?: Record<string, number>;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  traitAttunementProof: boolean;
+  traitAttunementId?: string;
+  conditionWeaveProof: boolean;
+  conditionWeaveId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritTemperamentConcordResult {
+  ok: boolean;
+  concorded: boolean;
+  concordId: string;
+  concordName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  temperamentLabels: string[];
+  totalBond: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -1795,6 +1848,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Care Cycle Knot',
     description: 'A no-real-value full-roster care cycle proof for closed-alpha Mochirii spirit raising.'
   },
+  temperamentCharm: {
+    id: 'jade-temperament-charm',
+    name: 'Jade Temperament Charm',
+    description: 'A no-real-value temperament concord proof for closed-alpha Mochirii spirit identity, care, and battle rhythm.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2241,6 +2299,25 @@ export const SPIRIT_CARE_CYCLES: readonly SpiritCareCycle[] = [
     requiredScore: 32,
     rewardItemId: ALPHA_ITEMS.careCycleKnot.id,
     summary: 'A no-real-value full-roster care rotation proof for testers who raise every first-court Mochi Spirit with supplies, archive tracking, sanctuary restoration, and social guild presence.'
+  }
+];
+
+export const SPIRIT_TEMPERAMENT_CONCORDS: readonly SpiritTemperamentConcord[] = [
+  {
+    id: 'jade-temperament-concord',
+    name: 'Jade Temperament Concord',
+    title: 'First Temperament Identity Concord',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredTemperaments: MOCHI_SPIRITS.map((spirit) => spirit.temperament),
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredTraitId: 'jade-heart-trait',
+    requiredConditionWeaveId: 'jade-mirror-condition-weave',
+    requiredBondPerSpirit: 3,
+    requiredChatLines: 1,
+    requiredScore: 36,
+    rewardItemId: ALPHA_ITEMS.temperamentCharm.id,
+    summary: 'A no-real-value temperament identity proof for testers who connect every first-court Mochi Spirit personality with care-cycle trust, trait attunement, battle condition weaving, and guild social presence.'
   }
 ];
 
@@ -3421,6 +3498,107 @@ export function resolveSpiritCareCycle(
       ? `${cycle.name} complete: ${activeName} helps ${caredNames || 'the first-court roster'} rotate care, training, supplies, archive notes, and sanctuary rest.${milestone} No real value.`
       : `${cycle.name} needs ${missing.join(', ')} before the full-roster care rotation can be recorded.`,
     source: 'spirit-care-cycle'
+  };
+}
+
+export function resolveSpiritTemperamentConcord(
+  progress: SpiritTemperamentConcordProgress,
+  concordId: string = SPIRIT_TEMPERAMENT_CONCORDS[0].id
+): SpiritTemperamentConcordResult {
+  const concord = SPIRIT_TEMPERAMENT_CONCORDS.find((entry) => entry.id === concordId) || SPIRIT_TEMPERAMENT_CONCORDS[0];
+  const requiredSpiritIds = new Set(concord.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const bondBySpiritId = progress.bondBySpiritId || {};
+  const missing: string[] = [];
+
+  for (const spiritId of concord.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+      continue;
+    }
+
+    const bond = Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0));
+    if (bond < concord.requiredBondPerSpirit) {
+      missing.push(`bond:${spiritId}:${bond}/${concord.requiredBondPerSpirit}`);
+    }
+  }
+
+  const temperamentLabels: string[] = roster.map((spiritId) => getMochiSpirit(spiritId)?.temperament || '').filter(Boolean);
+  const temperamentSet = new Set<string>(temperamentLabels);
+  for (const temperament of concord.requiredTemperaments) {
+    if (!temperamentSet.has(temperament)) {
+      missing.push(`temperament:${temperament}`);
+    }
+  }
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === concord.requiredCareCycleId;
+  if (!careCycleReady) {
+    missing.push(`care-cycle:${concord.requiredCareCycleId}`);
+  }
+
+  const traitReady = progress.traitAttunementProof && progress.traitAttunementId === concord.requiredTraitId;
+  if (!traitReady) {
+    missing.push(`trait:${concord.requiredTraitId}`);
+  }
+
+  const conditionReady = progress.conditionWeaveProof && progress.conditionWeaveId === concord.requiredConditionWeaveId;
+  if (!conditionReady) {
+    missing.push(`condition-weave:${concord.requiredConditionWeaveId}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < concord.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${concord.requiredChatLines}`);
+  }
+
+  const totalBond = roster.reduce((total, spiritId) => total + Math.max(0, Math.floor(bondBySpiritId[spiritId] || 0)), 0);
+  const score =
+    Math.min(roster.length, concord.requiredSpiritIds.length) * 3 +
+    Math.min(temperamentSet.size, concord.requiredTemperaments.length) * 3 +
+    Math.min(6, totalBond) +
+    (careCycleReady ? 5 : 0) +
+    (traitReady ? 4 : 0) +
+    (conditionReady ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const concorded = missing.length === 0 && score >= concord.requiredScore;
+  const temperamentSummary = Array.from(temperamentSet).join(', ');
+
+  return {
+    ok: true,
+    concorded,
+    concordId: concord.id,
+    concordName: concord.name,
+    title: concord.title,
+    habitat: concord.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    temperamentLabels: Array.from(temperamentSet),
+    totalBond,
+    score,
+    requiredScore: concord.requiredScore,
+    missing,
+    rewardItemId: concord.rewardItemId,
+    message: concorded
+      ? `${concord.name} complete: ${activeSpirit.name} anchors ${temperamentSummary} temperaments through care-cycle trust, trait identity, condition weaving, and local guild presence. No real value.`
+      : `${concord.name} needs ${missing.join(', ')} before the first-court temperament identity can be recorded.`,
+    source: 'spirit-temperament-concord'
   };
 }
 

@@ -15,6 +15,7 @@ import {
   SPIRIT_ROUTE_PATROLS,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
+  SPIRIT_TEMPERAMENT_CONCORDS,
   growthStageFromBond,
   resolveGuildCommission,
   resolveGuildAscensionTrial,
@@ -47,6 +48,7 @@ import {
   resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
+  resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTraitAttunement
@@ -585,6 +587,57 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'spirit-care-cycle'
     });
     expect(careCycle.message).toContain('No real value');
+
+    expect(SPIRIT_TEMPERAMENT_CONCORDS.map((concord) => concord.id)).toEqual(['jade-temperament-concord']);
+    const blockedTemperament = resolveSpiritTemperamentConcord({
+      roster: fullRoster,
+      activeSpiritId: 'lirabao',
+      bondBySpiritId: fullBondMap,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: false,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Temperament check.']
+    });
+    expect(blockedTemperament).toMatchObject({
+      concorded: false,
+      concordId: 'jade-temperament-concord',
+      missing: ['condition-weave:jade-mirror-condition-weave']
+    });
+
+    const temperament = resolveSpiritTemperamentConcord({
+      roster: fullRoster,
+      activeSpiritId: 'lirabao',
+      bondBySpiritId: fullBondMap,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Temperament check.']
+    });
+    expect(temperament).toMatchObject({
+      concorded: true,
+      concordId: 'jade-temperament-concord',
+      concordName: 'Jade Temperament Concord',
+      activeSpiritId: 'lirabao',
+      temperamentLabels: ['gentle', 'bright', 'curious'],
+      totalBond: 12,
+      score: 41,
+      requiredScore: 36,
+      rewardItemId: ALPHA_ITEMS.temperamentCharm.id,
+      source: 'spirit-temperament-concord'
+    });
+    expect(temperament.message).toContain('No real value');
 
     const commission = resolveGuildCommission({
       roster: fullRoster,

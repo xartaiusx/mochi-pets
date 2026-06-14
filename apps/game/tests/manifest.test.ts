@@ -51,6 +51,7 @@ describe('game manifest', () => {
         spiritCompendium: true,
         spiritRosterArchives: true,
         spiritCareCycles: true,
+        spiritTemperamentConcords: true,
         itemProvisions: true,
         guildCommissions: true,
         socialRallies: true,

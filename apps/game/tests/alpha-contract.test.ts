@@ -26,6 +26,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TRAIT_ATTUNEMENTS,
   growthStageFromBond,
@@ -62,6 +63,7 @@ import {
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritTeamSparMatch,
+  resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTraitAttunement,
   selectSpiritRaisingNeed,
@@ -93,6 +95,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRosterArchives).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCareCycles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -151,6 +154,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_archive');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.care_cycle');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -680,6 +684,55 @@ describe('alpha contract', () => {
       profileViewed: true,
       guildBuddyProof: true
     }).cycled).toBe(false);
+
+    expect(SPIRIT_TEMPERAMENT_CONCORDS.map((concord) => concord.id)).toEqual(['jade-temperament-concord']);
+    const temperament = resolveSpiritTemperamentConcord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Temperament concord ready.']
+    });
+    expect(temperament).toMatchObject({
+      ok: true,
+      concorded: true,
+      concordId: 'jade-temperament-concord',
+      concordName: 'Jade Temperament Concord',
+      title: 'First Temperament Identity Concord',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      temperamentLabels: ['gentle', 'bright', 'curious'],
+      totalBond: 12,
+      score: 41,
+      requiredScore: 36,
+      rewardItemId: 'jade-temperament-charm',
+      source: 'spirit-temperament-concord'
+    });
+    expect(temperament.message).toContain('No real value');
+    expect(resolveSpiritTemperamentConcord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careCycleProof: false,
+      careCycleId: 'jade-court-care-cycle',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Temperament concord ready.']
+    }).concorded).toBe(false);
 
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({

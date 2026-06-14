@@ -26,6 +26,7 @@ import {
   SPIRIT_ROUTE_PATROLS,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TRAIT_ATTUNEMENTS,
   growthStageFromBond,
@@ -66,6 +67,7 @@ import {
   resolveSpiritSparLadder,
   resolveSpiritRoutePatrol,
   resolveSpiritTeamSparMatch,
+  resolveSpiritTemperamentConcord,
   resolveSpiritTechniqueLoadout,
   resolveSpiritTechniqueMastery,
   resolveSpiritTraitAttunement,
@@ -178,6 +180,14 @@ interface AlphaHudState {
   careCycleCaredSpiritIds: string[];
   careCycleTotalBond: number;
   careCycleKnotClaimed: boolean;
+  temperamentConcordProof: boolean;
+  temperamentConcordId?: string;
+  temperamentConcordName: string;
+  temperamentConcordScore: number;
+  temperamentConcordRequiredScore: number;
+  temperamentConcordLabels: string[];
+  temperamentConcordTotalBond: number;
+  temperamentCharmClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -719,6 +729,13 @@ function defaultAlphaState(): AlphaHudState {
     careCycleCaredSpiritIds: [],
     careCycleTotalBond: 0,
     careCycleKnotClaimed: false,
+    temperamentConcordProof: false,
+    temperamentConcordName: 'Unmatched',
+    temperamentConcordScore: 0,
+    temperamentConcordRequiredScore: 0,
+    temperamentConcordLabels: [],
+    temperamentConcordTotalBond: 0,
+    temperamentCharmClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -923,6 +940,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
+      <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -963,6 +981,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.roster_archive" aria-label="Seal the no-real-value Jade Court Roster Archive">Archive</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
+      <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1024,6 +1043,7 @@ function createHud() {
   const archiveLabel = hud.querySelector('[data-archive-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
+  const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1140,6 +1160,11 @@ function createHud() {
       careCycleLabel.textContent = state.careCycleProof
         ? `Care Cycle: ${state.careCycleName}, ${state.careCycleCaredSpiritIds.length} spirits, score ${state.careCycleScore}/${state.careCycleRequiredScore}`
         : 'Care Cycle: pending';
+    }
+    if (temperamentLabel) {
+      temperamentLabel.textContent = state.temperamentConcordProof
+        ? `Temperament: ${state.temperamentConcordName}, ${state.temperamentConcordLabels.length} moods, score ${state.temperamentConcordScore}/${state.temperamentConcordRequiredScore}`
+        : 'Temperament: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -2040,6 +2065,26 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.temperament_concord') {
+    const roster = state.attunedSpiritIds;
+    return {
+      concordId: SPIRIT_TEMPERAMENT_CONCORDS[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, state.bond || 1])),
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      traitAttunementProof: state.traitAttunementProof,
+      traitAttunementId: state.traitAttunementId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2764,6 +2809,44 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.careCycleCaredSpiritIds = result.caredSpiritIds;
       state.careCycleTotalBond = result.totalBond;
       state.careCycleKnotClaimed = result.rewardItemId === 'jade-care-cycle-knot';
+      state.attunedSpiritIds = result.roster;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.temperament_concord') {
+    const payloadBondBySpiritId =
+      payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
+        ? Object.fromEntries(Object.entries(payload.bondBySpiritId as Record<string, unknown>).map(([spiritId, bond]) => [spiritId, Number(bond)]))
+        : Object.fromEntries(state.attunedSpiritIds.map((spiritId) => [spiritId, state.bond || 1]));
+    const result = resolveSpiritTemperamentConcord(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        bondBySpiritId: payloadBondBySpiritId,
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
+        traitAttunementId: String(payload.traitAttunementId || state.traitAttunementId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.concordId || SPIRIT_TEMPERAMENT_CONCORDS[0].id)
+    );
+    if (result.concorded) {
+      state.temperamentConcordProof = true;
+      state.temperamentConcordId = result.concordId;
+      state.temperamentConcordName = result.concordName;
+      state.temperamentConcordScore = result.score;
+      state.temperamentConcordRequiredScore = result.requiredScore;
+      state.temperamentConcordLabels = result.temperamentLabels;
+      state.temperamentConcordTotalBond = result.totalBond;
+      state.temperamentCharmClaimed = result.rewardItemId === 'jade-temperament-charm';
       state.attunedSpiritIds = result.roster;
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
