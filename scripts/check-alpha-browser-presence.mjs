@@ -204,6 +204,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.route_waystone"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -236,6 +237,7 @@ async function exerciseAlphaHud(page) {
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
+      const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -284,6 +286,7 @@ async function exerciseAlphaHud(page) {
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
         && craftWrit.includes('Jade Court Craft Writ')
+        && routeWaystone.includes('Jade Cloudbell Waystone')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -457,6 +460,18 @@ async function exerciseAlphaHud(page) {
         && state.craftWritStockItemIds.includes('lantern-harmony-tea')
         && state.craftWritStockItemIds.includes('jade-mooncake-box')
         && state.craftWritClaimed === true
+        && state.routeWaystoneProof === true
+        && state.routeWaystoneId === 'jade-cloudbell-waystone'
+        && state.routeWaystoneName === 'Jade Cloudbell Waystone'
+        && state.routeWaystoneScore >= 30
+        && state.routeWaystoneRequiredScore === 30
+        && Array.isArray(state.routeWaystoneRouteIds)
+        && state.routeWaystoneRouteIds.includes('moonbridge-bamboo-trail')
+        && state.routeWaystoneRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.routeWaystoneInvitedSpiritIds)
+        && state.routeWaystoneInvitedSpiritIds.includes('jintari')
+        && state.routeWaystoneInvitedSpiritIds.includes('aozhen')
+        && state.routeWaystoneSealClaimed === true
         && state.commissionProof === true
         && state.commissionId === 'jade-court-commission-ledger'
         && state.commissionName === 'Jade Court Commission Ledger'
@@ -647,6 +662,7 @@ async function exerciseAlphaHud(page) {
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
+      routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -692,6 +708,7 @@ async function exerciseAlphaHud(page) {
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
+      routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
       commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -864,6 +881,17 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('lantern-harmony-tea'), 'HUD craft action must record Lantern Harmony Tea stock.');
   assert(Array.isArray(snapshot.state.craftWritStockItemIds) && snapshot.state.craftWritStockItemIds.includes('jade-mooncake-box'), 'HUD craft action must record Jade Mooncake Box stock.');
   assert(snapshot.state.craftWritClaimed === true, 'HUD craft action must mark the no-real-value craft writ proof.');
+  assert(snapshot.routeWaystone.includes('Jade Cloudbell Waystone'), 'HUD waystone label must show the completed route waystone proof.');
+  assert(snapshot.state.routeWaystoneProof === true, 'HUD waystone action must record route waystone proof.');
+  assert(snapshot.state.routeWaystoneId === 'jade-cloudbell-waystone', 'HUD waystone action must record the route waystone id.');
+  assert(snapshot.state.routeWaystoneName === 'Jade Cloudbell Waystone', 'HUD waystone action must record the route waystone name.');
+  assert(snapshot.state.routeWaystoneScore >= 30, 'HUD waystone action must record a passing route waystone score.');
+  assert(snapshot.state.routeWaystoneRequiredScore === 30, 'HUD waystone action must record the route waystone requirement.');
+  assert(Array.isArray(snapshot.state.routeWaystoneRouteIds) && snapshot.state.routeWaystoneRouteIds.includes('moonbridge-bamboo-trail'), 'HUD waystone action must record the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.routeWaystoneRouteIds) && snapshot.state.routeWaystoneRouteIds.includes('cloudbell-reed-bank'), 'HUD waystone action must record the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.routeWaystoneInvitedSpiritIds) && snapshot.state.routeWaystoneInvitedSpiritIds.includes('jintari'), 'HUD waystone action must record Jintari route invitation proof.');
+  assert(Array.isArray(snapshot.state.routeWaystoneInvitedSpiritIds) && snapshot.state.routeWaystoneInvitedSpiritIds.includes('aozhen'), 'HUD waystone action must record Aozhen route invitation proof.');
+  assert(snapshot.state.routeWaystoneSealClaimed === true, 'HUD waystone action must mark the no-real-value waystone travel seal proof.');
   assert(snapshot.commission.includes('Jade Court Commission Ledger'), 'HUD commission label must show the completed no-real-value guild commission.');
   assert(snapshot.state.commissionProof === true, 'HUD commission action must record commission proof.');
   assert(snapshot.state.commissionId === 'jade-court-commission-ledger', 'HUD commission action must record the commission id.');
@@ -1023,6 +1051,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
   assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');
   assert(chat.some((line) => String(line).includes('Jade Court Craft Writ complete')), 'HUD chat state must record the craft writ action.');
+  assert(chat.some((line) => String(line).includes('Jade Cloudbell Waystone activated')), 'HUD chat state must record the route waystone action.');
   assert(chat.some((line) => String(line).includes('Jade Court Commission Ledger complete')), 'HUD chat state must record the guild commission action.');
   assert(chat.some((line) => String(line).includes('Jade Courtyard Rally complete')), 'HUD chat state must record the guild rally action.');
   assert(chat.some((line) => String(line).includes('Jade Wayfarer Chronicle complete')), 'HUD chat state must record the wayfarer chronicle action.');

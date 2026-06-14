@@ -27,6 +27,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
@@ -69,6 +70,7 @@ import {
   resolveSpiritRosterArchive,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
+  resolveSpiritRouteWaystone,
   resolveSpiritSanctuaryRite,
   resolveSpiritSparLadder,
   resolveSpiritRoutePatrol,
@@ -220,6 +222,14 @@ interface AlphaHudState {
   craftWritRecipeIds: string[];
   craftWritStockItemIds: string[];
   craftWritClaimed: boolean;
+  routeWaystoneProof: boolean;
+  routeWaystoneId?: string;
+  routeWaystoneName: string;
+  routeWaystoneScore: number;
+  routeWaystoneRequiredScore: number;
+  routeWaystoneRouteIds: string[];
+  routeWaystoneInvitedSpiritIds: string[];
+  routeWaystoneSealClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -791,6 +801,13 @@ function defaultAlphaState(): AlphaHudState {
     craftWritRecipeIds: [],
     craftWritStockItemIds: [],
     craftWritClaimed: false,
+    routeWaystoneProof: false,
+    routeWaystoneName: 'Inactive',
+    routeWaystoneScore: 0,
+    routeWaystoneRequiredScore: 0,
+    routeWaystoneRouteIds: [],
+    routeWaystoneInvitedSpiritIds: [],
+    routeWaystoneSealClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -999,6 +1016,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
+      <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -1043,6 +1061,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
+      <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1108,6 +1127,7 @@ function createHud() {
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
+  const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -1244,6 +1264,11 @@ function createHud() {
       craftWritLabel.textContent = state.craftWritProof
         ? `Craft: ${state.craftWritName}, ${state.craftWritRecipeIds.length} recipes, score ${state.craftWritScore}/${state.craftWritRequiredScore}`
         : 'Craft: pending';
+    }
+    if (routeWaystoneLabel) {
+      routeWaystoneLabel.textContent = state.routeWaystoneProof
+        ? `Waystone: ${state.routeWaystoneName}, ${state.routeWaystoneRouteIds.length} routes, score ${state.routeWaystoneScore}/${state.routeWaystoneRequiredScore}`
+        : 'Waystone: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1560,9 +1585,11 @@ function readAlphaState(): AlphaHudState {
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
+      routeWaystoneRouteIds: Array.isArray(parsed?.routeWaystoneRouteIds) ? parsed.routeWaystoneRouteIds.map(String) : [],
+      routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
-      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-48).map(String) : []
+      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-64).map(String) : []
     };
   } catch {
     return defaultAlphaState();
@@ -1570,7 +1597,7 @@ function readAlphaState(): AlphaHudState {
 }
 
 function writeAlphaState(state: AlphaHudState) {
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-48) }));
+  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-64) }));
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
 
@@ -2253,6 +2280,29 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.route_waystone') {
+    return {
+      waystoneId: SPIRIT_ROUTE_WAYSTONES[0].id,
+      activeSpiritId: state.spiritId || state.routeInvitedSpiritIds[state.routeInvitedSpiritIds.length - 1] || state.attunedSpiritIds[0],
+      discoveredRoutes: state.discoveredRouteIds,
+      routeInvitedSpiritIds: state.routeInvitedSpiritIds.length
+        ? state.routeInvitedSpiritIds
+        : state.attunedSpiritIds.filter((spiritId) => spiritId === 'jintari' || spiritId === 'aozhen'),
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId,
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      craftWritProof: state.craftWritProof,
+      craftWritId: state.craftWritId,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2309,6 +2359,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       compendiumProof: state.compendiumProof,
       provisionProof: state.provisionProof,
       craftWritProof: state.craftWritProof,
+      routeWaystoneProof: state.routeWaystoneProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       techniqueLoadoutProof: state.techniqueLoadoutProof,
@@ -3145,6 +3196,43 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'world.route_waystone') {
+    const result = resolveSpiritRouteWaystone(
+      {
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        routeInvitedSpiritIds: Array.isArray(payload.routeInvitedSpiritIds) ? payload.routeInvitedSpiritIds.map(String) : state.routeInvitedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        craftWritId: String(payload.craftWritId || state.craftWritId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.waystoneId || SPIRIT_ROUTE_WAYSTONES[0].id)
+    );
+    if (result.activated) {
+      state.routeWaystoneProof = true;
+      state.routeWaystoneId = result.waystoneId;
+      state.routeWaystoneName = result.waystoneName;
+      state.routeWaystoneScore = result.score;
+      state.routeWaystoneRequiredScore = result.requiredScore;
+      state.routeWaystoneRouteIds = result.routeIds;
+      state.routeWaystoneInvitedSpiritIds = result.routeInvitedSpiritIds;
+      state.routeWaystoneSealClaimed = result.rewardItemId === 'jade-waystone-travel-seal';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.routeInvitedSpiritIds = Array.from(new Set([...state.routeInvitedSpiritIds, ...result.routeInvitedSpiritIds]));
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -3227,6 +3315,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
         provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),

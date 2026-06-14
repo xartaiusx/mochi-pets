@@ -934,6 +934,60 @@ export interface SpiritCraftWritResult {
   source: string;
 }
 
+export interface SpiritRouteWaystone {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredRouteIds: readonly string[];
+  requiredRouteSpiritIds: readonly string[];
+  requiredRouteMasteryId: string;
+  requiredRoutePatrolId: string;
+  requiredRouteEcologyId: string;
+  requiredCraftWritId: string;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRouteWaystoneProgress {
+  discoveredRoutes: readonly string[];
+  routeInvitedSpiritIds: readonly string[];
+  activeSpiritId?: string;
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  craftWritProof: boolean;
+  craftWritId?: string;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritRouteWaystoneResult {
+  ok: boolean;
+  activated: boolean;
+  waystoneId: string;
+  waystoneName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  routeIds: string[];
+  routeInvitedSpiritIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface GuildCommission {
   id: string;
   name: string;
@@ -1056,6 +1110,7 @@ export interface GuildWayfarerChronicleProgress {
   compendiumProof: boolean;
   provisionProof: boolean;
   craftWritProof: boolean;
+  routeWaystoneProof: boolean;
   commissionProof: boolean;
   rallyProof: boolean;
   techniqueLoadoutProof: boolean;
@@ -2055,6 +2110,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Craft Writ',
     description: 'A no-real-value crafting proof for closed-alpha Mochirii supplies, route ecology, care notes, and guild exchange.'
   },
+  waystoneSeal: {
+    id: 'jade-waystone-travel-seal',
+    name: 'Jade Waystone Travel Seal',
+    description: 'A no-real-value route navigation proof for closed-alpha Mochirii Moonbridge and Cloudbell travel.'
+  },
   trailRibbon: {
     id: 'moonbridge-field-ribbon',
     name: 'Moonbridge Field Ribbon',
@@ -2584,6 +2644,25 @@ export const SPIRIT_CRAFT_WRITS: readonly SpiritCraftWrit[] = [
     requiredScore: 44,
     rewardItemId: ALPHA_ITEMS.craftWrit.id,
     summary: 'A no-real-value craft writ proof for testers who turn original Mochirii provisions, route ecology, care-cycle notes, and market/trade handoff into guild-ready supplies.'
+  }
+];
+
+export const SPIRIT_ROUTE_WAYSTONES: readonly SpiritRouteWaystone[] = [
+  {
+    id: 'jade-cloudbell-waystone',
+    name: 'Jade Cloudbell Waystone',
+    title: 'First Route Travel Seal',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredRouteSpiritIds: ['jintari', 'aozhen'],
+    requiredRouteMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+    requiredRoutePatrolId: SPIRIT_ROUTE_PATROLS[0].id,
+    requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+    requiredCraftWritId: SPIRIT_CRAFT_WRITS[0].id,
+    requiredChatLines: 1,
+    requiredScore: 30,
+    rewardItemId: ALPHA_ITEMS.waystoneSeal.id,
+    summary: 'A no-real-value first route navigation proof for testers who connect Moonbridge, Cloudbell, route spirits, patrol safety, ecology, and crafted travel supplies.'
   }
 ];
 
@@ -4226,6 +4305,109 @@ export function resolveSpiritCraftWrit(
   };
 }
 
+export function resolveSpiritRouteWaystone(
+  progress: SpiritRouteWaystoneProgress,
+  waystoneId: string = SPIRIT_ROUTE_WAYSTONES[0].id
+): SpiritRouteWaystoneResult {
+  const waystone = SPIRIT_ROUTE_WAYSTONES.find((entry) => entry.id === waystoneId) || SPIRIT_ROUTE_WAYSTONES[0];
+  const requiredRouteIds = new Set(waystone.requiredRouteIds);
+  const requiredRouteSpiritIds = new Set(waystone.requiredRouteSpiritIds);
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const routeInvitedSpiritIds = Array.from(new Set(progress.routeInvitedSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredRouteSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId =
+    progress.activeSpiritId && routeInvitedSpiritIds.includes(progress.activeSpiritId)
+      ? progress.activeSpiritId
+      : routeInvitedSpiritIds[routeInvitedSpiritIds.length - 1] || routeInvitedSpiritIds[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const missing: string[] = [];
+
+  for (const routeId of waystone.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) {
+      missing.push(`route:${routeId}`);
+    }
+  }
+
+  for (const spiritId of waystone.requiredRouteSpiritIds) {
+    if (!routeInvitedSpiritIds.includes(spiritId)) {
+      missing.push(`route-invite:${spiritId}`);
+    }
+  }
+
+  const masteryReady = progress.routeMasteryProof && progress.routeMasteryId === waystone.requiredRouteMasteryId;
+  if (!masteryReady) {
+    missing.push(`route-mastery:${waystone.requiredRouteMasteryId}`);
+  }
+
+  const patrolReady = progress.routePatrolProof && progress.routePatrolId === waystone.requiredRoutePatrolId;
+  if (!patrolReady) {
+    missing.push(`route-patrol:${waystone.requiredRoutePatrolId}`);
+  }
+
+  const ecologyReady = progress.routeEcologyProof && progress.routeEcologyId === waystone.requiredRouteEcologyId;
+  if (!ecologyReady) {
+    missing.push(`route-ecology:${waystone.requiredRouteEcologyId}`);
+  }
+
+  const craftReady = progress.craftWritProof && progress.craftWritId === waystone.requiredCraftWritId;
+  if (!craftReady) {
+    missing.push(`craft-writ:${waystone.requiredCraftWritId}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < waystone.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${waystone.requiredChatLines}`);
+  }
+
+  const score =
+    Math.min(routeIds.length, waystone.requiredRouteIds.length) * 3 +
+    Math.min(routeInvitedSpiritIds.length, waystone.requiredRouteSpiritIds.length) * 2 +
+    (masteryReady ? 4 : 0) +
+    (patrolReady ? 4 : 0) +
+    (ecologyReady ? 5 : 0) +
+    (craftReady ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const activated = missing.length === 0 && score >= waystone.requiredScore;
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unmarked routes';
+  const spiritSummary = routeInvitedSpiritIds.length
+    ? routeInvitedSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ')
+    : 'uninvited route spirits';
+
+  return {
+    ok: true,
+    activated,
+    waystoneId: waystone.id,
+    waystoneName: waystone.name,
+    title: waystone.title,
+    habitat: waystone.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    routeIds,
+    routeInvitedSpiritIds,
+    score,
+    requiredScore: waystone.requiredScore,
+    missing,
+    rewardItemId: waystone.rewardItemId,
+    message: activated
+      ? `${waystone.name} activated: ${activeSpirit.name} links ${routeSummary} with ${spiritSummary}, patrol safety, ecology, and crafted travel supplies. No real value.`
+      : `${waystone.name} needs ${missing.join(', ')} before first-route waystone travel can be recorded.`,
+    source: 'world-route-waystone'
+  };
+}
+
 export function resolveGuildCommission(
   progress: GuildCommissionProgress,
   commissionId: string = GUILD_COMMISSIONS[0].id
@@ -4431,6 +4613,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.compendiumProof) missing.push('compendium');
   if (!progress.provisionProof) missing.push('provision');
   if (!progress.craftWritProof) missing.push('craft-writ');
+  if (!progress.routeWaystoneProof) missing.push('route-waystone');
   if (!progress.commissionProof) missing.push('commission');
   if (!progress.rallyProof) missing.push('rally');
   if (!progress.techniqueLoadoutProof) missing.push('loadout');
@@ -4466,6 +4649,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.compendiumProof ? 3 : 0) +
     (progress.provisionProof ? 2 : 0) +
     (progress.craftWritProof ? 3 : 0) +
+    (progress.routeWaystoneProof ? 3 : 0) +
     (progress.commissionProof ? 2 : 0) +
     (progress.rallyProof ? 3 : 0) +
     (progress.techniqueLoadoutProof ? 2 : 0) +
@@ -4504,7 +4688,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture, routes, ecology, crafting, waystone travel, battles, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };

@@ -26,6 +26,7 @@ import {
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEAM_SPAR_MATCHES,
@@ -54,6 +55,7 @@ import {
   resolveSpiritBondMilestone,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
+  resolveSpiritRouteWaystone,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
   resolveMochiSpiritQuestProgress,
@@ -105,6 +107,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -167,6 +170,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -930,6 +934,58 @@ describe('alpha contract', () => {
       chatLines: ['Craft writ ready.']
     }).crafted).toBe(false);
 
+    expect(SPIRIT_ROUTE_WAYSTONES.map((waystone) => waystone.id)).toEqual(['jade-cloudbell-waystone']);
+    const routeWaystone = resolveSpiritRouteWaystone({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Waystone ready.']
+    });
+    expect(routeWaystone).toMatchObject({
+      ok: true,
+      activated: true,
+      waystoneId: 'jade-cloudbell-waystone',
+      waystoneName: 'Jade Cloudbell Waystone',
+      title: 'First Route Travel Seal',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      score: 31,
+      requiredScore: 30,
+      rewardItemId: 'jade-waystone-travel-seal',
+      source: 'world-route-waystone'
+    });
+    expect(routeWaystone.message).toContain('No real value');
+    expect(resolveSpiritRouteWaystone({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      craftWritProof: false,
+      craftWritId: 'jade-court-craft-writ',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Waystone ready.']
+    }).activated).toBe(false);
+
     expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
     const commission = resolveGuildCommission({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -1037,6 +1093,7 @@ describe('alpha contract', () => {
       compendiumProof: true,
       provisionProof: true,
       craftWritProof: true,
+      routeWaystoneProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1069,7 +1126,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 85,
+      score: 88,
       requiredScore: 52,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -1090,6 +1147,7 @@ describe('alpha contract', () => {
       compendiumProof: true,
       provisionProof: true,
       craftWritProof: true,
+      routeWaystoneProof: true,
       commissionProof: true,
       rallyProof: false,
       techniqueLoadoutProof: true,

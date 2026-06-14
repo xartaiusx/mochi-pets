@@ -16,6 +16,7 @@ import {
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_TEMPERAMENT_CONCORDS,
@@ -48,6 +49,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
+  resolveSpiritRouteWaystone,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
   resolveSpiritRosterArchive,
@@ -836,6 +838,62 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(craftWrit.message).toContain('No real value');
 
+    expect(SPIRIT_ROUTE_WAYSTONES.map((waystone) => waystone.id)).toEqual(['jade-cloudbell-waystone']);
+    const blockedWaystone = resolveSpiritRouteWaystone({
+      discoveredRoutes: firstRouteIds,
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      craftWritProof: false,
+      craftWritId: 'jade-court-craft-writ',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Waystone ready.']
+    });
+    expect(blockedWaystone).toMatchObject({
+      activated: false,
+      waystoneId: 'jade-cloudbell-waystone',
+      missing: ['craft-writ:jade-court-craft-writ']
+    });
+
+    const routeWaystone = resolveSpiritRouteWaystone({
+      discoveredRoutes: firstRouteIds,
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Waystone ready.']
+    });
+    expect(routeWaystone).toMatchObject({
+      activated: true,
+      waystoneId: 'jade-cloudbell-waystone',
+      waystoneName: 'Jade Cloudbell Waystone',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: [...firstRouteIds],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      score: 31,
+      requiredScore: 30,
+      rewardItemId: ALPHA_ITEMS.waystoneSeal.id,
+      source: 'world-route-waystone'
+    });
+    expect(routeWaystone.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -895,6 +953,7 @@ describe('Mochi Spirits alpha content contract', () => {
       compendiumProof: true,
       provisionProof: true,
       craftWritProof: true,
+      routeWaystoneProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -938,6 +997,7 @@ describe('Mochi Spirits alpha content contract', () => {
       compendiumProof: true,
       provisionProof: true,
       craftWritProof: true,
+      routeWaystoneProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -964,7 +1024,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 85,
+      score: 88,
       requiredScore: 52,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
