@@ -57,6 +57,7 @@ describe('game manifest', () => {
         spiritCraftWrits: true,
         routeWaystones: true,
         spiritNurtureRites: true,
+        spiritKinshipAlbums: true,
         itemProvisions: true,
         guildCommissions: true,
         socialRallies: true,

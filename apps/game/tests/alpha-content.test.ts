@@ -15,6 +15,7 @@ import {
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITATS,
   SPIRIT_MOVES,
+  SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_NURTURE_RITES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
@@ -50,6 +51,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
   resolveSpiritMentorChallenge,
+  resolveSpiritKinshipAlbum,
   resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritProvisionSatchel,
@@ -971,6 +973,41 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(nurtureRite.message).toContain('No real value');
 
+    expect(SPIRIT_KINSHIP_ALBUMS.map((entry) => entry.id)).toEqual(['jade-kinship-album']);
+    const kinshipAlbum = resolveSpiritKinshipAlbum({
+      roster: fullRoster,
+      caredSpiritIds: fullRoster,
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Kinship album ready.']
+    });
+    expect(kinshipAlbum).toMatchObject({
+      recorded: true,
+      albumId: 'jade-kinship-album',
+      albumName: 'Jade Kinship Album',
+      score: 53,
+      requiredScore: 38,
+      rewardItemId: ALPHA_ITEMS.kinshipAlbum.id,
+      source: 'spirit-kinship-album'
+    });
+    expect(kinshipAlbum.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -1105,6 +1142,7 @@ describe('Mochi Spirits alpha content contract', () => {
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
+      kinshipAlbumProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1153,6 +1191,7 @@ describe('Mochi Spirits alpha content contract', () => {
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
+      kinshipAlbumProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1182,8 +1221,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 100,
-      requiredScore: 61,
+      score: 103,
+      requiredScore: 64,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1195,6 +1234,7 @@ describe('Mochi Spirits alpha content contract', () => {
       partyIds: fullRoster,
       localPresenceCount: 2,
       wayfarerChronicleProof: false,
+      kinshipAlbumProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1230,6 +1270,7 @@ describe('Mochi Spirits alpha content contract', () => {
       partyIds: fullRoster,
       localPresenceCount: 2,
       wayfarerChronicleProof: true,
+      kinshipAlbumProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1258,8 +1299,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 68,
-      requiredScore: 53,
+      score: 71,
+      requiredScore: 56,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });

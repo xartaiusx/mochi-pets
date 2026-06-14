@@ -22,6 +22,7 @@ import {
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
+  SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
@@ -54,6 +55,7 @@ import {
   resolveGuildWayfarerChronicle,
   resolveMochiStoryChapter,
   resolveSpiritJournal,
+  resolveSpiritKinshipAlbum,
   resolveSpiritMentorChallenge,
   resolveSpiritNurtureRite,
   resolveSpiritParty,
@@ -117,6 +119,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritKinshipAlbums).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
@@ -184,6 +187,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.kinship_album');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
@@ -1044,6 +1048,75 @@ describe('alpha contract', () => {
       source: 'spirit-nurture-rite'
     });
     expect(nurtureRite.message).toContain('No real value');
+
+    expect(SPIRIT_KINSHIP_ALBUMS.map((entry) => entry.id)).toEqual(['jade-kinship-album']);
+    const kinshipAlbum = resolveSpiritKinshipAlbum({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Kinship album ready.']
+    });
+    expect(kinshipAlbum).toMatchObject({
+      ok: true,
+      recorded: true,
+      albumId: 'jade-kinship-album',
+      albumName: 'Jade Kinship Album',
+      title: 'First-Court Bond Album',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 15,
+      score: 53,
+      requiredScore: 38,
+      rewardItemId: 'jade-kinship-album',
+      source: 'spirit-kinship-album'
+    });
+    expect(kinshipAlbum.message).toContain('No real value');
+    const missingKinshipAlbum = resolveSpiritKinshipAlbum({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 1,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: false,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Kinship album ready.']
+    });
+    expect(missingKinshipAlbum.recorded).toBe(false);
+    expect(missingKinshipAlbum.missing).toContain('presence:1/2');
+    expect(missingKinshipAlbum.missing).toContain('nurture:jade-moonwell-nurture-rite');
     expect(resolveSpiritNurtureRite({
       roster: ['lirabao', 'jintari', 'aozhen'],
       caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
@@ -1320,6 +1393,7 @@ describe('alpha contract', () => {
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
+      kinshipAlbumProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1355,8 +1429,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 100,
-      requiredScore: 61,
+      score: 103,
+      requiredScore: 64,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1378,6 +1452,7 @@ describe('alpha contract', () => {
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
+      kinshipAlbumProof: true,
       commissionProof: true,
       rallyProof: false,
       techniqueLoadoutProof: true,
@@ -1412,6 +1487,7 @@ describe('alpha contract', () => {
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
       wayfarerChronicleProof: true,
+      kinshipAlbumProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,
@@ -1446,8 +1522,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 68,
-      requiredScore: 53,
+      score: 71,
+      requiredScore: 56,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -1457,6 +1533,7 @@ describe('alpha contract', () => {
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
       wayfarerChronicleProof: false,
+      kinshipAlbumProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       tournamentProof: true,

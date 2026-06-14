@@ -148,6 +148,46 @@ const checks = [
     includes: ['Jade Insignia Case', 'Content-only HUD and ledger proofs']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['Jade Kinship Album proof', 'nurture/kinship/bracket', 'kinship album proof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.kinship_album', 'Jade Kinship Album proof', 'kinship-album']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Kinship Album proof', 'kinship-album']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Kinship Album', 'Jade Kinship Album proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Kinship Album contribution', 'content-only Jade Kinship Album proof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Kinship Album proof', 'kinship album']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Kinship Album', 'Jade Kinship Album proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Kinship Album proof', 'record the Jade Kinship Album']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Kinship Album', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Kinship Album', 'Content-only HUD and ledger proofs']
+  },
+  {
     file: 'docs/site-integration.md',
     includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
   },
@@ -182,6 +222,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritNurtureRites: true', "'spirit.nurture_rite'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritKinshipAlbums: true', "'spirit.kinship_album'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -229,6 +273,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_KINSHIP_ALBUMS', 'resolveSpiritKinshipAlbum', 'data-alpha-action="spirit.kinship_album"', 'data-kinship-album-label', 'kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_TOURNAMENT_BRACKETS', 'resolveSpiritTournamentBracket', 'data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament']
   },
   {
@@ -273,6 +321,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Kinship Album', 'jade-kinship-album', 'resolveSpiritKinshipAlbum', 'spirit-kinship-album', 'kinshipAlbumProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof']
   },
   {
@@ -310,6 +362,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritNurtureRites: true', 'spirit.nurture_rite']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritKinshipAlbums: true', 'spirit.kinship_album']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -373,6 +429,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.kinship_album', 'jade-kinship-album', 'spiritKinshipAlbums', 'Jade Kinship Album', 'kinshipAlbumProof']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.tournament_bracket', 'jade-banner-tournament', 'spiritTournamentBrackets', 'Jade Banner Tournament', 'tournamentProof']
   },
   {
@@ -410,6 +470,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.nurture_rite"', 'data-nurture-rite-label', 'nurtureRiteProof', 'nurtureRibbonClaimed', 'Jade Moonwell Nurture Rite complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.kinship_album"', 'data-kinship-album-label', 'kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album recorded']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -486,6 +550,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['nurtureRiteProof', 'nurtureRibbonClaimed', 'Jade Moonwell Nurture Rite', 'jade-moonwell-nurture-ribbon', 'spirit-nurture-rite', 'nurture rite']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['kinshipAlbumProof', 'kinshipAlbumClaimed', 'Jade Kinship Album', 'jade-kinship-album', 'spirit-kinship-album', 'kinship album']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

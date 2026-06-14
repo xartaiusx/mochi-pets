@@ -22,6 +22,7 @@ import {
   SPIRIT_HABITAT_BONDS,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
+  SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_PROVISION_SATCHELS,
@@ -67,6 +68,7 @@ import {
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
+  resolveSpiritKinshipAlbum,
   resolveSpiritMentorChallenge,
   resolveSpiritNurtureRite,
   resolveSpiritParty,
@@ -246,6 +248,15 @@ interface AlphaHudState {
   nurtureRiteRosterIds: string[];
   nurtureRiteCaredSpiritIds: string[];
   nurtureRibbonClaimed: boolean;
+  kinshipAlbumProof: boolean;
+  kinshipAlbumId?: string;
+  kinshipAlbumName: string;
+  kinshipAlbumScore: number;
+  kinshipAlbumRequiredScore: number;
+  kinshipAlbumSpiritIds: string[];
+  kinshipAlbumCaredSpiritIds: string[];
+  kinshipAlbumTotalBond: number;
+  kinshipAlbumClaimed: boolean;
   commissionProof: boolean;
   commissionId?: string;
   commissionName: string;
@@ -855,6 +866,14 @@ function defaultAlphaState(): AlphaHudState {
     nurtureRiteRosterIds: [],
     nurtureRiteCaredSpiritIds: [],
     nurtureRibbonClaimed: false,
+    kinshipAlbumProof: false,
+    kinshipAlbumName: 'Unrecorded',
+    kinshipAlbumScore: 0,
+    kinshipAlbumRequiredScore: 0,
+    kinshipAlbumSpiritIds: [],
+    kinshipAlbumCaredSpiritIds: [],
+    kinshipAlbumTotalBond: 0,
+    kinshipAlbumClaimed: false,
     commissionProof: false,
     commissionName: 'Pending',
     commissionScore: 0,
@@ -1086,6 +1105,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
+      <span class="mochi-hud__hint" data-kinship-album-label>Kinship: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-story-label>Story: pending</span>
@@ -1136,6 +1156,7 @@ function createHud() {
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
+      <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
@@ -1205,6 +1226,7 @@ function createHud() {
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
+  const kinshipAlbumLabel = hud.querySelector('[data-kinship-album-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const storyLabel = hud.querySelector('[data-story-label]');
@@ -1364,6 +1386,11 @@ function createHud() {
       nurtureRiteLabel.textContent = state.nurtureRiteProof
         ? `Nurture: ${state.nurtureRiteName}, ${state.nurtureRiteCaredSpiritIds.length} spirits, score ${state.nurtureRiteScore}/${state.nurtureRiteRequiredScore}`
         : 'Nurture: pending';
+    }
+    if (kinshipAlbumLabel) {
+      kinshipAlbumLabel.textContent = state.kinshipAlbumProof
+        ? `Kinship: ${state.kinshipAlbumName}, ${state.kinshipAlbumCaredSpiritIds.length} cared, bond ${state.kinshipAlbumTotalBond}, score ${state.kinshipAlbumScore}/${state.kinshipAlbumRequiredScore}`
+        : 'Kinship: pending';
     }
     if (commissionLabel) {
       commissionLabel.textContent = state.commissionProof
@@ -1689,6 +1716,8 @@ function readAlphaState(): AlphaHudState {
       routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
       nurtureRiteRosterIds: Array.isArray(parsed?.nurtureRiteRosterIds) ? parsed.nurtureRiteRosterIds.map(String) : [],
       nurtureRiteCaredSpiritIds: Array.isArray(parsed?.nurtureRiteCaredSpiritIds) ? parsed.nurtureRiteCaredSpiritIds.map(String) : [],
+      kinshipAlbumSpiritIds: Array.isArray(parsed?.kinshipAlbumSpiritIds) ? parsed.kinshipAlbumSpiritIds.map(String) : [],
+      kinshipAlbumCaredSpiritIds: Array.isArray(parsed?.kinshipAlbumCaredSpiritIds) ? parsed.kinshipAlbumCaredSpiritIds.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
@@ -1712,6 +1741,15 @@ function appendUniqueAlphaChat(state: AlphaHudState, message: string) {
   if (state.chat[state.chat.length - 1] !== message) {
     state.chat.push(message);
   }
+}
+
+function normalizeBondMap(value: unknown, fallbackBond = 1): Record<string, number> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key)
+      .map(([key, score]) => [key, Math.max(0, Math.floor(Number(score) || fallbackBond || 0))])
+  );
 }
 
 function applyBattleRoundState(state: AlphaHudState, result: ReturnType<typeof resolveSpiritBattleRound>) {
@@ -2438,6 +2476,45 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.kinship_album') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean);
+    const caredSpiritIds = state.nurtureRiteCaredSpiritIds.length
+      ? state.nurtureRiteCaredSpiritIds
+      : state.careCycleCaredSpiritIds.length
+        ? state.careCycleCaredSpiritIds
+        : roster;
+    const inferredBond = Math.max(
+      state.bond || 0,
+      Math.ceil((state.careCycleTotalBond || 0) / Math.max(1, roster.length)),
+      5
+    );
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      albumId: SPIRIT_KINSHIP_ALBUMS[0].id,
+      roster,
+      caredSpiritIds,
+      activeSpiritId: state.spiritId || roster[0],
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, inferredBond])),
+      localPresenceCount: presenceCount,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      nurtureRiteProof: state.nurtureRiteProof,
+      nurtureRiteId: state.nurtureRiteId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      compendiumProof: state.compendiumProof,
+      compendiumId: state.compendiumId,
+      habitatBondProof: state.habitatBondProof,
+      habitatBondId: state.habitatBondId,
+      raisingProof: state.raisingProof,
+      raisingMilestoneLabel: state.raisingMilestoneLabel,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'guild.commission_complete') {
     return {
       commissionId: GUILD_COMMISSIONS[0].id,
@@ -2555,6 +2632,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
       nurtureRiteProof: state.nurtureRiteProof,
+      kinshipAlbumProof: state.kinshipAlbumProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       storyChapterProof: state.storyChapterProof,
@@ -2590,6 +2668,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
       localPresenceCount: presenceCount,
       wayfarerChronicleProof: state.wayfarerChronicleProof,
+      kinshipAlbumProof: state.kinshipAlbumProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
       routePatrolProof: state.routePatrolProof,
@@ -3507,6 +3586,54 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'spirit.kinship_album') {
+    const result = resolveSpiritKinshipAlbum(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        caredSpiritIds: Array.isArray(payload.caredSpiritIds)
+          ? payload.caredSpiritIds.map(String)
+          : state.nurtureRiteCaredSpiritIds.length
+            ? state.nurtureRiteCaredSpiritIds
+            : state.careCycleCaredSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || ''),
+        bondBySpiritId: normalizeBondMap(payload.bondBySpiritId, state.bond),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
+        nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        compendiumId: String(payload.compendiumId || state.compendiumId || ''),
+        habitatBondProof: Boolean(payload.habitatBondProof ?? state.habitatBondProof),
+        habitatBondId: String(payload.habitatBondId || state.habitatBondId || ''),
+        raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
+        raisingMilestoneLabel: String(payload.raisingMilestoneLabel || state.raisingMilestoneLabel || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.albumId || SPIRIT_KINSHIP_ALBUMS[0].id)
+    );
+    if (result.recorded) {
+      state.kinshipAlbumProof = true;
+      state.kinshipAlbumId = result.albumId;
+      state.kinshipAlbumName = result.albumName;
+      state.kinshipAlbumScore = result.score;
+      state.kinshipAlbumRequiredScore = result.requiredScore;
+      state.kinshipAlbumSpiritIds = result.roster;
+      state.kinshipAlbumCaredSpiritIds = result.caredSpiritIds;
+      state.kinshipAlbumTotalBond = result.totalBond;
+      state.kinshipAlbumClaimed = result.rewardItemId === 'jade-kinship-album';
+      state.attunedSpiritIds = result.roster;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'guild.commission_complete') {
     const result = resolveGuildCommission(
       {
@@ -3682,6 +3809,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
+        kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
@@ -3732,6 +3860,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
+        kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
