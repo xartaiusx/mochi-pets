@@ -71,6 +71,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
   assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
+  assert(manifest.body.gameplay?.spiritEncounterRotations === true, 'Manifest must expose Mochi Spirit encounter rotations.');
   assert(manifest.body.gameplay?.spiritEncounterAtlases === true, 'Manifest must expose Mochi Spirit encounter atlases.');
   assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
   assert(manifest.body.gameplay?.tradeExchangeAccords === true, 'Manifest must expose Mochirii trade exchange accords.');
@@ -178,6 +179,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
   assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
+  assert(alphaStatus.body.gameplay?.spiritEncounterRotations === true, 'Alpha status must expose Mochi Spirit encounter rotations.');
   assert(alphaStatus.body.gameplay?.spiritEncounterAtlases === true, 'Alpha status must expose Mochi Spirit encounter atlases.');
   assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
   assert(alphaStatus.body.gameplay?.tradeExchangeAccords === true, 'Alpha status must expose Mochirii trade exchange accords.');
@@ -964,6 +966,31 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-encounter-rotation`,
+      type: 'world.encounter_rotation',
+      payload: {
+        rotationId: 'jade-encounter-rotation',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        encounterSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+        routeEcologyProof: true,
+        routeEcologyId: 'jade-route-ecology-survey',
+        fieldAlmanacProof: true,
+        fieldAlmanacId: 'jade-field-almanac',
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        captureRiteProof: true,
+        captureRiteId: 'jade-court-capture-rite',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-encounter-rotation-scroll',
+        chatLines: ['Local acceptance encounter rotation proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-encounter-atlas`,
       type: 'world.encounter_atlas',
       payload: {
@@ -979,6 +1006,8 @@ async function run() {
         captureRiteId: 'jade-court-capture-rite',
         fieldAlmanacProof: true,
         fieldAlmanacId: 'jade-field-almanac',
+        encounterRotationProof: true,
+        encounterRotationId: 'jade-encounter-rotation',
         localPresenceCount: 2,
         profileViewed: true,
         guildBuddyProof: true,
@@ -1589,6 +1618,7 @@ async function run() {
         starterVowProof: true,
         captureProof: true,
         captureRiteProof: true,
+        encounterRotationProof: true,
         encounterAtlasProof: true,
         routeMasteryProof: true,
         routePatrolProof: true,
@@ -1813,6 +1843,18 @@ async function run() {
   assert(routeEcology?.payload?.conditionWeaveProof === true, 'Route ecology ledger entry must preserve condition weave proof.');
   assert(routeEcology?.payload?.rewardItemId === 'jade-route-ecology-map', 'Route ecology ledger entry must preserve the no-real-value ecology map proof.');
   assert(routeEcology?.payload?.noRealValue === true, 'Route ecology ledger entry must remain no-real-value.');
+  const encounterRotation = entriesById.get(`${runId}-encounter-rotation`);
+  assert(encounterRotation?.payload?.rotationId === 'jade-encounter-rotation', 'Encounter rotation ledger entry must preserve the Jade Encounter Rotation id.');
+  assert(Array.isArray(encounterRotation?.payload?.discoveredRoutes) && encounterRotation.payload.discoveredRoutes.length === 2, 'Encounter rotation ledger entry must preserve Moonbridge and Cloudbell route proof.');
+  assert(Array.isArray(encounterRotation?.payload?.encounterSpiritIds) && encounterRotation.payload.encounterSpiritIds.length === 3, 'Encounter rotation ledger entry must preserve full encounter species proof.');
+  assert(Array.isArray(encounterRotation?.payload?.lureItemIds) && encounterRotation.payload.lureItemIds.includes('lantern-harmony-tea') && encounterRotation.payload.lureItemIds.includes('jade-thread-charm'), 'Encounter rotation ledger entry must preserve lure planning proof.');
+  assert(encounterRotation?.payload?.routeEcologyProof === true, 'Encounter rotation ledger entry must preserve route ecology proof.');
+  assert(encounterRotation?.payload?.fieldAlmanacProof === true, 'Encounter rotation ledger entry must preserve field almanac proof.');
+  assert(encounterRotation?.payload?.fieldAccordProof === true, 'Encounter rotation ledger entry must preserve field accord proof.');
+  assert(encounterRotation?.payload?.captureRiteProof === true, 'Encounter rotation ledger entry must preserve capture rite proof.');
+  assert(encounterRotation?.payload?.localPresenceCount === 2, 'Encounter rotation ledger entry must preserve two-tester witness proof.');
+  assert(encounterRotation?.payload?.rewardItemId === 'jade-encounter-rotation-scroll', 'Encounter rotation ledger entry must preserve the no-real-value encounter rotation proof.');
+  assert(encounterRotation?.payload?.noRealValue === true, 'Encounter rotation ledger entry must remain no-real-value.');
   const encounterAtlas = entriesById.get(`${runId}-encounter-atlas`);
   assert(encounterAtlas?.payload?.atlasId === 'jade-encounter-atlas', 'Encounter atlas ledger entry must preserve the Jade Encounter Atlas id.');
   assert(Array.isArray(encounterAtlas?.payload?.discoveredRoutes) && encounterAtlas.payload.discoveredRoutes.length === 2, 'Encounter atlas ledger entry must preserve Moonbridge and Cloudbell route proof.');
@@ -1822,6 +1864,8 @@ async function run() {
   assert(encounterAtlas?.payload?.routeEcologyProof === true, 'Encounter atlas ledger entry must preserve route ecology proof.');
   assert(encounterAtlas?.payload?.captureRiteProof === true, 'Encounter atlas ledger entry must preserve capture rite proof.');
   assert(encounterAtlas?.payload?.fieldAlmanacProof === true, 'Encounter atlas ledger entry must preserve field almanac proof.');
+  assert(encounterAtlas?.payload?.encounterRotationProof === true, 'Encounter atlas ledger entry must preserve encounter rotation proof.');
+  assert(encounterAtlas?.payload?.encounterRotationId === 'jade-encounter-rotation', 'Encounter atlas ledger entry must preserve the Jade Encounter Rotation id.');
   assert(encounterAtlas?.payload?.localPresenceCount === 2, 'Encounter atlas ledger entry must preserve two-tester witness proof.');
   assert(encounterAtlas?.payload?.rewardItemId === 'jade-encounter-atlas', 'Encounter atlas ledger entry must preserve the no-real-value encounter atlas proof.');
   assert(encounterAtlas?.payload?.noRealValue === true, 'Encounter atlas ledger entry must remain no-real-value.');
@@ -2173,6 +2217,7 @@ async function run() {
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
   assert(chronicle?.payload?.starterVowProof === true, 'Wayfarer chronicle ledger entry must preserve starter vow proof.');
   assert(chronicle?.payload?.captureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve capture rite proof.');
+  assert(chronicle?.payload?.encounterRotationProof === true, 'Wayfarer chronicle ledger entry must preserve encounter rotation proof.');
   assert(chronicle?.payload?.encounterAtlasProof === true, 'Wayfarer chronicle ledger entry must preserve encounter atlas proof.');
   assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
   assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');

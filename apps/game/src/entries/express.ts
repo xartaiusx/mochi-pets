@@ -53,6 +53,7 @@ const ALPHA_FEATURES = {
     spiritTemperamentConcords: true,
     spiritFieldAlmanacs: true,
     routeEcologySurveys: true,
+    spiritEncounterRotations: true,
     spiritEncounterAtlases: true,
     spiritCraftWrits: true,
     tradeExchangeAccords: true,
@@ -179,6 +180,7 @@ const PLAYABLE_CONTENT_CATALOG = {
     rosterArchiveIds: ['jade-court-roster-archive'],
     fieldAlmanacIds: ['jade-field-almanac'],
     routeEcologySurveyIds: ['jade-route-ecology-survey'],
+    encounterRotationIds: ['jade-encounter-rotation'],
     encounterAtlasIds: ['jade-encounter-atlas'],
     routeWaystoneIds: ['jade-cloudbell-waystone']
   },
@@ -381,6 +383,7 @@ const ALPHA_ACTION_TYPES = [
   'spirit.temperament_concord',
   'spirit.field_almanac',
   'world.route_ecology',
+  'world.encounter_rotation',
   'world.encounter_atlas',
   'item.craft_writ',
   'world.route_waystone',

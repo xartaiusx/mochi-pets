@@ -22,6 +22,7 @@ import {
   SPIRIT_CRAFT_WRITS,
   SPIRIT_DOJO_LADDERS,
   SPIRIT_ENCOUNTER_ATLASES,
+  SPIRIT_ENCOUNTER_ROTATIONS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -64,6 +65,7 @@ import {
   resolveSpiritCraftWrit,
   resolveSpiritDojoLadder,
   resolveSpiritEncounterAtlas,
+  resolveSpiritEncounterRotation,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -151,6 +153,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritEncounterRotations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.tradeExchangeAccords).toBe(true);
@@ -235,6 +238,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
+    expect(ALPHA_ACTION_TYPES).toContain('world.encounter_rotation');
     expect(ALPHA_ACTION_TYPES).toContain('world.encounter_atlas');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
@@ -1046,6 +1050,41 @@ describe('alpha contract', () => {
       chatLines: ['Route ecology ready.']
     }).surveyed).toBe(false);
 
+    expect(SPIRIT_ENCOUNTER_ROTATIONS.map((rotation) => rotation.id)).toEqual(['jade-encounter-rotation']);
+    const encounterRotation = resolveSpiritEncounterRotation({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounterSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter rotation ready.']
+    });
+    expect(encounterRotation).toMatchObject({
+      ok: true,
+      recorded: true,
+      rotationId: 'jade-encounter-rotation',
+      rotationName: 'Jade Encounter Rotation',
+      title: 'First-Court Encounter Window Plan',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounterSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      score: 48,
+      requiredScore: 40,
+      rewardItemId: 'jade-encounter-rotation-scroll',
+      source: 'spirit-encounter-rotation'
+    });
+    expect(encounterRotation.message).toContain('No real value');
+
     expect(SPIRIT_ENCOUNTER_ATLASES.map((atlas) => atlas.id)).toEqual(['jade-encounter-atlas']);
     const encounterAtlas = resolveSpiritEncounterAtlas({
       discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
@@ -1059,6 +1098,8 @@ describe('alpha contract', () => {
       captureRiteId: 'jade-court-capture-rite',
       fieldAlmanacProof: true,
       fieldAlmanacId: 'jade-field-almanac',
+      encounterRotationProof: true,
+      encounterRotationId: 'jade-encounter-rotation',
       localPresenceCount: 2,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1075,8 +1116,9 @@ describe('alpha contract', () => {
       encounteredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
       capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
       rarityTiers: ['common', 'uncommon', 'rare'],
-      score: 54,
-      requiredScore: 44,
+      encounterRotationId: 'jade-encounter-rotation',
+      score: 59,
+      requiredScore: 48,
       rewardItemId: 'jade-encounter-atlas',
       source: 'spirit-encounter-atlas'
     });
@@ -1093,6 +1135,8 @@ describe('alpha contract', () => {
       captureRiteId: 'jade-court-capture-rite',
       fieldAlmanacProof: false,
       fieldAlmanacId: 'jade-field-almanac',
+      encounterRotationProof: false,
+      encounterRotationId: 'jade-encounter-rotation',
       localPresenceCount: 1,
       profileViewed: true,
       guildBuddyProof: true,

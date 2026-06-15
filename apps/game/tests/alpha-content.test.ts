@@ -16,6 +16,7 @@ import {
   SPIRIT_CRAFT_WRITS,
   SPIRIT_DOJO_LADDERS,
   SPIRIT_ENCOUNTER_ATLASES,
+  SPIRIT_ENCOUNTER_ROTATIONS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -64,6 +65,7 @@ import {
   resolveSpiritCraftWrit,
   resolveSpiritDojoLadder,
   resolveSpiritEncounterAtlas,
+  resolveSpiritEncounterRotation,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -969,6 +971,68 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(routeEcology.message).toContain('No real value');
 
+    expect(SPIRIT_ENCOUNTER_ROTATIONS.map((rotation) => rotation.id)).toEqual(['jade-encounter-rotation']);
+    const blockedEncounterRotation = resolveSpiritEncounterRotation({
+      discoveredRoutes: firstRouteIds,
+      encounterSpiritIds: fullRoster,
+      lureItemIds: [ALPHA_ITEMS.harmonyTea.id],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      captureRiteProof: false,
+      captureRiteId: 'jade-court-capture-rite',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Rotation plan needs witness.']
+    });
+    expect(blockedEncounterRotation).toMatchObject({
+      recorded: false,
+      rotationId: 'jade-encounter-rotation',
+      missing: expect.arrayContaining([
+        `lure:${ALPHA_ITEMS.charm.id}`,
+        'capture-rite:jade-court-capture-rite',
+        'presence:1/2'
+      ])
+    });
+
+    const encounterRotation = resolveSpiritEncounterRotation({
+      discoveredRoutes: firstRouteIds,
+      encounterSpiritIds: fullRoster,
+      lureItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter rotation ready.']
+    });
+    expect(encounterRotation).toMatchObject({
+      recorded: true,
+      rotationId: 'jade-encounter-rotation',
+      rotationName: 'Jade Encounter Rotation',
+      routeIds: [...firstRouteIds],
+      encounterSpiritIds: [...fullRoster],
+      lureItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+      score: 48,
+      requiredScore: 40,
+      rewardItemId: ALPHA_ITEMS.encounterRotationScroll.id,
+      source: 'spirit-encounter-rotation'
+    });
+    expect(encounterRotation.rotationWindows).toHaveLength(firstRouteIds.length);
+    expect(encounterRotation.message).toContain('No real value');
+
     expect(SPIRIT_ENCOUNTER_ATLASES.map((atlas) => atlas.id)).toEqual(['jade-encounter-atlas']);
     const blockedEncounterAtlas = resolveSpiritEncounterAtlas({
       discoveredRoutes: firstRouteIds,
@@ -982,6 +1046,8 @@ describe('Mochi Spirits alpha content contract', () => {
       captureRiteId: 'jade-court-capture-rite',
       fieldAlmanacProof: true,
       fieldAlmanacId: 'jade-field-almanac',
+      encounterRotationProof: false,
+      encounterRotationId: 'jade-encounter-rotation',
       localPresenceCount: 1,
       profileViewed: true,
       guildBuddyProof: true,
@@ -995,6 +1061,7 @@ describe('Mochi Spirits alpha content contract', () => {
       'rarity:uncommon',
       'rarity:rare',
       'capture-rite:jade-court-capture-rite',
+      'encounter-rotation:jade-encounter-rotation',
       'presence:1/2'
     ]));
 
@@ -1010,6 +1077,8 @@ describe('Mochi Spirits alpha content contract', () => {
       captureRiteId: 'jade-court-capture-rite',
       fieldAlmanacProof: true,
       fieldAlmanacId: 'jade-field-almanac',
+      encounterRotationProof: true,
+      encounterRotationId: 'jade-encounter-rotation',
       localPresenceCount: 2,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1024,8 +1093,9 @@ describe('Mochi Spirits alpha content contract', () => {
       encounteredSpiritIds: [...fullRoster],
       capturedSpiritIds: [...fullRoster],
       rarityTiers: ['common', 'uncommon', 'rare'],
-      score: 54,
-      requiredScore: 44,
+      encounterRotationId: 'jade-encounter-rotation',
+      score: 59,
+      requiredScore: 48,
       rewardItemId: ALPHA_ITEMS.encounterAtlas.id,
       source: 'spirit-encounter-atlas'
     });

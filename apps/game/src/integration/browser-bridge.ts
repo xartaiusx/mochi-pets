@@ -21,6 +21,7 @@ import {
   SPIRIT_CRAFT_WRITS,
   SPIRIT_DOJO_LADDERS,
   SPIRIT_ENCOUNTER_ATLASES,
+  SPIRIT_ENCOUNTER_ROTATIONS,
   SPIRIT_EXPEDITION_ROUTES,
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
@@ -74,6 +75,7 @@ import {
   resolveSpiritCraftWrit,
   resolveSpiritDojoLadder,
   resolveSpiritEncounterAtlas,
+  resolveSpiritEncounterRotation,
   resolveSpiritExpedition,
   resolveSpiritFieldAccord,
   resolveSpiritFieldAlmanac,
@@ -283,6 +285,16 @@ interface AlphaHudState {
   routeEcologySpeciesIds: string[];
   routeEcologyInvitedSpiritIds: string[];
   routeEcologyMapClaimed: boolean;
+  encounterRotationProof: boolean;
+  encounterRotationId?: string;
+  encounterRotationName: string;
+  encounterRotationScore: number;
+  encounterRotationRequiredScore: number;
+  encounterRotationRouteIds: string[];
+  encounterRotationSpiritIds: string[];
+  encounterRotationLureItemIds: string[];
+  encounterRotationWindows: string[];
+  encounterRotationScrollClaimed: boolean;
   encounterAtlasProof: boolean;
   encounterAtlasId?: string;
   encounterAtlasName: string;
@@ -1162,6 +1174,15 @@ function defaultAlphaState(): AlphaHudState {
     routeEcologySpeciesIds: [],
     routeEcologyInvitedSpiritIds: [],
     routeEcologyMapClaimed: false,
+    encounterRotationProof: false,
+    encounterRotationName: 'Unplanned',
+    encounterRotationScore: 0,
+    encounterRotationRequiredScore: 0,
+    encounterRotationRouteIds: [],
+    encounterRotationSpiritIds: [],
+    encounterRotationLureItemIds: [],
+    encounterRotationWindows: [],
+    encounterRotationScrollClaimed: false,
     encounterAtlasProof: false,
     encounterAtlasName: 'Unindexed',
     encounterAtlasScore: 0,
@@ -1619,6 +1640,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
+      <span class="mochi-hud__hint" data-encounter-rotation-label>Rotation: pending</span>
       <span class="mochi-hud__hint" data-encounter-atlas-label>Atlas: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-exchange-accord-label>Exchange: pending</span>
@@ -1689,6 +1711,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
+      <button type="button" data-alpha-action="world.encounter_rotation" aria-label="Record the no-real-value Jade Encounter Rotation">Rotate</button>
       <button type="button" data-alpha-action="world.encounter_atlas" aria-label="Record the no-real-value Jade Encounter Atlas">Atlas</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
@@ -1772,6 +1795,7 @@ function createHud() {
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
+  const encounterRotationLabel = hud.querySelector('[data-encounter-rotation-label]');
   const encounterAtlasLabel = hud.querySelector('[data-encounter-atlas-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const exchangeAccordLabel = hud.querySelector('[data-exchange-accord-label]');
@@ -1946,6 +1970,11 @@ function createHud() {
       routeEcologyLabel.textContent = state.routeEcologyProof
         ? `Ecology: ${state.routeEcologyName}, ${state.routeEcologyRouteIds.length} routes, ${state.routeEcologyInvitedSpiritIds.length} invites`
         : 'Ecology: pending';
+    }
+    if (encounterRotationLabel) {
+      encounterRotationLabel.textContent = state.encounterRotationProof
+        ? `Rotation: ${state.encounterRotationName}, ${state.encounterRotationWindows.length} windows, score ${state.encounterRotationScore}/${state.encounterRotationRequiredScore}`
+        : 'Rotation: pending';
     }
     if (encounterAtlasLabel) {
       encounterAtlasLabel.textContent = state.encounterAtlasProof
@@ -2372,6 +2401,10 @@ function readAlphaState(): AlphaHudState {
       routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
       routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
+      encounterRotationRouteIds: Array.isArray(parsed?.encounterRotationRouteIds) ? parsed.encounterRotationRouteIds.map(String) : [],
+      encounterRotationSpiritIds: Array.isArray(parsed?.encounterRotationSpiritIds) ? parsed.encounterRotationSpiritIds.map(String) : [],
+      encounterRotationLureItemIds: Array.isArray(parsed?.encounterRotationLureItemIds) ? parsed.encounterRotationLureItemIds.map(String) : [],
+      encounterRotationWindows: Array.isArray(parsed?.encounterRotationWindows) ? parsed.encounterRotationWindows.map(String) : [],
       encounterAtlasRouteIds: Array.isArray(parsed?.encounterAtlasRouteIds) ? parsed.encounterAtlasRouteIds.map(String) : [],
       encounterAtlasSpiritIds: Array.isArray(parsed?.encounterAtlasSpiritIds) ? parsed.encounterAtlasSpiritIds.map(String) : [],
       encounterAtlasCapturedSpiritIds: Array.isArray(parsed?.encounterAtlasCapturedSpiritIds) ? parsed.encounterAtlasCapturedSpiritIds.map(String) : [],
@@ -3399,6 +3432,32 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.encounter_rotation') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      rotationId: SPIRIT_ENCOUNTER_ROTATIONS[0].id,
+      discoveredRoutes: state.discoveredRouteIds,
+      encounterSpiritIds: roster,
+      lureItemIds: state.captureRiteLureItemIds.length
+        ? state.captureRiteLureItemIds
+        : Array.from(new Set(MOCHI_SPIRITS.map((spirit) => spirit.capture.lureItemId))),
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      fieldAlmanacProof: state.fieldAlmanacProof,
+      fieldAlmanacId: state.fieldAlmanacId,
+      fieldAccordProof: state.fieldAccordProof,
+      fieldAccordId: state.fieldAccordId,
+      captureRiteProof: state.captureRiteProof,
+      captureRiteId: state.captureRiteId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'world.encounter_atlas') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
@@ -3415,6 +3474,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       captureRiteId: state.captureRiteId,
       fieldAlmanacProof: state.fieldAlmanacProof,
       fieldAlmanacId: state.fieldAlmanacId,
+      encounterRotationProof: state.encounterRotationProof,
+      encounterRotationId: state.encounterRotationId,
       localPresenceCount: presenceCount,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
@@ -5109,6 +5170,46 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'world.encounter_rotation') {
+    const result = resolveSpiritEncounterRotation(
+      {
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        encounterSpiritIds: Array.isArray(payload.encounterSpiritIds) ? payload.encounterSpiritIds.map(String) : state.attunedSpiritIds,
+        lureItemIds: Array.isArray(payload.lureItemIds) ? payload.lureItemIds.map(String) : state.captureRiteLureItemIds,
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        fieldAlmanacProof: Boolean(payload.fieldAlmanacProof ?? state.fieldAlmanacProof),
+        fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
+        fieldAccordProof: Boolean(payload.fieldAccordProof ?? state.fieldAccordProof),
+        fieldAccordId: String(payload.fieldAccordId || state.fieldAccordId || ''),
+        captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
+        captureRiteId: String(payload.captureRiteId || state.captureRiteId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.rotationId || SPIRIT_ENCOUNTER_ROTATIONS[0].id)
+    );
+    if (result.recorded) {
+      state.encounterRotationProof = true;
+      state.encounterRotationId = result.rotationId;
+      state.encounterRotationName = result.rotationName;
+      state.encounterRotationScore = result.score;
+      state.encounterRotationRequiredScore = result.requiredScore;
+      state.encounterRotationRouteIds = result.routeIds;
+      state.encounterRotationSpiritIds = result.encounterSpiritIds;
+      state.encounterRotationLureItemIds = result.lureItemIds;
+      state.encounterRotationWindows = result.rotationWindows;
+      state.encounterRotationScrollClaimed = result.rewardItemId === 'jade-encounter-rotation-scroll';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.attunedSpiritIds = Array.from(new Set([...state.attunedSpiritIds, ...result.encounterSpiritIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'world.encounter_atlas') {
     const result = resolveSpiritEncounterAtlas(
       {
@@ -5123,6 +5224,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         captureRiteId: String(payload.captureRiteId || state.captureRiteId || ''),
         fieldAlmanacProof: Boolean(payload.fieldAlmanacProof ?? state.fieldAlmanacProof),
         fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
+        encounterRotationProof: Boolean(payload.encounterRotationProof ?? state.encounterRotationProof),
+        encounterRotationId: String(payload.encounterRotationId || state.encounterRotationId || ''),
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
         guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
@@ -5142,6 +5245,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.encounterAtlasCapturedSpiritIds = result.capturedSpiritIds;
       state.encounterAtlasRarityTiers = result.rarityTiers;
       state.encounterAtlasClaimed = result.rewardItemId === 'jade-encounter-atlas';
+      state.encounterRotationId = result.encounterRotationId || state.encounterRotationId;
       state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
       state.attunedSpiritIds = Array.from(new Set([...state.attunedSpiritIds, ...result.encounteredSpiritIds]));
       state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);

@@ -873,6 +873,64 @@ export interface SpiritRouteEcologyResult {
   source: string;
 }
 
+export interface SpiritEncounterRotation {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredRouteIds: readonly string[];
+  requiredEncounterSpiritIds: readonly string[];
+  requiredLureItemIds: readonly string[];
+  requiredRouteEcologyId: string;
+  requiredFieldAlmanacId: string;
+  requiredFieldAccordId: string;
+  requiredCaptureRiteId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritEncounterRotationProgress {
+  discoveredRoutes: readonly string[];
+  encounterSpiritIds: readonly string[];
+  lureItemIds: readonly string[];
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  fieldAlmanacProof: boolean;
+  fieldAlmanacId?: string;
+  fieldAccordProof: boolean;
+  fieldAccordId?: string;
+  captureRiteProof: boolean;
+  captureRiteId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritEncounterRotationResult {
+  ok: boolean;
+  recorded: boolean;
+  rotationId: string;
+  rotationName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  routeIds: string[];
+  encounterSpiritIds: string[];
+  lureItemIds: string[];
+  rotationWindows: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritEncounterAtlas {
   id: string;
   name: string;
@@ -885,6 +943,7 @@ export interface SpiritEncounterAtlas {
   requiredRouteEcologyId: string;
   requiredCaptureRiteId: string;
   requiredFieldAlmanacId: string;
+  requiredEncounterRotationId: string;
   requiredPresenceCount: number;
   requiredChatLines: number;
   requiredScore: number;
@@ -904,6 +963,8 @@ export interface SpiritEncounterAtlasProgress {
   captureRiteId?: string;
   fieldAlmanacProof: boolean;
   fieldAlmanacId?: string;
+  encounterRotationProof: boolean;
+  encounterRotationId?: string;
   localPresenceCount: number;
   profileViewed: boolean;
   guildBuddyProof: boolean;
@@ -923,6 +984,7 @@ export interface SpiritEncounterAtlasResult {
   capturedSpiritIds: string[];
   rarityTiers: SpiritEncounterRarity[];
   journalDiscoveredCount: number;
+  encounterRotationId: string;
   localPresenceCount: number;
   score: number;
   requiredScore: number;
@@ -3474,6 +3536,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Route Ecology Map',
     description: 'A no-real-value route ecology proof for closed-alpha Mochirii encounter signs, patrol notes, and habitat study.'
   },
+  encounterRotationScroll: {
+    id: 'jade-encounter-rotation-scroll',
+    name: 'Jade Encounter Rotation Scroll',
+    description: 'A no-real-value encounter rotation proof for closed-alpha Mochirii route windows, lure choice, and social capture planning.'
+  },
   encounterAtlas: {
     id: 'jade-encounter-atlas',
     name: 'Jade Encounter Atlas',
@@ -4122,6 +4189,27 @@ export const SPIRIT_ROUTE_ECOLOGY_SURVEYS: readonly SpiritRouteEcologySurvey[] =
   }
 ];
 
+export const SPIRIT_ENCOUNTER_ROTATIONS: readonly SpiritEncounterRotation[] = [
+  {
+    id: 'jade-encounter-rotation',
+    name: 'Jade Encounter Rotation',
+    title: 'First-Court Encounter Window Plan',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredEncounterSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredLureItemIds: Array.from(new Set(MOCHI_SPIRITS.map((spirit) => spirit.capture.lureItemId))),
+    requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+    requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
+    requiredFieldAccordId: 'cloudbell-skyvow-accord',
+    requiredCaptureRiteId: SPIRIT_CAPTURE_RITES[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 40,
+    rewardItemId: ALPHA_ITEMS.encounterRotationScroll.id,
+    summary: 'A no-real-value encounter rotation proof for testers who plan original Mochirii route windows, consent lures, ecology notes, field accord trust, capture rite proof, and social witness before sealing the encounter atlas.'
+  }
+];
+
 export const SPIRIT_ENCOUNTER_ATLASES: readonly SpiritEncounterAtlas[] = [
   {
     id: 'jade-encounter-atlas',
@@ -4135,11 +4223,12 @@ export const SPIRIT_ENCOUNTER_ATLASES: readonly SpiritEncounterAtlas[] = [
     requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
     requiredCaptureRiteId: SPIRIT_CAPTURE_RITES[0].id,
     requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
+    requiredEncounterRotationId: SPIRIT_ENCOUNTER_ROTATIONS[0].id,
     requiredPresenceCount: 2,
     requiredChatLines: 1,
-    requiredScore: 44,
+    requiredScore: 48,
     rewardItemId: ALPHA_ITEMS.encounterAtlas.id,
-    summary: 'A no-real-value encounter index for testers who prove every first-court route sign, rarity tier, journal entry, capture rite, route ecology note, and nearby social witness.'
+    summary: 'A no-real-value encounter index for testers who prove every first-court route sign, rarity tier, journal entry, capture rite, route ecology note, encounter rotation, and nearby social witness.'
   }
 ];
 
@@ -6219,6 +6308,104 @@ export function resolveSpiritRouteEcologySurvey(
   };
 }
 
+export function resolveSpiritEncounterRotation(
+  progress: SpiritEncounterRotationProgress,
+  rotationId: string = SPIRIT_ENCOUNTER_ROTATIONS[0].id
+): SpiritEncounterRotationResult {
+  const rotation = SPIRIT_ENCOUNTER_ROTATIONS.find((entry) => entry.id === rotationId) || SPIRIT_ENCOUNTER_ROTATIONS[0];
+  const requiredRouteIds = new Set(rotation.requiredRouteIds);
+  const requiredEncounterSpiritIds = new Set(rotation.requiredEncounterSpiritIds);
+  const requiredLureItemIds = new Set(rotation.requiredLureItemIds);
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const encounterSpiritIds = Array.from(new Set(progress.encounterSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredEncounterSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const lureItemIds = Array.from(new Set(progress.lureItemIds.filter(Boolean))).filter((itemId) => requiredLureItemIds.has(itemId));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const routeId of rotation.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) missing.push(`route:${routeId}`);
+  }
+
+  for (const spiritId of rotation.requiredEncounterSpiritIds) {
+    if (!encounterSpiritIds.includes(spiritId)) missing.push(`encounter:${spiritId}`);
+  }
+
+  for (const itemId of rotation.requiredLureItemIds) {
+    if (!lureItemIds.includes(itemId)) missing.push(`lure:${itemId}`);
+  }
+
+  const routeEcologyReady = progress.routeEcologyProof && progress.routeEcologyId === rotation.requiredRouteEcologyId;
+  if (!routeEcologyReady) missing.push(`route-ecology:${rotation.requiredRouteEcologyId}`);
+
+  const fieldAlmanacReady = progress.fieldAlmanacProof && progress.fieldAlmanacId === rotation.requiredFieldAlmanacId;
+  if (!fieldAlmanacReady) missing.push(`field-almanac:${rotation.requiredFieldAlmanacId}`);
+
+  const fieldAccordReady = progress.fieldAccordProof && progress.fieldAccordId === rotation.requiredFieldAccordId;
+  if (!fieldAccordReady) missing.push(`field-accord:${rotation.requiredFieldAccordId}`);
+
+  const captureRiteReady = progress.captureRiteProof && progress.captureRiteId === rotation.requiredCaptureRiteId;
+  if (!captureRiteReady) missing.push(`capture-rite:${rotation.requiredCaptureRiteId}`);
+
+  if (localPresenceCount < rotation.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${rotation.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < rotation.requiredChatLines) missing.push(`chat:${chatLines.length}/${rotation.requiredChatLines}`);
+
+  const score =
+    Math.min(routeIds.length, rotation.requiredRouteIds.length) * 3 +
+    Math.min(encounterSpiritIds.length, rotation.requiredEncounterSpiritIds.length) * 3 +
+    Math.min(lureItemIds.length, rotation.requiredLureItemIds.length) * 3 +
+    (routeEcologyReady ? 6 : 0) +
+    (fieldAlmanacReady ? 4 : 0) +
+    (fieldAccordReady ? 4 : 0) +
+    (captureRiteReady ? 5 : 0) +
+    Math.min(localPresenceCount, rotation.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const recorded = missing.length === 0 && score >= rotation.requiredScore;
+  const rotationWindows = routeIds.map((routeId, index) => {
+    const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === routeId);
+    const spiritId = route?.encounterSpiritId || encounterSpiritIds[index % Math.max(1, encounterSpiritIds.length)] || encounterSpiritIds[0];
+    const spirit = getMochiSpirit(spiritId || '');
+    const lure = spirit?.capture.lureItemId || lureItemIds[index % Math.max(1, lureItemIds.length)] || lureItemIds[0] || 'guild-lure';
+    return `${route?.name || routeId}:${spirit?.name || spiritId || 'spirit'}:${lure}`;
+  });
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unplanned routes';
+  const spiritSummary = encounterSpiritIds.length
+    ? encounterSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ')
+    : 'unplanned spirits';
+
+  return {
+    ok: true,
+    recorded,
+    rotationId: rotation.id,
+    rotationName: rotation.name,
+    title: rotation.title,
+    habitat: rotation.habitat,
+    routeIds,
+    encounterSpiritIds,
+    lureItemIds,
+    rotationWindows,
+    localPresenceCount,
+    score,
+    requiredScore: rotation.requiredScore,
+    missing,
+    rewardItemId: rotation.rewardItemId,
+    message: recorded
+      ? `${rotation.name} recorded: ${spiritSummary} are scheduled across ${routeSummary} with consent lures, ecology notes, field accord trust, capture rite proof, and nearby social witnesses. No real value.`
+      : `${rotation.name} needs ${missing.join(', ')} before encounter windows can be recorded.`,
+    source: 'spirit-encounter-rotation'
+  };
+}
+
 export function resolveSpiritEncounterAtlas(
   progress: SpiritEncounterAtlasProgress,
   atlasId: string = SPIRIT_ENCOUNTER_ATLASES[0].id
@@ -6268,6 +6455,9 @@ export function resolveSpiritEncounterAtlas(
   const fieldAlmanacReady = progress.fieldAlmanacProof && progress.fieldAlmanacId === atlas.requiredFieldAlmanacId;
   if (!fieldAlmanacReady) missing.push(`field-almanac:${atlas.requiredFieldAlmanacId}`);
 
+  const encounterRotationReady = progress.encounterRotationProof && progress.encounterRotationId === atlas.requiredEncounterRotationId;
+  if (!encounterRotationReady) missing.push(`encounter-rotation:${atlas.requiredEncounterRotationId}`);
+
   if (localPresenceCount < atlas.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${atlas.requiredPresenceCount}`);
   if (!progress.profileViewed) missing.push('profile');
   if (!progress.guildBuddyProof) missing.push('guild-buddy');
@@ -6283,6 +6473,7 @@ export function resolveSpiritEncounterAtlas(
     (routeEcologyReady ? 5 : 0) +
     (captureRiteReady ? 5 : 0) +
     (fieldAlmanacReady ? 3 : 0) +
+    (encounterRotationReady ? 5 : 0) +
     Math.min(localPresenceCount, atlas.requiredPresenceCount) * 2 +
     (progress.profileViewed ? 1 : 0) +
     (progress.guildBuddyProof ? 1 : 0) +
@@ -6306,13 +6497,14 @@ export function resolveSpiritEncounterAtlas(
     capturedSpiritIds,
     rarityTiers,
     journalDiscoveredCount: journalCount,
+    encounterRotationId: atlas.requiredEncounterRotationId,
     localPresenceCount,
     score,
     requiredScore: atlas.requiredScore,
     missing,
     rewardItemId: atlas.rewardItemId,
     message: recorded
-      ? `${atlas.name} recorded: ${spiritSummary} are indexed across ${routeSummary} with rarity tiers, capture rite, route ecology, field almanac, and nearby social witness proof. No real value.`
+      ? `${atlas.name} recorded: ${spiritSummary} are indexed across ${routeSummary} with rarity tiers, capture rite, route ecology, field almanac, encounter rotation, and nearby social witness proof. No real value.`
       : `${atlas.name} needs ${missing.join(', ')} before the first-court encounter index can be recorded.`,
     source: 'spirit-encounter-atlas'
   };

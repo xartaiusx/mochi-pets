@@ -356,6 +356,10 @@ const checks = [
     includes: ['world.encounter_atlas', 'Jade Encounter Atlas', 'encounter atlas']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['world.encounter_rotation', 'Jade Encounter Rotation', 'encounter rotation']
+  },
+  {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['Jade Insignia Case proof', 'guild-insignia-case']
   },
@@ -364,12 +368,20 @@ const checks = [
     includes: ['Jade Encounter Atlas proof', 'encounter-atlas']
   },
   {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['Jade Encounter Rotation proof', 'encounter-rotation']
+  },
+  {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Insignia Case', 'Jade Insignia Case proof']
   },
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Encounter Atlas', 'Jade Encounter Atlas proof']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Encounter Rotation', 'Jade Encounter Rotation proof']
   },
   {
     file: 'docs/game-art-bible.md',
@@ -380,12 +392,20 @@ const checks = [
     includes: ['Jade Encounter Atlas contribution', 'content-only Jade Encounter Atlas proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Encounter Rotation contribution', 'content-only Jade Encounter Rotation Scroll proof']
+  },
+  {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Insignia Case proof', 'insignia case']
   },
   {
     file: 'docs/visual-polish-brief.md',
     includes: ['Jade Encounter Atlas proof', 'encounter atlas']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Encounter Rotation proof', 'encounter rotation']
   },
   {
     file: 'docs/implementation-brief.md',
@@ -396,12 +416,20 @@ const checks = [
     includes: ['Jade Encounter Atlas', 'Jade Encounter Atlas proof']
   },
   {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Encounter Rotation', 'Jade Encounter Rotation proof']
+  },
+  {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Insignia Case proof', 'seal the Jade Insignia Case']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Encounter Atlas proof', 'record the Jade Encounter Atlas']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Encounter Rotation proof', 'record the Jade Encounter Rotation']
   },
   {
     file: 'docs/asset-pipeline-contract.md',
@@ -412,12 +440,20 @@ const checks = [
     includes: ['Jade Encounter Atlas', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Encounter Rotation', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Insignia Case', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Encounter Atlas', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Encounter Rotation', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'AGENTS.md',
@@ -685,7 +721,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritEncounterAtlases: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritLineageRegisters: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.encounter_atlas'", "'item.craft_writ'", "'trade.exchange_accord'", "'world.route_waystone'", "'spirit.nurture_rite'", "'spirit.lineage_register'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
+    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritEncounterRotations: true', 'spiritEncounterAtlases: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritLineageRegisters: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.encounter_rotation'", "'world.encounter_atlas'", "'item.craft_writ'", "'trade.exchange_accord'", "'world.route_waystone'", "'spirit.nurture_rite'", "'spirit.lineage_register'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
