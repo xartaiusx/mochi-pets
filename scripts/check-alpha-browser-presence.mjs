@@ -261,6 +261,12 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="chain.deposit_request"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.wayfarer_chronicle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.ascension_trial"]', { timeout: timeoutMs });
+  await page.click('[data-roster-focus="lirabao"]', { timeout: timeoutMs });
+  await page.waitForFunction(
+    () => JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}').spiritId === 'lirabao',
+    { timeout: timeoutMs }
+  );
+  await page.click('[data-roster-focus="aozhen"]', { timeout: timeoutMs });
 
   try {
     await page.waitForFunction(
@@ -418,6 +424,15 @@ async function exerciseAlphaHud(page) {
         && rosterPanel.includes('Jade brush grooming')
         && rosterPanel.includes('Canary eligible, no real value')
         && state.spiritId === 'aozhen'
+        && state.lastFocusedSpiritId === 'aozhen'
+        && Array.isArray(state.focusedSpiritHistory)
+        && state.focusedSpiritHistory.includes('lirabao')
+        && state.focusedSpiritHistory.includes('aozhen')
+        && state.bondBySpiritId?.lirabao >= 1
+        && state.bondBySpiritId?.jintari >= 1
+        && state.bondBySpiritId?.aozhen >= 5
+        && state.growthBySpiritId?.lirabao === 'glow'
+        && state.growthBySpiritId?.aozhen === 'glow'
         && state.captureProof === true
         && state.lastCaptureSpiritId === 'aozhen'
         && state.journalProof === true
@@ -1202,6 +1217,14 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('lirabao'), 'HUD attune action must add Lirabao to the local spirit roster.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('jintari'), 'HUD route invitation must add Jintari to the local spirit roster.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('aozhen'), 'HUD second route invitation must add Aozhen to the local spirit roster.');
+  assert(snapshot.state.lastFocusedSpiritId === 'aozhen', 'HUD roster focus control must return active focus to Aozhen.');
+  assert(Array.isArray(snapshot.state.focusedSpiritHistory) && snapshot.state.focusedSpiritHistory.includes('lirabao'), 'HUD roster focus history must record Lirabao focus.');
+  assert(Array.isArray(snapshot.state.focusedSpiritHistory) && snapshot.state.focusedSpiritHistory.includes('aozhen'), 'HUD roster focus history must record Aozhen focus.');
+  assert(snapshot.state.bondBySpiritId?.lirabao >= 1, 'HUD roster progress map must track Lirabao bond.');
+  assert(snapshot.state.bondBySpiritId?.jintari >= 1, 'HUD roster progress map must track Jintari bond.');
+  assert(snapshot.state.bondBySpiritId?.aozhen >= 5, 'HUD roster progress map must track Aozhen raised bond.');
+  assert(snapshot.state.growthBySpiritId?.lirabao === 'glow', 'HUD roster progress map must upgrade Lirabao growth from full-roster bond proof.');
+  assert(snapshot.state.growthBySpiritId?.aozhen === 'glow', 'HUD roster progress map must track Aozhen glow growth.');
   assert(snapshot.rosterPanel.includes('Lirabao'), 'HUD roster panel must include Lirabao.');
   assert(snapshot.rosterPanel.includes('Jintari'), 'HUD roster panel must include Jintari.');
   assert(snapshot.rosterPanel.includes('Aozhen'), 'HUD roster panel must include Aozhen.');

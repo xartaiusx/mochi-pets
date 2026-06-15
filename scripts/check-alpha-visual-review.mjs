@@ -466,6 +466,14 @@ assert(browserPresence.data?.hudAction?.state?.profileViewed === true, 'HUD acti
 assert(browserPresence.data?.hudAction?.state?.guildBuddyProof === true, 'HUD action proof must include local guild buddy proof');
 assert(browserPresence.data?.hudAction?.state?.statusMood === 'cozy', 'HUD action proof must include local status/mood proof');
 assert(browserPresence.data?.hudAction?.state?.lastInspectedSpiritId === 'aozhen', 'HUD action proof must include spirit inspection');
+assert(browserPresence.data?.hudAction?.state?.lastFocusedSpiritId === 'aozhen', 'HUD action proof must include roster focus returning to Aozhen');
+assert(Array.isArray(browserPresence.data?.hudAction?.state?.focusedSpiritHistory) && browserPresence.data.hudAction.state.focusedSpiritHistory.includes('lirabao'), 'HUD action proof must include Lirabao roster focus history');
+assert(Array.isArray(browserPresence.data?.hudAction?.state?.focusedSpiritHistory) && browserPresence.data.hudAction.state.focusedSpiritHistory.includes('aozhen'), 'HUD action proof must include Aozhen roster focus history');
+assert(browserPresence.data?.hudAction?.state?.bondBySpiritId?.lirabao >= 1, 'HUD action proof must include per-spirit Lirabao bond progress');
+assert(browserPresence.data?.hudAction?.state?.bondBySpiritId?.jintari >= 1, 'HUD action proof must include per-spirit Jintari bond progress');
+assert(browserPresence.data?.hudAction?.state?.bondBySpiritId?.aozhen >= 5, 'HUD action proof must include per-spirit Aozhen bond progress');
+assert(browserPresence.data?.hudAction?.state?.growthBySpiritId?.lirabao === 'glow', 'HUD action proof must include per-spirit Lirabao growth progress');
+assert(browserPresence.data?.hudAction?.state?.growthBySpiritId?.aozhen === 'glow', 'HUD action proof must include per-spirit Aozhen growth progress');
 assert(browserPresence.data?.hudAction?.state?.questChainProof === true, 'HUD action proof must include completed quest-chain proof');
 assert(browserPresence.data?.hudAction?.state?.charmListed === true, 'HUD action proof must include fixed market listing');
 assert(browserPresence.data?.hudAction?.state?.marketReceiptProof === true, 'HUD action proof must include fixed-price market receipt');
@@ -689,6 +697,9 @@ assert(browserBridgeSource.includes('data-lineage-register-label'), 'HUD must ex
 assert(browserBridgeSource.includes('resolveSpiritLineageRegister'), 'HUD bridge must call the lineage register resolver');
 assert(browserBridgeSource.includes('data-roster-panel'), 'HUD must expose the first-court roster detail panel');
 assert(browserBridgeSource.includes('data-roster-spirit'), 'HUD roster panel must expose per-spirit detail entries');
+assert(browserBridgeSource.includes('data-roster-focus'), 'HUD roster panel must expose active-spirit focus controls');
+assert(browserBridgeSource.includes('bondBySpiritId'), 'HUD bridge must persist per-spirit bond progress');
+assert(browserBridgeSource.includes('growthBySpiritId'), 'HUD bridge must persist per-spirit growth progress');
 assert(browserBridgeSource.includes('renderRosterPanel'), 'HUD bridge must render roster details from canonical Mochi Spirit content');
 assert(browserBridgeSource.includes('data-alpha-action="battle.dojo_ladder"'), 'HUD must expose the dojo ladder action button');
 assert(browserBridgeSource.includes('data-dojo-ladder-label'), 'HUD must expose the dojo ladder label');

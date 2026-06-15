@@ -153,6 +153,11 @@ interface AlphaHudState {
   statusMood: string;
   bond: number;
   growth: string;
+  bondBySpiritId: Record<string, number>;
+  growthBySpiritId: Record<string, string>;
+  careStreakBySpiritId: Record<string, number>;
+  lastFocusedSpiritId?: string;
+  focusedSpiritHistory: string[];
   captureProof: boolean;
   lastCaptureSpiritId?: string;
   starterVowProof: boolean;
@@ -1001,7 +1006,7 @@ export interface AlphaWorldStatePatch {
   tradeProof?: boolean;
 }
 
-type AlphaLocalActionType = 'spirit.inspect' | 'profile.view' | 'guild.buddy' | 'status.set';
+type AlphaLocalActionType = 'spirit.inspect' | 'spirit.focus' | 'profile.view' | 'guild.buddy' | 'status.set';
 
 interface PresenceMessage {
   type: 'MOCHI_SOCIAL_LOCAL_PRESENCE';
@@ -1039,6 +1044,10 @@ function defaultAlphaState(): AlphaHudState {
     statusMood: 'exploring',
     bond: 0,
     growth: 'seed',
+    bondBySpiritId: {},
+    growthBySpiritId: {},
+    careStreakBySpiritId: {},
+    focusedSpiritHistory: [],
     captureProof: false,
     starterVowProof: false,
     starterVowName: 'Unchosen',
@@ -2058,6 +2067,11 @@ function createHud() {
       performAlphaLocalAction(button.dataset.alphaLocalAction as AlphaLocalActionType);
     });
   });
+  hud.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-roster-focus]');
+    if (!button || button.disabled) return;
+    performAlphaLocalAction('spirit.focus', { spiritId: button.dataset.rosterFocus || '' });
+  });
 
   chatForm?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -2233,6 +2247,10 @@ function readAlphaState(): AlphaHudState {
       ...defaultAlphaState(),
       ...(parsed || {}),
       attunedSpiritIds: Array.isArray(parsed?.attunedSpiritIds) ? parsed.attunedSpiritIds.map(String) : [],
+      bondBySpiritId: normalizeBondMap(parsed?.bondBySpiritId, 0),
+      growthBySpiritId: normalizeGrowthMap(parsed?.growthBySpiritId),
+      careStreakBySpiritId: normalizeBondMap(parsed?.careStreakBySpiritId, 0),
+      focusedSpiritHistory: Array.isArray(parsed?.focusedSpiritHistory) ? parsed.focusedSpiritHistory.map(String) : [],
       captureRiteSpiritIds: Array.isArray(parsed?.captureRiteSpiritIds) ? parsed.captureRiteSpiritIds.map(String) : [],
       captureRiteRouteInvitedSpiritIds: Array.isArray(parsed?.captureRiteRouteInvitedSpiritIds) ? parsed.captureRiteRouteInvitedSpiritIds.map(String) : [],
       captureRiteLureItemIds: Array.isArray(parsed?.captureRiteLureItemIds) ? parsed.captureRiteLureItemIds.map(String) : [],
@@ -2321,18 +2339,18 @@ function escapeHudText(value: unknown) {
 function renderRosterPanel(state: AlphaHudState) {
   const rosterIds = new Set(state.attunedSpiritIds);
   const activeSpiritId = state.spiritId || '';
-  const bond = Math.max(0, Math.min(5, Number(state.bond) || 0));
-  const growth = state.growth || growthStageFromBond(bond);
 
   return MOCHI_SPIRITS.map((spirit) => {
     const isActive = spirit.id === activeSpiritId;
-    const isBonded = rosterIds.has(spirit.id);
-    const milestone = resolveSpiritBondMilestone(spirit.id, isActive ? bond : 0, isActive ? growth : 'seed');
+    const bond = getSpiritBond(state, spirit.id);
+    const growth = getSpiritGrowth(state, spirit.id);
+    const isBonded = rosterIds.has(spirit.id) || bond > 0;
+    const milestone = resolveSpiritBondMilestone(spirit.id, bond, growth);
     const nextMilestone = milestone.nextMilestone?.label || milestone.milestone?.label || spirit.bondMilestones[0]?.label || 'First bond';
     const move = spirit.battle.moves[0];
     const careAction = spirit.careActions[0];
     const raisingNeed = spirit.raisingNeeds[0];
-    const status = isBonded ? (isActive ? `active ${growth} bond ${bond}/5` : 'rostered') : 'invite pending';
+    const status = isBonded ? `${isActive ? 'active' : 'rostered'} ${growth} bond ${bond}/5` : 'invite pending';
     const canary = spirit.certificateEligible ? 'Canary eligible, no real value' : 'preview roster, no real value';
 
     return `
@@ -2346,6 +2364,7 @@ function renderRosterPanel(state: AlphaHudState) {
         <span>Care: ${escapeHudText(careAction.label)}; Raise: ${escapeHudText(raisingNeed.label)}</span>
         <span>${escapeHudText(nextMilestone)}</span>
         <span>${escapeHudText(canary)}</span>
+        <button type="button" data-roster-focus="${escapeHudText(spirit.id)}" ${isBonded ? '' : 'disabled'} aria-label="Focus ${escapeHudText(spirit.name)} as active Mochi Spirit">${isActive ? 'Active' : 'Focus'}</button>
       </article>
     `;
   }).join('');
@@ -2358,6 +2377,103 @@ function normalizeBondMap(value: unknown, fallbackBond = 1): Record<string, numb
       .filter(([key]) => key)
       .map(([key, score]) => [key, Math.max(0, Math.floor(Number(score) || fallbackBond || 0))])
   );
+}
+
+function normalizeGrowthMap(value: unknown): Record<string, string> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key)
+      .map(([key, growth]) => [key, String(growth || 'seed')])
+  );
+}
+
+function clampSpiritBond(value: unknown) {
+  return Math.max(0, Math.min(5, Math.floor(Number(value) || 0)));
+}
+
+function strongestGrowthStage(storedGrowth: string | undefined, bond: number) {
+  const stages = ['seed', 'sprout', 'glow'];
+  const inferredGrowth = growthStageFromBond(bond);
+  const storedIndex = Math.max(0, stages.indexOf(storedGrowth || 'seed'));
+  const inferredIndex = Math.max(0, stages.indexOf(inferredGrowth));
+  return stages[Math.max(storedIndex, inferredIndex)] || inferredGrowth;
+}
+
+function rosterProofBond(state: AlphaHudState, spiritId: string) {
+  if (
+    state.lineageRegisterSpiritIds.includes(spiritId) ||
+    state.bloomAscendanceSpiritIds.includes(spiritId) ||
+    state.nurseryGroveSpiritIds.includes(spiritId) ||
+    state.kinshipAlbumSpiritIds.includes(spiritId)
+  ) {
+    return 5;
+  }
+
+  if (
+    state.nurtureRiteRosterIds.includes(spiritId) ||
+    state.recoveryTeaPartyIds.includes(spiritId) ||
+    state.careCycleCaredSpiritIds.includes(spiritId)
+  ) {
+    return 3;
+  }
+
+  if (state.attunedSpiritIds.includes(spiritId) || state.captureRiteSpiritIds.includes(spiritId) || state.routeInvitedSpiritIds.includes(spiritId)) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function getSpiritBond(state: AlphaHudState, spiritId: string) {
+  const stored = clampSpiritBond(state.bondBySpiritId[spiritId]);
+  const active = state.spiritId === spiritId ? clampSpiritBond(state.bond) : 0;
+  return Math.max(stored, active, rosterProofBond(state, spiritId));
+}
+
+function getSpiritGrowth(state: AlphaHudState, spiritId: string) {
+  const bond = getSpiritBond(state, spiritId);
+  return strongestGrowthStage(state.growthBySpiritId[spiritId] || (state.spiritId === spiritId ? state.growth : undefined), bond);
+}
+
+function setSpiritProgress(state: AlphaHudState, spiritId: string, bond: unknown, growth?: string) {
+  const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId);
+  if (!spirit) return false;
+
+  const boundedBond = Math.max(getSpiritBond(state, spiritId), clampSpiritBond(bond));
+  const nextGrowth = strongestGrowthStage(growth, boundedBond);
+  state.bondBySpiritId[spiritId] = boundedBond;
+  state.growthBySpiritId[spiritId] = nextGrowth;
+  if (!state.attunedSpiritIds.includes(spiritId)) {
+    state.attunedSpiritIds.push(spiritId);
+  }
+  if (state.spiritId === spiritId) {
+    state.bond = boundedBond;
+    state.growth = nextGrowth;
+  }
+  return true;
+}
+
+function setRosterProgress(state: AlphaHudState, spiritIds: readonly string[], bond: unknown, growth?: string) {
+  for (const spiritId of Array.from(new Set(spiritIds.filter(Boolean)))) {
+    setSpiritProgress(state, spiritId, bond, growth);
+  }
+}
+
+function focusSpirit(state: AlphaHudState, spiritId: string) {
+  const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId);
+  if (!spirit || !state.attunedSpiritIds.includes(spiritId)) return false;
+
+  const bond = Math.max(1, getSpiritBond(state, spiritId));
+  const growth = getSpiritGrowth(state, spiritId);
+  state.spiritId = spiritId;
+  state.bond = bond;
+  state.growth = growth;
+  state.bondBySpiritId[spiritId] = bond;
+  state.growthBySpiritId[spiritId] = growth;
+  state.lastFocusedSpiritId = spiritId;
+  state.focusedSpiritHistory = Array.from(new Set([...(state.focusedSpiritHistory || []), spiritId]));
+  return true;
 }
 
 function applyBattleRoundState(state: AlphaHudState, result: ReturnType<typeof resolveSpiritBattleRound>) {
@@ -2391,6 +2507,7 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     }
     state.bond = Math.max(0, Math.min(5, Number(patch.spirit.bond) || 0));
     state.growth = patch.spirit.growth || growthStageFromBond(state.bond);
+    setSpiritProgress(state, patch.spirit.id, state.bond, state.growth);
     if (spirit) {
       appendUniqueAlphaChat(state, `${spirit.name}: ${state.growth} growth, bond ${state.bond}/5.`);
     }
@@ -2400,10 +2517,12 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.captureProof = true;
     state.lastCaptureSpiritId = patch.capture.spiritId;
     state.spiritId = patch.capture.spiritId;
+    setSpiritProgress(state, patch.capture.spiritId, Math.max(1, getSpiritBond(state, patch.capture.spiritId)), 'seed');
     for (const spiritId of patch.capture.roster || [patch.capture.spiritId]) {
       if (!state.attunedSpiritIds.includes(spiritId)) {
         state.attunedSpiritIds.push(spiritId);
       }
+      setSpiritProgress(state, spiritId, Math.max(1, getSpiritBond(state, spiritId)));
     }
     appendUniqueAlphaChat(state, patch.capture.message || `Spirit invitation recorded for ${patch.capture.spiritId}.`);
   }
@@ -2952,7 +3071,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     return {
       spiritId: spirit.id,
       moveId: spirit.battle.moves[0].id,
-      bond: state.bond || 1,
+      bond: getSpiritBond(state, spirit.id) || state.bond || 1,
       round: Math.max(1, state.trainingVictories + 1)
     };
   }
@@ -2962,20 +3081,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     return {
       roster,
       activeSpiritId: state.spiritId || roster[0],
-      bondBySpiritId: Object.fromEntries(roster.map((id) => [id, state.bond || 1])),
-      growthBySpiritId: Object.fromEntries(roster.map((id) => [id, state.growth || 'seed']))
+      bondBySpiritId: Object.fromEntries(roster.map((id) => [id, getSpiritBond(state, id) || 1])),
+      growthBySpiritId: Object.fromEntries(roster.map((id) => [id, getSpiritGrowth(state, id) || 'seed']))
     };
   }
 
   if (type === 'spirit.habitat_bond') {
+    const activeSpiritId = state.spiritId || state.attunedSpiritIds[0];
+    const activeBond = activeSpiritId ? getSpiritBond(state, activeSpiritId) : state.bond || 1;
     return {
       bondId: SPIRIT_HABITAT_BONDS[0].id,
       roster: state.attunedSpiritIds,
-      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      activeSpiritId,
       journalDiscoveredCount: state.journalDiscoveredCount,
-      careProof: state.raisingProof || state.bond > 1,
-      bond: state.bond || 1,
-      growth: state.growth || 'seed',
+      careProof: state.raisingProof || activeBond > 1,
+      bond: activeBond,
+      growth: activeSpiritId ? getSpiritGrowth(state, activeSpiritId) : state.growth || 'seed',
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
       statusMood: state.statusMood
@@ -2989,7 +3110,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       roster: state.attunedSpiritIds,
       partyIds,
       activeSpiritId: state.spiritId || partyIds[0] || state.attunedSpiritIds[0],
-      bondBySpiritId: Object.fromEntries(partyIds.map((spiritId) => [spiritId, state.bond || 1])),
+      bondBySpiritId: Object.fromEntries(partyIds.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1])),
       careStreak: state.raisingCareStreak,
       trainingXp: state.trainingXp,
       habitatBondProof: state.habitatBondProof,
@@ -3084,7 +3205,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       cycleId: SPIRIT_CARE_CYCLES[0].id,
       roster,
       activeSpiritId: state.spiritId || roster[0],
-      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, state.bond || 1])),
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1])),
       careStreak: state.raisingCareStreak,
       trainingXp: state.trainingXp,
       raisingProof: state.raisingProof,
@@ -3106,7 +3227,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       concordId: SPIRIT_TEMPERAMENT_CONCORDS[0].id,
       roster,
       activeSpiritId: state.spiritId || roster[0],
-      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, state.bond || 1])),
+      bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1])),
       careCycleProof: state.careCycleProof,
       careCycleId: state.careCycleId,
       traitAttunementProof: state.traitAttunementProof,
@@ -3894,7 +4015,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       careStreak: state.raisingCareStreak,
       journalProof: state.journalProof,
       journalDiscoveredCount: state.journalDiscoveredCount,
-      bondBySpiritId: Object.fromEntries(partyIds.map((partySpiritId) => [partySpiritId, state.bond || 1]))
+      bondBySpiritId: Object.fromEntries(partyIds.map((partySpiritId) => [partySpiritId, getSpiritBond(state, partySpiritId) || 1]))
     };
   }
 
@@ -4243,22 +4364,24 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
   }
 
   if (type === 'battle.spar_ladder') {
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
     return {
-      partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+      partyIds,
       opponentId: 'jade-echo-apprentice',
-      bondBySpiritId: Object.fromEntries((state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3)).map((spiritId) => [spiritId, state.bond || 1])),
+      bondBySpiritId: Object.fromEntries(partyIds.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1])),
       priorWins: state.sparLadderWins
     };
   }
 
   if (type === 'spirit.raise') {
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
-    const need = selectSpiritRaisingNeed(spirit.id, state.raisingCareStreak) || spirit.raisingNeeds[0];
+    const careStreak = state.careStreakBySpiritId[spirit.id] ?? state.raisingCareStreak;
+    const need = selectSpiritRaisingNeed(spirit.id, careStreak) || spirit.raisingNeeds[0];
     return {
       spiritId: spirit.id,
       needId: need.id,
-      currentBond: state.bond || 1,
-      careStreak: state.raisingCareStreak
+      currentBond: getSpiritBond(state, spirit.id) || state.bond || 1,
+      careStreak
     };
   }
 
@@ -4342,7 +4465,7 @@ async function loadAlphaStatus() {
   }
 }
 
-function performAlphaLocalAction(type: AlphaLocalActionType) {
+function performAlphaLocalAction(type: AlphaLocalActionType, payload: Record<string, unknown> = {}) {
   const state = readAlphaState();
 
   if (type === 'profile.view') {
@@ -4361,6 +4484,18 @@ function performAlphaLocalAction(type: AlphaLocalActionType) {
   if (type === 'status.set') {
     state.statusMood = 'cozy';
     state.chat.push('Status set: cozy alpha hangout, visible locally for social presence testing.');
+  }
+
+  if (type === 'spirit.focus') {
+    const spiritId = String(payload.spiritId || '');
+    const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId);
+    if (!spirit) {
+      state.chat.push('That Mochi Spirit is not registered in the first-court roster.');
+    } else if (!focusSpirit(state, spirit.id)) {
+      state.chat.push(`${spirit.name} is still invite pending. Record the invitation before focusing this companion.`);
+    } else {
+      state.chat.push(`Focused ${spirit.name}: ${state.growth} growth, bond ${state.bond}/5 for care, training, battle, and roleplay.`);
+    }
   }
 
   if (type === 'spirit.inspect') {
@@ -4394,8 +4529,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       if (!state.attunedSpiritIds.includes(result.spiritId)) {
         state.attunedSpiritIds.push(result.spiritId);
       }
-      state.bond = Math.max(state.bond, result.bond);
-      state.growth = result.growth;
+      setSpiritProgress(state, result.spiritId, Math.max(getSpiritBond(state, result.spiritId), result.bond), result.growth);
     }
     state.chat.push(result.message);
   }
@@ -4431,8 +4565,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.partyIds = Array.from(new Set([...(state.partyIds || []), result.selectedSpiritId]));
       state.supportSpiritIds = state.partyIds.slice(1);
       state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
-      state.bond = Math.max(state.bond, 1);
-      state.growth = growthStageFromBond(state.bond);
+      setSpiritProgress(state, result.selectedSpiritId, Math.max(getSpiritBond(state, result.selectedSpiritId), 1));
+      focusSpirit(state, result.selectedSpiritId);
     }
     state.chat.push(result.message);
   }
@@ -4452,8 +4586,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       if (!state.attunedSpiritIds.includes(targetSpirit.id)) {
         state.attunedSpiritIds.push(targetSpirit.id);
       }
-      state.bond = Math.max(state.bond, result.bond);
-      state.growth = result.growth;
+      setSpiritProgress(state, targetSpirit.id, Math.max(getSpiritBond(state, targetSpirit.id), result.bond), result.growth);
+      focusSpirit(state, targetSpirit.id);
     }
     state.chat.push(result.message);
   }
@@ -4504,9 +4638,11 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     if (!state.attunedSpiritIds.includes(state.spiritId)) {
       state.attunedSpiritIds.push(state.spiritId);
     }
-    state.bond = Math.min(5, state.bond + 1);
-    state.growth = growthStageFromBond(state.bond);
-    state.chat.push(`Care complete: ${state.growth} bond ${state.bond}`);
+    const nextBond = Math.min(5, Math.max(getSpiritBond(state, state.spiritId), state.bond) + 1);
+    setSpiritProgress(state, state.spiritId, nextBond, growthStageFromBond(nextBond));
+    state.careStreakBySpiritId[state.spiritId] = Math.max((state.careStreakBySpiritId[state.spiritId] || 0) + 1, state.raisingCareStreak);
+    const caredSpirit = MOCHI_SPIRITS.find((entry) => entry.id === state.spiritId);
+    state.chat.push(`Care complete for ${caredSpirit?.name || state.spiritId}: ${state.growth} bond ${state.bond}/5.`);
   }
 
   if (type === 'spirit.journal') {
@@ -4543,6 +4679,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.habitatBondScore = result.score;
       state.habitatTasselClaimed = result.rewardItemId === 'jade-court-habitat-tassel';
       state.attunedSpiritIds = result.roster;
+      setRosterProgress(state, result.roster, 2, 'sprout');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -4554,7 +4691,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     const bondBySpiritId =
       payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
         ? (payload.bondBySpiritId as Record<string, number>)
-        : Object.fromEntries(partyIds.map((spiritId) => [spiritId, state.bond || 1]));
+        : Object.fromEntries(partyIds.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1]));
     const result = resolveSpiritSanctuaryRite(
       {
         roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
@@ -4580,6 +4717,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.attunedSpiritIds = result.roster;
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
+      setRosterProgress(state, result.partyIds, 3, 'sprout');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -4637,6 +4775,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.compendiumSealClaimed = result.rewardItemId === 'jade-court-compendium-seal';
       state.attunedSpiritIds = result.roster;
       state.discoveredRouteIds = result.discoveredRoutes;
+      setRosterProgress(state, result.roster, 2, 'sprout');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -4668,6 +4807,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.rosterArchiveReserveIds = result.reserveSpiritIds;
       state.rosterArchiveSealClaimed = result.rewardItemId === 'jade-roster-archive-seal';
       state.attunedSpiritIds = result.roster;
+      setRosterProgress(state, result.roster, 3, 'sprout');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -4697,6 +4837,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.provisionSatchelClaimed = result.rewardItemId === 'jade-court-provision-satchel';
       state.attunedSpiritIds = result.roster;
       state.completedQuestIds = result.completedQuestIds;
+      setRosterProgress(state, result.roster, 3, 'sprout');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -4706,7 +4847,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     const payloadBondBySpiritId =
       payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
         ? Object.fromEntries(Object.entries(payload.bondBySpiritId as Record<string, unknown>).map(([spiritId, bond]) => [spiritId, Number(bond)]))
-        : Object.fromEntries(state.attunedSpiritIds.map((spiritId) => [spiritId, state.bond || 1]));
+        : Object.fromEntries(state.attunedSpiritIds.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1]));
     const result = resolveSpiritCareCycle(
       {
         roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
@@ -4737,6 +4878,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.careCycleTotalBond = result.totalBond;
       state.careCycleKnotClaimed = result.rewardItemId === 'jade-care-cycle-knot';
       state.attunedSpiritIds = result.roster;
+      setRosterProgress(state, result.caredSpiritIds, 4, 'glow');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -4746,7 +4888,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     const payloadBondBySpiritId =
       payload.bondBySpiritId && typeof payload.bondBySpiritId === 'object'
         ? Object.fromEntries(Object.entries(payload.bondBySpiritId as Record<string, unknown>).map(([spiritId, bond]) => [spiritId, Number(bond)]))
-        : Object.fromEntries(state.attunedSpiritIds.map((spiritId) => [spiritId, state.bond || 1]));
+        : Object.fromEntries(state.attunedSpiritIds.map((spiritId) => [spiritId, getSpiritBond(state, spiritId) || 1]));
     const result = resolveSpiritTemperamentConcord(
       {
         roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
@@ -4775,6 +4917,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.temperamentConcordTotalBond = result.totalBond;
       state.temperamentCharmClaimed = result.rewardItemId === 'jade-temperament-charm';
       state.attunedSpiritIds = result.roster;
+      setRosterProgress(state, result.roster, Math.ceil(result.totalBond / Math.max(1, result.roster.length)), 'glow');
       state.spiritId = result.activeSpiritId || state.spiritId;
     }
     state.chat.push(result.message);
@@ -5674,7 +5817,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         activeSpiritId: state.spiritId || roster[0],
         discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
         harmonyScore,
-        bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, state.bond || 1])),
+        bondBySpiritId: Object.fromEntries(roster.map((spiritId) => [spiritId, Math.max(1, getSpiritBond(state, spiritId))])),
         tacticProof: state.tacticProof,
         affinityProof: state.affinityProof,
         journalDiscoveredCount: state.journalDiscoveredCount
@@ -5715,9 +5858,10 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
           if (!state.attunedSpiritIds.includes(spiritId)) {
             state.attunedSpiritIds.push(spiritId);
           }
+          setSpiritProgress(state, spiritId, Math.max(1, getSpiritBond(state, spiritId)));
         }
-        state.bond = Math.max(state.bond, result.bond);
-        state.growth = result.growth;
+        setSpiritProgress(state, result.spiritId, Math.max(getSpiritBond(state, result.spiritId), result.bond), result.growth);
+        focusSpirit(state, result.spiritId);
       }
       state.chat.push(result.message);
     }
@@ -6524,7 +6668,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   if (type === 'battle.spar_ladder') {
     const requestedParty = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
     const priorWins = Number(payload.priorWins || state.sparLadderWins || 0);
-    const bondBySpiritId = Object.fromEntries(requestedParty.map((spiritId) => [spiritId, state.bond || 1]));
+    const bondBySpiritId = Object.fromEntries(requestedParty.map((spiritId) => [spiritId, Math.max(1, getSpiritBond(state, spiritId))]));
     const result = resolveSpiritSparLadder(requestedParty, String(payload.opponentId || 'jade-echo-apprentice'), bondBySpiritId, priorWins);
     const battleRound = resolveSpiritBattleRound({
       partyIds: requestedParty,
@@ -6543,8 +6687,11 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.lastSparOpponentId = result.opponentId;
       if (result.victory) {
         state.sparLadderWins += 1;
-        state.bond = Math.min(5, Math.max(state.bond, 1) + result.bondDelta);
-        state.growth = growthStageFromBond(state.bond);
+        for (const spiritId of result.partyIds) {
+          const nextBond = Math.min(5, Math.max(1, getSpiritBond(state, spiritId)) + result.bondDelta);
+          setSpiritProgress(state, spiritId, nextBond, growthStageFromBond(nextBond));
+        }
+        focusSpirit(state, state.spiritId || result.partyIds[0]);
       }
     }
     state.chat.push(result.message);
@@ -6555,14 +6702,14 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     const spiritId = String(payload.spiritId || state.spiritId || 'lirabao');
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
     const moveId = String(payload.moveId || spirit.battle.moves[0].id);
-    const priorBond = Number(payload.bond || state.bond || 1);
+    const priorBond = Number(payload.bond || getSpiritBond(state, spirit.id) || state.bond || 1);
     const result = resolveSpiritTrainingBattle(spirit.id, moveId, priorBond, Number(payload.round || 1));
     const battleParty = state.partyIds.length ? state.partyIds : [spirit.id];
     const battleRound = resolveSpiritBattleRound({
       partyIds: battleParty,
       activeSpiritId: spirit.id,
       moveIdBySpiritId: { [spirit.id]: moveId },
-      bondBySpiritId: Object.fromEntries(battleParty.map((partySpiritId) => [partySpiritId, partySpiritId === spirit.id ? priorBond : state.bond || 1])),
+      bondBySpiritId: Object.fromEntries(battleParty.map((partySpiritId) => [partySpiritId, partySpiritId === spirit.id ? priorBond : Math.max(1, getSpiritBond(state, partySpiritId))])),
       opponentId: state.lastSparOpponentId || 'jade-echo-apprentice',
       tacticProof: state.tacticProof,
       harmonyFormProof: state.harmonyFormProof,
@@ -6575,8 +6722,9 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.trainingXp += result.trainingXp;
     if (result.victory) {
       state.trainingVictories += 1;
-      state.bond = Math.min(5, Math.max(state.bond, 1) + result.bondDelta);
-      state.growth = growthStageFromBond(state.bond);
+      const nextBond = Math.min(5, Math.max(1, getSpiritBond(state, spirit.id)) + result.bondDelta);
+      setSpiritProgress(state, spirit.id, nextBond, growthStageFromBond(nextBond));
+      focusSpirit(state, spirit.id);
     }
     state.chat.push(result.message);
     applyBattleRoundState(state, battleRound);
@@ -6585,10 +6733,10 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   if (type === 'spirit.raise') {
     const spiritId = String(payload.spiritId || state.spiritId || 'lirabao');
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === spiritId) || MOCHI_SPIRITS[0];
-    const careStreak = Number(payload.careStreak ?? state.raisingCareStreak ?? 0);
+    const careStreak = Number(payload.careStreak ?? state.careStreakBySpiritId[spirit.id] ?? state.raisingCareStreak ?? 0);
     const need = selectSpiritRaisingNeed(spirit.id, careStreak) || spirit.raisingNeeds[0];
     const needId = String(payload.needId || need.id);
-    const result = resolveSpiritRaisingAction(spirit.id, needId, Number(payload.currentBond || state.bond || 1), careStreak);
+    const result = resolveSpiritRaisingAction(spirit.id, needId, Number(payload.currentBond || getSpiritBond(state, spirit.id) || state.bond || 1), careStreak);
     state.spiritId = spirit.id;
     if (!state.attunedSpiritIds.includes(spirit.id)) {
       state.attunedSpiritIds.push(spirit.id);
@@ -6602,8 +6750,9 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.raisingMilestoneLabel = result.milestoneLabel || state.raisingMilestoneLabel;
       state.nextRaisingMilestoneId = result.nextMilestoneId;
       state.nextRaisingMilestoneLabel = result.nextMilestoneLabel;
-      state.bond = Math.max(state.bond, result.bond);
-      state.growth = result.growth;
+      state.careStreakBySpiritId[spirit.id] = Math.max(state.careStreakBySpiritId[spirit.id] || 0, result.careStreak);
+      setSpiritProgress(state, spirit.id, Math.max(getSpiritBond(state, spirit.id), result.bond), result.growth);
+      focusSpirit(state, spirit.id);
     }
     state.chat.push(result.message);
   }
@@ -6635,8 +6784,10 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.completedQuestIds = result.completedQuestIds;
     state.questChainProof = result.chainComplete;
     if (result.completed && result.rewardBond > 0) {
-      state.bond = Math.min(5, Math.max(state.bond, 1) + result.rewardBond);
-      state.growth = growthStageFromBond(state.bond);
+      const activeSpiritId = state.spiritId || state.attunedSpiritIds[0] || 'lirabao';
+      const nextBond = Math.min(5, Math.max(getSpiritBond(state, activeSpiritId), state.bond, 1) + result.rewardBond);
+      setSpiritProgress(state, activeSpiritId, nextBond, growthStageFromBond(nextBond));
+      focusSpirit(state, activeSpiritId);
       state.chat.push(`Quest complete: ${result.title}. Reward recorded as no-real-value alpha progress.`);
     } else {
       state.chat.push(result.message);
@@ -6681,8 +6832,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     const result = resolveSpiritGrowthRite(
       {
         spiritId: String(payload.spiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
-        bond: Number(payload.bond || state.bond || 1),
-        growth: String(payload.growth || state.growth || 'seed'),
+        bond: Number(payload.bond || getSpiritBond(state, String(payload.spiritId || state.spiritId || state.attunedSpiritIds[0] || '')) || state.bond || 1),
+        growth: String(payload.growth || getSpiritGrowth(state, String(payload.spiritId || state.spiritId || state.attunedSpiritIds[0] || '')) || state.growth || 'seed'),
         trainingXp: Number(payload.trainingXp ?? state.trainingXp ?? 0),
         raisingProof: Boolean(payload.raisingProof ?? state.raisingProof),
         rankTrialProof: Boolean(payload.rankTrialProof ?? state.guildRankProof),
@@ -6696,7 +6847,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.growthForm = result.formTitle;
       state.growthSigilClaimed = result.rewardItemId === 'moonwell-bloom-sigil';
       state.spiritId = result.spiritId;
-      state.growth = result.growth;
+      setSpiritProgress(state, result.spiritId, Math.max(getSpiritBond(state, result.spiritId), result.bond), result.growth);
+      focusSpirit(state, result.spiritId);
     }
     state.chat.push(result.message);
   }
