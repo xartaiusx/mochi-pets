@@ -66,6 +66,13 @@ describe('runtime asset paths', () => {
     }
   });
 
+  it('keeps CanvasEngine transform metadata iterable for runtime animation updates', () => {
+    const clientConfig = readFileSync('src/config/config.client.ts', 'utf8');
+
+    expect(clientConfig).toContain('scale: [0.5, 0.5]');
+    expect(clientConfig).not.toMatch(/scale:\s*0\.5\b/);
+  });
+
   it('uses tab-scoped multiplayer guest connection ids', () => {
     const clientEntry = readFileSync('src/client.ts', 'utf8');
 
