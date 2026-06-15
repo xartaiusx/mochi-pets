@@ -42,6 +42,10 @@ const checks = [
     includes: ['battle.summit_circuit', 'summitCircuits: true', 'Jade Summit Circuit label/state', 'Jade Summit Circuit Laurel payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['spirit.relic_attune', 'spiritRelicAttunements: true', 'Jade Relic Attunement label/state', 'Jade Relic Silk Cord payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -76,6 +80,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Summit Circuit proof', 'Jade Summit Circuit Laurel', 'Summit circuit proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Relic Attunement proof', 'Jade Relic Silk Cord', 'Relic attunement proof is no-real-value']
   },
   {
     file: 'docs/no-cost-operations.md',
@@ -118,6 +126,10 @@ const checks = [
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder', 'clear the Jade Dojo Ladder', 'no-real-value Jade Dojo Ladder']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Relic Attunement proof', 'Jade Relic Silk Cord', 'Jade Summit Circuit']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -645,6 +657,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritRelicAttunements: true', "'spirit.relic_attune'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
   },
   {
@@ -733,6 +749,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritRelicAttunements: true', "'spirit.relic_attune'"]
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
   },
   {
@@ -750,6 +770,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_AFFINITY_MATRICES', 'resolveSpiritAffinityMatrix', 'data-alpha-action="battle.affinity_matrix"', 'data-affinity-matrix-label', 'affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_RELIC_ATTUNEMENTS', 'resolveSpiritRelicAttunement', 'data-alpha-action="spirit.relic_attune"', 'data-relic-attunement-label', 'relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -842,6 +866,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Affinity Matrix', 'jade-affinity-matrix-seal', 'resolveSpiritAffinityMatrix', 'battle-affinity-matrix', 'affinityMatrixProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Relic Attunement', 'jade-relic-silk-cord', 'resolveSpiritRelicAttunement', 'spirit-relic-attunement', 'relicAttunementProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -1056,6 +1084,10 @@ const checks = [
     includes: ['summitCircuits: true']
   },
   {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['spiritRelicAttunements: true']
+  },
+  {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
     includes: ['scoped server token in a header only', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action']
   },
@@ -1074,6 +1106,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.affinity_matrix', 'jade-affinity-matrix', 'affinityMatrices', 'Jade Affinity Matrix', 'affinityMatrixProof', 'jade-affinity-matrix-seal']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.relic_attune', 'jade-relic-attunement', 'spiritRelicAttunements', 'Jade Relic Attunement', 'relicAttunementProof', 'jade-relic-silk-cord']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -1170,6 +1206,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.affinity_matrix"', 'data-affinity-matrix-label', 'affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix mapped']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.relic_attune"', 'data-relic-attunement-label', 'relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement complete']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1289,7 +1329,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
-    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'fieldExpedition', 'fieldAccord', 'fieldAccordProof', 'routeInvitation', 'habitatBond', 'habitatBondProof', 'sanctuaryRiteProof', 'sanctuaryBellClaimed', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'spirit-sanctuary-rite', 'sanctuary rite', 'spiritResearch', 'researchProof', 'spiritCompendium', 'compendiumProof', 'rosterArchiveProof', 'rosterArchiveSealClaimed', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'spirit-roster-archive', 'roster archive', 'careCycleProof', 'careCycleKnotClaimed', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'spirit-care-cycle', 'care cycle', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'spirit-field-almanac', 'field almanac', 'provisionSatchel', 'provisionProof', 'guildCommission', 'commissionProof', 'socialRally', 'guildSocialRally', 'rallyProof', 'emoteProof', 'wayfarerChronicleProof', 'wayfarerChronicleClaspClaimed', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'guild-wayfarer-chronicle', 'wayfarer chronicle', 'guildAscensionProof', 'guildAscensionRibbonClaimed', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'guild-ascension-trial', 'guild ascension trial', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'battle-tournament-bracket', 'tournament bracket', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'techniqueMastery', 'battleTactic', 'guildRank', 'growthRite', 'partyHarmony', 'harmonyFormProof', 'harmonyTrial', 'harmonyTrialProof', 'teamSparMatch', 'teamSparMatchProof', 'mentorChallengeProof', 'conditionWeaveProof', 'battleConditionWeave', 'canaryReturnPreview', 'canaryReturnRequested', 'battleRoundTranscript', 'battleRoundProof', 'affinityTrial', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'Jade Lantern Court']
+    includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'fieldExpedition', 'fieldAccord', 'fieldAccordProof', 'routeInvitation', 'habitatBond', 'habitatBondProof', 'sanctuaryRiteProof', 'sanctuaryBellClaimed', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'spirit-sanctuary-rite', 'sanctuary rite', 'spiritResearch', 'researchProof', 'spiritCompendium', 'compendiumProof', 'rosterArchiveProof', 'rosterArchiveSealClaimed', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'spirit-roster-archive', 'roster archive', 'careCycleProof', 'careCycleKnotClaimed', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'spirit-care-cycle', 'care cycle', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'spirit-field-almanac', 'field almanac', 'provisionSatchel', 'provisionProof', 'guildCommission', 'commissionProof', 'socialRally', 'guildSocialRally', 'rallyProof', 'emoteProof', 'wayfarerChronicleProof', 'wayfarerChronicleClaspClaimed', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'guild-wayfarer-chronicle', 'wayfarer chronicle', 'guildAscensionProof', 'guildAscensionRibbonClaimed', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'guild-ascension-trial', 'guild ascension trial', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'battle-tournament-bracket', 'tournament bracket', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'techniqueMastery', 'battleTactic', 'guildRank', 'growthRite', 'partyHarmony', 'harmonyFormProof', 'harmonyTrial', 'harmonyTrialProof', 'teamSparMatch', 'teamSparMatchProof', 'mentorChallengeProof', 'conditionWeaveProof', 'battleConditionWeave', 'relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement', 'canaryReturnPreview', 'canaryReturnRequested', 'battleRoundTranscript', 'battleRoundProof', 'affinityTrial', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'Jade Lantern Court']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
@@ -1298,6 +1338,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['affinityMatrixProof', 'affinityMatrixSealClaimed', 'Jade Affinity Matrix', 'jade-affinity-matrix-seal', 'battle-affinity-matrix', 'affinity matrix']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement', 'jade-relic-silk-cord', 'spirit-relic-attunement', 'relic attunement']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

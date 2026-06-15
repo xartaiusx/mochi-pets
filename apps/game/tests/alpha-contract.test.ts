@@ -34,6 +34,7 @@ import {
   SPIRIT_NURSERY_GROVES,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
+  SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
@@ -97,6 +98,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
   resolveSpiritRecoveryTea,
+  resolveSpiritRelicAttunement,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
@@ -130,6 +132,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.techniqueLoadouts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.techniqueCodexes).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTraits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRelicAttunements).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
@@ -1893,6 +1896,7 @@ describe('alpha contract', () => {
       conditionWeaveProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       guildRankProof: true,
       growthRiteProof: true,
       harmonyFormProof: true,
@@ -1926,8 +1930,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 136,
-      requiredScore: 70,
+      score: 139,
+      requiredScore: 73,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1963,6 +1967,7 @@ describe('alpha contract', () => {
       conditionWeaveProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       guildRankProof: true,
       growthRiteProof: true,
       harmonyFormProof: true,
@@ -2016,6 +2021,7 @@ describe('alpha contract', () => {
       conditionWeaveProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       harmonyFormProof: true,
       harmonyTrialProof: true,
       teamSparMatchProof: true,
@@ -2040,8 +2046,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 101,
-      requiredScore: 59,
+      score: 104,
+      requiredScore: 62,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -2072,6 +2078,7 @@ describe('alpha contract', () => {
       conditionWeaveProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       harmonyFormProof: true,
       harmonyTrialProof: true,
       teamSparMatchProof: true,
@@ -2810,6 +2817,8 @@ describe('alpha contract', () => {
       conditionWeaveId: 'jade-mirror-condition-weave',
       affinityMatrixProof: true,
       affinityMatrixId: 'jade-affinity-matrix',
+      relicAttunementProof: true,
+      relicAttunementId: 'jade-relic-attunement',
       harmonyFormProof: true,
       harmonyFormId: 'triune-jade-harmony',
       harmonyTrialProof: false,
@@ -2858,6 +2867,8 @@ describe('alpha contract', () => {
       conditionWeaveId: 'jade-mirror-condition-weave',
       affinityMatrixProof: true,
       affinityMatrixId: 'jade-affinity-matrix',
+      relicAttunementProof: true,
+      relicAttunementId: 'jade-relic-attunement',
       harmonyFormProof: true,
       harmonyFormId: 'triune-jade-harmony',
       harmonyTrialProof: true,
@@ -2889,8 +2900,8 @@ describe('alpha contract', () => {
       partyIds: ['aozhen', 'lirabao', 'jintari'],
       summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
       localPresenceCount: 2,
-      score: 92,
-      requiredScore: 76,
+      score: 96,
+      requiredScore: 80,
       rewardItemId: 'jade-summit-circuit-laurel',
       source: 'battle-summit-circuit'
     });
@@ -3023,6 +3034,51 @@ describe('alpha contract', () => {
       source: 'battle-affinity-matrix'
     });
     expect(affinityMatrix.message).toContain('No real value');
+    expect(SPIRIT_RELIC_ATTUNEMENTS.map((relic) => relic.id)).toEqual(['jade-relic-attunement']);
+    const relicAttunement = resolveSpiritRelicAttunement({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-court-provision-satchel'],
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      exchangeAccordProof: true,
+      exchangeAccordId: 'jade-exchange-accord',
+      careCycleProof: true,
+      temperamentConcordProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Relic attunement ready.']
+    });
+    expect(relicAttunement).toMatchObject({
+      ok: true,
+      attuned: true,
+      relicAttunementId: 'jade-relic-attunement',
+      relicAttunementName: 'Jade Relic Attunement',
+      title: 'First Three-Spirit Held Charm',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      relicLabel: 'Skybell Thread Cord',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-court-provision-satchel'],
+      score: 66,
+      requiredScore: 57,
+      rewardItemId: 'jade-relic-silk-cord',
+      source: 'spirit-relic-attunement'
+    });
+    expect(relicAttunement.message).toContain('No real value');
     expect(resolveSpiritAffinityMatrix({
       partyIds: ['aozhen', 'lirabao', 'jintari'],
       activeSpiritId: 'aozhen',

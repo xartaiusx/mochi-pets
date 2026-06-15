@@ -207,6 +207,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="trade.exchange_accord"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.relic_attune"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_waystone"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.nurture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.recovery_tea"]', { timeout: timeoutMs });
@@ -283,6 +284,7 @@ async function exerciseAlphaHud(page) {
       const trait = document.querySelector('[data-trait-label]')?.textContent || '';
       const condition = document.querySelector('[data-condition-label]')?.textContent || '';
       const affinityMatrix = document.querySelector('[data-affinity-matrix-label]')?.textContent || '';
+      const relicAttunement = document.querySelector('[data-relic-attunement-label]')?.textContent || '';
       const affinity = document.querySelector('[data-affinity-label]')?.textContent || '';
       const party = document.querySelector('[data-party-label]')?.textContent || '';
       const harmony = document.querySelector('[data-harmony-label]')?.textContent || '';
@@ -351,6 +353,7 @@ async function exerciseAlphaHud(page) {
         && techniqueCodex.includes('Jade Technique Codex')
         && trait.includes('Skybell Wayfinder')
         && condition.includes('Jade Mirror Condition Weave')
+        && relicAttunement.includes('Jade Relic Attunement')
         && affinity.includes('Affinity:')
         && !affinity.includes('not started')
         && party.includes('Party:')
@@ -690,8 +693,8 @@ async function exerciseAlphaHud(page) {
         && state.summitCircuitProof === true
         && state.summitCircuitId === 'jade-summit-circuit'
         && state.summitCircuitName === 'Jade Summit Circuit'
-        && state.summitCircuitScore >= 76
-        && state.summitCircuitRequiredScore === 76
+        && state.summitCircuitScore >= 80
+        && state.summitCircuitRequiredScore === 80
         && Array.isArray(state.summitCircuitPartyIds)
         && state.summitCircuitPartyIds.includes('lirabao')
         && state.summitCircuitPartyIds.includes('jintari')
@@ -779,14 +782,14 @@ async function exerciseAlphaHud(page) {
         && state.wayfarerChronicleProof === true
         && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
         && state.wayfarerChronicleName === 'Jade Wayfarer Chronicle'
-        && state.wayfarerChronicleScore >= 70
-        && state.wayfarerChronicleRequiredScore === 70
+        && state.wayfarerChronicleScore >= 73
+        && state.wayfarerChronicleRequiredScore === 73
         && state.wayfarerChronicleClaspClaimed === true
         && state.guildAscensionProof === true
         && state.guildAscensionTrialId === 'jade-court-ascension-trial'
         && state.guildAscensionTrialName === 'Jade Court Ascension Trial'
-        && state.guildAscensionScore >= 59
-        && state.guildAscensionRequiredScore === 59
+        && state.guildAscensionScore >= 62
+        && state.guildAscensionRequiredScore === 62
         && state.guildAscensionRibbonClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
@@ -842,6 +845,21 @@ async function exerciseAlphaHud(page) {
         && state.affinityMatrixConditionIds.includes('goldleaf-tempo')
         && state.affinityMatrixConditionIds.includes('skybell-guard')
         && state.affinityMatrixSealClaimed === true
+        && state.relicAttunementProof === true
+        && state.relicAttunementId === 'jade-relic-attunement'
+        && state.relicAttunementName === 'Jade Relic Attunement'
+        && state.relicAttunementScore >= 57
+        && state.relicAttunementRequiredScore === 57
+        && Array.isArray(state.relicAttunementSpiritIds)
+        && state.relicAttunementSpiritIds.includes('lirabao')
+        && state.relicAttunementSpiritIds.includes('jintari')
+        && state.relicAttunementSpiritIds.includes('aozhen')
+        && Array.isArray(state.relicAttunementItemIds)
+        && state.relicAttunementItemIds.includes('jade-thread-charm')
+        && state.relicAttunementItemIds.includes('lantern-harmony-tea')
+        && state.relicAttunementItemIds.includes('jade-court-provision-satchel')
+        && state.relicLabel === 'Skybell Thread Cord'
+        && state.relicSilkCordClaimed === true
         && state.techniqueProof === true
         && state.techniqueMoveId === 'goldleaf-feint'
         && state.techniqueMasteryXp >= 1
@@ -970,6 +988,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Heart Trait Attunement')
         && chat.includes('Jade Mirror Condition Weave complete')
         && chat.includes('Jade Affinity Matrix mapped')
+        && chat.includes('Jade Relic Attunement complete')
         && chat.includes('Triune Jade Harmony formed')
         && chat.includes('Jade Echo Concord Trial cleared')
         && chat.includes('Jade Mirror Team Match cleared')
@@ -1025,6 +1044,7 @@ async function exerciseAlphaHud(page) {
       trait: document.querySelector('[data-trait-label]')?.textContent || '',
       condition: document.querySelector('[data-condition-label]')?.textContent || '',
       affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent || '',
+      relicAttunement: document.querySelector('[data-relic-attunement-label]')?.textContent || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
       concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
       teamMatch: document.querySelector('[data-team-match-label]')?.textContent || '',
@@ -1091,6 +1111,7 @@ async function exerciseAlphaHud(page) {
       trait: document.querySelector('[data-trait-label]')?.textContent?.trim() || '',
       condition: document.querySelector('[data-condition-label]')?.textContent?.trim() || '',
       affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent?.trim() || '',
+      relicAttunement: document.querySelector('[data-relic-attunement-label]')?.textContent?.trim() || '',
       affinity: document.querySelector('[data-affinity-label]')?.textContent?.trim() || '',
       party: document.querySelector('[data-party-label]')?.textContent?.trim() || '',
       harmony: document.querySelector('[data-harmony-label]')?.textContent?.trim() || '',
@@ -1451,8 +1472,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.summitCircuitProof === true, 'HUD summit circuit action must record summit circuit proof.');
   assert(snapshot.state.summitCircuitId === 'jade-summit-circuit', 'HUD summit circuit action must record the circuit id.');
   assert(snapshot.state.summitCircuitName === 'Jade Summit Circuit', 'HUD summit circuit action must record the circuit name.');
-  assert(snapshot.state.summitCircuitScore >= 76, 'HUD summit circuit action must record a passing summit score.');
-  assert(snapshot.state.summitCircuitRequiredScore === 76, 'HUD summit circuit action must record the summit requirement.');
+  assert(snapshot.state.summitCircuitScore >= 80, 'HUD summit circuit action must record a passing summit score.');
+  assert(snapshot.state.summitCircuitRequiredScore === 80, 'HUD summit circuit action must record the summit requirement.');
   assert(Array.isArray(snapshot.state.summitCircuitPartyIds) && snapshot.state.summitCircuitPartyIds.includes('lirabao'), 'HUD summit circuit action must record Lirabao party proof.');
   assert(Array.isArray(snapshot.state.summitCircuitPartyIds) && snapshot.state.summitCircuitPartyIds.includes('jintari'), 'HUD summit circuit action must record Jintari party proof.');
   assert(Array.isArray(snapshot.state.summitCircuitPartyIds) && snapshot.state.summitCircuitPartyIds.includes('aozhen'), 'HUD summit circuit action must record Aozhen party proof.');
@@ -1500,15 +1521,15 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.wayfarerChronicleProof === true, 'HUD chronicle action must record first-court alpha chronicle proof.');
   assert(snapshot.state.wayfarerChronicleId === 'jade-wayfarer-chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle id.');
   assert(snapshot.state.wayfarerChronicleName === 'Jade Wayfarer Chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle name.');
-  assert(snapshot.state.wayfarerChronicleScore >= 70, 'HUD chronicle action must record a passing chronicle score.');
-  assert(snapshot.state.wayfarerChronicleRequiredScore === 70, 'HUD chronicle action must record the chronicle requirement.');
+  assert(snapshot.state.wayfarerChronicleScore >= 73, 'HUD chronicle action must record a passing chronicle score.');
+  assert(snapshot.state.wayfarerChronicleRequiredScore === 73, 'HUD chronicle action must record the chronicle requirement.');
   assert(snapshot.state.wayfarerChronicleClaspClaimed === true, 'HUD chronicle action must mark the no-real-value chronicle clasp proof.');
   assert(snapshot.ascension.includes('Jade Court Ascension Trial'), 'HUD ascension label must show the completed guild capstone trial.');
   assert(snapshot.state.guildAscensionProof === true, 'HUD ascension action must record closed-alpha guild capstone proof.');
   assert(snapshot.state.guildAscensionTrialId === 'jade-court-ascension-trial', 'HUD ascension action must record the Jade Court Ascension Trial id.');
   assert(snapshot.state.guildAscensionTrialName === 'Jade Court Ascension Trial', 'HUD ascension action must record the Jade Court Ascension Trial name.');
-  assert(snapshot.state.guildAscensionScore >= 59, 'HUD ascension action must record a passing ascension score.');
-  assert(snapshot.state.guildAscensionRequiredScore === 59, 'HUD ascension action must record the ascension score requirement.');
+  assert(snapshot.state.guildAscensionScore >= 62, 'HUD ascension action must record a passing ascension score.');
+  assert(snapshot.state.guildAscensionRequiredScore === 62, 'HUD ascension action must record the ascension score requirement.');
   assert(snapshot.state.guildAscensionRibbonClaimed === true, 'HUD ascension action must mark the no-real-value ascension ribbon proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
@@ -1603,6 +1624,20 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.affinityMatrixConditionIds) && snapshot.state.affinityMatrixConditionIds.includes('goldleaf-tempo'), 'HUD affinity matrix action must record Goldleaf Tempo.');
   assert(Array.isArray(snapshot.state.affinityMatrixConditionIds) && snapshot.state.affinityMatrixConditionIds.includes('skybell-guard'), 'HUD affinity matrix action must record Skybell Guard.');
   assert(snapshot.state.affinityMatrixSealClaimed === true, 'HUD affinity matrix action must mark the no-real-value matrix seal proof.');
+  assert(snapshot.relicAttunement.includes('Jade Relic Attunement'), 'HUD relic attunement label must show the completed held-charm proof.');
+  assert(snapshot.state.relicAttunementProof === true, 'HUD relic attunement action must record relic proof.');
+  assert(snapshot.state.relicAttunementId === 'jade-relic-attunement', 'HUD relic attunement action must record the Jade Relic Attunement id.');
+  assert(snapshot.state.relicAttunementName === 'Jade Relic Attunement', 'HUD relic attunement action must record the relic attunement name.');
+  assert(snapshot.state.relicAttunementScore >= 57, 'HUD relic attunement action must record a passing relic score.');
+  assert(snapshot.state.relicAttunementRequiredScore === 57, 'HUD relic attunement action must record the relic requirement.');
+  assert(Array.isArray(snapshot.state.relicAttunementSpiritIds) && snapshot.state.relicAttunementSpiritIds.includes('lirabao'), 'HUD relic attunement action must record Lirabao in the relic party.');
+  assert(Array.isArray(snapshot.state.relicAttunementSpiritIds) && snapshot.state.relicAttunementSpiritIds.includes('jintari'), 'HUD relic attunement action must record Jintari in the relic party.');
+  assert(Array.isArray(snapshot.state.relicAttunementSpiritIds) && snapshot.state.relicAttunementSpiritIds.includes('aozhen'), 'HUD relic attunement action must record Aozhen in the relic party.');
+  assert(Array.isArray(snapshot.state.relicAttunementItemIds) && snapshot.state.relicAttunementItemIds.includes('jade-thread-charm'), 'HUD relic attunement action must record the Jade Thread Charm input.');
+  assert(Array.isArray(snapshot.state.relicAttunementItemIds) && snapshot.state.relicAttunementItemIds.includes('lantern-harmony-tea'), 'HUD relic attunement action must record the Lantern Harmony Tea input.');
+  assert(Array.isArray(snapshot.state.relicAttunementItemIds) && snapshot.state.relicAttunementItemIds.includes('jade-court-provision-satchel'), 'HUD relic attunement action must record the provision satchel input.');
+  assert(snapshot.state.relicLabel === 'Skybell Thread Cord', 'HUD relic attunement action must record the active spirit relic label.');
+  assert(snapshot.state.relicSilkCordClaimed === true, 'HUD relic attunement action must mark the no-real-value relic silk cord proof.');
   assert(snapshot.affinity.includes('Affinity:'), 'HUD affinity label must show trial state.');
   assert(snapshot.state.affinityProof === true, 'HUD affinity action must record affinity trial proof.');
   assert(snapshot.state.lastAffinityTrialId === 'silk-cinder-trial', 'HUD affinity action must record the Silk Cinder trial.');
@@ -1697,6 +1732,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Heart Trait Attunement')), 'HUD chat state must record the trait attunement action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Condition Weave complete')), 'HUD chat state must record the condition weave action.');
   assert(chat.some((line) => String(line).includes('Jade Affinity Matrix mapped')), 'HUD chat state must record the affinity matrix action.');
+  assert(chat.some((line) => String(line).includes('Jade Relic Attunement complete')), 'HUD chat state must record the relic attunement action.');
   assert(chat.some((line) => String(line).includes('Triune Jade Harmony formed')), 'HUD chat state must record the party harmony action.');
   assert(chat.some((line) => String(line).includes('Jade Echo Concord Trial cleared')), 'HUD chat state must record the harmony trial action.');
   assert(chat.some((line) => String(line).includes('Jade Mirror Team Match cleared')), 'HUD chat state must record the team spar match action.');

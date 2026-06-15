@@ -43,6 +43,7 @@ import {
   SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_SIFU_COUNCILS,
+  SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_SUMMIT_CIRCUITS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
@@ -96,6 +97,7 @@ import {
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritRecoveryTea,
+  resolveSpiritRelicAttunement,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
@@ -443,6 +445,15 @@ interface AlphaHudState {
   affinityMatrixAffinityLabels: string[];
   affinityMatrixConditionIds: string[];
   affinityMatrixSealClaimed: boolean;
+  relicAttunementProof: boolean;
+  relicAttunementId?: string;
+  relicAttunementName: string;
+  relicAttunementScore: number;
+  relicAttunementRequiredScore: number;
+  relicAttunementSpiritIds: string[];
+  relicAttunementItemIds: string[];
+  relicLabel: string;
+  relicSilkCordClaimed: boolean;
   activePartyId?: string;
   partyIds: string[];
   supportSpiritIds: string[];
@@ -816,6 +827,22 @@ export interface AlphaWorldStatePatch {
     title: string;
     weaveId: string;
     weaveName: string;
+  };
+  relicAttunement?: {
+    activeSpiritId: string;
+    activeSpiritName: string;
+    itemIds: string[];
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    relicAttunementId: string;
+    relicAttunementName: string;
+    relicLabel: string;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
   };
   mentorChallenge?: {
     challengeId: string;
@@ -1206,6 +1233,14 @@ function defaultAlphaState(): AlphaHudState {
     affinityMatrixAffinityLabels: [],
     affinityMatrixConditionIds: [],
     affinityMatrixSealClaimed: false,
+    relicAttunementProof: false,
+    relicAttunementName: 'Unattuned',
+    relicAttunementScore: 0,
+    relicAttunementRequiredScore: 0,
+    relicAttunementSpiritIds: [],
+    relicAttunementItemIds: [],
+    relicLabel: 'No relic',
+    relicSilkCordClaimed: false,
     partyIds: [],
     supportSpiritIds: [],
     harmonyFormProof: false,
@@ -1425,6 +1460,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-trait-label>Trait: pending</span>
       <span class="mochi-hud__hint" data-condition-label>Condition: pending</span>
       <span class="mochi-hud__hint" data-affinity-matrix-label>Matrix: pending</span>
+      <span class="mochi-hud__hint" data-relic-attunement-label>Relic: pending</span>
       <span class="mochi-hud__hint" data-affinity-label>Affinity: trial not started</span>
       <span class="mochi-hud__hint" data-party-label>Party: not formed</span>
       <span class="mochi-hud__hint" data-harmony-label>Harmony: pending</span>
@@ -1496,6 +1532,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.trait_attune" aria-label="Attune an original no-real-value Mochirii spirit trait">Trait</button>
       <button type="button" data-alpha-action="battle.condition_weave" aria-label="Weave original no-injury Mochirii battle conditions">Weave</button>
       <button type="button" data-alpha-action="battle.affinity_matrix" aria-label="Record the no-real-value Jade Affinity Matrix">Matrix</button>
+      <button type="button" data-alpha-action="spirit.relic_attune" aria-label="Attune the no-real-value Jade Relic Attunement held charm">Relic</button>
       <button type="button" data-alpha-action="battle.affinity_trial" aria-label="Practice a no-injury affinity trial">Trial</button>
       <button type="button" data-alpha-action="spirit.train" aria-label="Run a no-injury spirit training battle">Train</button>
       <button type="button" data-alpha-action="battle.spar_ladder" aria-label="Run a no-injury party spar ladder">Spar</button>
@@ -1572,6 +1609,7 @@ function createHud() {
   const traitLabel = hud.querySelector('[data-trait-label]');
   const conditionLabel = hud.querySelector('[data-condition-label]');
   const affinityMatrixLabel = hud.querySelector('[data-affinity-matrix-label]');
+  const relicAttunementLabel = hud.querySelector('[data-relic-attunement-label]');
   const affinityLabel = hud.querySelector('[data-affinity-label]');
   const partyLabel = hud.querySelector('[data-party-label]');
   const harmonyLabel = hud.querySelector('[data-harmony-label]');
@@ -1807,6 +1845,11 @@ function createHud() {
       affinityMatrixLabel.textContent = state.affinityMatrixProof
         ? `Matrix: ${state.affinityMatrixName}, ${state.affinityMatrixAffinityLabels.length} affinities, score ${state.affinityMatrixScore}/${state.affinityMatrixRequiredScore}`
         : 'Matrix: pending';
+    }
+    if (relicAttunementLabel) {
+      relicAttunementLabel.textContent = state.relicAttunementProof
+        ? `Relic: ${state.relicAttunementName}, ${state.relicLabel}, score ${state.relicAttunementScore}/${state.relicAttunementRequiredScore}`
+        : 'Relic: pending';
     }
     if (affinityLabel) {
       affinityLabel.textContent = state.affinityProof
@@ -2119,6 +2162,8 @@ function readAlphaState(): AlphaHudState {
       affinityMatrixSpiritIds: Array.isArray(parsed?.affinityMatrixSpiritIds) ? parsed.affinityMatrixSpiritIds.map(String) : [],
       affinityMatrixAffinityLabels: Array.isArray(parsed?.affinityMatrixAffinityLabels) ? parsed.affinityMatrixAffinityLabels.map(String) : [],
       affinityMatrixConditionIds: Array.isArray(parsed?.affinityMatrixConditionIds) ? parsed.affinityMatrixConditionIds.map(String) : [],
+      relicAttunementSpiritIds: Array.isArray(parsed?.relicAttunementSpiritIds) ? parsed.relicAttunementSpiritIds.map(String) : [],
+      relicAttunementItemIds: Array.isArray(parsed?.relicAttunementItemIds) ? parsed.relicAttunementItemIds.map(String) : [],
       routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
       routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
@@ -2447,6 +2492,23 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.supportSpiritIds = state.partyIds.slice(1);
     state.spiritId = patch.conditionWeave.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.conditionWeave.message || `${state.conditionWeaveName} recorded as no-real-value condition proof.`);
+  }
+
+  if (patch.relicAttunement) {
+    state.relicAttunementProof = patch.relicAttunement.proof || state.relicAttunementProof;
+    state.relicAttunementId = patch.relicAttunement.relicAttunementId || state.relicAttunementId;
+    state.relicAttunementName = patch.relicAttunement.relicAttunementName || state.relicAttunementName;
+    state.relicAttunementScore = Math.max(state.relicAttunementScore, Number(patch.relicAttunement.score) || 0);
+    state.relicAttunementRequiredScore = Math.max(state.relicAttunementRequiredScore, Number(patch.relicAttunement.requiredScore) || 0);
+    state.relicAttunementSpiritIds = Array.isArray(patch.relicAttunement.partyIds) ? patch.relicAttunement.partyIds.map(String) : state.relicAttunementSpiritIds;
+    state.relicAttunementItemIds = Array.isArray(patch.relicAttunement.itemIds) ? patch.relicAttunement.itemIds.map(String) : state.relicAttunementItemIds;
+    state.relicLabel = patch.relicAttunement.relicLabel || state.relicLabel;
+    state.relicSilkCordClaimed = state.relicSilkCordClaimed || patch.relicAttunement.rewardItemId === 'jade-relic-silk-cord';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...state.relicAttunementSpiritIds]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.relicAttunement.localPresenceCount) || 1);
+    state.spiritId = patch.relicAttunement.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.relicAttunement.message || `${state.relicAttunementName} recorded as no-real-value relic attunement proof.`);
   }
 
   if (patch.rank) {
@@ -3411,6 +3473,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
+      relicAttunementProof: state.relicAttunementProof,
       commissionProof: state.commissionProof,
       rallyProof: state.rallyProof,
       storyChapterProof: state.storyChapterProof,
@@ -3456,6 +3519,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
+      relicAttunementProof: state.relicAttunementProof,
       storyChapterProof: state.storyChapterProof,
       insigniaCaseProof: state.insigniaCaseProof,
       rivalCircleProof: state.rivalCircleProof,
@@ -3693,6 +3757,46 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.relic_attune') {
+    const relic = SPIRIT_RELIC_ATTUNEMENTS[0];
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    const itemIds = Array.from(new Set([
+      ...relic.requiredItemIds,
+      ...state.provisionStockItemIds,
+      ...state.craftWritStockItemIds,
+      ...state.exchangeAccordItemIds
+    ]));
+    return {
+      relicAttunementId: relic.id,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0],
+      itemIds,
+      techniqueLoadoutProof: state.techniqueLoadoutProof,
+      techniqueLoadoutId: state.techniqueLoadoutId,
+      techniqueCodexProof: state.techniqueCodexProof,
+      techniqueCodexId: state.techniqueCodexId,
+      traitAttunementProof: state.traitAttunementProof,
+      traitAttunementId: state.traitAttunementId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      affinityMatrixProof: state.affinityMatrixProof,
+      affinityMatrixId: state.affinityMatrixId,
+      craftWritProof: state.craftWritProof,
+      craftWritId: state.craftWritId,
+      exchangeAccordProof: state.exchangeAccordProof,
+      exchangeAccordId: state.exchangeAccordId,
+      careCycleProof: state.careCycleProof,
+      temperamentConcordProof: state.temperamentConcordProof,
+      growthRiteProof: state.growthRiteProof,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'party.set') {
     return {
       partyIds: state.attunedSpiritIds.slice(0, 3),
@@ -3844,6 +3948,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       conditionWeaveId: state.conditionWeaveId,
       affinityMatrixProof: state.affinityMatrixProof,
       affinityMatrixId: state.affinityMatrixId,
+      relicAttunementProof: state.relicAttunementProof,
+      relicAttunementId: state.relicAttunementId,
       harmonyFormProof: state.harmonyFormProof,
       harmonyFormId: state.harmonyFormId,
       harmonyTrialProof: state.harmonyTrialProof,
@@ -5184,6 +5290,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
+        relicAttunementProof: Boolean(payload.relicAttunementProof ?? state.relicAttunementProof),
         commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
         rallyProof: Boolean(payload.rallyProof ?? state.rallyProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
@@ -5244,6 +5351,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
+        relicAttunementProof: Boolean(payload.relicAttunementProof ?? state.relicAttunementProof),
         storyChapterProof: Boolean(payload.storyChapterProof ?? state.storyChapterProof),
         insigniaCaseProof: Boolean(payload.insigniaCaseProof ?? state.insigniaCaseProof),
         rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),
@@ -5684,6 +5792,56 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'spirit.relic_attune') {
+    const partyIds = Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds;
+    const result = resolveSpiritRelicAttunement(
+      {
+        partyIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || partyIds[0] || ''),
+        itemIds: Array.isArray(payload.itemIds) ? payload.itemIds.map(String) : SPIRIT_RELIC_ATTUNEMENTS[0].requiredItemIds,
+        techniqueLoadoutProof: Boolean(payload.techniqueLoadoutProof ?? state.techniqueLoadoutProof),
+        techniqueLoadoutId: String(payload.techniqueLoadoutId || state.techniqueLoadoutId || ''),
+        techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
+        techniqueCodexId: String(payload.techniqueCodexId || state.techniqueCodexId || ''),
+        traitAttunementProof: Boolean(payload.traitAttunementProof ?? state.traitAttunementProof),
+        traitAttunementId: String(payload.traitAttunementId || state.traitAttunementId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
+        affinityMatrixId: String(payload.affinityMatrixId || state.affinityMatrixId || ''),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        craftWritId: String(payload.craftWritId || state.craftWritId || ''),
+        exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
+        exchangeAccordId: String(payload.exchangeAccordId || state.exchangeAccordId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        temperamentConcordProof: Boolean(payload.temperamentConcordProof ?? state.temperamentConcordProof),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.relicAttunementId || SPIRIT_RELIC_ATTUNEMENTS[0].id)
+    );
+    if (result.attuned) {
+      state.relicAttunementProof = true;
+      state.relicAttunementId = result.relicAttunementId;
+      state.relicAttunementName = result.relicAttunementName;
+      state.relicAttunementScore = result.score;
+      state.relicAttunementRequiredScore = result.requiredScore;
+      state.relicAttunementSpiritIds = result.partyIds;
+      state.relicAttunementItemIds = result.itemIds;
+      state.relicLabel = result.relicLabel;
+      state.relicSilkCordClaimed = result.rewardItemId === 'jade-relic-silk-cord';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'battle.affinity_trial') {
     const spirit = MOCHI_SPIRITS.find((entry) => entry.id === String(payload.spiritId || state.spiritId)) || MOCHI_SPIRITS[0];
     const moveId = String(payload.moveId || state.techniqueMoveId || spirit.battle.moves[0].id);
@@ -5976,6 +6134,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         affinityMatrixId: String(payload.affinityMatrixId || state.affinityMatrixId || ''),
+        relicAttunementProof: Boolean(payload.relicAttunementProof ?? state.relicAttunementProof),
+        relicAttunementId: String(payload.relicAttunementId || state.relicAttunementId || ''),
         harmonyFormProof: Boolean(payload.harmonyFormProof ?? state.harmonyFormProof),
         harmonyFormId: String(payload.harmonyFormId || state.harmonyFormId || ''),
         harmonyTrialProof: Boolean(payload.harmonyTrialProof ?? state.harmonyTrialProof),

@@ -104,6 +104,7 @@ async function run() {
   assert(manifest.body.gameplay?.techniqueLoadouts === true, 'Manifest must expose Mochi Spirit technique loadouts.');
   assert(manifest.body.gameplay?.techniqueCodexes === true, 'Manifest must expose Mochi Spirit technique codexes.');
   assert(manifest.body.gameplay?.spiritTraits === true, 'Manifest must expose Mochi Spirit trait attunements.');
+  assert(manifest.body.gameplay?.spiritRelicAttunements === true, 'Manifest must expose Mochi Spirit relic attunements.');
   assert(manifest.body.gameplay?.guildRankTrials === true, 'Manifest must expose Mochirii guild rank trials.');
   assert(manifest.body.gameplay?.spiritGrowthRites === true, 'Manifest must expose Mochi Spirit growth rites.');
   assert(manifest.body.gameplay?.affinityTrials === true, 'Manifest must expose Mochi Spirit affinity trials.');
@@ -166,6 +167,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.techniqueLoadouts === true, 'Alpha status must expose Mochi Spirit technique loadouts.');
   assert(alphaStatus.body.gameplay?.techniqueCodexes === true, 'Alpha status must expose Mochi Spirit technique codexes.');
   assert(alphaStatus.body.gameplay?.spiritTraits === true, 'Alpha status must expose Mochi Spirit trait attunements.');
+  assert(alphaStatus.body.gameplay?.spiritRelicAttunements === true, 'Alpha status must expose Mochi Spirit relic attunements.');
   assert(alphaStatus.body.gameplay?.guildRankTrials === true, 'Alpha status must expose Mochirii guild rank trials.');
   assert(alphaStatus.body.gameplay?.spiritGrowthRites === true, 'Alpha status must expose Mochi Spirit growth rites.');
   assert(alphaStatus.body.gameplay?.affinityTrials === true, 'Alpha status must expose Mochi Spirit affinity trials.');
@@ -647,6 +649,40 @@ async function run() {
         statusMood: 'cozy',
         rewardItemId: 'jade-affinity-matrix-seal',
         chatLines: ['Local acceptance affinity matrix proof.'],
+        noRealValue: true
+      }
+    },
+    {
+      requestId: `${runId}-relic-attunement`,
+      type: 'spirit.relic_attune',
+      payload: {
+        relicAttunementId: 'jade-relic-attunement',
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-court-provision-satchel'],
+        techniqueLoadoutProof: true,
+        techniqueLoadoutId: 'jade-step-loadout',
+        techniqueCodexProof: true,
+        techniqueCodexId: 'jade-technique-codex',
+        traitAttunementProof: true,
+        traitAttunementId: 'jade-heart-trait',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
+        craftWritProof: true,
+        craftWritId: 'jade-court-craft-writ',
+        exchangeAccordProof: true,
+        exchangeAccordId: 'jade-exchange-accord',
+        careCycleProof: true,
+        temperamentConcordProof: true,
+        growthRiteProof: true,
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-relic-silk-cord',
+        chatLines: ['Local acceptance relic attunement proof.'],
         noRealValue: true
       }
     },
@@ -1323,6 +1359,8 @@ async function run() {
         conditionWeaveId: 'jade-mirror-condition-weave',
         affinityMatrixProof: true,
         affinityMatrixId: 'jade-affinity-matrix',
+        relicAttunementProof: true,
+        relicAttunementId: 'jade-relic-attunement',
         harmonyFormProof: true,
         harmonyFormId: 'triune-jade-harmony',
         harmonyTrialProof: true,
@@ -1506,6 +1544,7 @@ async function run() {
         affinityMatrixProof: true,
         affinityMatrixId: 'jade-affinity-matrix',
         techniqueCodexProof: true,
+        relicAttunementProof: true,
         guildRankProof: true,
         growthRiteProof: true,
         harmonyFormProof: true,
@@ -1561,6 +1600,7 @@ async function run() {
         affinityMatrixProof: true,
         affinityMatrixId: 'jade-affinity-matrix',
         techniqueCodexProof: true,
+        relicAttunementProof: true,
         harmonyFormProof: true,
         harmonyTrialProof: true,
         teamSparMatchProof: true,
@@ -1882,6 +1922,22 @@ async function run() {
   assert(affinityMatrix?.payload?.battleRoundVictory === true, 'Affinity matrix ledger entry must preserve no-injury battle victory proof.');
   assert(affinityMatrix?.payload?.rewardItemId === 'jade-affinity-matrix-seal', 'Affinity matrix ledger entry must preserve the no-real-value matrix seal proof.');
   assert(affinityMatrix?.payload?.noRealValue === true, 'Affinity matrix ledger entry must remain no-real-value.');
+  const relicAttunement = entriesById.get(`${runId}-relic-attunement`);
+  assert(relicAttunement?.payload?.relicAttunementId === 'jade-relic-attunement', 'Relic attunement ledger entry must preserve the Jade Relic Attunement id.');
+  assert(Array.isArray(relicAttunement?.payload?.partyIds) && relicAttunement.payload.partyIds.length === 3, 'Relic attunement ledger entry must preserve full-party proof.');
+  assert(Array.isArray(relicAttunement?.payload?.itemIds) && relicAttunement.payload.itemIds.includes('jade-thread-charm') && relicAttunement.payload.itemIds.includes('lantern-harmony-tea') && relicAttunement.payload.itemIds.includes('jade-court-provision-satchel'), 'Relic attunement ledger entry must preserve all held-charm item ids.');
+  assert(relicAttunement?.payload?.techniqueLoadoutProof === true, 'Relic attunement ledger entry must preserve loadout proof.');
+  assert(relicAttunement?.payload?.techniqueCodexProof === true, 'Relic attunement ledger entry must preserve technique codex proof.');
+  assert(relicAttunement?.payload?.traitAttunementProof === true, 'Relic attunement ledger entry must preserve trait proof.');
+  assert(relicAttunement?.payload?.conditionWeaveProof === true, 'Relic attunement ledger entry must preserve condition weave proof.');
+  assert(relicAttunement?.payload?.affinityMatrixProof === true, 'Relic attunement ledger entry must preserve affinity matrix proof.');
+  assert(relicAttunement?.payload?.craftWritProof === true, 'Relic attunement ledger entry must preserve craft writ proof.');
+  assert(relicAttunement?.payload?.exchangeAccordProof === true, 'Relic attunement ledger entry must preserve exchange accord proof.');
+  assert(relicAttunement?.payload?.careCycleProof === true, 'Relic attunement ledger entry must preserve care cycle proof.');
+  assert(relicAttunement?.payload?.temperamentConcordProof === true, 'Relic attunement ledger entry must preserve temperament proof.');
+  assert(relicAttunement?.payload?.localPresenceCount === 2, 'Relic attunement ledger entry must preserve two-tester presence proof.');
+  assert(relicAttunement?.payload?.rewardItemId === 'jade-relic-silk-cord', 'Relic attunement ledger entry must preserve the no-real-value relic silk cord proof.');
+  assert(relicAttunement?.payload?.noRealValue === true, 'Relic attunement ledger entry must remain no-real-value.');
   const dojoLadder = entriesById.get(`${runId}-dojo-ladder`);
   assert(dojoLadder?.payload?.ladderId === 'jade-dojo-ladder', 'Dojo ladder ledger entry must preserve the Jade Dojo Ladder id.');
   assert(Array.isArray(dojoLadder?.payload?.partyIds) && dojoLadder.payload.partyIds.length === 3, 'Dojo ladder ledger entry must preserve full-party proof.');
@@ -1973,6 +2029,8 @@ async function run() {
   assert(summitCircuit?.payload?.rivalCircleId === 'jade-rival-circle', 'Summit circuit ledger entry must preserve rival circle id.');
   assert(summitCircuit?.payload?.sifuCouncilProof === true, 'Summit circuit ledger entry must preserve sifu council proof.');
   assert(summitCircuit?.payload?.sifuCouncilId === 'jade-sifu-council', 'Summit circuit ledger entry must preserve sifu council id.');
+  assert(summitCircuit?.payload?.relicAttunementProof === true, 'Summit circuit ledger entry must preserve relic attunement proof.');
+  assert(summitCircuit?.payload?.relicAttunementId === 'jade-relic-attunement', 'Summit circuit ledger entry must preserve the relic attunement id.');
   assert(summitCircuit?.payload?.harmonyFormProof === true, 'Summit circuit ledger entry must preserve harmony form proof.');
   assert(summitCircuit?.payload?.harmonyTrialProof === true, 'Summit circuit ledger entry must preserve concord proof.');
   assert(summitCircuit?.payload?.teamSparMatchProof === true, 'Summit circuit ledger entry must preserve team match proof.');
@@ -2030,6 +2088,7 @@ async function run() {
   assert(chronicle?.payload?.summitCircuitProof === true, 'Wayfarer chronicle ledger entry must preserve summit circuit proof.');
   assert(chronicle?.payload?.affinityMatrixProof === true, 'Wayfarer chronicle ledger entry must preserve affinity matrix proof.');
   assert(chronicle?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Wayfarer chronicle ledger entry must preserve the affinity matrix id.');
+  assert(chronicle?.payload?.relicAttunementProof === true, 'Wayfarer chronicle ledger entry must preserve relic attunement proof.');
   assert(chronicle?.payload?.rallyProof === true, 'Wayfarer chronicle ledger entry must preserve social rally proof.');
   assert(chronicle?.payload?.storyChapterProof === true, 'Wayfarer chronicle ledger entry must preserve story chapter proof.');
   assert(chronicle?.payload?.insigniaCaseProof === true, 'Wayfarer chronicle ledger entry must preserve insignia case proof.');
@@ -2057,6 +2116,7 @@ async function run() {
   assert(ascension?.payload?.battleRoundVictory === true, 'Ascension trial ledger entry must preserve no-injury battle victory proof.');
   assert(ascension?.payload?.affinityMatrixProof === true, 'Ascension trial ledger entry must preserve affinity matrix proof.');
   assert(ascension?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Ascension trial ledger entry must preserve the affinity matrix id.');
+  assert(ascension?.payload?.relicAttunementProof === true, 'Ascension trial ledger entry must preserve relic attunement proof.');
   assert(ascension?.payload?.techniqueCodexProof === true, 'Ascension trial ledger entry must preserve technique codex proof.');
   assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
   assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');

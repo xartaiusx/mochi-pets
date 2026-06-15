@@ -93,6 +93,7 @@ describe('game manifest', () => {
         techniqueLoadouts: true,
         techniqueCodexes: true,
         spiritTraits: true,
+        spiritRelicAttunements: true,
         guildRankTrials: true,
         spiritGrowthRites: true,
         affinityTrials: true,

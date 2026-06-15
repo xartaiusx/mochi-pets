@@ -25,6 +25,7 @@ import {
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
   SPIRIT_RECOVERY_TEAS,
+  SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
@@ -76,6 +77,7 @@ import {
   resolveSpiritParty,
   resolveSpiritProvisionSatchel,
   resolveSpiritRecoveryTea,
+  resolveSpiritRelicAttunement,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRouteInvitation,
@@ -1667,6 +1669,7 @@ describe('Mochi Spirits alpha content contract', () => {
       exchangeAccordProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1727,6 +1730,7 @@ describe('Mochi Spirits alpha content contract', () => {
       exchangeAccordProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       commissionProof: true,
       rallyProof: true,
       techniqueLoadoutProof: true,
@@ -1759,8 +1763,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 136,
-      requiredScore: 70,
+      score: 139,
+      requiredScore: 73,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1779,6 +1783,7 @@ describe('Mochi Spirits alpha content contract', () => {
       exchangeAccordProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
@@ -1825,6 +1830,7 @@ describe('Mochi Spirits alpha content contract', () => {
       exchangeAccordProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
+      relicAttunementProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
@@ -1857,8 +1863,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 101,
-      requiredScore: 59,
+      score: 104,
+      requiredScore: 62,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });
@@ -2222,6 +2228,48 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(affinityMatrix.message).toContain('No real value');
 
+    expect(SPIRIT_RELIC_ATTUNEMENTS.map((relic) => relic.id)).toEqual(['jade-relic-attunement']);
+    const relicAttunement = resolveSpiritRelicAttunement({
+      partyIds: fullRoster,
+      activeSpiritId: 'aozhen',
+      itemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.provisionSatchel.id],
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      exchangeAccordProof: true,
+      exchangeAccordId: 'jade-exchange-accord',
+      careCycleProof: true,
+      temperamentConcordProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Relic attunement ready.']
+    });
+    expect(relicAttunement).toMatchObject({
+      attuned: true,
+      relicAttunementId: 'jade-relic-attunement',
+      relicAttunementName: 'Jade Relic Attunement',
+      relicLabel: 'Skybell Thread Cord',
+      partyIds: [...fullRoster],
+      itemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.provisionSatchel.id],
+      score: 66,
+      requiredScore: 57,
+      rewardItemId: ALPHA_ITEMS.relicSilkCord.id,
+      source: 'spirit-relic-attunement'
+    });
+    expect(relicAttunement.message).toContain('No real value');
+
     expect(SPIRIT_DOJO_LADDERS.map((ladder) => ladder.id)).toEqual(['jade-dojo-ladder']);
     const blockedDojoLadder = resolveSpiritDojoLadder({
       partyIds: fullRoster,
@@ -2523,6 +2571,8 @@ describe('Mochi Spirits alpha content contract', () => {
       conditionWeaveId: 'jade-mirror-condition-weave',
       affinityMatrixProof: true,
       affinityMatrixId: 'jade-affinity-matrix',
+      relicAttunementProof: true,
+      relicAttunementId: relicAttunement.relicAttunementId,
       harmonyFormProof: true,
       harmonyFormId: 'triune-jade-harmony',
       harmonyTrialProof: false,
@@ -2571,6 +2621,8 @@ describe('Mochi Spirits alpha content contract', () => {
       conditionWeaveId: 'jade-mirror-condition-weave',
       affinityMatrixProof: true,
       affinityMatrixId: 'jade-affinity-matrix',
+      relicAttunementProof: true,
+      relicAttunementId: relicAttunement.relicAttunementId,
       harmonyFormProof: true,
       harmonyFormId: 'triune-jade-harmony',
       harmonyTrialProof: true,
@@ -2601,8 +2653,8 @@ describe('Mochi Spirits alpha content contract', () => {
       partyIds: [...fullRoster],
       summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
       localPresenceCount: 2,
-      score: 92,
-      requiredScore: 76,
+      score: 96,
+      requiredScore: 80,
       rewardItemId: ALPHA_ITEMS.summitCircuitLaurel.id,
       source: 'battle-summit-circuit'
     });
