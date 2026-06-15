@@ -7,7 +7,11 @@ const root = process.cwd();
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_JSON || 'reports/alpha-manual-prompt-review.json');
 const reportMdPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_MD || 'reports/alpha-manual-prompt-review.md');
 const visualReviewPath = resolve(root, process.env.MOCHI_SOCIAL_VISUAL_REVIEW_JSON || 'reports/alpha-visual-review.json');
+const mapEventSourcePath = resolve(root, 'apps/game/src/modules/main/event.ts');
+const mapServerSourcePath = resolve(root, 'apps/game/src/modules/main/server.ts');
 const visualReview = readJson(visualReviewPath);
+const mapEventSource = readText(mapEventSourcePath);
+const mapServerSource = readText(mapServerSourcePath);
 const hostedAllowed = process.env.MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED === 'true';
 const reviewer = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER || '');
 const browser = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER || '');
@@ -15,6 +19,52 @@ const reviewUrl = (process.env.MOCHI_SOCIAL_MANUAL_PROMPT_URL || visualReview.da
 const notes = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_NOTES || '');
 const gitState = readGitState();
 const failures = [];
+
+const interactionContract = {
+  source: pathForReport(mapEventSourcePath),
+  helper: 'setAlphaInteractable',
+  tileSizePx: 64,
+  actionHitbox: { width: 64, height: 64 },
+  actionInput: 'Focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms.'
+};
+
+const reviewTargets = [
+  {
+    id: 'welcome-npc',
+    label: 'Welcome NPC dialog',
+    position: eventPlacement(mapServerSource, 'welcome-npc'),
+    setup: 'No setup required after the player spawns in Jade Lantern Court.',
+    graphic: 'sifu-narao',
+    expectedRenderedPhrases: ['Welcome to Mochi Social', 'no-real-value', 'Canary-only'],
+    expectedNotification: 'Guild spark found',
+    saveSource: null
+  },
+  {
+    id: 'guild-seal-chest',
+    label: 'Guild seal chest prompt and save feedback',
+    position: eventPlacement(mapServerSource, 'guild-seal-chest'),
+    setup: 'Use a fresh local save or confirm the repeat prompt says the Mochirii Guild Seal is already tucked away.',
+    graphic: 'chest',
+    expectedRenderedPhrases: ['Mochirii Guild Seal', 'server saved'],
+    expectedNotification: 'Guild Seal added',
+    saveSource: 'guild-seal-chest'
+  },
+  {
+    id: 'care-shrine',
+    label: 'Habitat care loop prompt',
+    position: eventPlacement(mapServerSource, 'care-shrine'),
+    setup: 'First bond with Lirabao at spirit-lirabao, then interact with the care shrine.',
+    setupTarget: {
+      id: 'spirit-lirabao',
+      position: eventPlacement(mapServerSource, 'spirit-lirabao'),
+      expectedRenderedPhrases: ['joined your Mochirii spirit journal']
+    },
+    graphic: 'sifu-narao',
+    expectedRenderedPhrases: ['Care complete', 'growth with bond'],
+    expectedNotification: 'Spirit bond',
+    saveSource: 'spirit-care'
+  }
+];
 
 const checks = [
   {
@@ -47,6 +97,34 @@ if (!visualReview.ok) {
   failures.push(...currentGitStateFailures(visualReview.data?.git, 'visual review report'));
   if (visualReview.data?.manualPromptGate?.requiredBeforeAlphaRcReady !== true) {
     failures.push('Visual review report must keep manual prompt gate enabled.');
+  }
+}
+
+for (const snippet of [
+  'ALPHA_INTERACTABLE_HITBOX = { width: 64, height: 64 }',
+  "setAlphaInteractable(this, 'sifu-narao')",
+  'setAlphaInteractable(this, spirit.sprite)',
+  "setAlphaInteractable(this, 'chest')"
+]) {
+  if (!mapEventSource.includes(snippet)) failures.push(`Manual prompt review source contract missing snippet: ${snippet}`);
+}
+
+for (const target of reviewTargets) {
+  if (!target.position) failures.push(`Manual prompt review target placement missing: ${target.id}`);
+  for (const phrase of target.expectedRenderedPhrases) {
+    if (!mapEventSource.includes(phrase)) failures.push(`Manual prompt review target ${target.id} missing expected phrase in source: ${phrase}`);
+  }
+  if (target.expectedNotification && !mapEventSource.includes(target.expectedNotification)) {
+    failures.push(`Manual prompt review target ${target.id} missing expected notification in source: ${target.expectedNotification}`);
+  }
+  if (target.saveSource && !mapEventSource.includes(`source: '${target.saveSource}'`)) {
+    failures.push(`Manual prompt review target ${target.id} missing save source in source: ${target.saveSource}`);
+  }
+  if (target.setupTarget) {
+    if (!target.setupTarget.position) failures.push(`Manual prompt review setup target placement missing: ${target.setupTarget.id}`);
+    for (const phrase of target.setupTarget.expectedRenderedPhrases) {
+      if (!mapEventSource.includes(phrase)) failures.push(`Manual prompt review setup target ${target.setupTarget.id} missing expected phrase in source: ${phrase}`);
+    }
   }
 }
 
@@ -97,6 +175,8 @@ const report = {
     requiredEnv: checks.map((check) => `${check.env}=true`),
     completionCommand: 'Set the required env vars plus MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER and MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER, then run npm run alpha:manual-prompt-review.'
   },
+  interactionContract,
+  reviewTargets,
   completedChecks: completedChecks.map((check) => check.id),
   pendingChecks: pendingChecks.map((check) => check.id),
   failures
@@ -125,6 +205,29 @@ function readJson(file) {
   } catch {
     return { ok: false, message: 'parse failed' };
   }
+}
+
+function readText(file) {
+  if (!existsSync(file)) return '';
+  try {
+    return readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+function eventPlacement(source, id) {
+  const pattern = new RegExp(`id:\\s*'${escapeRegExp(id)}',\\s*x:\\s*(\\d+),\\s*y:\\s*(\\d+),`);
+  const match = source.match(pattern);
+  if (!match) return null;
+  return {
+    x: Number(match[1]),
+    y: Number(match[2])
+  };
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function parseBool(value) {
@@ -213,6 +316,13 @@ function renderMarkdown(summary) {
   const checkRows = summary.checks
     .map((check) => `| ${check.id} | ${check.ok ? 'pass' : 'pending'} | ${check.env} | ${check.expectedEvidence} |`)
     .join('\n');
+  const targetRows = summary.reviewTargets
+    .map((target) => {
+      const position = target.position ? `${target.position.x},${target.position.y}` : 'missing';
+      const setupPosition = target.setupTarget?.position ? ` Setup ${target.setupTarget.id}: ${target.setupTarget.position.x},${target.setupTarget.position.y}.` : '';
+      return `| ${target.id} | ${position} | ${target.graphic} | ${target.expectedRenderedPhrases.join('; ')} | ${target.setup}${setupPosition} |`;
+    })
+    .join('\n');
   const failuresText = summary.failures.length ? summary.failures.map((failure) => `- ${failure}`).join('\n') : '- None';
   const pendingText = summary.pendingChecks.length ? summary.pendingChecks.map((id) => `- ${id}`).join('\n') : '- None';
 
@@ -238,6 +348,16 @@ Input note: focus the game canvas, stand within one 64px logical tile of the map
 | Check | Status | Completion Env | Expected Evidence |
 | --- | --- | --- | --- |
 ${checkRows}
+
+## Source-Tied Target Checklist
+
+- Action hitbox: ${summary.interactionContract.actionHitbox.width}x${summary.interactionContract.actionHitbox.height}px
+- Logical tile size: ${summary.interactionContract.tileSizePx}px
+- Source helper: ${summary.interactionContract.source} / ${summary.interactionContract.helper}
+
+| Target | Position | Graphic | Confirm Rendered Phrases | Setup |
+| --- | --- | --- | --- | --- |
+${targetRows}
 
 ## Pending Checks
 
