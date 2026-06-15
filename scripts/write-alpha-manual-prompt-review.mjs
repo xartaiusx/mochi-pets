@@ -13,6 +13,7 @@ const mapServerSourcePath = resolve(root, 'apps/game/src/modules/main/server.ts'
 const visualReview = readJson(visualReviewPath);
 const mapEventSource = readText(mapEventSourcePath);
 const mapServerSource = readText(mapServerSourcePath);
+const visualArtifacts = buildVisualArtifactEvidence(visualReview);
 const hostedAllowed = process.env.MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED === 'true';
 const reviewer = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER || '');
 const browser = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER || '');
@@ -100,6 +101,7 @@ if (!visualReview.ok) {
   if (visualReview.data?.manualPromptGate?.requiredBeforeAlphaRcReady !== true) {
     failures.push('Visual review report must keep manual prompt gate enabled.');
   }
+  failures.push(...visualArtifactFailures(visualArtifacts));
 }
 
 for (const snippet of [
@@ -172,6 +174,7 @@ const report = {
         ok: false,
         message: visualReview.message
       },
+  visualArtifacts,
   checks,
   instructions: {
     localUrl: reviewUrl ? reviewPlayUrl(reviewUrl) : '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
@@ -220,6 +223,73 @@ function readText(file) {
   } catch {
     return '';
   }
+}
+
+function buildVisualArtifactEvidence(source) {
+  const data = source.ok ? source.data : null;
+  const screenshots = data?.evidence?.screenshots || {};
+  return {
+    visualReviewReport: {
+      path: pathForReport(visualReviewPath),
+      ok: data?.ok === true,
+      checkedAt: data?.checkedAt || null,
+      baseUrl: data?.baseUrl || null
+    },
+    visualSnapshotReport: {
+      path: data?.evidence?.visualSnapshot?.path || 'reports/alpha-visual-snapshot.json',
+      ok: data?.evidence?.visualSnapshot?.ok === true,
+      checkedAt: data?.evidence?.visualSnapshot?.checkedAt || null,
+      baseUrl: data?.evidence?.visualSnapshot?.baseUrl || null
+    },
+    browserPresenceReport: {
+      path: data?.evidence?.browserPresence?.path || 'reports/alpha-browser-presence.json',
+      ok: data?.evidence?.browserPresence?.ok === true,
+      checkedAt: data?.evidence?.browserPresence?.checkedAt || null,
+      baseUrl: data?.evidence?.browserPresence?.baseUrl || null
+    },
+    screenshots: {
+      page: normalizeScreenshotEvidence(screenshots.page, 'reports/alpha-visual-page.png'),
+      canvas: normalizeScreenshotEvidence(screenshots.canvas, 'reports/alpha-visual-canvas.png')
+    },
+    mapObjects: Array.isArray(data?.evidence?.mapObjects) ? data.evidence.mapObjects.map(sanitize) : [],
+    habitat: sanitize(data?.evidence?.habitat || ''),
+    manualPromptGate: {
+      status: sanitize(data?.manualPromptGate?.status || ''),
+      reason: sanitize(data?.manualPromptGate?.reason || ''),
+      requiredChecks: Array.isArray(data?.manualPromptGate?.requiredChecks)
+        ? data.manualPromptGate.requiredChecks.map(sanitize)
+        : []
+    }
+  };
+}
+
+function normalizeScreenshotEvidence(value, fallbackPath) {
+  return {
+    path: sanitize(value?.path || fallbackPath),
+    exists: value?.exists === true,
+    bytes: Number(value?.bytes) || 0,
+    width: Number(value?.width) || 0,
+    height: Number(value?.height) || 0,
+    sha256: sanitize(value?.sha256 || ''),
+    reportedSha256: sanitize(value?.reportedSha256 || '')
+  };
+}
+
+function visualArtifactFailures(artifacts) {
+  const artifactFailures = [];
+  if (artifacts.visualReviewReport.ok !== true) artifactFailures.push('Manual prompt visual artifact bundle requires a passing visual review report.');
+  if (artifacts.visualSnapshotReport.ok !== true) artifactFailures.push('Manual prompt visual artifact bundle requires a passing visual snapshot report.');
+  if (artifacts.browserPresenceReport.ok !== true) artifactFailures.push('Manual prompt visual artifact bundle requires a passing browser presence report.');
+  for (const [label, screenshot] of Object.entries(artifacts.screenshots)) {
+    if (screenshot.exists !== true) artifactFailures.push(`Manual prompt visual artifact ${label} screenshot is missing.`);
+    if (!screenshot.sha256) artifactFailures.push(`Manual prompt visual artifact ${label} screenshot hash is missing.`);
+    if (!screenshot.width || !screenshot.height) artifactFailures.push(`Manual prompt visual artifact ${label} screenshot dimensions are missing.`);
+  }
+  if (!artifacts.mapObjects.includes('welcome-npc')) artifactFailures.push('Manual prompt visual artifact map-object list missing welcome-npc.');
+  if (!artifacts.mapObjects.includes('guild-seal-chest')) artifactFailures.push('Manual prompt visual artifact map-object list missing guild-seal-chest.');
+  if (!artifacts.mapObjects.includes('care-shrine')) artifactFailures.push('Manual prompt visual artifact map-object list missing care-shrine.');
+  if (artifacts.habitat !== 'Jade Lantern Court') artifactFailures.push('Manual prompt visual artifact habitat must be Jade Lantern Court.');
+  return artifactFailures;
 }
 
 function eventPlacement(source, id) {
@@ -471,6 +541,15 @@ function renderMarkdown(summary) {
     .join('\n');
   const failuresText = summary.failures.length ? summary.failures.map((failure) => `- ${failure}`).join('\n') : '- None';
   const pendingText = summary.pendingChecks.length ? summary.pendingChecks.map((id) => `- ${id}`).join('\n') : '- None';
+  const screenshotRows = Object.entries(summary.visualArtifacts.screenshots)
+    .map(([label, screenshot]) => `| ${label} | ${screenshot.path} | ${screenshot.width}x${screenshot.height} | ${screenshot.bytes} | ${screenshot.sha256 || 'missing'} |`)
+    .join('\n');
+  const visualMapObjects = summary.visualArtifacts.mapObjects.length
+    ? summary.visualArtifacts.mapObjects.join(', ')
+    : 'none recorded';
+  const manualGateChecks = summary.visualArtifacts.manualPromptGate.requiredChecks.length
+    ? summary.visualArtifacts.manualPromptGate.requiredChecks.map((check) => `- ${check}`).join('\n')
+    : '- None recorded';
 
   return `# Mochi Social Manual Prompt Review
 
@@ -488,6 +567,27 @@ Input note: focus the game canvas, stand within one 64px logical tile of the map
 - Browser: ${summary.review.browser || 'not recorded'}
 - URL: ${summary.review.url || 'not recorded'}
 - Hosted approval: ${summary.review.hostedAllowed ? 'yes' : 'no'}
+
+## Visual Review Evidence Bundle
+
+- Visual review report: ${summary.visualArtifacts.visualReviewReport.path} (${summary.visualArtifacts.visualReviewReport.ok ? 'pass' : 'not passing'}, ${summary.visualArtifacts.visualReviewReport.checkedAt || 'not recorded'})
+- Visual snapshot report: ${summary.visualArtifacts.visualSnapshotReport.path} (${summary.visualArtifacts.visualSnapshotReport.ok ? 'pass' : 'not passing'}, ${summary.visualArtifacts.visualSnapshotReport.checkedAt || 'not recorded'})
+- Browser presence report: ${summary.visualArtifacts.browserPresenceReport.path} (${summary.visualArtifacts.browserPresenceReport.ok ? 'pass' : 'not passing'}, ${summary.visualArtifacts.browserPresenceReport.checkedAt || 'not recorded'})
+- Review base URL: ${summary.visualArtifacts.visualReviewReport.baseUrl || summary.visualArtifacts.visualSnapshotReport.baseUrl || summary.visualArtifacts.browserPresenceReport.baseUrl || 'not recorded'}
+- Habitat: ${summary.visualArtifacts.habitat || 'not recorded'}
+- Map objects covered: ${visualMapObjects}
+- Manual gate status from visual review: ${summary.visualArtifacts.manualPromptGate.status || 'not recorded'}
+- Manual gate reason: ${summary.visualArtifacts.manualPromptGate.reason || 'not recorded'}
+
+Screenshot artifacts:
+
+| Artifact | Path | Dimensions | Bytes | SHA-256 |
+| --- | --- | --- | --- | --- |
+${screenshotRows}
+
+Visual-review required manual checks:
+
+${manualGateChecks}
 
 ## Prompt Checks
 

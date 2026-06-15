@@ -401,7 +401,11 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED'
+    'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED',
+    'visualArtifacts',
+    'Visual Review Evidence Bundle',
+    'alpha-visual-page.png',
+    'alpha-visual-canvas.png'
   ]);
   requireFileIncludes('game.wallet-daemon-local-check', 'Wallet Daemon local check verifies only binary metadata and help output without importing wallets, printing seeds, starting signers, or contacting Enjin.', 'scripts/check-wallet-daemon-local.mjs', [
     'wallet-daemon-local.json',
