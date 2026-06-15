@@ -37,6 +37,7 @@ import {
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_LINEAGE_REGISTERS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_NAME_BANNER_RITES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
   SPIRIT_PROVISION_CATALOGS,
@@ -91,6 +92,7 @@ import {
   resolveSpiritKinshipAlbum,
   resolveSpiritLineageRegister,
   resolveSpiritMentorChallenge,
+  resolveSpiritNameBannerRite,
   resolveSpiritNurtureRite,
   resolveSpiritNurseryGrove,
   resolveSpiritParty,
@@ -194,6 +196,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritBlossomCradles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritBondGiftRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritNameBannerRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.remedyPouches).toBe(true);
@@ -287,6 +290,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_cabinet');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.blossom_cradle');
     expect(ALPHA_ACTION_TYPES).toContain('item.bond_gift');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.name_banner');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
     expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
@@ -1179,6 +1183,69 @@ describe('alpha contract', () => {
       statusMood: 'cozy',
       chatLines: ['Gift rite ready.']
     }).gifted).toBe(false);
+
+    expect(SPIRIT_NAME_BANNER_RITES.map((rite) => rite.id)).toEqual(['jade-name-banner-rite']);
+    const nameBanner = resolveSpiritNameBannerRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      nameRecords: [
+        { spiritId: 'lirabao', title: 'Lirabao Lanternheart' },
+        { spiritId: 'jintari', title: 'Jintari Goldleaf Step' },
+        { spiritId: 'aozhen', title: 'Aozhen Skybell Veil' }
+      ],
+      journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      rosterCabinetProof: true,
+      rosterCabinetId: 'jade-roster-cabinet',
+      bondGiftProof: true,
+      bondGiftRiteId: 'jade-bond-gift-rite',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Name banner ready.']
+    });
+    expect(nameBanner).toMatchObject({
+      ok: true,
+      named: true,
+      riteId: 'jade-name-banner-rite',
+      riteName: 'Jade Name Banner Rite',
+      title: 'First-Court Spirit Identity Banner',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      nameRecordTitles: ['Lirabao Lanternheart', 'Jintari Goldleaf Step', 'Aozhen Skybell Veil'],
+      journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 49,
+      requiredScore: 46,
+      rewardItemId: 'jade-name-banner-tag',
+      source: 'spirit-name-banner'
+    });
+    expect(nameBanner.message).toContain('No real value');
+    expect(resolveSpiritNameBannerRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      nameRecords: [
+        { spiritId: 'lirabao', title: 'Lirabao Lanternheart' },
+        { spiritId: 'jintari', title: 'Jintari Goldleaf Step' },
+        { spiritId: 'aozhen', title: 'Aozhen Skybell Veil' }
+      ],
+      journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      rosterCabinetProof: false,
+      rosterCabinetId: 'jade-roster-cabinet',
+      bondGiftProof: true,
+      bondGiftRiteId: 'jade-bond-gift-rite',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Name banner ready.']
+    }).named).toBe(false);
 
     expect(SPIRIT_TEMPERAMENT_CONCORDS.map((concord) => concord.id)).toEqual(['jade-temperament-concord']);
     const temperament = resolveSpiritTemperamentConcord({

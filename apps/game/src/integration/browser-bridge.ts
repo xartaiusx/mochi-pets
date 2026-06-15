@@ -37,6 +37,7 @@ import {
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_LINEAGE_REGISTERS,
   SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_NAME_BANNER_RITES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
   SPIRIT_PROVISION_CATALOGS,
@@ -111,6 +112,7 @@ import {
   resolveSpiritKinshipAlbum,
   resolveSpiritLineageRegister,
   resolveSpiritMentorChallenge,
+  resolveSpiritNameBannerRite,
   resolveSpiritNurseryGrove,
   resolveSpiritNurtureRite,
   resolveSpiritParty,
@@ -302,6 +304,16 @@ interface AlphaHudState {
   bondGiftItemIds: string[];
   bondGiftPresenceCount: number;
   bondGiftRibbonClaimed: boolean;
+  nameBannerProof: boolean;
+  nameBannerRiteId?: string;
+  nameBannerRiteName: string;
+  nameBannerScore: number;
+  nameBannerRequiredScore: number;
+  nameBannerSpiritIds: string[];
+  nameBannerTitles: string[];
+  nameBannerJournalSpiritIds: string[];
+  nameBannerPresenceCount: number;
+  nameBannerTagClaimed: boolean;
   provisionCatalogProof: boolean;
   provisionCatalogId?: string;
   provisionCatalogName: string;
@@ -1356,6 +1368,15 @@ function defaultAlphaState(): AlphaHudState {
     bondGiftItemIds: [],
     bondGiftPresenceCount: 1,
     bondGiftRibbonClaimed: false,
+    nameBannerProof: false,
+    nameBannerRiteName: 'Unnamed',
+    nameBannerScore: 0,
+    nameBannerRequiredScore: 0,
+    nameBannerSpiritIds: [],
+    nameBannerTitles: [],
+    nameBannerJournalSpiritIds: [],
+    nameBannerPresenceCount: 1,
+    nameBannerTagClaimed: false,
     provisionCatalogProof: false,
     provisionCatalogName: 'Uncataloged',
     provisionCatalogScore: 0,
@@ -1917,6 +1938,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-remedy-pouch-label>Remedy: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-bond-gift-label>Gift: pending</span>
+      <span class="mochi-hud__hint" data-name-banner-label>Name Banner: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
@@ -1995,6 +2017,7 @@ function createHud() {
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
       <button type="button" data-alpha-action="item.bond_gift" aria-label="Record the no-real-value Jade Bond Gift Rite">Gift</button>
+      <button type="button" data-alpha-action="spirit.name_banner" aria-label="Record the no-real-value Jade Name Banner Rite">Name</button>
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
@@ -2094,6 +2117,7 @@ function createHud() {
   const remedyPouchLabel = hud.querySelector('[data-remedy-pouch-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const bondGiftLabel = hud.querySelector('[data-bond-gift-label]');
+  const nameBannerLabel = hud.querySelector('[data-name-banner-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
@@ -2297,6 +2321,11 @@ function createHud() {
       bondGiftLabel.textContent = state.bondGiftProof
         ? `Gift: ${state.bondGiftRiteName}, ${state.bondGiftItemIds.length} items, score ${state.bondGiftScore}/${state.bondGiftRequiredScore}`
         : 'Gift: pending';
+    }
+    if (nameBannerLabel) {
+      nameBannerLabel.textContent = state.nameBannerProof
+        ? `Name Banner: ${state.nameBannerRiteName}, ${state.nameBannerTitles.length} titles, score ${state.nameBannerScore}/${state.nameBannerRequiredScore}`
+        : 'Name Banner: pending';
     }
     if (temperamentLabel) {
       temperamentLabel.textContent = state.temperamentConcordProof
@@ -2793,6 +2822,9 @@ function readAlphaState(): AlphaHudState {
       habitatCensusSpiritIds: Array.isArray(parsed?.habitatCensusSpiritIds) ? parsed.habitatCensusSpiritIds.map(String) : [],
       habitatCensusCareLoggedSpiritIds: Array.isArray(parsed?.habitatCensusCareLoggedSpiritIds) ? parsed.habitatCensusCareLoggedSpiritIds.map(String) : [],
       bondGiftItemIds: Array.isArray(parsed?.bondGiftItemIds) ? parsed.bondGiftItemIds.map(String) : [],
+      nameBannerSpiritIds: Array.isArray(parsed?.nameBannerSpiritIds) ? parsed.nameBannerSpiritIds.map(String) : [],
+      nameBannerTitles: Array.isArray(parsed?.nameBannerTitles) ? parsed.nameBannerTitles.map(String) : [],
+      nameBannerJournalSpiritIds: Array.isArray(parsed?.nameBannerJournalSpiritIds) ? parsed.nameBannerJournalSpiritIds.map(String) : [],
       provisionCatalogItemIds: Array.isArray(parsed?.provisionCatalogItemIds) ? parsed.provisionCatalogItemIds.map(String) : [],
       provisionCatalogCareItemIds: Array.isArray(parsed?.provisionCatalogCareItemIds) ? parsed.provisionCatalogCareItemIds.map(String) : [],
       provisionCatalogRouteItemIds: Array.isArray(parsed?.provisionCatalogRouteItemIds) ? parsed.provisionCatalogRouteItemIds.map(String) : [],
@@ -3936,6 +3968,33 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       guildBuddyProof: state.guildBuddyProof,
       statusMood: state.statusMood,
       chatLines: state.chat,
+      noRealValue: true
+    };
+  }
+
+  if (type === 'spirit.name_banner') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const roster = state.attunedSpiritIds.length >= MOCHI_SPIRITS.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const journalSpiritIds = state.journalDiscoveredCount >= MOCHI_SPIRITS.length ? MOCHI_SPIRITS.map((spirit) => spirit.id) : roster.slice(0, state.journalDiscoveredCount);
+    return {
+      riteId: SPIRIT_NAME_BANNER_RITES[0].id,
+      roster,
+      nameRecords: SPIRIT_NAME_BANNER_RITES[0].requiredNameRecords.map((record) => ({ ...record })),
+      journalSpiritIds,
+      compendiumProof: state.compendiumProof,
+      compendiumId: state.compendiumId,
+      rosterArchiveProof: state.rosterArchiveProof,
+      rosterArchiveId: state.rosterArchiveId,
+      rosterCabinetProof: state.rosterCabinetProof,
+      rosterCabinetId: state.rosterCabinetId,
+      bondGiftProof: state.bondGiftProof,
+      bondGiftRiteId: state.bondGiftRiteId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat,
+      rewardItemId: 'jade-name-banner-tag',
       noRealValue: true
     };
   }
@@ -6027,6 +6086,54 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       if (result.activeSpiritId) {
         setSpiritProgress(state, result.activeSpiritId, Math.max(getSpiritBond(state, result.activeSpiritId), 4), getSpiritGrowth(state, result.activeSpiritId));
       }
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.name_banner') {
+    const payloadNameRecords = Array.isArray(payload.nameRecords)
+      ? payload.nameRecords.map((record) => {
+          const raw = record && typeof record === 'object' ? (record as Record<string, unknown>) : {};
+          return {
+            spiritId: String(raw.spiritId || ''),
+            title: String(raw.title || '')
+          };
+        })
+      : SPIRIT_NAME_BANNER_RITES[0].requiredNameRecords.map((record) => ({ ...record }));
+    const result = resolveSpiritNameBannerRite(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        nameRecords: payloadNameRecords,
+        journalSpiritIds: Array.isArray(payload.journalSpiritIds) ? payload.journalSpiritIds.map(String) : MOCHI_SPIRITS.map((spirit) => spirit.id),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        compendiumId: String(payload.compendiumId || state.compendiumId || ''),
+        rosterArchiveProof: Boolean(payload.rosterArchiveProof ?? state.rosterArchiveProof),
+        rosterArchiveId: String(payload.rosterArchiveId || state.rosterArchiveId || ''),
+        rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
+        rosterCabinetId: String(payload.rosterCabinetId || state.rosterCabinetId || ''),
+        bondGiftProof: Boolean(payload.bondGiftProof ?? state.bondGiftProof),
+        bondGiftRiteId: String(payload.bondGiftRiteId || state.bondGiftRiteId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.riteId || SPIRIT_NAME_BANNER_RITES[0].id)
+    );
+    if (result.named) {
+      state.nameBannerProof = true;
+      state.nameBannerRiteId = result.riteId;
+      state.nameBannerRiteName = result.riteName;
+      state.nameBannerScore = result.score;
+      state.nameBannerRequiredScore = result.requiredScore;
+      state.nameBannerSpiritIds = result.roster;
+      state.nameBannerTitles = result.nameRecordTitles;
+      state.nameBannerJournalSpiritIds = result.journalSpiritIds;
+      state.nameBannerPresenceCount = result.localPresenceCount;
+      state.nameBannerTagClaimed = result.rewardItemId === 'jade-name-banner-tag';
+      state.attunedSpiritIds = result.roster;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
   }

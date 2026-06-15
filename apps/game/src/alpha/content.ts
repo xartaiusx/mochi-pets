@@ -824,6 +824,69 @@ export interface SpiritBondGiftResult {
   source: string;
 }
 
+export interface SpiritNameBannerRecord {
+  spiritId: string;
+  title: string;
+}
+
+export interface SpiritNameBannerRite {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredNameRecords: readonly SpiritNameBannerRecord[];
+  requiredJournalCount: number;
+  requiredCompendiumId: string;
+  requiredRosterArchiveId: string;
+  requiredRosterCabinetId: string;
+  requiredBondGiftRiteId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritNameBannerProgress {
+  roster: readonly string[];
+  nameRecords: readonly SpiritNameBannerRecord[];
+  journalSpiritIds: readonly string[];
+  compendiumProof: boolean;
+  compendiumId?: string;
+  rosterArchiveProof: boolean;
+  rosterArchiveId?: string;
+  rosterCabinetProof: boolean;
+  rosterCabinetId?: string;
+  bondGiftProof: boolean;
+  bondGiftRiteId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritNameBannerResult {
+  ok: boolean;
+  named: boolean;
+  riteId: string;
+  riteName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  nameRecords: SpiritNameBannerRecord[];
+  nameRecordTitles: string[];
+  journalSpiritIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritProvisionCatalog {
   id: string;
   name: string;
@@ -4170,6 +4233,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Bond Gift Ribbon',
     description: 'A no-real-value care gift proof for closed-alpha Mochirii spirit raising, provision, market, and social readiness.'
   },
+  nameBannerTag: {
+    id: 'jade-name-banner-tag',
+    name: 'Jade Name Banner Tag',
+    description: 'A no-real-value spirit identity proof for closed-alpha Mochirii roster naming, journal, and social readiness.'
+  },
   provisionSatchel: {
     id: 'jade-court-provision-satchel',
     name: 'Jade Court Provision Satchel',
@@ -4889,6 +4957,31 @@ export const SPIRIT_BOND_GIFT_RITES: readonly SpiritBondGiftRite[] = [
     requiredScore: 36,
     rewardItemId: ALPHA_ITEMS.bondGiftRibbon.id,
     summary: 'A no-real-value care gift proof for testers who connect full-roster care, provision stocking, fixed-price market receipts, guild social presence, and original Mochirii gift items without creating production inventory or settled assets.'
+  }
+];
+
+export const SPIRIT_NAME_BANNER_RITES: readonly SpiritNameBannerRite[] = [
+  {
+    id: 'jade-name-banner-rite',
+    name: 'Jade Name Banner Rite',
+    title: 'First-Court Spirit Identity Banner',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredNameRecords: [
+      { spiritId: 'lirabao', title: 'Lirabao Lanternheart' },
+      { spiritId: 'jintari', title: 'Jintari Goldleaf Step' },
+      { spiritId: 'aozhen', title: 'Aozhen Skybell Veil' }
+    ],
+    requiredJournalCount: 3,
+    requiredCompendiumId: SPIRIT_COMPENDIUMS[0].id,
+    requiredRosterArchiveId: SPIRIT_ROSTER_ARCHIVES[0].id,
+    requiredRosterCabinetId: SPIRIT_ROSTER_CABINETS[0].id,
+    requiredBondGiftRiteId: SPIRIT_BOND_GIFT_RITES[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 46,
+    rewardItemId: ALPHA_ITEMS.nameBannerTag.id,
+    summary: 'A no-real-value naming and identity proof for testers who record original Mochirii court titles across the full first-court roster after journal, compendium, archive, cabinet, care gift, and guild social readiness proofs.'
   }
 ];
 
@@ -7158,6 +7251,127 @@ export function resolveSpiritBondGiftRite(
       ? `${rite.name} complete: ${activeSpiritName} receives mooncake, harmony tea, and a jade thread charm with full-roster care, provision, market receipt, and local guild witness proof. No-real-value care gift proof only.`
       : `${rite.name} needs ${missing.join(', ')} before the first-court care gift can be recorded.`,
     source: 'item-bond-gift'
+  };
+}
+
+export function resolveSpiritNameBannerRite(
+  progress: SpiritNameBannerProgress,
+  riteId: string = SPIRIT_NAME_BANNER_RITES[0].id
+): SpiritNameBannerResult {
+  const rite = SPIRIT_NAME_BANNER_RITES.find((entry) => entry.id === riteId) || SPIRIT_NAME_BANNER_RITES[0];
+  const requiredSpiritIds = new Set(rite.requiredSpiritIds);
+  const requiredNameBySpirit = new Map(rite.requiredNameRecords.map((record) => [record.spiritId, record.title]));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const submittedRecords = Array.isArray(progress.nameRecords)
+    ? progress.nameRecords.map((record) => ({
+        spiritId: String(record.spiritId || '').trim(),
+        title: String(record.title || '').trim()
+      }))
+    : [];
+  const nameRecords = rite.requiredNameRecords.filter((required) => {
+    return submittedRecords.some((record) => record.spiritId === required.spiritId && record.title === required.title);
+  });
+  const nameRecordTitles = nameRecords.map((record) => record.title);
+  const uniqueTitleCount = new Set(nameRecordTitles.map((title) => title.toLowerCase())).size;
+  const journalSpiritIds = Array.from(new Set((progress.journalSpiritIds || []).filter((spiritId) => requiredSpiritIds.has(spiritId))));
+  const missing: string[] = [];
+
+  for (const spiritId of rite.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const [spiritId, title] of requiredNameBySpirit) {
+    if (!nameRecords.some((record) => record.spiritId === spiritId && record.title === title)) {
+      missing.push(`name:${spiritId}:${title}`);
+    }
+  }
+
+  if (uniqueTitleCount < rite.requiredNameRecords.length) {
+    missing.push(`unique-names:${uniqueTitleCount}/${rite.requiredNameRecords.length}`);
+  }
+
+  if (journalSpiritIds.length < rite.requiredJournalCount) {
+    missing.push(`journal:${journalSpiritIds.length}/${rite.requiredJournalCount}`);
+  }
+
+  const compendiumReady = progress.compendiumProof && progress.compendiumId === rite.requiredCompendiumId;
+  if (!compendiumReady) {
+    missing.push(`compendium:${rite.requiredCompendiumId}`);
+  }
+
+  const archiveReady = progress.rosterArchiveProof && progress.rosterArchiveId === rite.requiredRosterArchiveId;
+  if (!archiveReady) {
+    missing.push(`roster-archive:${rite.requiredRosterArchiveId}`);
+  }
+
+  const cabinetReady = progress.rosterCabinetProof && progress.rosterCabinetId === rite.requiredRosterCabinetId;
+  if (!cabinetReady) {
+    missing.push(`roster-cabinet:${rite.requiredRosterCabinetId}`);
+  }
+
+  const bondGiftReady = progress.bondGiftProof && progress.bondGiftRiteId === rite.requiredBondGiftRiteId;
+  if (!bondGiftReady) {
+    missing.push(`bond-gift:${rite.requiredBondGiftRiteId}`);
+  }
+
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  if (localPresenceCount < rite.requiredPresenceCount) {
+    missing.push(`presence:${localPresenceCount}/${rite.requiredPresenceCount}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < rite.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${rite.requiredChatLines}`);
+  }
+
+  const score =
+    nameRecords.length * 4 +
+    Math.min(roster.length, rite.requiredSpiritIds.length) * 2 +
+    Math.min(journalSpiritIds.length, rite.requiredJournalCount) * 2 +
+    (compendiumReady ? 5 : 0) +
+    (archiveReady ? 4 : 0) +
+    (cabinetReady ? 4 : 0) +
+    (bondGiftReady ? 4 : 0) +
+    Math.min(localPresenceCount, rite.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(chatLines.length, rite.requiredChatLines);
+  const named = missing.length === 0 && score >= rite.requiredScore;
+
+  return {
+    ok: true,
+    named,
+    riteId: rite.id,
+    riteName: rite.name,
+    title: rite.title,
+    habitat: rite.habitat,
+    roster,
+    nameRecords,
+    nameRecordTitles,
+    journalSpiritIds,
+    localPresenceCount,
+    score,
+    requiredScore: rite.requiredScore,
+    missing,
+    rewardItemId: rite.rewardItemId,
+    message: named
+      ? `${rite.name} complete: ${nameRecordTitles.join(', ')} now stand as original Mochirii first-court titles with journal, compendium, roster, gift, and guild witness proof. No real value.`
+      : `${rite.name} needs ${missing.join(', ')} before the first-court naming banner can be recorded.`,
+    source: 'spirit-name-banner'
   };
 }
 

@@ -164,6 +164,7 @@ async function run() {
   assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must catalog the first Mochirii quest chain.');
   assert(manifest.body.playableContent?.roleplay?.questLedgerIds?.includes('jade-quest-ledger'), 'Manifest must catalog the Jade Quest Ledger proof.');
   assert(manifest.body.playableContent?.roleplay?.rosterCabinetIds?.includes('jade-roster-cabinet'), 'Manifest must catalog the Jade Roster Cabinet proof.');
+  assert(manifest.body.playableContent?.roleplay?.nameBannerRiteIds?.includes('jade-name-banner-rite'), 'Manifest must catalog the Jade Name Banner Rite proof.');
   assert(manifest.body.playableContent?.roleplay?.routeCharterIds?.includes('jade-route-charter'), 'Manifest must catalog the Jade Route Charter proof.');
   assert(manifest.body.playableContent?.roleplay?.guildAscensionTrialIds?.includes('jade-court-ascension-trial'), 'Manifest must catalog the guild ascension capstone.');
   assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
@@ -1546,6 +1547,35 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-name-banner`,
+      type: 'spirit.name_banner',
+      payload: {
+        riteId: 'jade-name-banner-rite',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        nameRecords: [
+          { spiritId: 'lirabao', title: 'Lirabao Lanternheart' },
+          { spiritId: 'jintari', title: 'Jintari Goldleaf Step' },
+          { spiritId: 'aozhen', title: 'Aozhen Skybell Veil' }
+        ],
+        journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        compendiumProof: true,
+        compendiumId: 'jade-court-spirit-compendium',
+        rosterArchiveProof: true,
+        rosterArchiveId: 'jade-court-roster-archive',
+        rosterCabinetProof: true,
+        rosterCabinetId: 'jade-roster-cabinet',
+        bondGiftProof: true,
+        bondGiftRiteId: 'jade-bond-gift-rite',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-name-banner-tag',
+        chatLines: ['Local acceptance Jade Name Banner Rite proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-blossom-cradle`,
       type: 'spirit.blossom_cradle',
       payload: {
@@ -2158,6 +2188,24 @@ async function run() {
   assert(rosterCabinet?.payload?.localPresenceCount === 2, 'Roster cabinet ledger entry must preserve two-tester presence proof.');
   assert(rosterCabinet?.payload?.rewardItemId === 'jade-roster-cabinet-tag', 'Roster cabinet ledger entry must preserve the no-real-value cabinet tag proof.');
   assert(rosterCabinet?.payload?.noRealValue === true, 'Roster cabinet ledger entry must remain no-real-value.');
+  const nameBanner = entriesById.get(`${runId}-name-banner`);
+  assert(nameBanner?.payload?.riteId === 'jade-name-banner-rite', 'Name banner ledger entry must preserve the Jade Name Banner Rite id.');
+  assert(Array.isArray(nameBanner?.payload?.roster) && nameBanner.payload.roster.length === 3, 'Name banner ledger entry must preserve full roster proof.');
+  assert(Array.isArray(nameBanner?.payload?.nameRecords) && nameBanner.payload.nameRecords.some((record) => record.spiritId === 'lirabao' && record.title === 'Lirabao Lanternheart'), 'Name banner ledger entry must preserve the Lirabao Lanternheart title.');
+  assert(Array.isArray(nameBanner?.payload?.nameRecords) && nameBanner.payload.nameRecords.some((record) => record.spiritId === 'jintari' && record.title === 'Jintari Goldleaf Step'), 'Name banner ledger entry must preserve the Jintari Goldleaf Step title.');
+  assert(Array.isArray(nameBanner?.payload?.nameRecords) && nameBanner.payload.nameRecords.some((record) => record.spiritId === 'aozhen' && record.title === 'Aozhen Skybell Veil'), 'Name banner ledger entry must preserve the Aozhen Skybell Veil title.');
+  assert(Array.isArray(nameBanner?.payload?.journalSpiritIds) && nameBanner.payload.journalSpiritIds.length === 3, 'Name banner ledger entry must preserve 3/3 journal identity proof.');
+  assert(nameBanner?.payload?.compendiumProof === true, 'Name banner ledger entry must preserve compendium proof.');
+  assert(nameBanner?.payload?.compendiumId === 'jade-court-spirit-compendium', 'Name banner ledger entry must preserve compendium id.');
+  assert(nameBanner?.payload?.rosterArchiveProof === true, 'Name banner ledger entry must preserve roster archive proof.');
+  assert(nameBanner?.payload?.rosterArchiveId === 'jade-court-roster-archive', 'Name banner ledger entry must preserve roster archive id.');
+  assert(nameBanner?.payload?.rosterCabinetProof === true, 'Name banner ledger entry must preserve roster cabinet proof.');
+  assert(nameBanner?.payload?.rosterCabinetId === 'jade-roster-cabinet', 'Name banner ledger entry must preserve roster cabinet id.');
+  assert(nameBanner?.payload?.bondGiftProof === true, 'Name banner ledger entry must preserve bond gift proof.');
+  assert(nameBanner?.payload?.bondGiftRiteId === 'jade-bond-gift-rite', 'Name banner ledger entry must preserve bond gift rite id.');
+  assert(nameBanner?.payload?.localPresenceCount === 2, 'Name banner ledger entry must preserve two-tester name witness proof.');
+  assert(nameBanner?.payload?.rewardItemId === 'jade-name-banner-tag', 'Name banner ledger entry must preserve the no-real-value name banner tag proof.');
+  assert(nameBanner?.payload?.noRealValue === true, 'Name banner ledger entry must remain no-real-value.');
   const blossomCradle = entriesById.get(`${runId}-blossom-cradle`);
   assert(blossomCradle?.payload?.cradleId === 'jade-blossom-cradle', 'Blossom cradle ledger entry must preserve the Jade Blossom Cradle id.');
   assert(Array.isArray(blossomCradle?.payload?.roster) && blossomCradle.payload.roster.length === 3, 'Blossom cradle ledger entry must preserve full roster proof.');

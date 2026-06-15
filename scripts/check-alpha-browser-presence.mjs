@@ -250,6 +250,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.lineage_register"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.roster_cabinet"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.name_banner"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.blossom_cradle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_rotation"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
@@ -307,6 +308,7 @@ async function exerciseAlphaHud(page) {
       const remedyPouch = document.querySelector('[data-remedy-pouch-label]')?.textContent || '';
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
       const bondGift = document.querySelector('[data-bond-gift-label]')?.textContent || '';
+      const nameBanner = document.querySelector('[data-name-banner-label]')?.textContent || '';
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
@@ -389,6 +391,7 @@ async function exerciseAlphaHud(page) {
         && remedyPouch.includes('Jade Remedy Pouch')
         && careCycle.includes('Jade Court Care Cycle')
         && bondGift.includes('Jade Bond Gift Rite')
+        && nameBanner.includes('Jade Name Banner Rite')
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
@@ -642,6 +645,20 @@ async function exerciseAlphaHud(page) {
         && state.bondGiftItemIds.includes('jade-thread-charm')
         && state.bondGiftPresenceCount >= 2
         && state.bondGiftRibbonClaimed === true
+        && state.nameBannerProof === true
+        && state.nameBannerRiteId === 'jade-name-banner-rite'
+        && state.nameBannerScore >= 46
+        && state.nameBannerRequiredScore === 46
+        && Array.isArray(state.nameBannerSpiritIds)
+        && state.nameBannerSpiritIds.length === 3
+        && Array.isArray(state.nameBannerTitles)
+        && state.nameBannerTitles.includes('Lirabao Lanternheart')
+        && state.nameBannerTitles.includes('Jintari Goldleaf Step')
+        && state.nameBannerTitles.includes('Aozhen Skybell Veil')
+        && Array.isArray(state.nameBannerJournalSpiritIds)
+        && state.nameBannerJournalSpiritIds.length === 3
+        && state.nameBannerPresenceCount >= 2
+        && state.nameBannerTagClaimed === true
         && state.temperamentConcordProof === true
         && state.temperamentConcordId === 'jade-temperament-concord'
         && state.temperamentConcordName === 'Jade Temperament Concord'
@@ -1322,6 +1339,7 @@ async function exerciseAlphaHud(page) {
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
       bondGift: document.querySelector('[data-bond-gift-label]')?.textContent?.trim() || '',
+      nameBanner: document.querySelector('[data-name-banner-label]')?.textContent?.trim() || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
     routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
@@ -1590,6 +1608,19 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.bondGiftItemIds) && snapshot.state.bondGiftItemIds.includes('jade-thread-charm'), 'HUD bond gift action must preserve the Jade Thread Charm gift.');
   assert(snapshot.state.bondGiftPresenceCount >= 2, 'HUD bond gift action must preserve two-tester local gift witness proof.');
   assert(snapshot.state.bondGiftRibbonClaimed === true, 'HUD bond gift action must mark the no-real-value gift ribbon proof.');
+  assert(snapshot.nameBanner.includes('Jade Name Banner Rite'), 'HUD name banner label must show the completed spirit identity proof.');
+  assert(snapshot.state.nameBannerProof === true, 'HUD name banner action must record no-real-value spirit identity proof.');
+  assert(snapshot.state.nameBannerRiteId === 'jade-name-banner-rite', 'HUD name banner action must record the name banner rite id.');
+  assert(snapshot.state.nameBannerRiteName === 'Jade Name Banner Rite', 'HUD name banner action must record the name banner rite name.');
+  assert(snapshot.state.nameBannerScore >= 46, 'HUD name banner action must record a passing name banner score.');
+  assert(snapshot.state.nameBannerRequiredScore === 46, 'HUD name banner action must record the name banner requirement.');
+  assert(Array.isArray(snapshot.state.nameBannerSpiritIds) && snapshot.state.nameBannerSpiritIds.length === 3, 'HUD name banner action must preserve the full spirit roster.');
+  assert(Array.isArray(snapshot.state.nameBannerTitles) && snapshot.state.nameBannerTitles.includes('Lirabao Lanternheart'), 'HUD name banner action must preserve the Lirabao Lanternheart title.');
+  assert(Array.isArray(snapshot.state.nameBannerTitles) && snapshot.state.nameBannerTitles.includes('Jintari Goldleaf Step'), 'HUD name banner action must preserve the Jintari Goldleaf Step title.');
+  assert(Array.isArray(snapshot.state.nameBannerTitles) && snapshot.state.nameBannerTitles.includes('Aozhen Skybell Veil'), 'HUD name banner action must preserve the Aozhen Skybell Veil title.');
+  assert(Array.isArray(snapshot.state.nameBannerJournalSpiritIds) && snapshot.state.nameBannerJournalSpiritIds.length === 3, 'HUD name banner action must preserve 3/3 journal identity proof.');
+  assert(snapshot.state.nameBannerPresenceCount >= 2, 'HUD name banner action must preserve two-tester name witness proof.');
+  assert(snapshot.state.nameBannerTagClaimed === true, 'HUD name banner action must mark the no-real-value name banner tag proof.');
   assert(snapshot.temperament.includes('Jade Temperament Concord'), 'HUD temperament label must show the completed temperament proof.');
   assert(snapshot.state.temperamentConcordProof === true, 'HUD temperament action must record temperament concord proof.');
   assert(snapshot.state.temperamentConcordId === 'jade-temperament-concord', 'HUD temperament action must record the temperament concord id.');
@@ -2103,6 +2134,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
   assert(chat.some((line) => String(line).includes('Jade Bond Gift Rite complete')), 'HUD chat state must record the no-real-value bond gift rite action.');
+  assert(chat.some((line) => String(line).includes('Jade Name Banner Rite complete')), 'HUD chat state must record the no-real-value name banner rite action.');
   assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');
   assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
   assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');

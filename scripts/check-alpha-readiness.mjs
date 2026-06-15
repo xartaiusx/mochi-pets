@@ -1141,6 +1141,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritNameBannerRites: true', "'spirit.name_banner'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
@@ -1182,6 +1186,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/manifest.ts',
     includes: ['SPIRIT_BOND_GIFT_RITES', 'bondGiftRiteIds']
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['SPIRIT_NAME_BANNER_RITES', 'nameBannerRiteIds']
   },
   {
     file: 'apps/game/src/integration/manifest.ts',
@@ -1357,6 +1365,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_NAME_BANNER_RITES', 'resolveSpiritNameBannerRite', 'data-alpha-action="spirit.name_banner"', 'data-name-banner-label', 'nameBannerProof', 'nameBannerTagClaimed', 'Jade Name Banner Rite']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['GUILD_INSIGNIA_CASES', 'resolveGuildInsigniaCase', 'data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case']
   },
   {
@@ -1481,6 +1493,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_NAME_BANNER_RITES', 'Jade Name Banner Rite', 'jade-name-banner-tag', 'resolveSpiritNameBannerRite', 'spirit-name-banner', 'SpiritNameBannerProgress']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -1522,6 +1538,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritBondGiftRites: true', 'item.bond_gift', 'bondGiftRiteIds']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritNameBannerRites: true', 'spirit.name_banner', 'nameBannerRiteIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1684,8 +1704,16 @@ const checks = [
     includes: ['SPIRIT_BOND_GIFT_RITES', 'resolveSpiritBondGiftRite', 'item.bond_gift', 'jade-bond-gift-ribbon']
   },
   {
+    file: 'apps/game/tests/alpha-contract.test.ts',
+    includes: ['SPIRIT_NAME_BANNER_RITES', 'resolveSpiritNameBannerRite', 'spirit.name_banner', 'jade-name-banner-tag']
+  },
+  {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['spiritBondGiftRites: true', "bondGiftRiteIds: ['jade-bond-gift-rite']"]
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['spiritNameBannerRites: true', "nameBannerRiteIds: ['jade-name-banner-rite']"]
   },
   {
     file: 'apps/game/tests/alpha-content.test.ts',
@@ -1841,6 +1869,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.name_banner', 'jade-name-banner-rite', 'Jade Name Banner Rite', 'nameBanner', 'jade-name-banner-tag']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
   },
   {
@@ -1918,6 +1950,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="item.bond_gift"', 'data-bond-gift-label', 'bondGiftProof', 'bondGiftRibbonClaimed', 'Jade Bond Gift Rite complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.name_banner"', 'data-name-banner-label', 'nameBannerProof', 'nameBannerTagClaimed', 'Jade Name Banner Rite complete']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -2106,6 +2142,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['bondGiftProof', 'bondGiftRibbonClaimed', 'Jade Bond Gift Rite', 'jade-bond-gift-rite', 'bond gift']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['nameBannerProof', 'nameBannerTagClaimed', 'Jade Name Banner Rite', 'jade-name-banner-rite', 'name banner']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
