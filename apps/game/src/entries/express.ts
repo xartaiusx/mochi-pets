@@ -38,6 +38,7 @@ const ALPHA_FEATURES = {
   },
   gameplay: {
     spiritCapture: true,
+    spiritStarterVows: true,
     spiritCaptureRites: true,
     spiritAttunement: true,
     routeInvitations: true,
@@ -115,6 +116,7 @@ const ALPHA_EDGE_FUNCTIONS = {
 const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
+  'spirit.starter_vow',
   'spirit.capture',
   'spirit.capture_rite',
   'spirit.route_invite',

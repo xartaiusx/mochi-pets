@@ -1739,6 +1739,7 @@ export interface GuildWayfarerChronicleProgress {
   journalDiscoveredCount: number;
   completedQuestIds: readonly string[];
   localPresenceCount: number;
+  starterVowProof: boolean;
   captureProof: boolean;
   captureRiteProof: boolean;
   encounterAtlasProof: boolean;
@@ -1824,6 +1825,7 @@ export interface GuildAscensionTrialProgress {
   roster: readonly string[];
   partyIds: readonly string[];
   localPresenceCount: number;
+  starterVowProof: boolean;
   wayfarerChronicleProof: boolean;
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
@@ -2832,6 +2834,50 @@ export interface SpiritCaptureResult {
   source: string;
 }
 
+export interface SpiritStarterVow {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredItemId: string;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  vowLabelBySpiritId: Record<string, string>;
+  summary: string;
+}
+
+export interface SpiritStarterVowProgress {
+  selectedSpiritId?: string;
+  itemIds: readonly string[];
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritStarterVowResult {
+  ok: boolean;
+  vowed: boolean;
+  vowId: string;
+  vowName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  selectedSpiritId: string;
+  selectedSpiritName: string;
+  vowLabel: string;
+  itemIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritCaptureRite {
   id: string;
   name: string;
@@ -3323,6 +3369,11 @@ export const ALPHA_ITEMS = {
     name: 'Mochirii Guild Seal',
     description: 'A no-real-value proof that you visited the first Mochirii guild court.'
   },
+  starterKnot: {
+    id: 'jade-starter-knot',
+    name: 'Jade Starter Knot',
+    description: 'A no-real-value starter companion vow proof for closed-alpha Mochirii first-bond testing.'
+  },
   charm: {
     id: 'jade-thread-charm',
     name: 'Jade Thread Charm',
@@ -3584,6 +3635,26 @@ export const ALPHA_ITEMS = {
     description: 'A no-real-value Canary certificate request for the managed hot/cold Enjin alpha path.'
   }
 } as const;
+
+export const SPIRIT_STARTER_VOWS: readonly SpiritStarterVow[] = [
+  {
+    id: 'jade-starter-vow',
+    name: 'Jade Starter Vow',
+    title: 'First Companion Vow',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredItemId: ALPHA_ITEMS.guildSeal.id,
+    requiredPresenceCount: 1,
+    requiredScore: 18,
+    rewardItemId: ALPHA_ITEMS.starterKnot.id,
+    vowLabelBySpiritId: {
+      lirabao: 'Lanternheart First Vow',
+      jintari: 'Goldleaf Errand Vow',
+      aozhen: 'Skybell Trail Vow'
+    },
+    summary: 'A no-real-value first-companion pledge for testers who choose an original Mochirii spirit, carry a guild seal, and record social readiness before the wider capture rite.'
+  }
+];
 
 export const MOCHI_SPIRIT_QUESTS: readonly MochiSpiritQuest[] = [
   {
@@ -4244,9 +4315,9 @@ export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
     requiredJournalCount: MOCHI_SPIRITS.length,
     requiredQuestCount: MOCHI_SPIRIT_QUESTS.length,
     requiredPresenceCount: 2,
-    requiredScore: 73,
+    requiredScore: 75,
     rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
-    summary: 'A no-real-value alpha passport proof for testers who complete the first-court capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
+    summary: 'A no-real-value alpha passport proof for testers who complete the first-court starter vow, capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
   }
 ];
 
@@ -4258,9 +4329,9 @@ export const GUILD_ASCENSION_TRIALS: readonly GuildAscensionTrial[] = [
     habitat: SPIRIT_HABITATS.jadeLanternCourt,
     requiredSpiritCount: MOCHI_SPIRITS.length,
     requiredPresenceCount: 2,
-    requiredScore: 62,
+    requiredScore: 64,
     rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
-    summary: 'A no-real-value guild capstone for testers who complete the first Mochirii chronicle, social party proof, no-injury battle proof, route patrol, and Canary preview.'
+    summary: 'A no-real-value guild capstone for testers who complete the first Mochirii starter vow, chronicle, social party proof, no-injury battle proof, route patrol, and Canary preview.'
   }
 ];
 
@@ -4883,6 +4954,64 @@ export function resolveSpiritCapture(spiritId: string, offeredItemId: string, ha
     bond: ok ? 1 : 0,
     growth: 'seed',
     source: 'spirit-capture'
+  };
+}
+
+export function resolveSpiritStarterVow(
+  progress: SpiritStarterVowProgress,
+  vowId: string = SPIRIT_STARTER_VOWS[0].id
+): SpiritStarterVowResult {
+  const vow = SPIRIT_STARTER_VOWS.find((entry) => entry.id === vowId) || SPIRIT_STARTER_VOWS[0];
+  const requiredSpiritIds = new Set(vow.requiredSpiritIds);
+  const selectedSpirit = getMochiSpirit(String(progress.selectedSpiritId || vow.requiredSpiritIds[0]));
+  const selectedSpiritId = selectedSpirit && requiredSpiritIds.has(selectedSpirit.id) ? selectedSpirit.id : '';
+  const itemIds = Array.from(new Set(progress.itemIds.filter(Boolean))).filter((itemId) => itemId === vow.requiredItemId);
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (!selectedSpiritId) missing.push('starter-spirit');
+  if (!itemIds.includes(vow.requiredItemId)) missing.push(`item:${vow.requiredItemId}`);
+  if (localPresenceCount < vow.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${vow.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    (selectedSpiritId ? 6 : 0) +
+    (itemIds.includes(vow.requiredItemId) ? 4 : 0) +
+    Math.min(localPresenceCount, vow.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 2 : 0) +
+    (progress.guildBuddyProof ? 2 : 0) +
+    (statusReady ? 2 : 0) +
+    (chatLines.length ? 2 : 0);
+  const vowed = missing.length === 0 && score >= vow.requiredScore;
+  const selectedSpiritName = selectedSpirit?.name || 'Unchosen spirit';
+  const vowLabel = (selectedSpiritId && vow.vowLabelBySpiritId[selectedSpiritId]) || vow.name;
+
+  return {
+    ok: true,
+    vowed,
+    vowId: vow.id,
+    vowName: vow.name,
+    title: vow.title,
+    habitat: vow.habitat,
+    selectedSpiritId,
+    selectedSpiritName,
+    vowLabel,
+    itemIds,
+    localPresenceCount,
+    score,
+    requiredScore: vow.requiredScore,
+    missing,
+    rewardItemId: vow.rewardItemId,
+    message: vowed
+      ? `${vow.name} complete: ${selectedSpiritName} accepts the ${vowLabel} as first-companion proof for closed-alpha Mochirii play. No real value.`
+      : `${vow.name} needs ${missing.join(', ')} before the first companion vow can be recorded.`,
+    source: 'spirit-starter-vow'
   };
 }
 
@@ -7424,6 +7553,7 @@ export function resolveGuildWayfarerChronicle(
   if (journalDiscoveredCount < chronicle.requiredJournalCount) missing.push(`journal:${journalDiscoveredCount}/${chronicle.requiredJournalCount}`);
   if (completedQuestIds.length < chronicle.requiredQuestCount || !progress.questChainProof) missing.push(`quests:${completedQuestIds.length}/${chronicle.requiredQuestCount}`);
   if (localPresenceCount < chronicle.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${chronicle.requiredPresenceCount}`);
+  if (!progress.starterVowProof) missing.push('starter-vow');
   if (!progress.captureProof) missing.push('capture');
   if (!progress.captureRiteProof) missing.push('capture-rite');
   if (!progress.encounterAtlasProof) missing.push('encounter-atlas');
@@ -7477,6 +7607,7 @@ export function resolveGuildWayfarerChronicle(
     Math.min(journalDiscoveredCount, chronicle.requiredJournalCount) * 2 +
     Math.min(completedQuestIds.length, chronicle.requiredQuestCount) * 2 +
     Math.min(localPresenceCount, chronicle.requiredPresenceCount) * 3 +
+    (progress.starterVowProof ? 2 : 0) +
     (progress.captureProof ? 2 : 0) +
     (progress.captureRiteProof ? 3 : 0) +
     (progress.encounterAtlasProof ? 3 : 0) +
@@ -7542,7 +7673,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -7568,6 +7699,7 @@ export function resolveGuildAscensionTrial(
   if (roster.length < trial.requiredSpiritCount) missing.push(`roster:${roster.length}/${trial.requiredSpiritCount}`);
   if (partyIds.length < trial.requiredSpiritCount) missing.push(`party:${partyIds.length}/${trial.requiredSpiritCount}`);
   if (localPresenceCount < trial.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${trial.requiredPresenceCount}`);
+  if (!progress.starterVowProof) missing.push('starter-vow');
   if (!progress.wayfarerChronicleProof) missing.push('chronicle');
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
@@ -7606,6 +7738,7 @@ export function resolveGuildAscensionTrial(
     Math.min(roster.length, trial.requiredSpiritCount) * 2 +
     Math.min(partyIds.length, trial.requiredSpiritCount) * 2 +
     Math.min(localPresenceCount, trial.requiredPresenceCount) * 3 +
+    (progress.starterVowProof ? 2 : 0) +
     (progress.wayfarerChronicleProof ? 5 : 0) +
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
@@ -7657,7 +7790,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with chronicle, nursery grove, bloom ascendance, technique codex, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

@@ -41,6 +41,7 @@ describe('game manifest', () => {
       },
       gameplay: {
         spiritCapture: true,
+        spiritStarterVows: true,
         spiritCaptureRites: true,
         spiritAttunement: true,
         routeInvitations: true,

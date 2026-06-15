@@ -27,6 +27,7 @@ export const ALPHA_FEATURES = {
   },
   gameplay: {
     spiritCapture: true,
+    spiritStarterVows: true,
     spiritCaptureRites: true,
     spiritAttunement: true,
     routeInvitations: true,
@@ -114,6 +115,7 @@ export const SERVER_ENV_CONTRACT = [
 export const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
+  'spirit.starter_vow',
   'spirit.capture',
   'spirit.capture_rite',
   'spirit.route_invite',

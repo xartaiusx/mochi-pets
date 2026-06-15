@@ -46,6 +46,10 @@ const checks = [
     includes: ['spirit.relic_attune', 'spiritRelicAttunements: true', 'Jade Relic Attunement label/state', 'Jade Relic Silk Cord payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['spirit.starter_vow', 'spiritStarterVows: true', 'Jade Starter Vow label/state', 'Jade Starter Knot payload preservation']
+  },
+  {
     file: 'docs/monero-treasury.md',
     includes: ['Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ', 'operator system', 'No browser mining', 'GitHub Actions mining', 'Starting a miner is cost-bearing', 'dedicated mining wallet', 'Do not expose `monero-wallet-rpc` remotely', 'Alpha remains no-real-value', 'Do not try to convert XMR into cENJ', 'min(fuelTankRemaining, tankBudget, perUserBudget, operatorCap, dailyCap) - pendingReservations', 'admin kill switch', 'npm run alpha:monero-operator-handoff']
   },
@@ -661,6 +665,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
   },
   {
@@ -753,6 +761,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
   },
   {
@@ -774,6 +786,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_RELIC_ATTUNEMENTS', 'resolveSpiritRelicAttunement', 'data-alpha-action="spirit.relic_attune"', 'data-relic-attunement-label', 'relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_STARTER_VOWS', 'resolveSpiritStarterVow', 'data-alpha-action="spirit.starter_vow"', 'data-starter-vow-label', 'starterVowProof', 'starterKnotClaimed', 'Jade Starter Vow']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -870,6 +886,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Relic Attunement', 'jade-relic-silk-cord', 'resolveSpiritRelicAttunement', 'spirit-relic-attunement', 'relicAttunementProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['Jade Starter Vow', 'jade-starter-knot', 'resolveSpiritStarterVow', 'spirit-starter-vow', 'starterVowProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -1113,6 +1133,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.starter_vow', 'jade-starter-vow', 'spiritStarterVows', 'Jade Starter Vow', 'starterVowProof', 'jade-starter-knot']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.technique_codex', 'jade-technique-codex', 'techniqueCodexes', 'Jade Technique Codex', 'techniqueCodexProof', 'jade-technique-codex-seal']
   },
   {
@@ -1210,6 +1234,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.relic_attune"', 'data-relic-attunement-label', 'relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement complete']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.starter_vow"', 'data-starter-vow-label', 'starterVowProof', 'starterKnotClaimed', 'Jade Starter Vow']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1342,6 +1370,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement', 'jade-relic-silk-cord', 'spirit-relic-attunement', 'relic attunement']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['starterVowProof', 'starterKnotClaimed', 'Jade Starter Vow', 'jade-starter-knot', 'spirit-starter-vow', 'starter vow']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

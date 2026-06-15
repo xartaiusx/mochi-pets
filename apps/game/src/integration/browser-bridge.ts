@@ -44,6 +44,7 @@ import {
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_SIFU_COUNCILS,
   SPIRIT_RELIC_ATTUNEMENTS,
+  SPIRIT_STARTER_VOWS,
   SPIRIT_SUMMIT_CIRCUITS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
@@ -106,6 +107,7 @@ import {
   resolveSpiritRouteWaystone,
   resolveSpiritSanctuaryRite,
   resolveSpiritSifuCouncil,
+  resolveSpiritStarterVow,
   resolveSpiritSummitCircuit,
   resolveSpiritSparLadder,
   resolveSpiritRoutePatrol,
@@ -151,6 +153,16 @@ interface AlphaHudState {
   growth: string;
   captureProof: boolean;
   lastCaptureSpiritId?: string;
+  starterVowProof: boolean;
+  starterVowId?: string;
+  starterVowName: string;
+  starterVowLabel: string;
+  starterVowScore: number;
+  starterVowRequiredScore: number;
+  starterVowItemIds: string[];
+  starterSpiritId?: string;
+  starterSpiritName: string;
+  starterKnotClaimed: boolean;
   captureRiteProof: boolean;
   captureRiteId?: string;
   captureRiteName: string;
@@ -616,6 +628,21 @@ export interface AlphaWorldStatePatch {
     roster: string[];
     spiritId: string;
   };
+  starterVow?: {
+    itemIds: string[];
+    localPresenceCount: number;
+    message?: string;
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    selectedSpiritId: string;
+    selectedSpiritName: string;
+    title: string;
+    vowId: string;
+    vowLabel: string;
+    vowName: string;
+  };
   journal?: {
     activeSpiritId?: string;
     discoveredCount: number;
@@ -987,6 +1014,14 @@ function defaultAlphaState(): AlphaHudState {
     bond: 0,
     growth: 'seed',
     captureProof: false,
+    starterVowProof: false,
+    starterVowName: 'Unchosen',
+    starterVowLabel: 'No vow',
+    starterVowScore: 0,
+    starterVowRequiredScore: 0,
+    starterVowItemIds: [],
+    starterSpiritName: 'Unchosen',
+    starterKnotClaimed: false,
     captureRiteProof: false,
     captureRiteName: 'Unrecorded',
     captureRiteScore: 0,
@@ -1420,6 +1455,7 @@ function createHud() {
     <div class="mochi-hud__spirit-card" aria-label="Active Mochi Spirit">
       <span class="mochi-hud__kicker">Active Spirit</span>
       <strong data-spirit-label>Spirit: none</strong>
+      <span class="mochi-hud__hint" data-starter-vow-label>Starter: pending</span>
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
       <span class="mochi-hud__hint" data-route-invite-label>Route Invite: pending</span>
@@ -1481,6 +1517,7 @@ function createHud() {
       <button type="button" data-alpha-local-action="profile.view" aria-label="Open tester profile">Profile</button>
       <button type="button" data-alpha-local-action="guild.buddy" aria-label="Add local guild buddy proof">Guild</button>
       <button type="button" data-alpha-local-action="status.set" aria-label="Set cozy status mood">Mood</button>
+      <button type="button" data-alpha-action="spirit.starter_vow" aria-label="Record the no-real-value Jade Starter Vow first companion proof">Starter</button>
       <button type="button" data-alpha-action="spirit.capture" aria-label="Invite a Mochi Spirit from the habitat grove">Invite</button>
       <button type="button" data-alpha-action="spirit.capture_rite" aria-label="Record the no-real-value Jade Capture Rite">Rite+</button>
       <button type="button" data-alpha-action="spirit.attune" aria-label="Attune a Mochi Spirit">Attune</button>
@@ -1569,6 +1606,7 @@ function createHud() {
   const rankLabel = hud.querySelector('[data-rank-label]');
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
+  const starterVowLabel = hud.querySelector('[data-starter-vow-label]');
   const journalLabel = hud.querySelector('[data-journal-label]');
   const expeditionLabel = hud.querySelector('[data-expedition-label]');
   const routeInviteLabel = hud.querySelector('[data-route-invite-label]');
@@ -1649,6 +1687,11 @@ function createHud() {
     }
     if (spiritLabel) {
       spiritLabel.textContent = spirit ? `${spirit.name}: ${state.growth} growth, bond ${state.bond}/5` : 'Spirit: none';
+    }
+    if (starterVowLabel) {
+      starterVowLabel.textContent = state.starterVowProof
+        ? `Starter: ${state.starterVowName}, ${state.starterSpiritName}, score ${state.starterVowScore}/${state.starterVowRequiredScore}`
+        : 'Starter: pending';
     }
     if (journalLabel) {
       journalLabel.textContent = `Journal: ${state.journalDiscoveredCount}/${state.journalTotal || MOCHI_SPIRITS.length} records`;
@@ -2155,6 +2198,7 @@ function readAlphaState(): AlphaHudState {
       routeInvitedSpiritIds: Array.isArray(parsed?.routeInvitedSpiritIds) ? parsed.routeInvitedSpiritIds.map(String) : [],
       partyIds: Array.isArray(parsed?.partyIds) ? parsed.partyIds.map(String) : [],
       supportSpiritIds: Array.isArray(parsed?.supportSpiritIds) ? parsed.supportSpiritIds.map(String) : [],
+      starterVowItemIds: Array.isArray(parsed?.starterVowItemIds) ? parsed.starterVowItemIds.map(String) : [],
       techniqueCodexPartyIds: Array.isArray(parsed?.techniqueCodexPartyIds) ? parsed.techniqueCodexPartyIds.map(String) : [],
       techniqueCodexMoveIds: Array.isArray(parsed?.techniqueCodexMoveIds) ? parsed.techniqueCodexMoveIds.map(String) : [],
       techniqueCodexTacticIds: Array.isArray(parsed?.techniqueCodexTacticIds) ? parsed.techniqueCodexTacticIds.map(String) : [],
@@ -2279,6 +2323,27 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
       }
     }
     appendUniqueAlphaChat(state, patch.capture.message || `Spirit invitation recorded for ${patch.capture.spiritId}.`);
+  }
+
+  if (patch.starterVow) {
+    state.starterVowProof = patch.starterVow.proof || state.starterVowProof;
+    state.starterVowId = patch.starterVow.vowId || state.starterVowId;
+    state.starterVowName = patch.starterVow.vowName || state.starterVowName;
+    state.starterVowLabel = patch.starterVow.vowLabel || state.starterVowLabel;
+    state.starterVowScore = Math.max(state.starterVowScore, Number(patch.starterVow.score) || 0);
+    state.starterVowRequiredScore = Math.max(state.starterVowRequiredScore, Number(patch.starterVow.requiredScore) || 0);
+    state.starterVowItemIds = Array.isArray(patch.starterVow.itemIds) ? patch.starterVow.itemIds.map(String) : state.starterVowItemIds;
+    state.starterSpiritId = patch.starterVow.selectedSpiritId || state.starterSpiritId;
+    state.starterSpiritName = patch.starterVow.selectedSpiritName || state.starterSpiritName;
+    state.starterKnotClaimed = state.starterKnotClaimed || patch.starterVow.rewardItemId === 'jade-starter-knot';
+    if (state.starterSpiritId && !state.attunedSpiritIds.includes(state.starterSpiritId)) {
+      state.attunedSpiritIds.push(state.starterSpiritId);
+    }
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...(state.starterSpiritId ? [state.starterSpiritId] : [])]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.spiritId = state.starterSpiritId || state.spiritId;
+    state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.starterVow.localPresenceCount) || 1);
+    appendUniqueAlphaChat(state, patch.starterVow.message || `${state.starterVowName} recorded as no-real-value starter proof.`);
   }
 
   if (patch.journal) {
@@ -2733,6 +2798,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     return {
       spiritId,
       offeredItemId: spiritId === 'jintari' ? 'jade-thread-charm' : 'mochirii-guild-seal'
+    };
+  }
+
+  if (type === 'spirit.starter_vow') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const selectedSpiritId = state.starterSpiritId || state.spiritId || MOCHI_SPIRITS[0].id;
+    const selectedSpirit = MOCHI_SPIRITS.find((entry) => entry.id === selectedSpiritId) || MOCHI_SPIRITS[0];
+    return {
+      vowId: SPIRIT_STARTER_VOWS[0].id,
+      selectedSpiritId: selectedSpirit.id,
+      itemIds: ['mochirii-guild-seal'],
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
     };
   }
 
@@ -3453,6 +3534,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       journalDiscoveredCount: state.journalDiscoveredCount,
       completedQuestIds: state.completedQuestIds,
       localPresenceCount: presenceCount,
+      starterVowProof: state.starterVowProof,
       captureProof: state.captureProof,
       captureRiteProof: state.captureRiteProof,
       encounterAtlasProof: state.encounterAtlasProof,
@@ -3511,6 +3593,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       roster: state.attunedSpiritIds,
       partyIds: state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
       localPresenceCount: presenceCount,
+      starterVowProof: state.starterVowProof,
       wayfarerChronicleProof: state.wayfarerChronicleProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
@@ -4196,6 +4279,43 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       }
       state.bond = Math.max(state.bond, result.bond);
       state.growth = result.growth;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.starter_vow') {
+    const result = resolveSpiritStarterVow(
+      {
+        selectedSpiritId: String(payload.selectedSpiritId || state.starterSpiritId || state.spiritId || SPIRIT_STARTER_VOWS[0].requiredSpiritIds[0]),
+        itemIds: Array.isArray(payload.itemIds) ? payload.itemIds.map(String) : ['mochirii-guild-seal'],
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.vowId || SPIRIT_STARTER_VOWS[0].id)
+    );
+    if (result.vowed) {
+      state.starterVowProof = true;
+      state.starterVowId = result.vowId;
+      state.starterVowName = result.vowName;
+      state.starterVowLabel = result.vowLabel;
+      state.starterVowScore = result.score;
+      state.starterVowRequiredScore = result.requiredScore;
+      state.starterVowItemIds = result.itemIds;
+      state.starterSpiritId = result.selectedSpiritId;
+      state.starterSpiritName = result.selectedSpiritName;
+      state.starterKnotClaimed = result.rewardItemId === 'jade-starter-knot';
+      state.spiritId = result.selectedSpiritId;
+      if (!state.attunedSpiritIds.includes(result.selectedSpiritId)) {
+        state.attunedSpiritIds.push(result.selectedSpiritId);
+      }
+      state.partyIds = Array.from(new Set([...(state.partyIds || []), result.selectedSpiritId]));
+      state.supportSpiritIds = state.partyIds.slice(1);
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+      state.bond = Math.max(state.bond, 1);
+      state.growth = growthStageFromBond(state.bond);
     }
     state.chat.push(result.message);
   }
@@ -5270,6 +5390,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
         completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        starterVowProof: Boolean(payload.starterVowProof ?? state.starterVowProof),
         captureProof: Boolean(payload.captureProof ?? state.captureProof),
         captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
         encounterAtlasProof: Boolean(payload.encounterAtlasProof ?? state.encounterAtlasProof),
@@ -5343,6 +5464,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
         partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        starterVowProof: Boolean(payload.starterVowProof ?? state.starterVowProof),
         wayfarerChronicleProof: Boolean(payload.wayfarerChronicleProof ?? state.wayfarerChronicleProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),

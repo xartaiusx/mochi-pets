@@ -55,6 +55,7 @@ async function run() {
   assert(manifest.body.market?.fixedPrice === true, 'Manifest must keep fixed-price market enabled.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
   assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
+  assert(manifest.body.gameplay?.spiritStarterVows === true, 'Manifest must expose Mochi Spirit starter vows.');
   assert(manifest.body.gameplay?.spiritCaptureRites === true, 'Manifest must expose Mochi Spirit capture rites.');
   assert(manifest.body.gameplay?.spiritAttunement === true, 'Manifest must expose Mochi Spirit attunement.');
   assert(manifest.body.gameplay?.routeInvitations === true, 'Manifest must expose Mochi Spirit route invitations.');
@@ -118,6 +119,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
   assert(alphaStatus.body.gameplay?.spiritCaptureRites === true, 'Alpha status must expose Mochi Spirit capture rites.');
   assert(alphaStatus.body.gameplay?.spiritAttunement === true, 'Alpha status must expose Mochi Spirit attunement.');
+  assert(alphaStatus.body.gameplay?.spiritStarterVows === true, 'Alpha status must expose Mochi Spirit starter vows.');
   assert(alphaStatus.body.gameplay?.routeInvitations === true, 'Alpha status must expose Mochi Spirit route invitations.');
   assert(alphaStatus.body.gameplay?.routeMastery === true, 'Alpha status must expose Mochi Spirit route mastery.');
   assert(alphaStatus.body.gameplay?.routePatrols === true, 'Alpha status must expose Mochi Spirit route patrols.');
@@ -233,6 +235,22 @@ async function run() {
       requestId: `${runId}-emote`,
       type: 'emote.send',
       payload: { emote: 'wave' }
+    },
+    {
+      requestId: `${runId}-starter-vow`,
+      type: 'spirit.starter_vow',
+      payload: {
+        vowId: 'jade-starter-vow',
+        selectedSpiritId: 'lirabao',
+        itemIds: ['mochirii-guild-seal'],
+        localPresenceCount: 1,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-starter-knot',
+        chatLines: ['Local acceptance starter vow proof.'],
+        noRealValue: true
+      }
     },
     {
       requestId: `${runId}-capture`,
@@ -1515,6 +1533,7 @@ async function run() {
         journalDiscoveredCount: 3,
         completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
         localPresenceCount: 2,
+        starterVowProof: true,
         captureProof: true,
         captureRiteProof: true,
         encounterAtlasProof: true,
@@ -1576,6 +1595,7 @@ async function run() {
         roster: ['lirabao', 'jintari', 'aozhen'],
         partyIds: ['lirabao', 'jintari', 'aozhen'],
         localPresenceCount: 2,
+        starterVowProof: true,
         wayfarerChronicleProof: true,
         kinshipAlbumProof: true,
         nurseryGroveProof: true,
@@ -1895,6 +1915,13 @@ async function run() {
   assert(techniqueCodex?.payload?.battleRoundVictory === true, 'Technique codex ledger entry must preserve no-injury battle victory proof.');
   assert(techniqueCodex?.payload?.rewardItemId === 'jade-technique-codex-seal', 'Technique codex ledger entry must preserve the no-real-value codex seal proof.');
   assert(techniqueCodex?.payload?.noRealValue === true, 'Technique codex ledger entry must remain no-real-value.');
+  const starterVow = entriesById.get(`${runId}-starter-vow`);
+  assert(starterVow?.payload?.vowId === 'jade-starter-vow', 'Starter vow ledger entry must preserve the Jade Starter Vow id.');
+  assert(starterVow?.payload?.selectedSpiritId === 'lirabao', 'Starter vow ledger entry must preserve the selected first companion.');
+  assert(Array.isArray(starterVow?.payload?.itemIds) && starterVow.payload.itemIds.includes('mochirii-guild-seal'), 'Starter vow ledger entry must preserve the Mochirii Guild Seal proof.');
+  assert(starterVow?.payload?.localPresenceCount === 1, 'Starter vow ledger entry must preserve local social presence proof.');
+  assert(starterVow?.payload?.rewardItemId === 'jade-starter-knot', 'Starter vow ledger entry must preserve the no-real-value Jade Starter Knot proof.');
+  assert(starterVow?.payload?.noRealValue === true, 'Starter vow ledger entry must remain no-real-value.');
   const captureRite = entriesById.get(`${runId}-capture-rite`);
   assert(captureRite?.payload?.riteId === 'jade-court-capture-rite', 'Capture rite ledger entry must preserve the Jade Capture Rite id.');
   assert(Array.isArray(captureRite?.payload?.roster) && captureRite.payload.roster.length === 3, 'Capture rite ledger entry must preserve full roster proof.');
@@ -2069,6 +2096,7 @@ async function run() {
   const chronicle = entriesById.get(`${runId}-wayfarer-chronicle`);
   assert(chronicle?.payload?.chronicleId === 'jade-wayfarer-chronicle', 'Wayfarer chronicle ledger entry must preserve the Jade Wayfarer Chronicle id.');
   assert(chronicle?.payload?.localPresenceCount === 2, 'Wayfarer chronicle ledger entry must preserve two-tester presence proof.');
+  assert(chronicle?.payload?.starterVowProof === true, 'Wayfarer chronicle ledger entry must preserve starter vow proof.');
   assert(chronicle?.payload?.captureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve capture rite proof.');
   assert(chronicle?.payload?.encounterAtlasProof === true, 'Wayfarer chronicle ledger entry must preserve encounter atlas proof.');
   assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
@@ -2098,6 +2126,7 @@ async function run() {
   const ascension = entriesById.get(`${runId}-ascension-trial`);
   assert(ascension?.payload?.trialId === 'jade-court-ascension-trial', 'Ascension trial ledger entry must preserve the Jade Court Ascension Trial id.');
   assert(ascension?.payload?.localPresenceCount === 2, 'Ascension trial ledger entry must preserve two-tester presence proof.');
+  assert(ascension?.payload?.starterVowProof === true, 'Ascension trial ledger entry must preserve starter vow proof.');
   assert(ascension?.payload?.wayfarerChronicleProof === true, 'Ascension trial ledger entry must preserve wayfarer chronicle proof.');
   assert(ascension?.payload?.kinshipAlbumProof === true, 'Ascension trial ledger entry must preserve kinship album proof.');
   assert(ascension?.payload?.nurseryGroveProof === true, 'Ascension trial ledger entry must preserve nursery grove proof.');

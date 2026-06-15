@@ -44,6 +44,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_SIFU_COUNCILS,
+  SPIRIT_STARTER_VOWS,
   SPIRIT_SUMMIT_CIRCUITS,
   SPIRIT_TEAM_SPAR_MATCHES,
   SPIRIT_TEMPERAMENT_CONCORDS,
@@ -104,6 +105,7 @@ import {
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritSifuCouncil,
+  resolveSpiritStarterVow,
   resolveSpiritSummitCircuit,
   resolveSpiritTeamSparMatch,
   resolveSpiritTemperamentConcord,
@@ -133,6 +135,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.techniqueCodexes).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritTraits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRelicAttunements).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritStarterVows).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
@@ -213,6 +216,7 @@ describe('alpha contract', () => {
 
   it('validates alpha action envelopes', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.starter_vow');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture_rite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
@@ -295,6 +299,26 @@ describe('alpha contract', () => {
     expect(capture.message).toContain('Lantern Harmony Invitation');
     expect(resolveSpiritCapture('aozhen', 'lantern-harmony-tea', 1, []).ok).toBe(false);
     expect(resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, ['lirabao']).alreadyRostered).toBe(true);
+    expect(SPIRIT_STARTER_VOWS[0].id).toBe('jade-starter-vow');
+    const starterVow = resolveSpiritStarterVow({
+      selectedSpiritId: 'lirabao',
+      itemIds: ['mochirii-guild-seal'],
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Contract starter vow proof.']
+    });
+    expect(starterVow).toMatchObject({
+      vowed: true,
+      vowId: 'jade-starter-vow',
+      selectedSpiritId: 'lirabao',
+      vowLabel: 'Lanternheart First Vow',
+      score: 20,
+      requiredScore: 18,
+      rewardItemId: 'jade-starter-knot',
+      source: 'spirit-starter-vow'
+    });
     expect(SPIRIT_CAPTURE_RITES[0].id).toBe('jade-court-capture-rite');
     const captureRite = resolveSpiritCaptureRite({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -1871,6 +1895,7 @@ describe('alpha contract', () => {
       journalDiscoveredCount: 3,
       completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
       localPresenceCount: 2,
+      starterVowProof: true,
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
@@ -1930,8 +1955,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 139,
-      requiredScore: 73,
+      score: 141,
+      requiredScore: 75,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -1942,6 +1967,7 @@ describe('alpha contract', () => {
       journalDiscoveredCount: 3,
       completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
       localPresenceCount: 2,
+      starterVowProof: true,
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
@@ -1999,6 +2025,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
+      starterVowProof: true,
       wayfarerChronicleProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -2046,8 +2073,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 104,
-      requiredScore: 62,
+      score: 106,
+      requiredScore: 64,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -2056,6 +2083,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
+      starterVowProof: true,
       wayfarerChronicleProof: false,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,

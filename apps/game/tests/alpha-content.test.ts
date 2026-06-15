@@ -34,6 +34,7 @@ import {
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_SIFU_COUNCILS,
+  SPIRIT_STARTER_VOWS,
   SPIRIT_SUMMIT_CIRCUITS,
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_CODEXES,
@@ -88,6 +89,7 @@ import {
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritSifuCouncil,
+  resolveSpiritStarterVow,
   resolveSpiritSummitCircuit,
   resolveSpiritSparLadder,
   resolveSpiritTeamSparMatch,
@@ -196,6 +198,54 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'spirit-capture'
     });
     expect(captured.message).toContain('Skybell Vow Invitation');
+
+    expect(SPIRIT_STARTER_VOWS[0]).toMatchObject({
+      id: 'jade-starter-vow',
+      name: 'Jade Starter Vow',
+      rewardItemId: ALPHA_ITEMS.starterKnot.id,
+      requiredScore: 18
+    });
+    const starterVow = resolveSpiritStarterVow({
+      selectedSpiritId: 'aozhen',
+      itemIds: [ALPHA_ITEMS.guildSeal.id],
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Starter vow test proof.']
+    });
+    expect(starterVow).toMatchObject({
+      vowed: true,
+      vowId: 'jade-starter-vow',
+      vowName: 'Jade Starter Vow',
+      selectedSpiritId: 'aozhen',
+      selectedSpiritName: 'Aozhen',
+      vowLabel: 'Skybell Trail Vow',
+      score: 20,
+      requiredScore: 18,
+      rewardItemId: ALPHA_ITEMS.starterKnot.id,
+      source: 'spirit-starter-vow'
+    });
+    expect(starterVow.message).toContain('No real value');
+
+    const blockedStarterVow = resolveSpiritStarterVow({
+      selectedSpiritId: 'aozhen',
+      itemIds: [],
+      localPresenceCount: 0,
+      profileViewed: false,
+      guildBuddyProof: false,
+      statusMood: 'exploring',
+      chatLines: []
+    });
+    expect(blockedStarterVow.vowed).toBe(false);
+    expect(blockedStarterVow.missing).toEqual(expect.arrayContaining([
+      `item:${ALPHA_ITEMS.guildSeal.id}`,
+      'presence:0/1',
+      'profile',
+      'guild-buddy',
+      'status',
+      'chat'
+    ]));
 
     expect(SPIRIT_CAPTURE_RITES[0]).toMatchObject({
       id: 'jade-court-capture-rite',
@@ -1649,6 +1699,7 @@ describe('Mochi Spirits alpha content contract', () => {
       journalDiscoveredCount: 3,
       completedQuestIds,
       localPresenceCount: 1,
+      starterVowProof: true,
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
@@ -1710,6 +1761,7 @@ describe('Mochi Spirits alpha content contract', () => {
       journalDiscoveredCount: 3,
       completedQuestIds,
       localPresenceCount: 2,
+      starterVowProof: true,
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
@@ -1763,8 +1815,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 139,
-      requiredScore: 73,
+      score: 141,
+      requiredScore: 75,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1775,6 +1827,7 @@ describe('Mochi Spirits alpha content contract', () => {
       roster: fullRoster,
       partyIds: fullRoster,
       localPresenceCount: 2,
+      starterVowProof: true,
       wayfarerChronicleProof: false,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -1822,6 +1875,7 @@ describe('Mochi Spirits alpha content contract', () => {
       roster: fullRoster,
       partyIds: fullRoster,
       localPresenceCount: 2,
+      starterVowProof: true,
       wayfarerChronicleProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -1863,8 +1917,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 104,
-      requiredScore: 62,
+      score: 106,
+      requiredScore: 64,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });
