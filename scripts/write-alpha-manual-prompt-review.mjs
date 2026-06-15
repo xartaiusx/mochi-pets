@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -135,6 +136,8 @@ if (reviewUrl && isHostedUrl(reviewUrl) && !hostedAllowed) {
 
 const completedChecks = checks.filter((check) => check.ok);
 const pendingChecks = checks.filter((check) => !check.ok);
+const sourceEvidence = buildSourceEvidence();
+const reviewRoute = buildReviewRoute();
 if (pendingChecks.length === 0) {
   if (!reviewer) failures.push('Completed manual prompt review requires MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER.');
   if (!browser) failures.push('Completed manual prompt review requires MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER.');
@@ -170,13 +173,15 @@ const report = {
       },
   checks,
   instructions: {
-    localUrl: '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
+    localUrl: reviewUrl ? reviewPlayUrl(reviewUrl) : '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
     actionInput: 'Focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.',
     requiredEnv: checks.map((check) => `${check.env}=true`),
     completionCommand: 'Set the required env vars plus MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER and MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER, then run npm run alpha:manual-prompt-review.'
   },
   interactionContract,
   reviewTargets,
+  reviewRoute,
+  sourceEvidence,
   completedChecks: completedChecks.map((check) => check.id),
   pendingChecks: pendingChecks.map((check) => check.id),
   failures
@@ -224,6 +229,98 @@ function eventPlacement(source, id) {
     x: Number(match[1]),
     y: Number(match[2])
   };
+}
+
+function reviewPlayUrl(value) {
+  try {
+    const parsed = new URL(value);
+    if (!/\/(?:play|embed)$/.test(parsed.pathname)) {
+      parsed.pathname = `${parsed.pathname.replace(/\/+$/, '')}/play`;
+    }
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    return `${String(value || '').replace(/\/+$/, '')}/play`;
+  }
+}
+
+function buildReviewRoute() {
+  return reviewTargets.map((target, index) => {
+    const position = target.position;
+    const setupPosition = target.setupTarget?.position || null;
+    return {
+      step: index + 1,
+      id: target.id,
+      label: target.label,
+      position,
+      approach: position
+        ? {
+            adjacentTiles: [
+              { x: position.x, y: Math.max(0, position.y - 1), face: 'down' },
+              { x: Math.max(0, position.x - 1), y: position.y, face: 'right' },
+              { x: position.x + 1, y: position.y, face: 'left' },
+              { x: position.x, y: position.y + 1, face: 'up' }
+            ],
+            actionInput: interactionContract.actionInput
+          }
+        : null,
+      setupTarget: target.setupTarget
+        ? {
+            id: target.setupTarget.id,
+            position: setupPosition,
+            expectedRenderedPhrases: target.setupTarget.expectedRenderedPhrases
+          }
+        : null,
+      expectedRenderedPhrases: target.expectedRenderedPhrases,
+      expectedNotification: target.expectedNotification,
+      saveSource: target.saveSource
+    };
+  });
+}
+
+function buildSourceEvidence() {
+  return {
+    eventSource: {
+      path: pathForReport(mapEventSourcePath),
+      sha256: sha256Text(mapEventSource),
+      targets: Object.fromEntries(reviewTargets.map((target) => [target.id, sourceTargetEvidence(target, mapEventSource, mapServerSource)]))
+    },
+    mapServerSource: {
+      path: pathForReport(mapServerSourcePath),
+      sha256: sha256Text(mapServerSource)
+    }
+  };
+}
+
+function sourceTargetEvidence(target, eventSource, serverSource) {
+  const sourcePhrases = Object.fromEntries(
+    target.expectedRenderedPhrases.map((phrase) => [phrase, sourceLineNumber(eventSource, phrase)])
+  );
+  const setupPhrases = target.setupTarget
+    ? Object.fromEntries(target.setupTarget.expectedRenderedPhrases.map((phrase) => [phrase, sourceLineNumber(eventSource, phrase)]))
+    : {};
+  return {
+    placementLine: sourceLineNumber(serverSource, `id: '${target.id}'`),
+    expectedPhraseLines: sourcePhrases,
+    expectedNotificationLine: target.expectedNotification ? sourceLineNumber(eventSource, target.expectedNotification) : null,
+    saveSourceLine: target.saveSource ? sourceLineNumber(eventSource, `source: '${target.saveSource}'`) : null,
+    setupTarget: target.setupTarget
+      ? {
+          id: target.setupTarget.id,
+          placementLine: sourceLineNumber(serverSource, `id: '${target.setupTarget.id}'`),
+          expectedPhraseLines: setupPhrases
+        }
+      : null
+  };
+}
+
+function sourceLineNumber(source, snippet) {
+  const index = source.indexOf(snippet);
+  if (index < 0) return null;
+  return source.slice(0, index).split(/\r?\n/).length;
+}
+
+function sha256Text(value) {
+  return createHash('sha256').update(String(value || '')).digest('hex');
 }
 
 function escapeRegExp(value) {
@@ -323,6 +420,23 @@ function renderMarkdown(summary) {
       return `| ${target.id} | ${position} | ${target.graphic} | ${target.expectedRenderedPhrases.join('; ')} | ${target.setup}${setupPosition} |`;
     })
     .join('\n');
+  const routeRows = summary.reviewRoute
+    .map((target) => {
+      const position = target.position ? `${target.position.x},${target.position.y}` : 'missing';
+      const approach = target.approach?.adjacentTiles?.map((tile) => `${tile.x},${tile.y} face ${tile.face}`).join('; ') || 'missing';
+      const setup = target.setupTarget?.position ? `${target.setupTarget.id} at ${target.setupTarget.position.x},${target.setupTarget.position.y}` : 'none';
+      return `| ${target.step} | ${target.id} | ${position} | ${approach} | ${setup} |`;
+    })
+    .join('\n');
+  const sourceRows = summary.reviewTargets
+    .map((target) => {
+      const evidence = summary.sourceEvidence.eventSource.targets[target.id] || {};
+      const phraseLines = Object.entries(evidence.expectedPhraseLines || {})
+        .map(([phrase, line]) => `${phrase}: ${line || 'missing'}`)
+        .join('; ');
+      return `| ${target.id} | ${evidence.placementLine || 'missing'} | ${phraseLines || 'missing'} | ${evidence.expectedNotificationLine || 'n/a'} | ${evidence.saveSourceLine || 'n/a'} |`;
+    })
+    .join('\n');
   const failuresText = summary.failures.length ? summary.failures.map((failure) => `- ${failure}`).join('\n') : '- None';
   const pendingText = summary.pendingChecks.length ? summary.pendingChecks.map((id) => `- ${id}`).join('\n') : '- None';
 
@@ -358,6 +472,23 @@ ${checkRows}
 | Target | Position | Graphic | Confirm Rendered Phrases | Setup |
 | --- | --- | --- | --- | --- |
 ${targetRows}
+
+## Review Route
+
+| Step | Target | Tile | Adjacent Action Tiles | Setup Target |
+| --- | --- | --- | --- | --- |
+${routeRows}
+
+## Source Evidence
+
+- Event source: ${summary.sourceEvidence.eventSource.path}
+- Event source SHA-256: ${summary.sourceEvidence.eventSource.sha256}
+- Map server source: ${summary.sourceEvidence.mapServerSource.path}
+- Map server source SHA-256: ${summary.sourceEvidence.mapServerSource.sha256}
+
+| Target | Placement Line | Expected Phrase Lines | Notification Line | Save Source Line |
+| --- | --- | --- | --- | --- |
+${sourceRows}
 
 ## Pending Checks
 

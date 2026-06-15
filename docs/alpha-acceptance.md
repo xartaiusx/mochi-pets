@@ -104,7 +104,7 @@ Run `npm run alpha:local-evidence` after the local suite to validate the ignored
 
 `npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, focuses the game canvas, stands within one 64px logical tile of the map object, faces that object, presses Space/Action for about 200ms, confirms the rendered welcome NPC dialog, guild seal chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars. The prompt-critical town entities use 64px action hitboxes so the review can be done from normal tile-adjacent RPG positioning.
 
-The pending report includes a source-tied target checklist with current map coordinates, setup prerequisites, expected rendered phrases, graphics, and save sources for the welcome NPC, guild seal chest, Lirabao setup interaction, and care shrine.
+The pending report includes a source-tied target checklist with current map coordinates, setup prerequisites, expected rendered phrases, graphics, and save sources for the welcome NPC, guild seal chest, Lirabao setup interaction, and care shrine. It also records a step-by-step review route, adjacent action tiles, source SHA-256 hashes, and line anchors for placements, rendered phrases, notifications, and save-source calls so the final human review can be tied to the exact current runtime sources.
 
 Local completion example:
 
