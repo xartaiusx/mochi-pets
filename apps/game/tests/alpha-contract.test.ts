@@ -11,6 +11,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_MATRICES,
+  SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_BATTLE_TACTICS,
@@ -87,6 +88,7 @@ import {
   resolveSpiritNurseryGrove,
   resolveSpiritParty,
   resolveSpiritRaisingAction,
+  resolveSpiritBattleKit,
   resolveSpiritBattleRound,
   resolveSpiritBloomAscendance,
   resolveSpiritBondMilestone,
@@ -174,6 +176,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritLineageRegisters).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
@@ -261,6 +264,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.lineage_register');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
+    expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
@@ -885,6 +889,79 @@ describe('alpha contract', () => {
       source: 'item-provision-catalog'
     });
     expect(catalog.message).toContain('No real value');
+    expect(SPIRIT_BATTLE_KITS.map((kit) => kit.id)).toEqual(['jade-battle-kit']);
+    const battleKit = resolveSpiritBattleKit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      provisionCatalogProof: true,
+      provisionCatalogId: 'jade-provision-catalog',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 41,
+      battleRoundOpponentScore: 19,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle kit ready.']
+    });
+    expect(battleKit).toMatchObject({
+      ok: true,
+      prepared: true,
+      kitId: 'jade-battle-kit',
+      kitName: 'Jade Battle Kit',
+      title: 'First-Court Safe Battle Item Kit',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      localPresenceCount: 2,
+      score: 55,
+      requiredScore: 48,
+      rewardItemId: 'jade-battle-kit-tag',
+      source: 'item-battle-kit'
+    });
+    expect(battleKit.message).toContain('No real value');
+    expect(resolveSpiritBattleKit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      provisionCatalogProof: false,
+      provisionCatalogId: 'jade-provision-catalog',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 41,
+      battleRoundOpponentScore: 19,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle kit ready.']
+    })).toMatchObject({
+      prepared: false,
+      missing: ['provision-catalog:jade-provision-catalog']
+    });
     expect(resolveSpiritProvisionCatalog({
       roster: ['lirabao'],
       stockItemIds: ['jade-thread-charm'],
@@ -2193,6 +2270,7 @@ describe('alpha contract', () => {
       compendiumProof: true,
       provisionProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2243,7 +2321,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 149,
+      score: 152,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2268,6 +2346,7 @@ describe('alpha contract', () => {
       compendiumProof: true,
       provisionProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2324,6 +2403,7 @@ describe('alpha contract', () => {
       lineageRegisterProof: true,
       exchangeAccordProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
@@ -2366,7 +2446,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 111,
+      score: 114,
       requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2384,6 +2464,7 @@ describe('alpha contract', () => {
       lineageRegisterProof: true,
       exchangeAccordProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,

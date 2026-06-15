@@ -13,6 +13,7 @@ import {
   SPIRIT_CARE_CYCLES,
   SPIRIT_CAPTURE_RITES,
   SPIRIT_AFFINITY_MATRICES,
+  SPIRIT_BATTLE_KITS,
   SPIRIT_CRAFT_WRITS,
   SPIRIT_DOJO_LADDERS,
   SPIRIT_ENCOUNTER_ATLASES,
@@ -57,6 +58,7 @@ import {
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleKit,
   resolveSpiritBattleRound,
   resolveSpiritBloomAscendance,
   resolveSpiritBondMilestone,
@@ -785,6 +787,74 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'item-provision-catalog'
     });
     expect(provisionCatalog.message).toContain('No real value');
+
+    expect(SPIRIT_BATTLE_KITS.map((kit) => kit.id)).toEqual(['jade-battle-kit']);
+    const battleKit = resolveSpiritBattleKit({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      activeSpiritId: 'aozhen',
+      itemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id, ALPHA_ITEMS.mooncakeBox.id],
+      provisionCatalogProof: true,
+      provisionCatalogId: 'jade-provision-catalog',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 41,
+      battleRoundOpponentScore: 19,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle kit packed.']
+    });
+    expect(battleKit).toMatchObject({
+      prepared: true,
+      kitId: 'jade-battle-kit',
+      kitName: 'Jade Battle Kit',
+      activeSpiritId: 'aozhen',
+      itemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id, ALPHA_ITEMS.mooncakeBox.id],
+      score: 55,
+      requiredScore: 48,
+      rewardItemId: ALPHA_ITEMS.battleKitTag.id,
+      source: 'item-battle-kit'
+    });
+    expect(battleKit.message).toContain('No real value');
+
+    expect(resolveSpiritBattleKit({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      activeSpiritId: 'aozhen',
+      itemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id, ALPHA_ITEMS.mooncakeBox.id],
+      provisionCatalogProof: false,
+      provisionCatalogId: 'jade-provision-catalog',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 41,
+      battleRoundOpponentScore: 19,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle kit packed.']
+    })).toMatchObject({
+      prepared: false,
+      missing: ['provision-catalog:jade-provision-catalog']
+    });
 
     expect(SPIRIT_CARE_CYCLES.map((cycle) => cycle.id)).toEqual(['jade-court-care-cycle']);
     const blockedCareCycle = resolveSpiritCareCycle({
@@ -2015,6 +2085,7 @@ describe('Mochi Spirits alpha content contract', () => {
       compendiumProof: true,
       provisionProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2080,6 +2151,7 @@ describe('Mochi Spirits alpha content contract', () => {
       compendiumProof: true,
       provisionProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2124,7 +2196,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 149,
+      score: 152,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2144,6 +2216,7 @@ describe('Mochi Spirits alpha content contract', () => {
       lineageRegisterProof: true,
       exchangeAccordProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2194,6 +2267,7 @@ describe('Mochi Spirits alpha content contract', () => {
       lineageRegisterProof: true,
       exchangeAccordProof: true,
       provisionCatalogProof: true,
+      battleKitProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2230,7 +2304,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 111,
+      score: 114,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'

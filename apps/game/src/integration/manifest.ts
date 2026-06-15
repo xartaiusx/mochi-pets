@@ -14,6 +14,7 @@ import {
   RUNTIME_ASSET_MANIFEST,
   SPIRIT_AFFINITY_MATRICES,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_BATTLE_KITS,
   SPIRIT_BATTLE_CONDITIONS,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_BLOOM_ASCENDANCES,
@@ -152,6 +153,7 @@ export const PLAYABLE_CONTENT_CATALOG = {
   economyAndCanary: {
     provisionSatchelIds: idsFrom(SPIRIT_PROVISION_SATCHELS),
     provisionCatalogIds: idsFrom(SPIRIT_PROVISION_CATALOGS),
+    battleKitIds: idsFrom(SPIRIT_BATTLE_KITS),
     craftWritIds: idsFrom(SPIRIT_CRAFT_WRITS),
     marketReceiptIds: idsFrom(MARKET_GUILD_RECEIPTS),
     tradeExchangeAccordIds: idsFrom(TRADE_EXCHANGE_ACCORDS),

@@ -85,6 +85,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritLineageRegisters === true, 'Manifest must expose Mochi Spirit lineage register proofs.');
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.itemProvisionCatalogs === true, 'Manifest must expose Mochirii item provision catalogs.');
+  assert(manifest.body.gameplay?.battleItemKits === true, 'Manifest must expose Mochirii no-real-value battle item kits.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
   assert(manifest.body.gameplay?.spiritStoryChapters === true, 'Manifest must expose Mochi Spirit story chapters.');
@@ -158,6 +159,7 @@ async function run() {
   assert(manifest.body.playableContent?.roleplay?.guildAscensionTrialIds?.includes('jade-court-ascension-trial'), 'Manifest must catalog the guild ascension capstone.');
   assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
   assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must catalog the no-real-value provision catalog.');
+  assert(manifest.body.playableContent?.economyAndCanary?.battleKitIds?.includes('jade-battle-kit'), 'Manifest must catalog the no-real-value battle item kit.');
   assert(manifest.body.playableContent?.economyAndCanary?.tradeExchangeAccordIds?.includes('jade-exchange-accord'), 'Manifest must catalog the no-real-value exchange accord.');
   assert(manifest.body.playableContent?.economyAndCanary?.canaryCertificateItemIds?.join(',') === 'lirabao-canary-certificate', 'Manifest must catalog only the Lirabao Canary certificate preview item.');
   assert(manifest.body.playableContent?.runtimeAssets?.spritesheets?.length === 21, 'Manifest must catalog all runtime spritesheets.');
@@ -199,6 +201,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritLineageRegisters === true, 'Alpha status must expose Mochi Spirit lineage register proofs.');
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.itemProvisionCatalogs === true, 'Alpha status must expose Mochirii item provision catalogs.');
+  assert(alphaStatus.body.gameplay?.battleItemKits === true, 'Alpha status must expose Mochirii no-real-value battle item kits.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
   assert(alphaStatus.body.gameplay?.spiritStoryChapters === true, 'Alpha status must expose Mochi Spirit story chapters.');
@@ -1249,6 +1252,38 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-battle-kit`,
+      type: 'item.battle_kit',
+      payload: {
+        kitId: 'jade-battle-kit',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+        provisionCatalogProof: true,
+        provisionCatalogId: 'jade-provision-catalog',
+        techniqueCodexProof: true,
+        techniqueCodexId: 'jade-technique-codex',
+        conditionWeaveProof: true,
+        conditionWeaveId: 'jade-mirror-condition-weave',
+        affinityMatrixProof: true,
+        affinityMatrixId: 'jade-affinity-matrix',
+        recoveryTeaProof: true,
+        recoveryTeaId: 'jade-teahouse-recovery',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        battleRoundFocusScore: 41,
+        battleRoundOpponentScore: 19,
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-battle-kit-tag',
+        chatLines: ['Local acceptance battle kit proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-kinship-album`,
       type: 'spirit.kinship_album',
       payload: {
@@ -1724,6 +1759,7 @@ async function run() {
         compendiumProof: true,
         provisionProof: true,
         provisionCatalogProof: true,
+        battleKitProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
         nurtureRiteProof: true,
@@ -1785,6 +1821,7 @@ async function run() {
         exchangeAccordProof: true,
         exchangeAccordId: 'jade-exchange-accord',
         provisionCatalogProof: true,
+        battleKitProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -2091,6 +2128,28 @@ async function run() {
   assert(provisionCatalog?.payload?.localPresenceCount === 2, 'Provision catalog ledger entry must preserve two-tester presence proof.');
   assert(provisionCatalog?.payload?.rewardItemId === 'jade-provision-catalog-seal', 'Provision catalog ledger entry must preserve the no-real-value catalog seal proof.');
   assert(provisionCatalog?.payload?.noRealValue === true, 'Provision catalog ledger entry must remain no-real-value.');
+  const battleKit = entriesById.get(`${runId}-battle-kit`);
+  assert(battleKit?.payload?.kitId === 'jade-battle-kit', 'Battle kit ledger entry must preserve the Jade Battle Kit id.');
+  assert(Array.isArray(battleKit?.payload?.roster) && battleKit.payload.roster.length === 3, 'Battle kit ledger entry must preserve full roster proof.');
+  assert(Array.isArray(battleKit?.payload?.partyIds) && battleKit.payload.partyIds.length === 3, 'Battle kit ledger entry must preserve full-party proof.');
+  assert(Array.isArray(battleKit?.payload?.itemIds) && battleKit.payload.itemIds.includes('lantern-harmony-tea') && battleKit.payload.itemIds.includes('jade-thread-charm') && battleKit.payload.itemIds.includes('jade-mooncake-box'), 'Battle kit ledger entry must preserve all kit item ids.');
+  assert(battleKit?.payload?.provisionCatalogProof === true, 'Battle kit ledger entry must preserve provision catalog proof.');
+  assert(battleKit?.payload?.provisionCatalogId === 'jade-provision-catalog', 'Battle kit ledger entry must preserve provision catalog id.');
+  assert(battleKit?.payload?.techniqueCodexProof === true, 'Battle kit ledger entry must preserve technique codex proof.');
+  assert(battleKit?.payload?.techniqueCodexId === 'jade-technique-codex', 'Battle kit ledger entry must preserve technique codex id.');
+  assert(battleKit?.payload?.conditionWeaveProof === true, 'Battle kit ledger entry must preserve condition weave proof.');
+  assert(battleKit?.payload?.conditionWeaveId === 'jade-mirror-condition-weave', 'Battle kit ledger entry must preserve condition weave id.');
+  assert(battleKit?.payload?.affinityMatrixProof === true, 'Battle kit ledger entry must preserve affinity matrix proof.');
+  assert(battleKit?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Battle kit ledger entry must preserve affinity matrix id.');
+  assert(battleKit?.payload?.recoveryTeaProof === true, 'Battle kit ledger entry must preserve recovery tea proof.');
+  assert(battleKit?.payload?.recoveryTeaId === 'jade-teahouse-recovery', 'Battle kit ledger entry must preserve recovery tea id.');
+  assert(battleKit?.payload?.battleRoundProof === true, 'Battle kit ledger entry must preserve battle round proof.');
+  assert(battleKit?.payload?.battleRoundVictory === true, 'Battle kit ledger entry must preserve no-injury battle victory proof.');
+  assert(battleKit?.payload?.battleRoundFocusScore === 41, 'Battle kit ledger entry must preserve focus score proof.');
+  assert(battleKit?.payload?.battleRoundOpponentScore === 19, 'Battle kit ledger entry must preserve opponent score proof.');
+  assert(battleKit?.payload?.localPresenceCount === 2, 'Battle kit ledger entry must preserve two-tester presence proof.');
+  assert(battleKit?.payload?.rewardItemId === 'jade-battle-kit-tag', 'Battle kit ledger entry must preserve the no-real-value kit tag proof.');
+  assert(battleKit?.payload?.noRealValue === true, 'Battle kit ledger entry must remain no-real-value.');
   const kinshipAlbum = entriesById.get(`${runId}-kinship-album`);
   assert(kinshipAlbum?.payload?.albumId === 'jade-kinship-album', 'Kinship album ledger entry must preserve the Jade Kinship Album id.');
   assert(Array.isArray(kinshipAlbum?.payload?.roster) && kinshipAlbum.payload.roster.length === 3, 'Kinship album ledger entry must preserve full roster proof.');
@@ -2381,6 +2440,7 @@ async function run() {
   assert(chronicle?.payload?.exchangeAccordProof === true, 'Wayfarer chronicle ledger entry must preserve exchange accord proof.');
   assert(chronicle?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Wayfarer chronicle ledger entry must preserve the exchange accord id.');
   assert(chronicle?.payload?.provisionCatalogProof === true, 'Wayfarer chronicle ledger entry must preserve provision catalog proof.');
+  assert(chronicle?.payload?.battleKitProof === true, 'Wayfarer chronicle ledger entry must preserve battle kit proof.');
   assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.sifuCouncilProof === true, 'Wayfarer chronicle ledger entry must preserve sifu council proof.');
@@ -2407,6 +2467,7 @@ async function run() {
   assert(ascension?.payload?.exchangeAccordProof === true, 'Ascension trial ledger entry must preserve exchange accord proof.');
   assert(ascension?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Ascension trial ledger entry must preserve the exchange accord id.');
   assert(ascension?.payload?.provisionCatalogProof === true, 'Ascension trial ledger entry must preserve provision catalog proof.');
+  assert(ascension?.payload?.battleKitProof === true, 'Ascension trial ledger entry must preserve battle kit proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

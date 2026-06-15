@@ -12,6 +12,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_MATRICES,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_CARE_CYCLES,
@@ -68,6 +69,7 @@ import {
   resolveSpiritAttunement,
   resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleKit,
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
   resolveSpiritBloomAscendance,
@@ -268,6 +270,15 @@ interface AlphaHudState {
   provisionCatalogRouteItemIds: string[];
   provisionCatalogPresenceCount: number;
   provisionCatalogSealClaimed: boolean;
+  battleKitProof: boolean;
+  battleKitId?: string;
+  battleKitName: string;
+  battleKitScore: number;
+  battleKitRequiredScore: number;
+  battleKitItemIds: string[];
+  battleKitPartyIds: string[];
+  battleKitPresenceCount: number;
+  battleKitTagClaimed: boolean;
   careCycleProof: boolean;
   careCycleId?: string;
   careCycleName: string;
@@ -799,6 +810,21 @@ export interface AlphaWorldStatePatch {
     requiredScore: number;
     title: string;
   };
+  battleKit?: {
+    activeSpiritId?: string;
+    itemIds: string[];
+    kitId: string;
+    kitName: string;
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    requiredScore: number;
+    title: string;
+  };
   guildCommission?: {
     activeSpiritId?: string;
     commissionId: string;
@@ -1205,6 +1231,14 @@ function defaultAlphaState(): AlphaHudState {
     provisionCatalogRouteItemIds: [],
     provisionCatalogPresenceCount: 0,
     provisionCatalogSealClaimed: false,
+    battleKitProof: false,
+    battleKitName: 'Unpacked',
+    battleKitScore: 0,
+    battleKitRequiredScore: 0,
+    battleKitItemIds: [],
+    battleKitPartyIds: [],
+    battleKitPresenceCount: 0,
+    battleKitTagClaimed: false,
     careCycleProof: false,
     careCycleName: 'Uncycled',
     careCycleScore: 0,
@@ -1713,6 +1747,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-provision-catalog-label>Catalog: pending</span>
+      <span class="mochi-hud__hint" data-battle-kit-label>Kit: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
@@ -1799,6 +1834,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
       <button type="button" data-alpha-action="spirit.recovery_tea" aria-label="Record the no-real-value Jade Teahouse Recovery">Recover</button>
       <button type="button" data-alpha-action="item.provision_catalog" aria-label="Seal the no-real-value Jade Provision Catalog">Catalog</button>
+      <button type="button" data-alpha-action="item.battle_kit" aria-label="Pack the no-real-value Jade Battle Kit">Kit</button>
       <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
       <button type="button" data-alpha-action="spirit.nursery_grove" aria-label="Record the no-real-value Jade Nursery Grove">Nursery</button>
       <button type="button" data-alpha-action="spirit.bloom_ascendance" aria-label="Record the no-real-value Jade Bloom Ascendance">Ascend+</button>
@@ -1874,6 +1910,7 @@ function createHud() {
   const archiveLabel = hud.querySelector('[data-archive-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const provisionCatalogLabel = hud.querySelector('[data-provision-catalog-label]');
+  const battleKitLabel = hud.querySelector('[data-battle-kit-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
@@ -2040,6 +2077,11 @@ function createHud() {
       provisionCatalogLabel.textContent = state.provisionCatalogProof
         ? `Catalog: ${state.provisionCatalogName}, ${state.provisionCatalogItemIds.length} items, score ${state.provisionCatalogScore}/${state.provisionCatalogRequiredScore}`
         : 'Catalog: pending';
+    }
+    if (battleKitLabel) {
+      battleKitLabel.textContent = state.battleKitProof
+        ? `Kit: ${state.battleKitName}, ${state.battleKitItemIds.length} items, score ${state.battleKitScore}/${state.battleKitRequiredScore}`
+        : 'Kit: pending';
     }
     if (careCycleLabel) {
       careCycleLabel.textContent = state.careCycleProof
@@ -2518,6 +2560,8 @@ function readAlphaState(): AlphaHudState {
       provisionCatalogItemIds: Array.isArray(parsed?.provisionCatalogItemIds) ? parsed.provisionCatalogItemIds.map(String) : [],
       provisionCatalogCareItemIds: Array.isArray(parsed?.provisionCatalogCareItemIds) ? parsed.provisionCatalogCareItemIds.map(String) : [],
       provisionCatalogRouteItemIds: Array.isArray(parsed?.provisionCatalogRouteItemIds) ? parsed.provisionCatalogRouteItemIds.map(String) : [],
+      battleKitItemIds: Array.isArray(parsed?.battleKitItemIds) ? parsed.battleKitItemIds.map(String) : [],
+      battleKitPartyIds: Array.isArray(parsed?.battleKitPartyIds) ? parsed.battleKitPartyIds.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       exchangeAccordItemIds: Array.isArray(parsed?.exchangeAccordItemIds) ? parsed.exchangeAccordItemIds.map(String) : [],
@@ -2873,6 +2917,24 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.provisionCatalog.roster.map(String)]));
     state.spiritId = patch.provisionCatalog.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.provisionCatalog.message || `${state.provisionCatalogName} sealed as no-real-value item catalog proof.`);
+  }
+
+  if (patch.battleKit) {
+    state.battleKitProof = patch.battleKit.proof || state.battleKitProof;
+    state.battleKitId = patch.battleKit.kitId || state.battleKitId;
+    state.battleKitName = patch.battleKit.kitName || state.battleKitName;
+    state.battleKitScore = Math.max(state.battleKitScore, Number(patch.battleKit.score) || 0);
+    state.battleKitRequiredScore = Math.max(state.battleKitRequiredScore, Number(patch.battleKit.requiredScore) || 0);
+    state.battleKitItemIds = Array.isArray(patch.battleKit.itemIds) ? patch.battleKit.itemIds.map(String) : state.battleKitItemIds;
+    state.battleKitPartyIds = Array.isArray(patch.battleKit.partyIds) ? patch.battleKit.partyIds.map(String) : state.battleKitPartyIds;
+    state.battleKitPresenceCount = Math.max(state.battleKitPresenceCount, Number(patch.battleKit.localPresenceCount) || 0);
+    state.battleKitTagClaimed = state.battleKitTagClaimed || patch.battleKit.rewardItemId === 'jade-battle-kit-tag';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.battleKit.roster.map(String)]));
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.battleKit.partyIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.activePartyId = state.partyIds[0] || state.activePartyId;
+    state.spiritId = patch.battleKit.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.battleKit.message || `${state.battleKitName} packed as no-real-value battle item kit proof.`);
   }
 
   if (patch.guildCommission) {
@@ -3837,6 +3899,44 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'item.battle_kit') {
+    const kit = SPIRIT_BATTLE_KITS[0];
+    const presenceCount = Number(
+      document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount ||
+        state.battleKitPresenceCount ||
+        state.rallyPresenceCount ||
+        1
+    );
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const partyIds = state.partyIds.length ? state.partyIds : roster.slice(0, kit.requiredPartySize);
+    return {
+      kitId: kit.id,
+      roster,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0] || roster[0],
+      itemIds: state.provisionCatalogItemIds.length ? state.provisionCatalogItemIds : kit.requiredItemIds,
+      provisionCatalogProof: state.provisionCatalogProof,
+      provisionCatalogId: state.provisionCatalogId,
+      techniqueCodexProof: state.techniqueCodexProof,
+      techniqueCodexId: state.techniqueCodexId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      affinityMatrixProof: state.affinityMatrixProof,
+      affinityMatrixId: state.affinityMatrixId,
+      recoveryTeaProof: state.recoveryTeaProof,
+      recoveryTeaId: state.recoveryTeaId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'spirit.kinship_album') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean);
     const caredSpiritIds = state.nurtureRiteCaredSpiritIds.length
@@ -4164,6 +4264,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       compendiumProof: state.compendiumProof,
       provisionProof: state.provisionProof,
       provisionCatalogProof: state.provisionCatalogProof,
+      battleKitProof: state.battleKitProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
       nurtureRiteProof: state.nurtureRiteProof,
@@ -4245,6 +4346,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       questChainProof: state.questChainProof,
       marketProof: state.charmListed,
       marketReceiptProof: state.marketReceiptProof,
+      provisionCatalogProof: state.provisionCatalogProof,
+      battleKitProof: state.battleKitProof,
       tradeProof: state.tradeProof,
       canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
       profileViewed: state.profileViewed,
@@ -5808,6 +5911,55 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'item.battle_kit') {
+    const result = resolveSpiritBattleKit(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.partyIds[0] || state.attunedSpiritIds[0] || ''),
+        itemIds: Array.isArray(payload.itemIds) ? payload.itemIds.map(String) : state.provisionCatalogItemIds,
+        provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
+        provisionCatalogId: String(payload.provisionCatalogId || state.provisionCatalogId || ''),
+        techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
+        techniqueCodexId: String(payload.techniqueCodexId || state.techniqueCodexId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
+        affinityMatrixId: String(payload.affinityMatrixId || state.affinityMatrixId || ''),
+        recoveryTeaProof: Boolean(payload.recoveryTeaProof ?? state.recoveryTeaProof),
+        recoveryTeaId: String(payload.recoveryTeaId || state.recoveryTeaId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.battleKitPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.kitId || SPIRIT_BATTLE_KITS[0].id)
+    );
+    if (result.prepared) {
+      state.battleKitProof = true;
+      state.battleKitId = result.kitId;
+      state.battleKitName = result.kitName;
+      state.battleKitScore = result.score;
+      state.battleKitRequiredScore = result.requiredScore;
+      state.battleKitItemIds = result.itemIds;
+      state.battleKitPartyIds = result.partyIds;
+      state.battleKitPresenceCount = result.localPresenceCount;
+      state.battleKitTagClaimed = result.rewardItemId === 'jade-battle-kit-tag';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'spirit.kinship_album') {
     const result = resolveSpiritKinshipAlbum(
       {
@@ -6224,6 +6376,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
         provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
         provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
+        battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
@@ -6321,6 +6474,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         marketProof: Boolean(payload.marketProof ?? state.charmListed),
         marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
         provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
+        battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
