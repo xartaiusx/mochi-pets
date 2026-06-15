@@ -251,9 +251,10 @@ const app = express();
 const transport = createRpgServerTransport(startServer, {
   tiledBasePaths: ['map', '/map', 'assets/data', '/assets/data']
 });
+const integrationJsonLimit = '256kb';
+const strictIntegrationJson = express.json({ limit: integrationJsonLimit });
 
 app.disable('x-powered-by');
-app.use(express.json({ limit: '32kb' }));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -304,7 +305,7 @@ app.get('/integration/alpha/status', (_req, res) => {
   });
 });
 
-app.post('/integration/alpha/action', async (req, res) => {
+app.post('/integration/alpha/action', strictIntegrationJson, async (req, res) => {
   const action = req.body;
   if (!isAlphaActionEnvelope(action)) {
     res.status(400).json({
@@ -330,7 +331,7 @@ app.post('/integration/alpha/action', async (req, res) => {
   res.status(forwarded.status).json(forwarded.body);
 });
 
-app.post('/integration/alpha/enjin/submit', async (req, res) => {
+app.post('/integration/alpha/enjin/submit', strictIntegrationJson, async (req, res) => {
   const tokenResult = requireGameServerToken(req);
   if (!tokenResult.ok) {
     res.status(tokenResult.status).json({
@@ -384,7 +385,7 @@ app.post('/integration/alpha/enjin/submit', async (req, res) => {
   }
 });
 
-app.post('/integration/auth/verify', async (req, res) => {
+app.post('/integration/auth/verify', strictIntegrationJson, async (req, res) => {
   const accessToken = typeof req.body?.accessToken === 'string' ? req.body.accessToken : undefined;
   const result = await validateSupabaseAccessTokenForExpress(accessToken);
   res.status(result.ok ? 200 : 401).json(result);

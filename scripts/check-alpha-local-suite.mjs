@@ -227,9 +227,15 @@ async function writeReport() {
 }
 
 function recordServerOutput() {
+  const sanitizedStderr = sanitize(serverStderr);
+  if (/PayloadTooLargeError|request entity too large/i.test(sanitizedStderr)) {
+    report.ok = false;
+    report.error = [report.error, 'Built Express server emitted payload-too-large errors during the local alpha suite.'].filter(Boolean).join(' ');
+    exitCode = 1;
+  }
   report.server = {
     stdout: sanitize(serverStdout),
-    stderr: sanitize(serverStderr),
+    stderr: sanitizedStderr,
     exitCode: child?.exitCode ?? null,
     exitSignal: child?.signalCode ?? null,
     stopped: child ? child.exitCode !== null || child.signalCode !== null : true
