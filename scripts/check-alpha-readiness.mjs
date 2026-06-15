@@ -396,6 +396,14 @@ const checks = [
     includes: ['Jade Summit Circuit', 'Jade Summit Circuit Laurel', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Dialogue Scroll', 'Jade Dialogue Scroll Seal', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Battle Chronicle', 'Jade Battle Chronicle Seal', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Rival Circle', 'Content-only HUD and ledger proofs']
   },

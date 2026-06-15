@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const runtimeAssets = [
@@ -44,6 +44,51 @@ describe('runtime asset paths', () => {
         width: asset.width,
         height: asset.height
       });
+    }
+  });
+
+  it('keeps every runtime PNG tied to a project-authored source card and source master', () => {
+    for (const asset of runtimeAssets) {
+      const id = asset.path.split('/').pop()?.replace(/\.png$/, '') || '';
+      const cardPath = `../../assets/source/game/hd/${id}.source.json`;
+      const card = JSON.parse(readFileSync(cardPath, 'utf8')) as {
+        id: string;
+        role: string;
+        runtimePath: string;
+        masterPath: string;
+        masterDimensions: string;
+        runtimeDimensions: string;
+        frameLayout: string;
+        prompt: string;
+        exportStatus: string;
+        tool: string;
+        generatedAt: string;
+      };
+      const expectedRuntimePath = `apps/game/${asset.path}`;
+      const expectedMasterDimensions = id === 'mochi-tiles' ? '1024x384' : '768x1536';
+      const expectedFrameLayout = id === 'mochi-tiles' ? '8x3 tiles, 64x64 runtime tiles' : '3x4 frames, 128x192 runtime frames';
+
+      expect(card).toMatchObject({
+        id,
+        runtimePath: expectedRuntimePath,
+        masterPath: `assets/source/game/hd/${id}-master.png`,
+        masterDimensions: expectedMasterDimensions,
+        runtimeDimensions: `${asset.width}x${asset.height}`,
+        frameLayout: expectedFrameLayout,
+        exportStatus: 'project-authored/generated-for-project'
+      });
+      expect(card.role.trim().length).toBeGreaterThan(0);
+      expect(card.prompt).toContain('Mochirii');
+      expect(card.prompt).toMatch(/smooth illustrated 2D|High-Fidelity Wuxia/);
+      expect(card.prompt).not.toMatch(/third[- ]party|marketplace|screenshot|derivative/i);
+      expect(card.tool).toContain('sharp');
+      expect(card.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+      expect(existsSync(`../../${card.masterPath}`)).toBe(true);
+      expect(readPngSize(`../../${card.masterPath}`)).toEqual(
+        id === 'mochi-tiles'
+          ? { width: 1024, height: 384 }
+          : { width: 768, height: 1536 }
+      );
     }
   });
 

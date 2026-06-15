@@ -32,21 +32,21 @@ const spriteSpecs = [
   {
     id: 'spirit-lirabao',
     role: 'Mochi Spirit, certificate-eligible companion',
-    prompt: 'Lirabao Mochi Spirit, blush cloud guardian with jade forehead mark, silk ribbon wisp, soft glow, gentle temperament, transparent background, smooth illustrated 2D sprite sheet.',
+    prompt: 'Mochirii Lirabao Mochi Spirit, blush cloud guardian with jade forehead mark, silk ribbon wisp, soft glow, gentle temperament, transparent background, smooth illustrated 2D sprite sheet.',
     kind: 'spirit',
     palette: { body: '#ee86aa', light: '#ffe6ef', accent: '#c64d79', trim: '#fff7f4' }
   },
   {
     id: 'spirit-jintari',
     role: 'Mochi Spirit, guild market affinity companion',
-    prompt: 'Jintari Mochi Spirit, warm goldleaf guardian with lacquer ear-fins and lucky cord tail, bright temperament, transparent background, smooth illustrated 2D sprite sheet.',
+    prompt: 'Mochirii Jintari Mochi Spirit, warm goldleaf guardian with lacquer ear-fins and lucky cord tail, bright temperament, transparent background, smooth illustrated 2D sprite sheet.',
     kind: 'spirit',
     palette: { body: '#eebd48', light: '#fff2ad', accent: '#b86f32', trim: '#fff7cc' }
   },
   {
     id: 'spirit-aozhen',
     role: 'Mochi Spirit, sky-jade scout companion',
-    prompt: 'Aozhen Mochi Spirit, sky-jade guardian with mist crest and flowing tail, curious temperament, transparent background, smooth illustrated 2D sprite sheet.',
+    prompt: 'Mochirii Aozhen Mochi Spirit, sky-jade guardian with mist crest and flowing tail, curious temperament, transparent background, smooth illustrated 2D sprite sheet.',
     kind: 'spirit',
     palette: { body: '#74bfde', light: '#d8f6ff', accent: '#4c83bb', trim: '#f3feff' }
   },
@@ -158,7 +158,7 @@ const spriteSpecs = [
   {
     id: 'canary-shrine',
     role: 'Enjin Canary preview-stub shrine',
-    prompt: 'Canary preview shrine with violet lacquer base, gold crystal, no-real-value staging aura, transparent background, smooth illustrated 2D prop sprite sheet.',
+    prompt: 'Mochirii Enjin Canary preview shrine with violet lacquer base, gold crystal, no-real-value staging aura, transparent background, smooth illustrated 2D prop sprite sheet.',
     kind: 'shrine',
     palette: { base: '#665ba0', light: '#f6de66', accent: '#bca8e6', trim: '#fff4af' }
   }
