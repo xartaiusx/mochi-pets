@@ -47,6 +47,33 @@ Alpha RC manifests also include:
 - `market.auctions=false`
 - `ugc="curated"`
 
+Closed Alpha Preview manifests also expose machine-readable tester-entry contracts for the Mochirii website:
+
+- `routes.public=["/healthz","/play","/embed","/integration/game-manifest.json"]`
+- `alphaPreview.stopPoint="alpha-preview-ready"`
+- `alphaPreview.websiteEntryPath="/games/mochi-social"`
+- `alphaPreview.accessGateOwner="parent-website"`
+- `alphaPreview.testerPasswordOwner="parent-website"`
+- `alphaPreview.providerMutationAllowedByDefault=false`
+- `alphaPreview.fundedChainRequiredForPreview=false`
+- `alphaPreview.enjinCanaryModeBeforeFunding="configured-preview-stub"`
+- `cleanRoom.restrictedSourceReferences=false`
+- `cleanRoom.copiedRestrictedSourceNames=false`
+- `cleanRoom.copiedRestrictedSourceAssets=false`
+- `cleanRoom.restrictedSourceVisualDerivatives=false`
+- `brand.world="Mochirii"`
+- `brand.town="Jade Lantern Court"`
+- `brand.artDirection="Mochirii High-Fidelity Wuxia"`
+- `runtimeArt.pixelArt=false`
+- `runtimeArt.retro=false`
+- `runtimeArt.tileSizePx=64`
+- `runtimeArt.eventSpritesheet={ width: 384, height: 768, columns: 3, rows: 4, frameWidth: 128, frameHeight: 192 }`
+- `spirits.system="Mochi Spirits"`
+- `spirits.roster` contains exactly `lirabao`, `jintari`, and `aozhen`
+- `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
+
+The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.
+
 ## Supabase Bridge v1
 
 The parent website owns Supabase session refresh. It may send short-lived access tokens to the iframe. Never send refresh tokens or service-role keys.

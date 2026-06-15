@@ -71,6 +71,14 @@ async function run() {
   assert(manifest.body.chain?.network === 'CANARY', 'Built server manifest must stay Canary-only.');
   assert(manifest.body.alpha?.noRealValue === true, 'Built server manifest must keep no-real-value posture.');
   assert(manifest.body.market?.auctions === false, 'Built server manifest must keep auctions disabled.');
+  assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Built server manifest must expose Alpha Preview Ready as the website stop point.');
+  assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Built server manifest must reject provider mutation by default.');
+  assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Built server manifest must declare zero restricted-source references.');
+  assert(manifest.body.cleanRoom?.copiedRestrictedSourceAssets === false, 'Built server manifest must declare zero copied restricted-source assets.');
+  assert(manifest.body.brand?.artDirection === 'Mochirii High-Fidelity Wuxia', 'Built server manifest must expose Mochirii High-Fidelity Wuxia art direction.');
+  assert(manifest.body.runtimeArt?.tileSizePx === 64, 'Built server manifest must expose the 64px tile contract.');
+  assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Built server manifest must expose the three-spirit first-court roster.');
+  assert(Array.isArray(manifest.body.manualReview?.requiredTargets) && manifest.body.manualReview.requiredTargets.length === 3, 'Built server manifest must expose the manual prompt review targets.');
 
   const alpha = await getJson('/integration/alpha/status', 'alpha status');
   assert(alpha.body.chainRuntime?.mode === 'configured-preview-stub', 'Built server must expose configured-preview-stub without Enjin secrets.');

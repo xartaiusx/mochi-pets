@@ -51,6 +51,11 @@ async function run() {
   assert(health.body.ok === true && health.body.name === 'Mochi Social', '/healthz did not identify Mochi Social.');
   assert(manifest.body.chain?.network === 'CANARY', 'Manifest must stay Canary-only.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
+  assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Manifest must expose Alpha Preview Ready as the tester-entry stop point.');
+  assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Manifest must reject provider mutation by default.');
+  assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Manifest must declare zero restricted-source references.');
+  assert(manifest.body.runtimeArt?.pixelArt === false, 'Manifest must reject pixel-art direction.');
+  assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Manifest must expose the first-court Mochi Spirit roster.');
   assert(alphaStatus.body.alpha?.noRealValue === true, 'Alpha status must keep no-real-value enabled.');
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {

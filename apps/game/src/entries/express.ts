@@ -107,6 +107,120 @@ const ALPHA_FEATURES = {
   ugc: 'curated'
 } as const;
 
+const MANIFEST_CONTRACTS = {
+  routes: {
+    public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
+    integration: ['/integration/alpha/status', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+  },
+  alphaPreview: {
+    status: 'closed-preview',
+    stopPoint: 'alpha-preview-ready',
+    websiteEntryPath: '/games/mochi-social',
+    accessGateOwner: 'parent-website',
+    testerPasswordOwner: 'parent-website',
+    authBridgeTokenPolicy: 'short-lived-access-token-only',
+    manualPromptReviewRequired: true,
+    localEvidenceRequired: true,
+    hostedChecksRequireApproval: true,
+    providerMutationAllowedByDefault: false,
+    fundedChainRequiredForPreview: false,
+    enjinCanaryModeBeforeFunding: 'configured-preview-stub'
+  },
+  cleanRoom: {
+    policy: 'project-authored-original-content-only',
+    restrictedSourceReferences: false,
+    copiedRestrictedSourceCode: false,
+    copiedRestrictedSourceNames: false,
+    copiedRestrictedSourceLore: false,
+    copiedRestrictedSourceMaps: false,
+    copiedRestrictedSourceDialogue: false,
+    copiedRestrictedSourceFilenames: false,
+    copiedRestrictedSourceAssets: false,
+    restrictedSourceVisualDerivatives: false,
+    scanner: 'npm run clean-room-scan'
+  },
+  brand: {
+    world: 'Mochirii',
+    town: 'Jade Lantern Court',
+    playerAvatar: 'Mochirii Wayfarer',
+    guide: 'Sifu Narao',
+    system: 'Mochi Spirits',
+    artDirection: 'Mochirii High-Fidelity Wuxia'
+  },
+  runtimeArt: {
+    style: 'smooth illustrated 2D',
+    pixelArt: false,
+    retro: false,
+    tileSizePx: 64,
+    townTilesheet: {
+      width: 512,
+      height: 192
+    },
+    eventSpritesheet: {
+      width: 384,
+      height: 768,
+      columns: 3,
+      rows: 4,
+      frameWidth: 128,
+      frameHeight: 192
+    }
+  },
+  spirits: {
+    system: 'Mochi Spirits',
+    habitat: 'Jade Lantern Court',
+    roster: [
+      {
+        id: 'lirabao',
+        name: 'Lirabao',
+        title: 'Blush-Cloud Mochi Spirit',
+        affinity: 'blossom',
+        temperament: 'gentle',
+        habitat: 'Jade Lantern Court',
+        certificateEligible: true
+      },
+      {
+        id: 'jintari',
+        name: 'Jintari',
+        title: 'Goldleaf Mochi Spirit',
+        affinity: 'citrus-gold',
+        temperament: 'bright',
+        habitat: 'Jade Lantern Court',
+        certificateEligible: false
+      },
+      {
+        id: 'aozhen',
+        name: 'Aozhen',
+        title: 'Sky-Jade Mochi Spirit',
+        affinity: 'sky-jade',
+        temperament: 'curious',
+        habitat: 'Jade Lantern Court',
+        certificateEligible: false
+      }
+    ]
+  },
+  manualReview: {
+    requiredBeforeAlphaPreviewReady: true,
+    requiredTargets: [
+      {
+        id: 'welcome-npc',
+        label: 'Welcome NPC dialog',
+        actor: 'sifu-narao'
+      },
+      {
+        id: 'guild-seal-chest',
+        label: 'Guild seal chest prompt and save feedback',
+        actor: 'chest'
+      },
+      {
+        id: 'care-shrine',
+        label: 'Habitat care loop prompt',
+        actor: 'sifu-narao',
+        setupTarget: 'spirit-lirabao'
+      }
+    ]
+  }
+} as const;
+
 const ALPHA_EDGE_FUNCTIONS = {
   session: 'mochi-social-alpha-session',
   action: 'mochi-social-alpha-action',
@@ -491,7 +605,8 @@ function createGameManifestForExpress(origin: string, version: string) {
       mode: process.env.SUPABASE_AUTH_REQUIRED === 'true' ? 'closed-alpha' : 'guest-first',
       tokenPolicy: 'access-token-only'
     },
-    ...ALPHA_FEATURES
+    ...ALPHA_FEATURES,
+    ...MANIFEST_CONTRACTS
   };
 }
 

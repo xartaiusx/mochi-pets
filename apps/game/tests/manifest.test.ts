@@ -105,6 +105,98 @@ describe('game manifest', () => {
         questChains: true,
         spiritJournal: true,
         copiedUpstreamContent: false
+      },
+      routes: {
+        public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
+        integration: ['/integration/alpha/status', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+      },
+      alphaPreview: {
+        status: 'closed-preview',
+        stopPoint: 'alpha-preview-ready',
+        websiteEntryPath: '/games/mochi-social',
+        accessGateOwner: 'parent-website',
+        testerPasswordOwner: 'parent-website',
+        authBridgeTokenPolicy: 'short-lived-access-token-only',
+        manualPromptReviewRequired: true,
+        localEvidenceRequired: true,
+        hostedChecksRequireApproval: true,
+        providerMutationAllowedByDefault: false,
+        fundedChainRequiredForPreview: false,
+        enjinCanaryModeBeforeFunding: 'configured-preview-stub'
+      },
+      cleanRoom: {
+        policy: 'project-authored-original-content-only',
+        restrictedSourceReferences: false,
+        copiedRestrictedSourceCode: false,
+        copiedRestrictedSourceNames: false,
+        copiedRestrictedSourceAssets: false,
+        restrictedSourceVisualDerivatives: false,
+        scanner: 'npm run clean-room-scan'
+      },
+      brand: {
+        world: 'Mochirii',
+        town: 'Jade Lantern Court',
+        playerAvatar: 'Mochirii Wayfarer',
+        guide: 'Sifu Narao',
+        system: 'Mochi Spirits',
+        artDirection: 'Mochirii High-Fidelity Wuxia'
+      },
+      runtimeArt: {
+        style: 'smooth illustrated 2D',
+        pixelArt: false,
+        retro: false,
+        tileSizePx: 64,
+        townTilesheet: {
+          width: 512,
+          height: 192
+        },
+        eventSpritesheet: {
+          width: 384,
+          height: 768,
+          columns: 3,
+          rows: 4,
+          frameWidth: 128,
+          frameHeight: 192
+        }
+      },
+      spirits: {
+        system: 'Mochi Spirits',
+        habitat: 'Jade Lantern Court',
+        roster: [
+          {
+            id: 'lirabao',
+            name: 'Lirabao',
+            certificateEligible: true
+          },
+          {
+            id: 'jintari',
+            name: 'Jintari',
+            certificateEligible: false
+          },
+          {
+            id: 'aozhen',
+            name: 'Aozhen',
+            certificateEligible: false
+          }
+        ]
+      },
+      manualReview: {
+        requiredBeforeAlphaPreviewReady: true,
+        requiredTargets: [
+          {
+            id: 'welcome-npc',
+            actor: 'sifu-narao'
+          },
+          {
+            id: 'guild-seal-chest',
+            actor: 'chest'
+          },
+          {
+            id: 'care-shrine',
+            actor: 'sifu-narao',
+            setupTarget: 'spirit-lirabao'
+          }
+        ]
       }
     });
   });
