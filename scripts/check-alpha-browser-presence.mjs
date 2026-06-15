@@ -261,6 +261,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="battle.summit_circuit"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="quest.ledger_record"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="story.chapter_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.insignia_case"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -322,6 +323,7 @@ async function exerciseAlphaHud(page) {
       const summitCircuit = document.querySelector('[data-summit-circuit-label]')?.textContent || '';
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
+      const questLedger = document.querySelector('[data-quest-ledger-label]')?.textContent || '';
       const story = document.querySelector('[data-story-label]')?.textContent || '';
       const insignia = document.querySelector('[data-insignia-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -398,6 +400,7 @@ async function exerciseAlphaHud(page) {
         && summitCircuit.includes('Jade Summit Circuit')
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
+        && questLedger.includes('Jade Quest Ledger')
         && story.includes('Jade Scroll Story Chapter')
         && insignia.includes('Jade Insignia Case')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -873,6 +876,20 @@ async function exerciseAlphaHud(page) {
         && state.rallyScore >= 22
         && state.rallyPresenceCount >= 2
         && state.rallyKnotClaimed === true
+        && state.questLedgerProof === true
+        && state.questLedgerId === 'jade-quest-ledger'
+        && state.questLedgerName === 'Jade Quest Ledger'
+        && state.questLedgerScore >= 40
+        && state.questLedgerRequiredScore === 40
+        && Array.isArray(state.questLedgerAcceptedQuestIds)
+        && state.questLedgerAcceptedQuestIds.includes('first-lantern-vow')
+        && state.questLedgerAcceptedQuestIds.includes('silk-market-kindness')
+        && state.questLedgerAcceptedQuestIds.includes('skybell-spar')
+        && Array.isArray(state.questLedgerCompletedQuestIds)
+        && state.questLedgerCompletedQuestIds.includes('first-lantern-vow')
+        && state.questLedgerCompletedQuestIds.includes('silk-market-kindness')
+        && state.questLedgerCompletedQuestIds.includes('skybell-spar')
+        && state.questLedgerSealClaimed === true
         && state.storyChapterProof === true
         && state.storyChapterId === 'jade-scroll-story-chapter'
         && state.storyChapterName === 'Jade Scroll Story Chapter'
@@ -1236,6 +1253,7 @@ async function exerciseAlphaHud(page) {
       summitCircuit: document.querySelector('[data-summit-circuit-label]')?.textContent || '',
       commission: document.querySelector('[data-commission-label]')?.textContent || '',
       rally: document.querySelector('[data-rally-label]')?.textContent || '',
+      questLedger: document.querySelector('[data-quest-ledger-label]')?.textContent || '',
       story: document.querySelector('[data-story-label]')?.textContent || '',
       insignia: document.querySelector('[data-insignia-label]')?.textContent || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
@@ -1307,6 +1325,7 @@ async function exerciseAlphaHud(page) {
     summitCircuit: document.querySelector('[data-summit-circuit-label]')?.textContent?.trim() || '',
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
+      questLedger: document.querySelector('[data-quest-ledger-label]')?.textContent?.trim() || '',
       story: document.querySelector('[data-story-label]')?.textContent?.trim() || '',
       insignia: document.querySelector('[data-insignia-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -1767,6 +1786,15 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.rallyScore >= 22, 'HUD rally action must record a passing rally score.');
   assert(snapshot.state.rallyPresenceCount >= 2, 'HUD rally action must record two local tester presences.');
   assert(snapshot.state.rallyKnotClaimed === true, 'HUD rally action must mark the no-real-value rally knot proof.');
+  assert(snapshot.questLedger.includes('Jade Quest Ledger'), 'HUD quest ledger label must show the completed no-real-value quest ledger.');
+  assert(snapshot.state.questLedgerProof === true, 'HUD quest ledger action must record quest ledger proof.');
+  assert(snapshot.state.questLedgerId === 'jade-quest-ledger', 'HUD quest ledger action must record the Jade Quest Ledger id.');
+  assert(snapshot.state.questLedgerName === 'Jade Quest Ledger', 'HUD quest ledger action must record the Jade Quest Ledger name.');
+  assert(snapshot.state.questLedgerScore >= 40, 'HUD quest ledger action must record a passing ledger score.');
+  assert(snapshot.state.questLedgerRequiredScore === 40, 'HUD quest ledger action must record the ledger score requirement.');
+  assert(Array.isArray(snapshot.state.questLedgerAcceptedQuestIds) && snapshot.state.questLedgerAcceptedQuestIds.length === 3, 'HUD quest ledger action must record all accepted quest ids.');
+  assert(Array.isArray(snapshot.state.questLedgerCompletedQuestIds) && snapshot.state.questLedgerCompletedQuestIds.length === 3, 'HUD quest ledger action must record all completed quest ids.');
+  assert(snapshot.state.questLedgerSealClaimed === true, 'HUD quest ledger action must mark the no-real-value quest ledger seal proof.');
   assert(snapshot.story.includes('Jade Scroll Story Chapter'), 'HUD story label must show the completed no-real-value roleplay chapter.');
   assert(snapshot.state.storyChapterProof === true, 'HUD story action must record story chapter proof.');
   assert(snapshot.state.storyChapterId === 'jade-scroll-story-chapter', 'HUD story action must record the Jade Scroll Story Chapter id.');

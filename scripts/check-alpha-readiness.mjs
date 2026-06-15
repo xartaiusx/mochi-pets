@@ -732,12 +732,20 @@ const checks = [
     includes: ['item.remedy_pouch', 'remedyPouches: true', 'Jade Remedy Pouch label/state', 'Jade Remedy Pouch Tag payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['quest.ledger_record', 'questLedgers: true', 'Jade Quest Ledger label/state', 'Jade Quest Ledger Seal payload preservation']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['item.provision_catalog', 'Jade Provision Catalog', 'provisionCatalogProof', 'Jade Provision Catalog Seal']
   },
   {
     file: 'docs/alpha-acceptance.md',
     includes: ['item.battle_kit', 'Jade Battle Kit', 'battleKitProof', 'Jade Battle Kit Tag']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['quest.ledger_record', 'Jade Quest Ledger', 'questLedgerProof', 'Jade Quest Ledger Seal']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -756,6 +764,10 @@ const checks = [
     includes: ['Jade Remedy Pouch proof', 'Jade Remedy Pouch Tag', 'Remedy pouch proof is no-real-value']
   },
   {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Quest Ledger proof', 'Jade Quest Ledger Seal', 'Quest ledger proof is no-real-value']
+  },
+  {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Provision Catalog proof', 'item.provision_catalog', 'Jade Provision Catalog Seal']
   },
@@ -766,6 +778,10 @@ const checks = [
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Remedy Pouch proof', 'item.remedy_pouch', 'Jade Remedy Pouch Tag']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Quest Ledger proof', 'quest.ledger_record', 'Jade Quest Ledger Seal']
   },
   {
     file: 'docs/visual-polish-brief.md',
@@ -780,6 +796,10 @@ const checks = [
     includes: ['Jade Remedy Pouch proof', 'Remedy', 'content-only']
   },
   {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Quest Ledger proof', 'quest ledger', 'content-only']
+  },
+  {
     file: 'docs/game-art-bible.md',
     includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'content-only item recipe proof']
   },
@@ -792,12 +812,20 @@ const checks = [
     includes: ['Jade Remedy Pouch', 'Jade Remedy Pouch Tag', 'content-only remedy pouch proof']
   },
   {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Quest Ledger', 'Jade Quest Ledger Seal', 'content-only quest ledger proof']
+  },
+  {
     file: 'docs/asset-pipeline-contract.md',
     includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'Content-only proof loops']
   },
   {
     file: 'docs/asset-pipeline-contract.md',
     includes: ['Jade Battle Kit', 'Jade Battle Kit Tag', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Quest Ledger', 'Jade Quest Ledger Seal', 'Content-only proof loops']
   },
   {
     file: 'docs/asset-pipeline-contract.md',
@@ -918,6 +946,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['remedyPouches: true', "'item.remedy_pouch'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['questLedgers: true', "'quest.ledger_record'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -1157,6 +1189,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['MOCHI_QUEST_LEDGERS', 'resolveMochiQuestLedger', 'data-alpha-action="quest.ledger_record"', 'data-quest-ledger-label', 'questLedgerProof', 'questLedgerSealClaimed', 'Jade Quest Ledger']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['GUILD_INSIGNIA_CASES', 'resolveGuildInsigniaCase', 'data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case']
   },
   {
@@ -1202,6 +1238,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Scroll Story Chapter', 'jade-scroll-story-chapter', 'resolveMochiStoryChapter', 'story-chapter', 'storyChapterProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['MOCHI_QUEST_LEDGERS', 'Jade Quest Ledger', 'jade-quest-ledger-seal', 'resolveMochiQuestLedger', 'quest-ledger', 'questLedgerProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -1392,6 +1432,10 @@ const checks = [
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
   },
   {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['questLedgers: true', 'quest.ledger_record', 'questLedgerIds']
+  },
+  {
     file: 'apps/game/tests/enjin-canary.test.ts',
     includes: ['keeps operation planners Canary-only', 'requires a Canary Fuel Tank', 'only credits hot inventory after finalized chain state', 'chain.operation_update', 'submits hot-to-cold certificate proof', 'submits fixed listing proof', 'polls Enjin finality']
   },
@@ -1414,6 +1458,10 @@ const checks = [
   {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['remedyPouches: true', "remedyPouchIds: ['jade-remedy-pouch']"]
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['questLedgers: true', "questLedgerIds: ['jade-quest-ledger']"]
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
@@ -1573,6 +1621,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['quest.ledger_record', 'jade-quest-ledger', 'questLedgers', 'Jade Quest Ledger', 'questLedgerProof', 'jade-quest-ledger-seal']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['guild.insignia_case', 'jade-insignia-case', 'guildInsigniaCases', 'Jade Insignia Case', 'insigniaCaseProof']
   },
   {
@@ -1586,6 +1638,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['remedyPouchIds', 'jade-remedy-pouch']
+  },
+  {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['questLedgerIds', 'jade-quest-ledger']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1709,6 +1765,10 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="quest.ledger_record"', 'data-quest-ledger-label', 'questLedgerProof', 'questLedgerSealClaimed', 'Jade Quest Ledger']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case sealed']
   },
   {
@@ -1774,6 +1834,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['remedyPouchProof', 'remedyPouchTagClaimed', 'Jade Remedy Pouch', 'jade-remedy-pouch-tag', 'remedyPouch', 'remedy pouch']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['questLedgerProof', 'questLedgerSealClaimed', 'Jade Quest Ledger', 'jade-quest-ledger', 'quest ledger']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

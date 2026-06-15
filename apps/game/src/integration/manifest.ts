@@ -7,6 +7,7 @@ import {
   GUILD_RANK_TRIALS,
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
+  MOCHI_QUEST_LEDGERS,
   MARKET_GUILD_RECEIPTS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -131,6 +132,7 @@ export const PLAYABLE_CONTENT_CATALOG = {
   },
   roleplay: {
     questChainIds: idsFrom(MOCHI_SPIRIT_QUESTS),
+    questLedgerIds: idsFrom(MOCHI_QUEST_LEDGERS),
     storyChapterIds: idsFrom(MOCHI_STORY_CHAPTERS),
     guildRankTrialIds: idsFrom(GUILD_RANK_TRIALS),
     guildCommissionIds: idsFrom(GUILD_COMMISSIONS),

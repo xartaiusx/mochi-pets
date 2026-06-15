@@ -78,12 +78,14 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `playableContent.capture` catalogs the first-court spirit roster, starter vow, route scouting, field accords, route mastery, route patrol, and Jade Capture Rite IDs
 - `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, and lineage register IDs
 - `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
-- `playableContent.roleplay` catalogs the three-posting quest chain, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
+- `playableContent.roleplay` catalogs the three-posting quest chain, quest ledger, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
 - `playableContent.economyAndCanary` catalogs no-real-value provision, craft, market receipt, direct exchange accord, relic attunement, Lirabao Canary certificate preview, and Canary request/return action types
 - `playableContent.runtimeAssets` mirrors the 64px tile and 384x768 spritesheet runtime asset contract
 - `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
 
 The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.
+
+The `quest.ledger_record` alpha action is a no-real-value roleplay proof. It records the Jade Quest Ledger Seal after first-court quest postings, journal, route, market, provision, commission, and two-tester rally readiness; it does not change bridge event names, settle inventory, or require provider mutation.
 
 ## Supabase Bridge v1
 

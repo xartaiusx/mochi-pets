@@ -86,6 +86,7 @@ const ALPHA_FEATURES = {
     itemProvisionCatalogs: true,
     battleItemKits: true,
     remedyPouches: true,
+    questLedgers: true,
     guildCommissions: true,
     socialRallies: true,
     wayfarerChronicles: true,
@@ -171,6 +172,7 @@ const PLAYABLE_CONTENT_CATALOG = {
   },
   roleplay: {
     questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+    questLedgerIds: ['jade-quest-ledger'],
     storyChapterIds: ['jade-scroll-story-chapter'],
     guildRankTrialIds: ['jade-court-initiate'],
     guildCommissionIds: ['jade-court-commission-ledger'],
@@ -409,6 +411,7 @@ const ALPHA_ACTION_TYPES = [
   'item.provision_catalog',
   'item.battle_kit',
   'item.remedy_pouch',
+  'quest.ledger_record',
   'guild.commission_complete',
   'guild.social_rally',
   'guild.wayfarer_chronicle',

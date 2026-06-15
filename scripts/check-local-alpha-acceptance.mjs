@@ -87,6 +87,7 @@ async function run() {
   assert(manifest.body.gameplay?.itemProvisionCatalogs === true, 'Manifest must expose Mochirii item provision catalogs.');
   assert(manifest.body.gameplay?.battleItemKits === true, 'Manifest must expose Mochirii no-real-value battle item kits.');
   assert(manifest.body.gameplay?.remedyPouches === true, 'Manifest must expose Mochirii no-real-value remedy pouch proofs.');
+  assert(manifest.body.gameplay?.questLedgers === true, 'Manifest must expose Mochirii quest ledger proofs.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
   assert(manifest.body.gameplay?.spiritStoryChapters === true, 'Manifest must expose Mochi Spirit story chapters.');
@@ -157,6 +158,7 @@ async function run() {
   assert(manifest.body.playableContent?.battle?.tacticIds?.length === 3, 'Manifest must catalog all first-court battle tactics.');
   assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Manifest must catalog the summit circuit battle proof.');
   assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must catalog the first Mochirii quest chain.');
+  assert(manifest.body.playableContent?.roleplay?.questLedgerIds?.includes('jade-quest-ledger'), 'Manifest must catalog the Jade Quest Ledger proof.');
   assert(manifest.body.playableContent?.roleplay?.guildAscensionTrialIds?.includes('jade-court-ascension-trial'), 'Manifest must catalog the guild ascension capstone.');
   assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
   assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must catalog the no-real-value provision catalog.');
@@ -205,6 +207,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.itemProvisionCatalogs === true, 'Alpha status must expose Mochirii item provision catalogs.');
   assert(alphaStatus.body.gameplay?.battleItemKits === true, 'Alpha status must expose Mochirii no-real-value battle item kits.');
   assert(alphaStatus.body.gameplay?.remedyPouches === true, 'Alpha status must expose Mochirii no-real-value remedy pouch proofs.');
+  assert(alphaStatus.body.gameplay?.questLedgers === true, 'Alpha status must expose Mochirii quest ledger proofs.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
   assert(alphaStatus.body.gameplay?.spiritStoryChapters === true, 'Alpha status must expose Mochi Spirit story chapters.');
@@ -1689,6 +1692,35 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-quest-ledger`,
+      type: 'quest.ledger_record',
+      payload: {
+        ledgerId: 'jade-quest-ledger',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+        journalDiscoveredCount: 3,
+        localPresenceCount: 2,
+        questChainProof: true,
+        routeMasteryProof: true,
+        routeMasteryId: 'jade-cloudbell-circuit',
+        routePatrolProof: true,
+        routePatrolId: 'jade-cloudbell-patrol',
+        marketReceiptProof: true,
+        marketReceiptId: 'jade-court-market-receipt',
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        commissionProof: true,
+        commissionId: 'jade-court-commission-ledger',
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-quest-ledger-seal',
+        chatLines: ['Local acceptance quest ledger proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-story-chapter`,
       type: 'story.chapter_complete',
       payload: {
@@ -1703,6 +1735,8 @@ async function run() {
         routeEcologyId: 'jade-route-ecology-survey',
         routeWaystoneProof: true,
         routeWaystoneId: 'jade-cloudbell-waystone',
+        questLedgerProof: true,
+        questLedgerId: 'jade-quest-ledger',
         nurtureRiteProof: true,
         nurtureRiteId: 'jade-moonwell-nurture-rite',
         tournamentProof: true,
@@ -1793,6 +1827,7 @@ async function run() {
         provisionCatalogProof: true,
         battleKitProof: true,
         remedyPouchProof: true,
+        questLedgerProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
         nurtureRiteProof: true,
@@ -1856,6 +1891,7 @@ async function run() {
         provisionCatalogProof: true,
         battleKitProof: true,
         remedyPouchProof: true,
+        questLedgerProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -2446,6 +2482,20 @@ async function run() {
   assert(summitCircuit?.payload?.localPresenceCount === 2, 'Summit circuit ledger entry must preserve two-tester presence proof.');
   assert(summitCircuit?.payload?.rewardItemId === 'jade-summit-circuit-laurel', 'Summit circuit ledger entry must preserve the no-real-value summit laurel proof.');
   assert(summitCircuit?.payload?.noRealValue === true, 'Summit circuit ledger entry must remain no-real-value.');
+  const questLedger = entriesById.get(`${runId}-quest-ledger`);
+  assert(questLedger?.payload?.ledgerId === 'jade-quest-ledger', 'Quest ledger entry must preserve the Jade Quest Ledger id.');
+  assert(Array.isArray(questLedger?.payload?.roster) && questLedger.payload.roster.length === 3, 'Quest ledger entry must preserve full roster proof.');
+  assert(Array.isArray(questLedger?.payload?.acceptedQuestIds) && questLedger.payload.acceptedQuestIds.length === 3, 'Quest ledger entry must preserve all accepted quest proofs.');
+  assert(Array.isArray(questLedger?.payload?.completedQuestIds) && questLedger.payload.completedQuestIds.length === 3, 'Quest ledger entry must preserve all completed quest proofs.');
+  assert(questLedger?.payload?.journalDiscoveredCount === 3, 'Quest ledger entry must preserve full journal proof.');
+  assert(questLedger?.payload?.localPresenceCount === 2, 'Quest ledger entry must preserve two-tester presence proof.');
+  assert(questLedger?.payload?.routeMasteryProof === true, 'Quest ledger entry must preserve route mastery proof.');
+  assert(questLedger?.payload?.routePatrolProof === true, 'Quest ledger entry must preserve route patrol proof.');
+  assert(questLedger?.payload?.marketReceiptProof === true, 'Quest ledger entry must preserve market receipt proof.');
+  assert(questLedger?.payload?.provisionProof === true, 'Quest ledger entry must preserve provision proof.');
+  assert(questLedger?.payload?.commissionProof === true, 'Quest ledger entry must preserve commission proof.');
+  assert(questLedger?.payload?.rewardItemId === 'jade-quest-ledger-seal', 'Quest ledger entry must preserve the no-real-value quest ledger seal.');
+  assert(questLedger?.payload?.noRealValue === true, 'Quest ledger entry must remain no-real-value.');
   const storyChapter = entriesById.get(`${runId}-story-chapter`);
   assert(storyChapter?.payload?.chapterId === 'jade-scroll-story-chapter', 'Story chapter ledger entry must preserve the Jade Scroll Story Chapter id.');
   assert(Array.isArray(storyChapter?.payload?.roster) && storyChapter.payload.roster.length === 3, 'Story chapter ledger entry must preserve full roster proof.');
@@ -2454,6 +2504,8 @@ async function run() {
   assert(Array.isArray(storyChapter?.payload?.discoveredRoutes) && storyChapter.payload.discoveredRoutes.includes('cloudbell-reed-bank'), 'Story chapter ledger entry must preserve Cloudbell route proof.');
   assert(storyChapter?.payload?.routeEcologyProof === true, 'Story chapter ledger entry must preserve route ecology proof.');
   assert(storyChapter?.payload?.routeWaystoneProof === true, 'Story chapter ledger entry must preserve route waystone proof.');
+  assert(storyChapter?.payload?.questLedgerProof === true, 'Story chapter ledger entry must preserve quest ledger proof.');
+  assert(storyChapter?.payload?.questLedgerId === 'jade-quest-ledger', 'Story chapter ledger entry must preserve the quest ledger id.');
   assert(storyChapter?.payload?.nurtureRiteProof === true, 'Story chapter ledger entry must preserve nurture rite proof.');
   assert(storyChapter?.payload?.tournamentProof === true, 'Story chapter ledger entry must preserve tournament proof.');
   assert(storyChapter?.payload?.commissionProof === true, 'Story chapter ledger entry must preserve commission proof.');
@@ -2495,6 +2547,7 @@ async function run() {
   assert(chronicle?.payload?.provisionCatalogProof === true, 'Wayfarer chronicle ledger entry must preserve provision catalog proof.');
   assert(chronicle?.payload?.battleKitProof === true, 'Wayfarer chronicle ledger entry must preserve battle kit proof.');
   assert(chronicle?.payload?.remedyPouchProof === true, 'Wayfarer chronicle ledger entry must preserve remedy pouch proof.');
+  assert(chronicle?.payload?.questLedgerProof === true, 'Wayfarer chronicle ledger entry must preserve quest ledger proof.');
   assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.sifuCouncilProof === true, 'Wayfarer chronicle ledger entry must preserve sifu council proof.');
@@ -2523,6 +2576,7 @@ async function run() {
   assert(ascension?.payload?.provisionCatalogProof === true, 'Ascension trial ledger entry must preserve provision catalog proof.');
   assert(ascension?.payload?.battleKitProof === true, 'Ascension trial ledger entry must preserve battle kit proof.');
   assert(ascension?.payload?.remedyPouchProof === true, 'Ascension trial ledger entry must preserve remedy pouch proof.');
+  assert(ascension?.payload?.questLedgerProof === true, 'Ascension trial ledger entry must preserve quest ledger proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

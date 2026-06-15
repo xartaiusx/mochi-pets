@@ -7,6 +7,7 @@ import {
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
   MARKET_GUILD_RECEIPTS,
+  MOCHI_QUEST_LEDGERS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -92,6 +93,7 @@ import {
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMochiQuestLedger,
   resolveMochiStoryChapter,
   resolveMarketGuildReceipt,
   resolveSpiritGrowthRite,
@@ -454,6 +456,14 @@ interface AlphaHudState {
   rallyScore: number;
   rallyPresenceCount: number;
   rallyKnotClaimed: boolean;
+  questLedgerProof: boolean;
+  questLedgerId?: string;
+  questLedgerName: string;
+  questLedgerScore: number;
+  questLedgerRequiredScore: number;
+  questLedgerAcceptedQuestIds: string[];
+  questLedgerCompletedQuestIds: string[];
+  questLedgerSealClaimed: boolean;
   storyChapterProof: boolean;
   storyChapterId?: string;
   storyChapterName: string;
@@ -629,6 +639,7 @@ interface AlphaHudState {
   nextRaisingMilestoneId?: string;
   nextRaisingMilestoneLabel?: string;
   activeQuestId?: string;
+  acceptedQuestIds: string[];
   completedQuestSteps: string[];
   completedQuestIds: string[];
   questStepsById: Record<string, string[]>;
@@ -876,6 +887,21 @@ export interface AlphaWorldStatePatch {
     rallyName: string;
     rewardItemId: string;
     score: number;
+    title: string;
+  };
+  questLedger?: {
+    acceptedQuestIds: string[];
+    completedQuestIds: string[];
+    habitat: string;
+    ledgerId: string;
+    ledgerName: string;
+    localPresenceCount: number;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    requiredScore: number;
     title: string;
   };
   technique?: {
@@ -1420,6 +1446,13 @@ function defaultAlphaState(): AlphaHudState {
     rallyScore: 0,
     rallyPresenceCount: 1,
     rallyKnotClaimed: false,
+    questLedgerProof: false,
+    questLedgerName: 'Unsealed',
+    questLedgerScore: 0,
+    questLedgerRequiredScore: 0,
+    questLedgerAcceptedQuestIds: [],
+    questLedgerCompletedQuestIds: [],
+    questLedgerSealClaimed: false,
     storyChapterProof: false,
     storyChapterName: 'Unrecorded',
     storyChapterScore: 0,
@@ -1561,6 +1594,7 @@ function defaultAlphaState(): AlphaHudState {
     raisingProof: false,
     raisingCareStreak: 0,
     raisingMilestoneLabel: 'Unopened',
+    acceptedQuestIds: [],
     completedQuestSteps: [],
     completedQuestIds: [],
     questStepsById: {},
@@ -1805,6 +1839,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-lineage-register-label>Lineage: pending</span>
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
+      <span class="mochi-hud__hint" data-quest-ledger-label>Quest Ledger: pending</span>
       <span class="mochi-hud__hint" data-story-label>Story: pending</span>
       <span class="mochi-hud__hint" data-insignia-label>Insignia: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -1880,6 +1915,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.lineage_register" aria-label="Record the no-real-value Jade Lineage Register">Lineage</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
+      <button type="button" data-alpha-action="quest.ledger_record" aria-label="Seal the no-real-value Jade Quest Ledger">Ledger</button>
       <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
       <button type="button" data-alpha-action="guild.insignia_case" aria-label="Seal the no-real-value Jade Insignia Case">Insignia</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -1970,6 +2006,7 @@ function createHud() {
   const lineageRegisterLabel = hud.querySelector('[data-lineage-register-label]');
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
+  const questLedgerLabel = hud.querySelector('[data-quest-ledger-label]');
   const storyLabel = hud.querySelector('[data-story-label]');
   const insigniaLabel = hud.querySelector('[data-insignia-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -2062,6 +2099,11 @@ function createHud() {
       routePatrolLabel.textContent = state.routePatrolProof
         ? `Route Patrol: ${state.routePatrolName}, score ${state.routePatrolScore}/${state.routePatrolRequiredScore}`
         : 'Route Patrol: pending';
+    }
+    if (questLedgerLabel) {
+      questLedgerLabel.textContent = state.questLedgerProof
+        ? `Quest Ledger: ${state.questLedgerName}, ${state.questLedgerCompletedQuestIds.length}/${MOCHI_SPIRIT_QUESTS.length} quests, score ${state.questLedgerScore}/${state.questLedgerRequiredScore}`
+        : 'Quest Ledger: pending';
     }
     if (storyLabel) {
       storyLabel.textContent = state.storyChapterProof
@@ -2631,6 +2673,8 @@ function readAlphaState(): AlphaHudState {
       lineageRegisterPartyIds: Array.isArray(parsed?.lineageRegisterPartyIds) ? parsed.lineageRegisterPartyIds.map(String) : [],
       lineageRegisterCaredSpiritIds: Array.isArray(parsed?.lineageRegisterCaredSpiritIds) ? parsed.lineageRegisterCaredSpiritIds.map(String) : [],
       lineageRegisterMilestoneLabels: Array.isArray(parsed?.lineageRegisterMilestoneLabels) ? parsed.lineageRegisterMilestoneLabels.map(String) : [],
+      questLedgerAcceptedQuestIds: Array.isArray(parsed?.questLedgerAcceptedQuestIds) ? parsed.questLedgerAcceptedQuestIds.map(String) : [],
+      questLedgerCompletedQuestIds: Array.isArray(parsed?.questLedgerCompletedQuestIds) ? parsed.questLedgerCompletedQuestIds.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
@@ -2644,6 +2688,7 @@ function readAlphaState(): AlphaHudState {
       tournamentPartyIds: Array.isArray(parsed?.tournamentPartyIds) ? parsed.tournamentPartyIds.map(String) : [],
       rivalCirclePartyIds: Array.isArray(parsed?.rivalCirclePartyIds) ? parsed.rivalCirclePartyIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
+      acceptedQuestIds: Array.isArray(parsed?.acceptedQuestIds) ? parsed.acceptedQuestIds.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
       chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-80).map(String) : []
     };
@@ -3035,6 +3080,22 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, patch.guildSocialRally.message || `${state.rallyName} recorded as no-real-value two-tester guild proof.`);
   }
 
+  if (patch.questLedger) {
+    state.questLedgerProof = patch.questLedger.proof || state.questLedgerProof;
+    state.questLedgerId = patch.questLedger.ledgerId || state.questLedgerId;
+    state.questLedgerName = patch.questLedger.ledgerName || state.questLedgerName;
+    state.questLedgerScore = Math.max(state.questLedgerScore, Number(patch.questLedger.score) || 0);
+    state.questLedgerRequiredScore = Math.max(state.questLedgerRequiredScore, Number(patch.questLedger.requiredScore) || 0);
+    state.questLedgerAcceptedQuestIds = Array.isArray(patch.questLedger.acceptedQuestIds) ? patch.questLedger.acceptedQuestIds.map(String) : state.questLedgerAcceptedQuestIds;
+    state.questLedgerCompletedQuestIds = Array.isArray(patch.questLedger.completedQuestIds) ? patch.questLedger.completedQuestIds.map(String) : state.questLedgerCompletedQuestIds;
+    state.questLedgerSealClaimed = state.questLedgerSealClaimed || patch.questLedger.rewardItemId === 'jade-quest-ledger-seal';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.questLedger.roster.map(String)]));
+    state.acceptedQuestIds = Array.from(new Set([...(state.acceptedQuestIds || []), ...patch.questLedger.acceptedQuestIds.map(String)]));
+    state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.questLedger.completedQuestIds.map(String)]));
+    state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.questLedger.localPresenceCount) || 1);
+    appendUniqueAlphaChat(state, patch.questLedger.message || `${state.questLedgerName} sealed as no-real-value quest ledger proof.`);
+  }
+
   if (patch.expedition) {
     state.expeditionProof = patch.expedition.proof || state.expeditionProof;
     state.lastExpeditionRouteId = patch.expedition.routeId || state.lastExpeditionRouteId;
@@ -3364,6 +3425,7 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
 
   if (patch.quest?.id) {
     state.activeQuestId = patch.quest.id;
+    state.acceptedQuestIds = Array.from(new Set([...(state.acceptedQuestIds || []), patch.quest.id]));
     state.completedQuestSteps = Array.isArray(patch.quest.completedSteps) ? patch.quest.completedSteps.map(String) : state.completedQuestSteps;
     state.questStepsById = {
       ...state.questStepsById,
@@ -4291,6 +4353,42 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'quest.ledger_record') {
+    const ledger = MOCHI_QUEST_LEDGERS[0];
+    const acceptedQuestIds = state.acceptedQuestIds.length >= ledger.requiredQuestIds.length
+      ? state.acceptedQuestIds
+      : [...ledger.requiredQuestIds];
+    const completedQuestIds = state.completedQuestIds.length >= ledger.requiredQuestIds.length
+      ? state.completedQuestIds
+      : [...ledger.requiredQuestIds];
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      ledgerId: ledger.id,
+      roster: state.attunedSpiritIds.length >= ledger.requiredSpiritCount ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id),
+      acceptedQuestIds,
+      completedQuestIds,
+      journalDiscoveredCount: Math.max(state.journalDiscoveredCount, MOCHI_SPIRITS.length),
+      localPresenceCount: Math.max(presenceCount, 2),
+      questChainProof: state.questChainProof || completedQuestIds.length >= ledger.requiredQuestIds.length,
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId || 'jade-cloudbell-circuit',
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId || 'jade-cloudbell-patrol',
+      marketReceiptProof: state.marketReceiptProof,
+      marketReceiptId: state.marketReceiptId || 'jade-court-market-receipt',
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId || 'jade-court-provision-satchel',
+      commissionProof: state.commissionProof,
+      commissionId: state.commissionId || 'jade-court-commission-ledger',
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood || 'cozy',
+      rewardItemId: 'jade-quest-ledger-seal',
+      chatLines: state.chat.length ? state.chat : ['Jade Quest Ledger ready.'],
+      noRealValue: true
+    };
+  }
+
   if (type === 'story.chapter_complete') {
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
     return {
@@ -4305,6 +4403,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       routeEcologyId: state.routeEcologyId,
       routeWaystoneProof: state.routeWaystoneProof,
       routeWaystoneId: state.routeWaystoneId,
+      questLedgerProof: state.questLedgerProof,
+      questLedgerId: state.questLedgerId || MOCHI_QUEST_LEDGERS[0].id,
       nurtureRiteProof: state.nurtureRiteProof,
       nurtureRiteId: state.nurtureRiteId,
       tournamentProof: state.tournamentProof,
@@ -4374,6 +4474,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       provisionCatalogProof: state.provisionCatalogProof,
       battleKitProof: state.battleKitProof,
       remedyPouchProof: state.remedyPouchProof,
+      questLedgerProof: state.questLedgerProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
       nurtureRiteProof: state.nurtureRiteProof,
@@ -4458,6 +4559,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       provisionCatalogProof: state.provisionCatalogProof,
       battleKitProof: state.battleKitProof,
       remedyPouchProof: state.remedyPouchProof,
+      questLedgerProof: state.questLedgerProof,
       tradeProof: state.tradeProof,
       canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
       profileViewed: state.profileViewed,
@@ -6422,6 +6524,49 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'quest.ledger_record') {
+    const result = resolveMochiQuestLedger(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        acceptedQuestIds: Array.isArray(payload.acceptedQuestIds) ? payload.acceptedQuestIds.map(String) : state.acceptedQuestIds,
+        completedQuestIds: Array.isArray(payload.completedQuestIds) ? payload.completedQuestIds.map(String) : state.completedQuestIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
+        marketReceiptId: String(payload.marketReceiptId || state.marketReceiptId || ''),
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        commissionProof: Boolean(payload.commissionProof ?? state.commissionProof),
+        commissionId: String(payload.commissionId || state.commissionId || ''),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.ledgerId || MOCHI_QUEST_LEDGERS[0].id)
+    );
+    if (result.recorded) {
+      state.questLedgerProof = true;
+      state.questLedgerId = result.ledgerId;
+      state.questLedgerName = result.ledgerName;
+      state.questLedgerScore = result.score;
+      state.questLedgerRequiredScore = result.requiredScore;
+      state.questLedgerAcceptedQuestIds = result.acceptedQuestIds;
+      state.questLedgerCompletedQuestIds = result.completedQuestIds;
+      state.questLedgerSealClaimed = result.rewardItemId === 'jade-quest-ledger-seal';
+      state.attunedSpiritIds = result.roster;
+      state.acceptedQuestIds = Array.from(new Set([...state.acceptedQuestIds, ...result.acceptedQuestIds]));
+      state.completedQuestIds = Array.from(new Set([...state.completedQuestIds, ...result.completedQuestIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'story.chapter_complete') {
     const result = resolveMochiStoryChapter(
       {
@@ -6435,6 +6580,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         routeWaystoneId: String(payload.routeWaystoneId || state.routeWaystoneId || ''),
+        questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
+        questLedgerId: String(payload.questLedgerId || state.questLedgerId || MOCHI_QUEST_LEDGERS[0].id),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
         tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
@@ -6536,6 +6683,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
         battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
         remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
+        questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
@@ -6635,6 +6783,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
         battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
         remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
+        questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
@@ -7638,6 +7787,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     const questId = String(payload.questId || selectHudQuest(state).id);
     const quest = MOCHI_SPIRIT_QUESTS.find((entry) => entry.id === questId) || selectHudQuest(state);
     state.activeQuestId = quest.id;
+    state.acceptedQuestIds = Array.from(new Set([...state.acceptedQuestIds, quest.id]));
     state.completedQuestSteps = state.questStepsById[quest.id] || [];
     state.chat.push(`Quest accepted: ${quest.title}. ${quest.summary}`);
   }

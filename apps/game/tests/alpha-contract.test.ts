@@ -7,6 +7,7 @@ import {
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
   MARKET_GUILD_RECEIPTS,
+  MOCHI_QUEST_LEDGERS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -80,6 +81,7 @@ import {
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
   resolveMarketGuildReceipt,
+  resolveMochiQuestLedger,
   resolveMochiStoryChapter,
   resolveSpiritJournal,
   resolveSpiritKinshipAlbum,
@@ -180,6 +182,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.remedyPouches).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.questLedgers).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
@@ -269,6 +272,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
     expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
     expect(ALPHA_ACTION_TYPES).toContain('item.remedy_pouch');
+    expect(ALPHA_ACTION_TYPES).toContain('quest.ledger_record');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
@@ -2179,6 +2183,71 @@ describe('alpha contract', () => {
     expect(missingRally.rallied).toBe(false);
     expect(missingRally.missing).toContain('presence:1/2');
 
+    expect(MOCHI_QUEST_LEDGERS.map((ledger) => ledger.id)).toEqual(['jade-quest-ledger']);
+    const questLedger = resolveMochiQuestLedger({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      questChainProof: true,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first quest ledger.']
+    });
+    expect(questLedger).toMatchObject({
+      ok: true,
+      recorded: true,
+      ledgerId: 'jade-quest-ledger',
+      ledgerName: 'Jade Quest Ledger',
+      title: 'First-Court Quest Ledger',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      localPresenceCount: 2,
+      score: 49,
+      requiredScore: 40,
+      rewardItemId: 'jade-quest-ledger-seal',
+      source: 'quest-ledger'
+    });
+    expect(questLedger.message).toContain('No real value');
+    const missingQuestLedger = resolveMochiQuestLedger({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      questChainProof: true,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      commissionProof: false,
+      commissionId: 'jade-court-commission-ledger',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first quest ledger.']
+    });
+    expect(missingQuestLedger.recorded).toBe(false);
+    expect(missingQuestLedger.missing).toContain('commission:jade-court-commission-ledger');
+
     expect(MOCHI_STORY_CHAPTERS.map((chapter) => chapter.id)).toEqual(['jade-scroll-story-chapter']);
     const storyChapter = resolveMochiStoryChapter({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -2191,6 +2260,8 @@ describe('alpha contract', () => {
       routeEcologyId: 'jade-route-ecology-survey',
       routeWaystoneProof: true,
       routeWaystoneId: 'jade-cloudbell-waystone',
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
       nurtureRiteProof: true,
       nurtureRiteId: 'jade-moonwell-nurture-rite',
       tournamentProof: true,
@@ -2218,7 +2289,7 @@ describe('alpha contract', () => {
       completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
       routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
       localPresenceCount: 2,
-      score: 56,
+      score: 59,
       requiredScore: 42,
       rewardItemId: 'jade-scroll-story-chapter',
       source: 'story-chapter'
@@ -2235,6 +2306,8 @@ describe('alpha contract', () => {
       routeEcologyId: 'jade-route-ecology-survey',
       routeWaystoneProof: true,
       routeWaystoneId: 'jade-cloudbell-waystone',
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
       nurtureRiteProof: true,
       nurtureRiteId: 'jade-moonwell-nurture-rite',
       tournamentProof: false,
@@ -2344,6 +2417,7 @@ describe('alpha contract', () => {
       provisionCatalogProof: true,
       battleKitProof: true,
       remedyPouchProof: true,
+      questLedgerProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2394,7 +2468,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 155,
+      score: 158,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2421,6 +2495,7 @@ describe('alpha contract', () => {
       provisionCatalogProof: true,
       battleKitProof: true,
       remedyPouchProof: true,
+      questLedgerProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2479,6 +2554,7 @@ describe('alpha contract', () => {
       provisionCatalogProof: true,
       battleKitProof: true,
       remedyPouchProof: true,
+      questLedgerProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
@@ -2521,7 +2597,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 117,
+      score: 120,
       requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2541,6 +2617,7 @@ describe('alpha contract', () => {
       provisionCatalogProof: true,
       battleKitProof: true,
       remedyPouchProof: true,
+      questLedgerProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
