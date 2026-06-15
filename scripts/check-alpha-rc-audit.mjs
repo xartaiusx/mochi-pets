@@ -193,6 +193,9 @@ function addStaticRequirements() {
     'costRisk',
     'noCostAlternative',
     'Cost-Sensitive Action Matrix',
+    'Verified Milestone Deploy Queue',
+    'fly-verified-milestone-deploy',
+    'vercel-verified-milestone-deploy',
     'GitHub Actions/PR checks',
     'Proceed with public-repo sync'
   ]);
@@ -207,6 +210,8 @@ function addStaticRequirements() {
     'funded-chain-gates',
     'github-site-branch-sync',
     'fly-funded-chain-secret-update',
+    'fly-verified-milestone-deploy',
+    'vercel-verified-milestone-deploy',
     'approvalText',
     'noCostFallback',
     'readGitState',
@@ -226,6 +231,9 @@ function addStaticRequirements() {
     'fly-secret-update',
     'fly-funded-chain-secret-update',
     'fly-live-game-contract',
+    'Verified Milestone Deploy Queue',
+    'fly-verified-milestone-deploy',
+    'vercel-verified-milestone-deploy',
     'vercel-supabase-preview-contract',
     'enjin-canary-readiness'
   ]);

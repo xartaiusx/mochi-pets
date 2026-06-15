@@ -302,6 +302,8 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
   const flyPreviewSecretsNeeded = hasExternalFailure(currentExternalGateSummary, 'Fly preview secret names');
   const liveGameContractNeeded = hasExternalFailure(currentExternalGateSummary, 'Live game contract') || hasExternalFailure(currentExternalGateSummary, 'Live game URL');
   const sitePreviewContractNeeded = hasExternalFailure(currentExternalGateSummary, 'Site preview contract');
+  const gameDeployCandidate = verifiedMilestoneDeployCandidate(currentGitState);
+  const siteDeployCandidate = verifiedMilestoneDeployCandidate(currentSiteGitState);
 
   return [
     {
@@ -329,6 +331,34 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.site-local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
       approvalText: `Proceed with public-repo sync: push ${siteRepoPath} branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
       requiresApproval: false
+    },
+    {
+      id: 'fly-verified-milestone-deploy',
+      provider: 'Fly.io',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: gameDeployCandidate,
+      requirementReason: gameDeployCandidate
+        ? 'The game branch is clean and synced, so the active goal can request an explicit Fly deploy approval after local proof and PR/CI verification.'
+        : 'Finish local proof, commit/push, and PR/CI verification before requesting a Fly deploy for this milestone.',
+      action: 'Deploy the verified Mochi Social game milestone to Fly.',
+      exactAction: `fly deploy -a ${flyApp}`,
+      costRisk: 'Fly deploys create a new hosted release, can restart Machines, can write logs, and can add request/runtime usage on the existing app and volume.',
+      noCostAlternative: 'Keep the verified milestone committed, pushed, and locally proven while leaving the Fly runtime unchanged.',
+      approvalText: `I approve deploying the verified Mochi Social game milestone to Fly app ${flyApp} with fly deploy after local checks, push, and PR/CI verification. I understand this may restart hosted resources or add usage.`
+    },
+    {
+      id: 'vercel-verified-milestone-deploy',
+      provider: 'Vercel',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: siteDeployCandidate,
+      requirementReason: siteDeployCandidate
+        ? 'The Mochirii site branch is clean and synced, so the active goal can request an explicit Vercel deploy approval after site-side proof and PR/CI verification.'
+        : 'Finish Mochirii site proof, commit/push, and PR/CI verification before requesting a Vercel deploy for this milestone.',
+      action: 'Deploy the verified Mochirii web milestone or preview embed to the approved Vercel target.',
+      exactAction: `Run the approved Vercel deploy command or dashboard deploy for ${siteRepoPath} using the approved target ${sitePreviewUrl}.`,
+      costRisk: 'Vercel deploys can trigger builds, function/edge execution, logs, preview traffic, and usage on the connected account.',
+      noCostAlternative: 'Keep the game/site branches pushed and PR checks verified while leaving the live or preview Mochirii deployment unchanged.',
+      approvalText: `I approve deploying the verified Mochirii web milestone that embeds ${gameUrl} to the approved Vercel target ${sitePreviewUrl}. I understand this may trigger builds, hosted traffic, logs, or usage.`
     },
     {
       id: 'fly-secret-update',
@@ -399,6 +429,15 @@ function branchSyncNeeded(state) {
     || (state.behind || 0) !== 0
     || (Array.isArray(state.dirty) && state.dirty.length > 0)
     || (Array.isArray(state.errors) && state.errors.length > 0);
+}
+
+function verifiedMilestoneDeployCandidate(state) {
+  if (!state) return false;
+  if (!state.localHead || !state.upstream) return false;
+  if ((state.ahead || 0) !== 0 || (state.behind || 0) !== 0) return false;
+  if (Array.isArray(state.dirty) && state.dirty.length > 0) return false;
+  if (Array.isArray(state.errors) && state.errors.length > 0) return false;
+  return true;
 }
 
 function hasExternalFailure(summary, name) {
@@ -546,6 +585,8 @@ function renderMarkdown(report) {
   const prState = formatPrState(report.prState);
   const gameSyncAction = report.approvalActions.find((action) => action.id === 'github-branch-sync');
   const siteSyncAction = report.approvalActions.find((action) => action.id === 'github-site-branch-sync');
+  const deployActions = report.approvalActions.filter((action) => action.id === 'fly-verified-milestone-deploy' || action.id === 'vercel-verified-milestone-deploy');
+  const deployQueue = deployActions.map((action) => `- ${action.id}: ${action.currentlyRequired ? 'ready for exact approval request' : 'not yet ready for deploy approval'}; ${action.requirementReason}`).join('\n');
   const combinedGitHubSyncApproval = gameSyncAction?.currentlyRequired && siteSyncAction?.currentlyRequired
     ? `Suggested combined public-repo sync command note:
 
@@ -677,6 +718,12 @@ MOCHI_SOCIAL_SITE_PREVIEW_URL=https://<vercel-preview-host>
 ## Approval Required Before Continuing
 
 ${approvals}
+
+## Verified Milestone Deploy Queue
+
+The active goal requests commit, push, and deploy after each verified milestone. This packet treats deploy as a provider mutation queue, not as approval by itself.
+
+${deployQueue}
 
 ## Cost-Sensitive Action Matrix
 

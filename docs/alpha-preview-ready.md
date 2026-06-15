@@ -50,6 +50,8 @@ Local code, docs, tests, no-secret reports, and localhost-only checks may procee
 
 Each approval request must name the exact account/provider, command or dashboard action, possible cost or usage impact, and no-cost alternative.
 
+The active goal's "deploy after verified milestone" instruction is tracked as a queue, not blanket approval. `npm run alpha:operator-checklist`, `npm run alpha:provider-preflight`, and `npm run alpha:sync-approval` record `fly-verified-milestone-deploy` and `vercel-verified-milestone-deploy` when a milestone is ready to request provider approval. Codex must still stop before `fly deploy`, Vercel deploys, hosted checks, or provider mutations until the exact action is approved with the cost/usage note above.
+
 ## Codex Prompt Templates
 
 Use these when starting the next implementation pass:

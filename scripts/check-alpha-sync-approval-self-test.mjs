@@ -43,6 +43,9 @@ try {
   assert(report.previewEnv?.gameUrl === 'https://mochi-social-game.fly.dev', 'preview game URL fixture was not extracted.');
   assert(markdown.includes('## PR State'), 'markdown packet should include PR State section.');
   assert(markdown.includes('## Local Preview URL File'), 'markdown packet should include local preview URL source section.');
+  assert(markdown.includes('## Verified Milestone Deploy Queue'), 'markdown packet should include verified milestone deploy queue section.');
+  assert(markdown.includes('fly-verified-milestone-deploy'), 'markdown packet should include the Fly verified milestone deploy action.');
+  assert(markdown.includes('vercel-verified-milestone-deploy'), 'markdown packet should include the Vercel verified milestone deploy action.');
   assert(markdown.includes('https://preview.example.test'), 'markdown packet should include sanitized preview URL.');
   assert(markdown.includes('local HEAD does not match PR head'), 'markdown packet should explain PR head drift.');
 

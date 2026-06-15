@@ -542,6 +542,24 @@ function buildProviderActionQueue() {
     });
   }
 
+  queue.push({
+    id: 'fly-verified-milestone-deploy',
+    provider: 'Fly.io',
+    title: 'Deploy the verified Mochi Social game milestone to Fly after approval.',
+    blocker: 'The active goal requests deploys after verified milestones, but Fly deploys mutate hosted resources and can add usage. Local proof, push, and PR/CI verification may proceed first.',
+    approvalText: `I approve deploying the verified Mochi Social game milestone to Fly app ${flyApp} with fly deploy after local checks, push, and PR/CI verification. I understand this may restart hosted resources or add usage.`,
+    noCostFallback: 'Keep the milestone committed, pushed, and locally verified; leave the Fly runtime unchanged until deploy approval is granted.'
+  });
+
+  queue.push({
+    id: 'vercel-verified-milestone-deploy',
+    provider: 'Vercel',
+    title: 'Deploy the verified Mochirii web milestone or preview embed after approval.',
+    blocker: 'The active goal requests live-site deploys after verified milestones, but the Mochirii site is a separate repo and Vercel deploys or preview traffic can add usage.',
+    approvalText: `I approve deploying the verified Mochirii web milestone that embeds ${externalGateSummary.gameUrl || `https://${flyApp}.fly.dev`} to the approved Vercel target after local checks, push, and PR/CI verification. I understand this may trigger builds, hosted traffic, logs, or usage.`,
+    noCostFallback: 'Keep the game/site branches pushed and PR checks verified; leave the Mochirii live/preview deployment unchanged until deploy approval is granted.'
+  });
+
   if (hasExternalFailure('Fly preview secret names')) {
     queue.push({
       id: 'fly-secret-update',
