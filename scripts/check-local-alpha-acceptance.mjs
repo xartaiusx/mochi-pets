@@ -67,6 +67,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritResearch === true, 'Manifest must expose Mochi Spirit research folios.');
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.spiritRosterArchives === true, 'Manifest must expose Mochi Spirit roster archives.');
+  assert(manifest.body.gameplay?.spiritRosterCabinets === true, 'Manifest must expose Mochi Spirit roster cabinets.');
   assert(manifest.body.gameplay?.spiritCareCycles === true, 'Manifest must expose Mochi Spirit care cycles.');
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
@@ -159,6 +160,7 @@ async function run() {
   assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Manifest must catalog the summit circuit battle proof.');
   assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must catalog the first Mochirii quest chain.');
   assert(manifest.body.playableContent?.roleplay?.questLedgerIds?.includes('jade-quest-ledger'), 'Manifest must catalog the Jade Quest Ledger proof.');
+  assert(manifest.body.playableContent?.roleplay?.rosterCabinetIds?.includes('jade-roster-cabinet'), 'Manifest must catalog the Jade Roster Cabinet proof.');
   assert(manifest.body.playableContent?.roleplay?.guildAscensionTrialIds?.includes('jade-court-ascension-trial'), 'Manifest must catalog the guild ascension capstone.');
   assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
   assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must catalog the no-real-value provision catalog.');
@@ -185,6 +187,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritResearch === true, 'Alpha status must expose Mochi Spirit research folios.');
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.spiritRosterArchives === true, 'Alpha status must expose Mochi Spirit roster archives.');
+  assert(alphaStatus.body.gameplay?.spiritRosterCabinets === true, 'Alpha status must expose Mochi Spirit roster cabinets.');
   assert(alphaStatus.body.gameplay?.spiritCareCycles === true, 'Alpha status must expose Mochi Spirit care cycles.');
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
@@ -1454,6 +1457,32 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-roster-cabinet`,
+      type: 'spirit.roster_cabinet',
+      payload: {
+        cabinetId: 'jade-roster-cabinet',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        storageSlotLabels: ['1-lirabao-guild-slot', '2-jintari-guild-slot', '3-aozhen-guild-slot'],
+        activeSpiritId: 'aozhen',
+        rosterArchiveProof: true,
+        rosterArchiveId: 'jade-court-roster-archive',
+        compendiumProof: true,
+        compendiumId: 'jade-court-spirit-compendium',
+        nurseryGroveProof: true,
+        nurseryGroveId: 'jade-nursery-grove',
+        lineageRegisterProof: true,
+        lineageRegisterId: 'jade-lineage-register',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-roster-cabinet-tag',
+        chatLines: ['Local acceptance roster cabinet proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-dojo-ladder`,
       type: 'battle.dojo_ladder',
       payload: {
@@ -1828,6 +1857,7 @@ async function run() {
         battleKitProof: true,
         remedyPouchProof: true,
         questLedgerProof: true,
+        rosterCabinetProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
         nurtureRiteProof: true,
@@ -1892,6 +1922,7 @@ async function run() {
         battleKitProof: true,
         remedyPouchProof: true,
         questLedgerProof: true,
+        rosterCabinetProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -1983,6 +2014,22 @@ async function run() {
   assert(rosterArchive?.payload?.compendiumProof === true, 'Roster archive ledger entry must preserve compendium proof.');
   assert(rosterArchive?.payload?.sanctuaryRiteProof === true, 'Roster archive ledger entry must preserve sanctuary rite proof.');
   assert(rosterArchive?.payload?.noRealValue === true, 'Roster archive ledger entry must remain no-real-value.');
+  const rosterCabinet = entriesById.get(`${runId}-roster-cabinet`);
+  assert(rosterCabinet?.payload?.cabinetId === 'jade-roster-cabinet', 'Roster cabinet ledger entry must preserve the Jade Roster Cabinet id.');
+  assert(Array.isArray(rosterCabinet?.payload?.roster) && rosterCabinet.payload.roster.length === 3, 'Roster cabinet ledger entry must preserve full roster proof.');
+  assert(Array.isArray(rosterCabinet?.payload?.partyIds) && rosterCabinet.payload.partyIds.length === 3, 'Roster cabinet ledger entry must preserve full-party proof.');
+  assert(Array.isArray(rosterCabinet?.payload?.storageSlotLabels) && rosterCabinet.payload.storageSlotLabels.length === 3, 'Roster cabinet ledger entry must preserve three storage slot labels.');
+  assert(rosterCabinet?.payload?.rosterArchiveProof === true, 'Roster cabinet ledger entry must preserve roster archive proof.');
+  assert(rosterCabinet?.payload?.rosterArchiveId === 'jade-court-roster-archive', 'Roster cabinet ledger entry must preserve the roster archive id.');
+  assert(rosterCabinet?.payload?.compendiumProof === true, 'Roster cabinet ledger entry must preserve compendium proof.');
+  assert(rosterCabinet?.payload?.compendiumId === 'jade-court-spirit-compendium', 'Roster cabinet ledger entry must preserve the compendium id.');
+  assert(rosterCabinet?.payload?.nurseryGroveProof === true, 'Roster cabinet ledger entry must preserve nursery grove proof.');
+  assert(rosterCabinet?.payload?.nurseryGroveId === 'jade-nursery-grove', 'Roster cabinet ledger entry must preserve the nursery grove id.');
+  assert(rosterCabinet?.payload?.lineageRegisterProof === true, 'Roster cabinet ledger entry must preserve lineage register proof.');
+  assert(rosterCabinet?.payload?.lineageRegisterId === 'jade-lineage-register', 'Roster cabinet ledger entry must preserve the lineage register id.');
+  assert(rosterCabinet?.payload?.localPresenceCount === 2, 'Roster cabinet ledger entry must preserve two-tester presence proof.');
+  assert(rosterCabinet?.payload?.rewardItemId === 'jade-roster-cabinet-tag', 'Roster cabinet ledger entry must preserve the no-real-value cabinet tag proof.');
+  assert(rosterCabinet?.payload?.noRealValue === true, 'Roster cabinet ledger entry must remain no-real-value.');
   const marketReceipt = entriesById.get(`${runId}-market-receipt`);
   assert(marketReceipt?.payload?.receiptId === 'jade-court-market-receipt', 'Market receipt ledger entry must preserve the Jade Court Market Receipt id.');
   assert(marketReceipt?.payload?.itemId === 'jade-thread-charm', 'Market receipt ledger entry must preserve the purchased Jade Thread Charm id.');
@@ -2548,6 +2595,7 @@ async function run() {
   assert(chronicle?.payload?.battleKitProof === true, 'Wayfarer chronicle ledger entry must preserve battle kit proof.');
   assert(chronicle?.payload?.remedyPouchProof === true, 'Wayfarer chronicle ledger entry must preserve remedy pouch proof.');
   assert(chronicle?.payload?.questLedgerProof === true, 'Wayfarer chronicle ledger entry must preserve quest ledger proof.');
+  assert(chronicle?.payload?.rosterCabinetProof === true, 'Wayfarer chronicle ledger entry must preserve roster cabinet proof.');
   assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.sifuCouncilProof === true, 'Wayfarer chronicle ledger entry must preserve sifu council proof.');
@@ -2577,6 +2625,7 @@ async function run() {
   assert(ascension?.payload?.battleKitProof === true, 'Ascension trial ledger entry must preserve battle kit proof.');
   assert(ascension?.payload?.remedyPouchProof === true, 'Ascension trial ledger entry must preserve remedy pouch proof.');
   assert(ascension?.payload?.questLedgerProof === true, 'Ascension trial ledger entry must preserve quest ledger proof.');
+  assert(ascension?.payload?.rosterCabinetProof === true, 'Ascension trial ledger entry must preserve roster cabinet proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

@@ -43,6 +43,7 @@ import {
   SPIRIT_REMEDY_POUCHES,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
+  SPIRIT_ROSTER_CABINETS,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_ROUTE_MASTERIES,
@@ -118,6 +119,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
+  resolveSpiritRosterCabinet,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteWaystone,
@@ -258,6 +260,16 @@ interface AlphaHudState {
   rosterArchivePartyIds: string[];
   rosterArchiveReserveIds: string[];
   rosterArchiveSealClaimed: boolean;
+  rosterCabinetProof: boolean;
+  rosterCabinetId?: string;
+  rosterCabinetName: string;
+  rosterCabinetScore: number;
+  rosterCabinetRequiredScore: number;
+  rosterCabinetSpiritIds: string[];
+  rosterCabinetPartyIds: string[];
+  rosterCabinetReserveIds: string[];
+  rosterCabinetSlotLabels: string[];
+  rosterCabinetTagClaimed: boolean;
   provisionProof: boolean;
   provisionSatchelId?: string;
   provisionSatchelName: string;
@@ -1271,6 +1283,15 @@ function defaultAlphaState(): AlphaHudState {
     rosterArchivePartyIds: [],
     rosterArchiveReserveIds: [],
     rosterArchiveSealClaimed: false,
+    rosterCabinetProof: false,
+    rosterCabinetName: 'Unfiled',
+    rosterCabinetScore: 0,
+    rosterCabinetRequiredScore: 0,
+    rosterCabinetSpiritIds: [],
+    rosterCabinetPartyIds: [],
+    rosterCabinetReserveIds: [],
+    rosterCabinetSlotLabels: [],
+    rosterCabinetTagClaimed: false,
     provisionProof: false,
     provisionSatchelName: 'Unstocked',
     provisionScore: 0,
@@ -1816,6 +1837,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-research-label>Research: pending</span>
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
+      <span class="mochi-hud__hint" data-roster-cabinet-label>Cabinet: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-provision-catalog-label>Catalog: pending</span>
       <span class="mochi-hud__hint" data-battle-kit-label>Kit: pending</span>
@@ -1893,6 +1915,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.research" aria-label="Record the Mochirii spirit research folio">Research</button>
       <button type="button" data-alpha-action="spirit.compendium_complete" aria-label="Seal the no-real-value Mochirii spirit compendium">Codex</button>
       <button type="button" data-alpha-action="spirit.roster_archive" aria-label="Seal the no-real-value Jade Court Roster Archive">Archive</button>
+      <button type="button" data-alpha-action="spirit.roster_cabinet" aria-label="Organize the no-real-value Jade Roster Cabinet">Cabinet</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
@@ -1983,6 +2006,7 @@ function createHud() {
   const researchLabel = hud.querySelector('[data-research-label]');
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const archiveLabel = hud.querySelector('[data-archive-label]');
+  const rosterCabinetLabel = hud.querySelector('[data-roster-cabinet-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const provisionCatalogLabel = hud.querySelector('[data-provision-catalog-label]');
   const battleKitLabel = hud.querySelector('[data-battle-kit-label]');
@@ -2149,6 +2173,11 @@ function createHud() {
       archiveLabel.textContent = state.rosterArchiveProof
         ? `Archive: ${state.rosterArchiveName}, reserve ${state.rosterArchiveReserveIds.length}, score ${state.rosterArchiveScore}/${state.rosterArchiveRequiredScore}`
         : 'Archive: pending';
+    }
+    if (rosterCabinetLabel) {
+      rosterCabinetLabel.textContent = state.rosterCabinetProof
+        ? `Cabinet: ${state.rosterCabinetName}, slots ${state.rosterCabinetSlotLabels.length}, score ${state.rosterCabinetScore}/${state.rosterCabinetRequiredScore}`
+        : 'Cabinet: pending';
     }
     if (provisionLabel) {
       provisionLabel.textContent = state.provisionProof
@@ -2621,6 +2650,12 @@ function readAlphaState(): AlphaHudState {
       techniqueCodexPartyIds: Array.isArray(parsed?.techniqueCodexPartyIds) ? parsed.techniqueCodexPartyIds.map(String) : [],
       techniqueCodexMoveIds: Array.isArray(parsed?.techniqueCodexMoveIds) ? parsed.techniqueCodexMoveIds.map(String) : [],
       techniqueCodexTacticIds: Array.isArray(parsed?.techniqueCodexTacticIds) ? parsed.techniqueCodexTacticIds.map(String) : [],
+      rosterArchivePartyIds: Array.isArray(parsed?.rosterArchivePartyIds) ? parsed.rosterArchivePartyIds.map(String) : [],
+      rosterArchiveReserveIds: Array.isArray(parsed?.rosterArchiveReserveIds) ? parsed.rosterArchiveReserveIds.map(String) : [],
+      rosterCabinetSpiritIds: Array.isArray(parsed?.rosterCabinetSpiritIds) ? parsed.rosterCabinetSpiritIds.map(String) : [],
+      rosterCabinetPartyIds: Array.isArray(parsed?.rosterCabinetPartyIds) ? parsed.rosterCabinetPartyIds.map(String) : [],
+      rosterCabinetReserveIds: Array.isArray(parsed?.rosterCabinetReserveIds) ? parsed.rosterCabinetReserveIds.map(String) : [],
+      rosterCabinetSlotLabels: Array.isArray(parsed?.rosterCabinetSlotLabels) ? parsed.rosterCabinetSlotLabels.map(String) : [],
       conditionIds: Array.isArray(parsed?.conditionIds) ? parsed.conditionIds.map(String) : [],
       affinityMatrixSpiritIds: Array.isArray(parsed?.affinityMatrixSpiritIds) ? parsed.affinityMatrixSpiritIds.map(String) : [],
       affinityMatrixAffinityLabels: Array.isArray(parsed?.affinityMatrixAffinityLabels) ? parsed.affinityMatrixAffinityLabels.map(String) : [],
@@ -3633,6 +3668,39 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.roster_cabinet') {
+    const cabinet = SPIRIT_ROSTER_CABINETS[0];
+    const roster = state.attunedSpiritIds.length >= cabinet.requiredSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const partyIds = state.partyIds.length >= cabinet.requiredPartySize ? state.partyIds.slice(0, cabinet.requiredPartySize) : roster.slice(0, cabinet.requiredPartySize);
+    const storageSlotLabels =
+      state.rosterCabinetSlotLabels.length >= cabinet.requiredStorageSlots
+        ? state.rosterCabinetSlotLabels
+        : roster.slice(0, cabinet.requiredStorageSlots).map((spiritId, index) => `${index + 1}-${spiritId}-guild-slot`);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      cabinetId: cabinet.id,
+      roster,
+      partyIds,
+      storageSlotLabels,
+      activeSpiritId: state.spiritId || partyIds[0] || roster[0],
+      rosterArchiveProof: state.rosterArchiveProof,
+      rosterArchiveId: state.rosterArchiveId,
+      compendiumProof: state.compendiumProof,
+      compendiumId: state.compendiumId,
+      nurseryGroveProof: state.nurseryGroveProof,
+      nurseryGroveId: state.nurseryGroveId,
+      lineageRegisterProof: state.lineageRegisterProof,
+      lineageRegisterId: state.lineageRegisterId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood || 'cozy',
+      chatLines: state.chat.length ? state.chat : ['Jade Roster Cabinet ready.'],
+      rewardItemId: 'jade-roster-cabinet-tag',
+      noRealValue: true
+    };
+  }
+
   if (type === 'market.guild_receipt') {
     return {
       receiptId: MARKET_GUILD_RECEIPTS[0].id,
@@ -4482,6 +4550,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       nurseryGroveProof: state.nurseryGroveProof,
       bloomAscendanceProof: state.bloomAscendanceProof,
       lineageRegisterProof: state.lineageRegisterProof,
+      rosterCabinetProof: state.rosterCabinetProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
@@ -4530,6 +4599,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       nurseryGroveProof: state.nurseryGroveProof,
       bloomAscendanceProof: state.bloomAscendanceProof,
       lineageRegisterProof: state.lineageRegisterProof,
+      rosterCabinetProof: state.rosterCabinetProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
@@ -5507,6 +5577,49 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.attunedSpiritIds = result.roster;
       setRosterProgress(state, result.roster, 3, 'sprout');
       state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.roster_cabinet') {
+    const result = resolveSpiritRosterCabinet(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds,
+        storageSlotLabels: Array.isArray(payload.storageSlotLabels) ? payload.storageSlotLabels.map(String) : state.rosterCabinetSlotLabels,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        rosterArchiveProof: Boolean(payload.rosterArchiveProof ?? state.rosterArchiveProof),
+        rosterArchiveId: String(payload.rosterArchiveId || state.rosterArchiveId || ''),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        compendiumId: String(payload.compendiumId || state.compendiumId || ''),
+        nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        nurseryGroveId: String(payload.nurseryGroveId || state.nurseryGroveId || ''),
+        lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
+        lineageRegisterId: String(payload.lineageRegisterId || state.lineageRegisterId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.cabinetId || SPIRIT_ROSTER_CABINETS[0].id)
+    );
+    if (result.organized) {
+      state.rosterCabinetProof = true;
+      state.rosterCabinetId = result.cabinetId;
+      state.rosterCabinetName = result.cabinetName;
+      state.rosterCabinetScore = result.score;
+      state.rosterCabinetRequiredScore = result.requiredScore;
+      state.rosterCabinetSpiritIds = result.roster;
+      state.rosterCabinetPartyIds = result.partyIds;
+      state.rosterCabinetReserveIds = result.reserveSpiritIds;
+      state.rosterCabinetSlotLabels = result.storageSlotLabels;
+      state.rosterCabinetTagClaimed = result.rewardItemId === 'jade-roster-cabinet-tag';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
     state.chat.push(result.message);
   }
@@ -6691,6 +6804,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
         lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
+        rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
@@ -6754,6 +6868,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
         lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
+        rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),

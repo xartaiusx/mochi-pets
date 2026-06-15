@@ -39,6 +39,7 @@ import {
   SPIRIT_ROUTE_PATROLS,
   SPIRIT_ROUTE_WAYSTONES,
   SPIRIT_ROSTER_ARCHIVES,
+  SPIRIT_ROSTER_CABINETS,
   SPIRIT_SANCTUARY_RITES,
   SPIRIT_SIFU_COUNCILS,
   SPIRIT_STARTER_VOWS,
@@ -103,6 +104,7 @@ import {
   resolveSpiritRoutePatrol,
   resolveSpiritWeatherVeil,
   resolveSpiritRosterArchive,
+  resolveSpiritRosterCabinet,
   resolveSpiritSanctuaryRite,
   resolveSpiritSifuCouncil,
   resolveSpiritStarterVow,
@@ -2016,6 +2018,68 @@ describe('Mochi Spirits alpha content contract', () => {
     expect(lineageRegister.milestoneLabels).toContain('Moonwell Bloom Form');
     expect(lineageRegister.message).toContain('No real value');
 
+    expect(SPIRIT_ROSTER_CABINETS.map((entry) => entry.id)).toEqual(['jade-roster-cabinet']);
+    const blockedCabinet = resolveSpiritRosterCabinet({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      storageSlotLabels: ['1-lirabao-guild-slot', '2-jintari-guild-slot', '3-aozhen-guild-slot'],
+      activeSpiritId: 'aozhen',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      lineageRegisterProof: false,
+      lineageRegisterId: 'jade-lineage-register',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Roster cabinet ready.']
+    });
+    expect(blockedCabinet).toMatchObject({
+      organized: false,
+      cabinetId: 'jade-roster-cabinet',
+      missing: ['lineage:jade-lineage-register']
+    });
+
+    const rosterCabinet = resolveSpiritRosterCabinet({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      storageSlotLabels: ['1-lirabao-guild-slot', '2-jintari-guild-slot', '3-aozhen-guild-slot'],
+      activeSpiritId: 'aozhen',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      lineageRegisterProof: true,
+      lineageRegisterId: 'jade-lineage-register',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Roster cabinet ready.']
+    });
+    expect(rosterCabinet).toMatchObject({
+      organized: true,
+      cabinetId: 'jade-roster-cabinet',
+      cabinetName: 'Jade Roster Cabinet',
+      activeSpiritId: 'aozhen',
+      roster: [...fullRoster],
+      partyIds: [...fullRoster],
+      reserveSpiritIds: [],
+      storageSlotLabels: ['1-lirabao-guild-slot', '2-jintari-guild-slot', '3-aozhen-guild-slot'],
+      localPresenceCount: 2,
+      score: 36,
+      requiredScore: 30,
+      rewardItemId: ALPHA_ITEMS.rosterCabinetTag.id,
+      source: 'spirit-roster-cabinet'
+    });
+    expect(rosterCabinet.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -2222,6 +2286,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      rosterCabinetProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2290,6 +2355,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      rosterCabinetProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2334,7 +2400,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 158,
+      score: 161,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2357,6 +2423,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      rosterCabinetProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2410,6 +2477,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      rosterCabinetProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2446,7 +2514,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 120,
+      score: 123,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'

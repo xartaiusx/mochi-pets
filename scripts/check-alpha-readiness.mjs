@@ -31,6 +31,10 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
+    includes: ['spirit.roster_cabinet', 'spiritRosterCabinets: true', 'Jade Roster Cabinet label/state', 'Jade Roster Cabinet Tag payload preservation']
+  },
+  {
+    file: 'AGENTS.md',
     includes: ['battle.dojo_ladder', 'dojoLadders: true', 'Jade Dojo Ladder label/state', 'Jade Dojo Ladder Seal payload preservation']
   },
   {
@@ -76,6 +80,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Lineage Register proof', 'Jade Lineage Register Seal', 'Lineage proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Roster Cabinet proof', 'Jade Roster Cabinet Tag', 'Roster cabinet proof is no-real-value']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -133,6 +141,10 @@ const checks = [
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Roster Cabinet proof', 'Jade Roster Cabinet', 'Organize Jade Roster Cabinet proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder', 'clear the Jade Dojo Ladder', 'no-real-value Jade Dojo Ladder']
   },
   {
@@ -165,6 +177,10 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.roster_cabinet', 'Jade Roster Cabinet', 'Jade Roster Cabinet Tag', 'rosterCabinetProof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
     includes: ['battle.dojo_ladder', 'Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'dojoLadderProof']
   },
   {
@@ -194,6 +210,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['lineage-register', 'record the Jade Lineage Register proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['roster-cabinet', 'organize the Jade Roster Cabinet proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -233,6 +253,10 @@ const checks = [
   },
   {
     file: 'docs/game-art-bible.md',
+    includes: ['Jade Roster Cabinet contribution', 'content-only Jade Roster Cabinet Tag proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
     includes: ['Jade Dojo Ladder contribution', 'content-only Jade Dojo Ladder Seal proof']
   },
   {
@@ -257,6 +281,10 @@ const checks = [
   },
   {
     file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Roster Cabinet proof', 'roster cabinet']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
     includes: ['Jade Dojo Ladder proof', 'ladder', 'content-only']
   },
   {
@@ -278,6 +306,10 @@ const checks = [
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Technique Codex move-library proof', 'battle.technique_codex']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Roster Cabinet proof', 'spirit.roster_cabinet', 'rosterCabinetProof']
   },
   {
     file: 'docs/implementation-brief.md',
@@ -313,6 +345,10 @@ const checks = [
   },
   {
     file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Roster Cabinet', 'Jade Roster Cabinet Tag', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
     includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'Content-only proof loops']
   },
   {
@@ -334,6 +370,10 @@ const checks = [
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Technique Codex', 'Jade Technique Codex Seal', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Roster Cabinet', 'Jade Roster Cabinet Tag', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/asset-ledger.md',
@@ -1009,6 +1049,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritRosterCabinets: true', "'spirit.roster_cabinet'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
@@ -1038,6 +1082,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['SPIRIT_ROSTER_CABINETS', 'rosterCabinetIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1193,6 +1241,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_ROSTER_CABINETS', 'resolveSpiritRosterCabinet', 'data-alpha-action="spirit.roster_cabinet"', 'data-roster-cabinet-label', 'rosterCabinetProof', 'rosterCabinetTagClaimed', 'Jade Roster Cabinet']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['GUILD_INSIGNIA_CASES', 'resolveGuildInsigniaCase', 'data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case']
   },
   {
@@ -1301,6 +1353,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_ROSTER_CABINETS', 'Jade Roster Cabinet', 'jade-roster-cabinet-tag', 'resolveSpiritRosterCabinet', 'spirit-roster-cabinet', 'rosterCabinetProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -1330,6 +1386,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['/healthz', '/play', '/embed', '/integration/game-manifest.json', '/integration/alpha/progress', '/integration/alpha/action', '/integration/alpha/enjin/submit', 'buildAlphaActionRequest', 'buildAlphaProgressRequest', 'getSupabaseEdgeConfig', 'ledgerVersion: 1', "source: 'local-alpha-ledger'", "alphaStopPoint: 'alpha-rc-ready'", "chainNetwork: 'CANARY'", 'requireGameServerToken', 'confirmNoRealValue', 'ALPHA_ACTION_TYPES.includes', 'questChains: true', 'routeMastery: true', 'fieldAccords: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritWeatherVeils: true', 'spiritEncounterAtlases: true', 'spiritHabitatCensuses: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'battleRoundTranscripts: true', 'spirit.capture', 'spirit.route_invite', 'world.route_mastery', 'spirit.habitat_bond', 'spirit.sanctuary_rite', 'spirit.research', 'spirit.compendium_complete', 'spirit.roster_archive', 'spirit.care_cycle', 'world.weather_veil', 'world.encounter_atlas', 'spirit.habitat_census', 'item.craft_writ', 'trade.exchange_accord', 'world.route_waystone', 'spirit.nurture_rite', 'battle.tournament_bracket', 'item.provision_satchel', 'guild.commission_complete', 'guild.social_rally', 'guild.wayfarer_chronicle', 'guild.ascension_trial', 'spirit.attune', 'spirit.journal', 'world.expedition', 'spirit.technique', 'spirit.technique_loadout', 'spirit.trait_attune', 'battle.condition_weave', 'battle.tactic_scroll', 'guild.rank_trial', 'spirit.growth_rite', 'party.set', 'party.harmony_form', 'battle.harmony_trial', 'battle.team_spar_match', 'battle.mentor_challenge', 'battle.affinity_trial', 'battle.spar_ladder', 'spirit.train', 'spirit.raise', 'quest.accept', 'quest.progress', 'chain.deposit_request', 'configured-preview-stub']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritRosterCabinets: true', 'spirit.roster_cabinet', 'rosterCabinetIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1465,6 +1525,10 @@ const checks = [
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
+    includes: ['spiritRosterCabinets: true', "rosterCabinetIds: ['jade-roster-cabinet']"]
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
     includes: ['spiritBloomAscendances: true']
   },
   {
@@ -1593,6 +1657,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.roster_cabinet', 'jade-roster-cabinet', 'spiritRosterCabinets', 'Jade Roster Cabinet', 'rosterCabinetProof', 'jade-roster-cabinet-tag']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
   },
   {
@@ -1644,8 +1712,16 @@ const checks = [
     includes: ['questLedgerIds', 'jade-quest-ledger']
   },
   {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['rosterCabinetIds', 'jade-roster-cabinet']
+  },
+  {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="spirit.capture"', 'captureProof', 'data-alpha-action="spirit.route_invite"', 'routeInviteProof', 'data-field-accord-label', 'fieldAccordProof', 'cloudbell-skyvow-accord', 'Cloudbell Skyvow Accord cleared', 'fieldAccordTalismanClaimed', 'data-alpha-action="world.route_mastery"', 'routeMasteryProof', 'data-alpha-action="spirit.habitat_bond"', 'habitatBondProof', 'data-alpha-action="spirit.sanctuary_rite"', 'data-sanctuary-label', 'sanctuaryRiteProof', 'sanctuaryBellClaimed', 'Jade Court Sanctuary Rite complete', 'data-alpha-action="spirit.research"', 'researchProof', 'data-alpha-action="spirit.compendium_complete"', 'compendiumProof', 'data-alpha-action="spirit.roster_archive"', 'data-archive-label', 'rosterArchiveProof', 'rosterArchiveSealClaimed', 'Jade Court Roster Archive sealed', 'data-alpha-action="spirit.care_cycle"', 'data-care-cycle-label', 'careCycleProof', 'careCycleKnotClaimed', 'Jade Court Care Cycle complete', 'data-alpha-action="spirit.temperament_concord"', 'data-temperament-label', 'temperamentConcordProof', 'temperamentCharmClaimed', 'Jade Temperament Concord complete', 'data-alpha-action="spirit.field_almanac"', 'data-field-almanac-label', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac recorded', 'data-alpha-action="spirit.habitat_census"', 'data-habitat-census-label', 'habitatCensusProof', 'habitatCensusSealClaimed', 'Jade Habitat Census recorded', 'data-alpha-action="item.provision_satchel"', 'provisionProof', 'jade-court-provision-satchel', 'data-alpha-action="guild.commission_complete"', 'commissionProof', 'jade-court-commission-ledger', 'data-alpha-action="guild.social_rally"', 'rallyProof', 'emoteProof', 'Jade Courtyard Rally', 'data-alpha-action="guild.wayfarer_chronicle"', 'data-chronicle-label', 'wayfarerChronicleProof', 'wayfarerChronicleClaspClaimed', 'Jade Wayfarer Chronicle complete', 'data-alpha-action="guild.ascension_trial"', 'data-ascension-label', 'guildAscensionProof', 'guildAscensionRibbonClaimed', 'Jade Court Ascension Trial complete', 'data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament cleared', 'jade-court-spirit-compendium', 'jade-cloudbell-circuit', 'jade-court-habitat-bond', 'jade-court-research-folio', 'cloudbell-reed-bank', 'aozhen', 'data-alpha-action="party.harmony_form"', 'harmonyFormProof', 'triune-jade-harmony', 'data-alpha-action="battle.harmony_trial"', 'harmonyTrialProof', 'jade-echo-concord', 'data-alpha-action="battle.team_spar_match"', 'teamSparMatchProof', 'jade-mirror-team-match', 'data-alpha-action="battle.mentor_challenge"', 'mentorChallengeProof', 'silk-banner-mentor-drill', 'data-alpha-action="spirit.technique_loadout"', 'techniqueLoadoutProof', 'jade-step-loadout', 'data-alpha-action="spirit.trait_attune"', 'traitAttunementProof', 'jade-heart-trait', 'data-alpha-action="battle.condition_weave"', 'conditionWeaveProof', 'jade-mirror-condition-weave', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.journal"', 'journalProof', 'data-alpha-action="world.expedition"', 'expeditionProof', 'data-alpha-action="spirit.technique"', 'techniqueProof', 'data-alpha-action="battle.tactic_scroll"', 'tacticProof', 'data-alpha-action="guild.rank_trial"', 'guildRankProof', 'data-alpha-action="spirit.growth_rite"', 'growthRiteProof', 'data-alpha-action="battle.affinity_trial"', 'affinityProof', 'data-alpha-action="party.set"', 'partyIds', 'data-alpha-action="spirit.care"', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="battle.spar_ladder"', 'sparLadderXp', 'battleRoundProof', 'battleRoundTranscript', 'data-battle-round-label', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'completedQuestIds', 'questChainProof', 'chain.withdraw_request', 'chain.deposit_request', 'canaryReturnRequested', 'Jade Vault Return Proof staged', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowLeft', 'ArrowDown', 'canvas']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.roster_cabinet"', 'data-roster-cabinet-label', 'rosterCabinetProof', 'rosterCabinetTagClaimed', 'Jade Roster Cabinet organized']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1818,6 +1894,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['alpha-visual-review.json', 'alpha-visual-review.md', 'readGitState', 'manualPromptGate', 'pending-human-review', 'alpha:manual-prompt-review', 'observerMovement', 'guild-seal-chest', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'fieldExpedition', 'fieldAccord', 'fieldAccordProof', 'routeInvitation', 'habitatBond', 'habitatBondProof', 'sanctuaryRiteProof', 'sanctuaryBellClaimed', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'spirit-sanctuary-rite', 'sanctuary rite', 'spiritResearch', 'researchProof', 'spiritCompendium', 'compendiumProof', 'rosterArchiveProof', 'rosterArchiveSealClaimed', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'spirit-roster-archive', 'roster archive', 'careCycleProof', 'careCycleKnotClaimed', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'spirit-care-cycle', 'care cycle', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'spirit-field-almanac', 'field almanac', 'provisionSatchel', 'provisionProof', 'guildCommission', 'commissionProof', 'socialRally', 'guildSocialRally', 'rallyProof', 'emoteProof', 'wayfarerChronicleProof', 'wayfarerChronicleClaspClaimed', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'guild-wayfarer-chronicle', 'wayfarer chronicle', 'guildAscensionProof', 'guildAscensionRibbonClaimed', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'guild-ascension-trial', 'guild ascension trial', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'battle-tournament-bracket', 'tournament bracket', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'techniqueMastery', 'battleTactic', 'guildRank', 'growthRite', 'partyHarmony', 'harmonyFormProof', 'harmonyTrial', 'harmonyTrialProof', 'teamSparMatch', 'teamSparMatchProof', 'mentorChallengeProof', 'conditionWeaveProof', 'battleConditionWeave', 'relicAttunementProof', 'relicSilkCordClaimed', 'Jade Relic Attunement', 'canaryReturnPreview', 'canaryReturnRequested', 'battleRoundTranscript', 'battleRoundProof', 'affinityTrial', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'Jade Lantern Court']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['rosterCabinetProof', 'rosterCabinetTagClaimed', 'Jade Roster Cabinet', 'jade-roster-cabinet', 'roster cabinet']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
