@@ -687,6 +687,9 @@ assert(browserBridgeSource.includes('resolveSpiritBloomAscendance'), 'HUD bridge
 assert(browserBridgeSource.includes('data-alpha-action="spirit.lineage_register"'), 'HUD must expose the lineage register action button');
 assert(browserBridgeSource.includes('data-lineage-register-label'), 'HUD must expose the lineage register label');
 assert(browserBridgeSource.includes('resolveSpiritLineageRegister'), 'HUD bridge must call the lineage register resolver');
+assert(browserBridgeSource.includes('data-roster-panel'), 'HUD must expose the first-court roster detail panel');
+assert(browserBridgeSource.includes('data-roster-spirit'), 'HUD roster panel must expose per-spirit detail entries');
+assert(browserBridgeSource.includes('renderRosterPanel'), 'HUD bridge must render roster details from canonical Mochi Spirit content');
 assert(browserBridgeSource.includes('data-alpha-action="battle.dojo_ladder"'), 'HUD must expose the dojo ladder action button');
 assert(browserBridgeSource.includes('data-dojo-ladder-label'), 'HUD must expose the dojo ladder label');
 assert(browserBridgeSource.includes('resolveSpiritDojoLadder'), 'HUD bridge must call the dojo ladder resolver');

@@ -166,6 +166,8 @@ body::before {
   display: grid;
   gap: 6px;
   width: min(300px, calc(100vw - 24px));
+  max-height: min(520px, calc(100vh - 252px));
+  overflow: auto;
   padding: 10px;
 }
 
@@ -193,6 +195,46 @@ body::before {
   color: rgb(248 250 246 / 74%);
   font-size: 12px;
   line-height: 1.35;
+  white-space: normal !important;
+}
+
+.mochi-hud__roster-panel {
+  display: grid;
+  gap: 6px;
+}
+
+.mochi-hud__roster-spirit {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgb(126 218 178 / 16%);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgb(126 218 178 / 10%), rgb(20 49 43 / 38%)),
+    rgb(12 28 27 / 66%);
+  padding: 7px;
+}
+
+.mochi-hud__roster-spirit[data-roster-active="true"] {
+  border-color: rgb(255 223 145 / 40%);
+  background:
+    linear-gradient(180deg, rgb(255 223 145 / 16%), rgb(20 49 43 / 42%)),
+    rgb(31 43 30 / 72%);
+}
+
+.mochi-hud__roster-spirit strong {
+  font-size: 13px !important;
+  line-height: 1.2;
+  white-space: normal !important;
+}
+
+.mochi-hud__roster-spirit span {
+  min-height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: rgb(248 250 246 / 76%);
+  font-size: 11px;
+  line-height: 1.25;
   white-space: normal !important;
 }
 

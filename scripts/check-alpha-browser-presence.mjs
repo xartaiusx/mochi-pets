@@ -328,6 +328,7 @@ async function exerciseAlphaHud(page) {
       const growth = document.querySelector('[data-growth-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
+      const rosterPanel = document.querySelector('[data-roster-panel]')?.textContent || '';
       const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
       const state = JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}');
       const chat = Array.isArray(state.chat) ? state.chat.join(' ') : '';
@@ -407,6 +408,15 @@ async function exerciseAlphaHud(page) {
         && growth.includes('Moonwell Bloom Form')
         && quest.includes('Quest Chain')
         && market.includes('Canary: request + return staged')
+        && rosterPanel.includes('Lirabao')
+        && rosterPanel.includes('Jintari')
+        && rosterPanel.includes('Aozhen')
+        && rosterPanel.includes('active glow bond 5/5')
+        && rosterPanel.includes('Skybell Vow Invitation')
+        && rosterPanel.includes('Skybell Guard')
+        && rosterPanel.includes('Tea ribbon care')
+        && rosterPanel.includes('Jade brush grooming')
+        && rosterPanel.includes('Canary eligible, no real value')
         && state.spiritId === 'aozhen'
         && state.captureProof === true
         && state.lastCaptureSpiritId === 'aozhen'
@@ -1105,6 +1115,7 @@ async function exerciseAlphaHud(page) {
       mentor: document.querySelector('[data-mentor-label]')?.textContent || '',
       battleRound: document.querySelector('[data-battle-round-label]')?.textContent || '',
       quest: document.querySelector('[data-quest-label]')?.textContent || '',
+      rosterPanel: document.querySelector('[data-roster-panel]')?.textContent || '',
       state: JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}')
     }));
     console.error(`HUD action diagnostic before timeout:\n${JSON.stringify(diagnostic, null, 2)}`);
@@ -1178,6 +1189,7 @@ async function exerciseAlphaHud(page) {
       growth: document.querySelector('[data-growth-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
+      rosterPanel: document.querySelector('[data-roster-panel]')?.textContent?.trim() || '',
       feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || ''),
       state
     };
@@ -1190,6 +1202,15 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('lirabao'), 'HUD attune action must add Lirabao to the local spirit roster.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('jintari'), 'HUD route invitation must add Jintari to the local spirit roster.');
   assert(Array.isArray(snapshot.state.attunedSpiritIds) && snapshot.state.attunedSpiritIds.includes('aozhen'), 'HUD second route invitation must add Aozhen to the local spirit roster.');
+  assert(snapshot.rosterPanel.includes('Lirabao'), 'HUD roster panel must include Lirabao.');
+  assert(snapshot.rosterPanel.includes('Jintari'), 'HUD roster panel must include Jintari.');
+  assert(snapshot.rosterPanel.includes('Aozhen'), 'HUD roster panel must include Aozhen.');
+  assert(snapshot.rosterPanel.includes('active glow bond 5/5'), 'HUD roster panel must expose the active spirit growth and bond.');
+  assert(snapshot.rosterPanel.includes('Skybell Vow Invitation'), 'HUD roster panel must expose original capture invitation labels.');
+  assert(snapshot.rosterPanel.includes('Skybell Guard'), 'HUD roster panel must expose original battle move labels.');
+  assert(snapshot.rosterPanel.includes('Tea ribbon care'), 'HUD roster panel must expose original care actions.');
+  assert(snapshot.rosterPanel.includes('Jade brush grooming'), 'HUD roster panel must expose original raising needs.');
+  assert(snapshot.rosterPanel.includes('Canary eligible, no real value'), 'HUD roster panel must retain Canary no-real-value language.');
   assert(snapshot.journal.includes('Journal:'), 'HUD journal label must show collection state.');
   assert(snapshot.state.journalProof === true, 'HUD journal action must record journal proof.');
   assert(snapshot.state.journalDiscoveredCount === 3, 'HUD journal action must record all three alpha spirits.');

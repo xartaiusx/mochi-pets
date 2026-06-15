@@ -1489,6 +1489,7 @@ function createHud() {
     <div class="mochi-hud__spirit-card" aria-label="Active Mochi Spirit">
       <span class="mochi-hud__kicker">Active Spirit</span>
       <strong data-spirit-label>Spirit: none</strong>
+      <section class="mochi-hud__roster-panel" data-roster-panel aria-label="First-Court Mochi Spirit roster"></section>
       <span class="mochi-hud__hint" data-starter-vow-label>Starter: pending</span>
       <span class="mochi-hud__hint" data-journal-label>Journal: 0/${MOCHI_SPIRITS.length} records</span>
       <span class="mochi-hud__hint" data-expedition-label>Route: not scouted</span>
@@ -1641,6 +1642,7 @@ function createHud() {
   const rankLabel = hud.querySelector('[data-rank-label]');
   const statusLabel = hud.querySelector('[data-status-label]');
   const spiritLabel = hud.querySelector('[data-spirit-label]');
+  const rosterPanel = hud.querySelector<HTMLElement>('[data-roster-panel]');
   const starterVowLabel = hud.querySelector('[data-starter-vow-label]');
   const journalLabel = hud.querySelector('[data-journal-label]');
   const expeditionLabel = hud.querySelector('[data-expedition-label]');
@@ -1722,6 +1724,9 @@ function createHud() {
     }
     if (spiritLabel) {
       spiritLabel.textContent = spirit ? `${spirit.name}: ${state.growth} growth, bond ${state.bond}/5` : 'Spirit: none';
+    }
+    if (rosterPanel) {
+      rosterPanel.innerHTML = renderRosterPanel(state);
     }
     if (starterVowLabel) {
       starterVowLabel.textContent = state.starterVowProof
@@ -2302,6 +2307,48 @@ function appendUniqueAlphaChat(state: AlphaHudState, message: string) {
   if (state.chat[state.chat.length - 1] !== message) {
     state.chat.push(message);
   }
+}
+
+function escapeHudText(value: unknown) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderRosterPanel(state: AlphaHudState) {
+  const rosterIds = new Set(state.attunedSpiritIds);
+  const activeSpiritId = state.spiritId || '';
+  const bond = Math.max(0, Math.min(5, Number(state.bond) || 0));
+  const growth = state.growth || growthStageFromBond(bond);
+
+  return MOCHI_SPIRITS.map((spirit) => {
+    const isActive = spirit.id === activeSpiritId;
+    const isBonded = rosterIds.has(spirit.id);
+    const milestone = resolveSpiritBondMilestone(spirit.id, isActive ? bond : 0, isActive ? growth : 'seed');
+    const nextMilestone = milestone.nextMilestone?.label || milestone.milestone?.label || spirit.bondMilestones[0]?.label || 'First bond';
+    const move = spirit.battle.moves[0];
+    const careAction = spirit.careActions[0];
+    const raisingNeed = spirit.raisingNeeds[0];
+    const status = isBonded ? (isActive ? `active ${growth} bond ${bond}/5` : 'rostered') : 'invite pending';
+    const canary = spirit.certificateEligible ? 'Canary eligible, no real value' : 'preview roster, no real value';
+
+    return `
+      <article class="mochi-hud__roster-spirit" data-roster-spirit="${escapeHudText(spirit.id)}" data-roster-active="${isActive ? 'true' : 'false'}" data-roster-bonded="${isBonded ? 'true' : 'false'}">
+        <strong>${escapeHudText(spirit.name)}</strong>
+        <span>${escapeHudText(spirit.title)}</span>
+        <span>${escapeHudText(status)}</span>
+        <span>${escapeHudText(spirit.affinity)} affinity, ${escapeHudText(spirit.temperament)}</span>
+        <span>${escapeHudText(spirit.capture.invitationLabel)} - ${escapeHudText(spirit.capture.rarity)}</span>
+        <span>${escapeHudText(move.label)} / ${escapeHudText(spirit.battle.role)}</span>
+        <span>Care: ${escapeHudText(careAction.label)}; Raise: ${escapeHudText(raisingNeed.label)}</span>
+        <span>${escapeHudText(nextMilestone)}</span>
+        <span>${escapeHudText(canary)}</span>
+      </article>
+    `;
+  }).join('');
 }
 
 function normalizeBondMap(value: unknown, fallbackBond = 1): Record<string, number> {
