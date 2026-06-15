@@ -93,7 +93,7 @@ const report = {
   checks,
   instructions: {
     localUrl: '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
-    actionInput: 'Focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.',
+    actionInput: 'Focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.',
     requiredEnv: checks.map((check) => `${check.env}=true`),
     completionCommand: 'Set the required env vars plus MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER and MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER, then run npm run alpha:manual-prompt-review.'
   },
@@ -222,7 +222,7 @@ Generated: ${summary.checkedAt}
 
 This file is intentionally no-secret. It records the Alpha RC operator/human review for rendered in-canvas NPC, guild seal chest, and habitat/care prompts.
 
-Input note: focus the game canvas, stand adjacent to the map object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+Input note: focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 
 ## Status
 
