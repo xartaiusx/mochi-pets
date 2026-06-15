@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
@@ -1081,7 +1082,13 @@ function addManualPromptReviewRequirements() {
 
   const report = promptReport.data;
   const failures = Array.isArray(report.failures) ? [...report.failures] : ['failures array missing'];
-  failures.push(...currentGitStateFailures(report.git, 'manual prompt review report'));
+  const gitFailures = currentGitStateFailures(report.git, 'manual prompt review report');
+  const sourceEvidence = manualPromptSourceEvidence(report);
+  failures.push(...(sourceEvidence.matchesCurrentSource
+    ? gitFailures.filter((failure) => !failure.includes('localHead does not match current HEAD'))
+    : gitFailures
+  ));
+  if (!sourceEvidence.matchesCurrentSource) failures.push(...sourceEvidence.failures);
   if (report.ok !== true) failures.push('manual prompt review report is not ok');
   if (report.review?.status !== 'completed') failures.push(`manual prompt review status is ${report.review?.status || 'missing'}`);
   if (hasHostedUrl(report.review?.url) && report.review?.hostedAllowed !== true) {
@@ -1110,9 +1117,49 @@ function addManualPromptReviewRequirements() {
       hostedAllowed: report.review?.hostedAllowed,
       completedChecks: report.completedChecks,
       pendingChecks: report.pendingChecks,
+      sourceEvidence,
       failures
     }
   );
+}
+
+function manualPromptSourceEvidence(report) {
+  const expected = [
+    {
+      label: 'eventSource',
+      path: resolve(root, 'apps/game/src/modules/main/event.ts'),
+      expectedHash: report?.sourceEvidence?.eventSource?.sha256
+    },
+    {
+      label: 'mapServerSource',
+      path: resolve(root, 'apps/game/src/modules/main/server.ts'),
+      expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
+    }
+  ];
+  const failures = [];
+  const files = expected.map((entry) => {
+    const currentHash = fileSha256(entry.path);
+    if (!entry.expectedHash) failures.push(`${entry.label} hash is missing from manual prompt review report`);
+    if (!currentHash) failures.push(`${entry.label} source file is missing`);
+    if (entry.expectedHash && currentHash && entry.expectedHash !== currentHash) {
+      failures.push(`${entry.label} source hash changed since manual prompt review`);
+    }
+    return {
+      label: entry.label,
+      path: pathForReport(entry.path),
+      matches: Boolean(entry.expectedHash && currentHash && entry.expectedHash === currentHash)
+    };
+  });
+  return {
+    matchesCurrentSource: failures.length === 0,
+    files,
+    failures
+  };
+}
+
+function fileSha256(file) {
+  if (!existsSync(file)) return '';
+  return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
 function syncExternalGateSnapshotFailures(syncReport) {
@@ -1413,6 +1460,12 @@ function defaultCredsDir() {
   if (process.env.USERPROFILE) return resolve(process.env.USERPROFILE, 'Desktop', 'Creds');
   if (process.env.HOME) return resolve(process.env.HOME, 'Desktop', 'Creds');
   return resolve(root, '.local', 'creds');
+}
+
+function pathForReport(file) {
+  return String(file || '').startsWith(root)
+    ? String(file).slice(root.length + 1).replace(/\\/g, '/')
+    : String(file || '').replace(/\\/g, '/');
 }
 
 function sanitize(value) {

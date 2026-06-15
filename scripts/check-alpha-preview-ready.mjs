@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
@@ -81,9 +82,14 @@ function addManualPromptRequirement() {
     return;
   }
 
-  const failures = currentGitStateFailures(prompt.data?.git, root, 'manual prompt review report');
+  const gitFailures = currentGitStateFailures(prompt.data?.git, root, 'manual prompt review report');
+  const sourceEvidence = manualPromptSourceEvidence(prompt.data);
+  const failures = sourceEvidence.matchesCurrentSource
+    ? gitFailures.filter((failure) => !failure.includes('localHead does not match current HEAD'))
+    : gitFailures;
   if (prompt.data?.ok !== true) failures.push('manual prompt review report is not ok');
   if (prompt.data?.review?.status !== 'completed') failures.push('manual prompt review is not completed');
+  if (!sourceEvidence.matchesCurrentSource) failures.push(...sourceEvidence.failures);
   const completed = Array.isArray(prompt.data?.completedChecks) ? prompt.data.completedChecks : [];
   const missing = ['welcome-npc', 'guild-seal-chest', 'care-shrine'].filter((id) => !completed.includes(id));
   if (missing.length) failures.push(`manual prompt review missing completed checks: ${missing.join(', ')}`);
@@ -91,7 +97,8 @@ function addManualPromptRequirement() {
   add('preview.manual-prompt-review', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Rendered NPC, guild seal chest, and habitat/care prompt review is complete for current HEAD.', {
     path: 'reports/alpha-manual-prompt-review.json',
     status: prompt.data?.review?.status,
-    completedChecks: completed
+    completedChecks: completed,
+    sourceEvidence
   });
 }
 
@@ -210,6 +217,51 @@ function readJson(file) {
   } catch {
     return { ok: false, message: 'parse failed' };
   }
+}
+
+function manualPromptSourceEvidence(report) {
+  const expected = [
+    {
+      label: 'eventSource',
+      path: resolve(root, 'apps/game/src/modules/main/event.ts'),
+      expectedHash: report?.sourceEvidence?.eventSource?.sha256
+    },
+    {
+      label: 'mapServerSource',
+      path: resolve(root, 'apps/game/src/modules/main/server.ts'),
+      expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
+    }
+  ];
+  const failures = [];
+  const files = expected.map((entry) => {
+    const currentHash = fileSha256(entry.path);
+    if (!entry.expectedHash) failures.push(`${entry.label} hash is missing from manual prompt review report`);
+    if (!currentHash) failures.push(`${entry.label} source file is missing`);
+    if (entry.expectedHash && currentHash && entry.expectedHash !== currentHash) {
+      failures.push(`${entry.label} source hash changed since manual prompt review`);
+    }
+    return {
+      label: entry.label,
+      path: pathForReport(entry.path),
+      matches: Boolean(entry.expectedHash && currentHash && entry.expectedHash === currentHash)
+    };
+  });
+  return {
+    matchesCurrentSource: failures.length === 0,
+    files,
+    failures
+  };
+}
+
+function fileSha256(file) {
+  if (!existsSync(file)) return '';
+  return createHash('sha256').update(readFileSync(file)).digest('hex');
+}
+
+function pathForReport(file) {
+  return String(file || '').startsWith(root)
+    ? String(file).slice(root.length + 1).replace(/\\/g, '/')
+    : String(file || '').replace(/\\/g, '/');
 }
 
 function git(args, cwd) {
