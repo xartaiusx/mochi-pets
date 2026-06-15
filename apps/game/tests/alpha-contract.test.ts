@@ -15,6 +15,7 @@ import {
   SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
   SPIRIT_BLOSSOM_CRADLES,
+  SPIRIT_BOND_GIFT_RITES,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_BATTLE_CONDITIONS,
@@ -98,6 +99,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBlossomCradle,
   resolveSpiritBloomAscendance,
+  resolveSpiritBondGiftRite,
   resolveSpiritBondMilestone,
   resolveSpiritProvisionCatalog,
   resolveSpiritRouteInvitation,
@@ -191,6 +193,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritLineageRegisters).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritBlossomCradles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritBondGiftRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.remedyPouches).toBe(true);
@@ -283,6 +286,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.lineage_register');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_cabinet');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.blossom_cradle');
+    expect(ALPHA_ACTION_TYPES).toContain('item.bond_gift');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
     expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
@@ -1124,6 +1128,57 @@ describe('alpha contract', () => {
       profileViewed: true,
       guildBuddyProof: true
     }).cycled).toBe(false);
+
+    expect(SPIRIT_BOND_GIFT_RITES.map((rite) => rite.id)).toEqual(['jade-bond-gift-rite']);
+    const bondGift = resolveSpiritBondGiftRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Gift rite ready.']
+    });
+    expect(bondGift).toMatchObject({
+      ok: true,
+      gifted: true,
+      riteId: 'jade-bond-gift-rite',
+      riteName: 'Jade Bond Gift Rite',
+      title: 'First-Court Care Gift',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      localPresenceCount: 2,
+      score: 38,
+      requiredScore: 36,
+      rewardItemId: 'jade-bond-gift-ribbon',
+      source: 'item-bond-gift'
+    });
+    expect(bondGift.message).toContain('No-real-value care gift proof');
+    expect(resolveSpiritBondGiftRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      marketReceiptProof: false,
+      marketReceiptId: 'jade-court-market-receipt',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Gift rite ready.']
+    }).gifted).toBe(false);
 
     expect(SPIRIT_TEMPERAMENT_CONCORDS.map((concord) => concord.id)).toEqual(['jade-temperament-concord']);
     const temperament = resolveSpiritTemperamentConcord({

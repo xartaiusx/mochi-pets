@@ -770,6 +770,60 @@ export interface SpiritProvisionSatchelResult {
   source: string;
 }
 
+export interface SpiritBondGiftRite {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredGiftItemIds: readonly string[];
+  requiredProvisionSatchelId: string;
+  requiredCareCycleId: string;
+  requiredMarketReceiptId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritBondGiftProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  giftItemIds: readonly string[];
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  marketReceiptProof: boolean;
+  marketReceiptId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritBondGiftResult {
+  ok: boolean;
+  gifted: boolean;
+  riteId: string;
+  riteName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  giftItemIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritProvisionCatalog {
   id: string;
   name: string;
@@ -4111,6 +4165,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Mooncake Box',
     description: 'A no-real-value care provision for closed-alpha Mochirii spirit raising.'
   },
+  bondGiftRibbon: {
+    id: 'jade-bond-gift-ribbon',
+    name: 'Jade Bond Gift Ribbon',
+    description: 'A no-real-value care gift proof for closed-alpha Mochirii spirit raising, provision, market, and social readiness.'
+  },
   provisionSatchel: {
     id: 'jade-court-provision-satchel',
     name: 'Jade Court Provision Satchel',
@@ -4811,6 +4870,25 @@ export const SPIRIT_CARE_CYCLES: readonly SpiritCareCycle[] = [
     requiredScore: 32,
     rewardItemId: ALPHA_ITEMS.careCycleKnot.id,
     summary: 'A no-real-value full-roster care rotation proof for testers who raise every first-court Mochi Spirit with supplies, archive tracking, sanctuary restoration, and social guild presence.'
+  }
+];
+
+export const SPIRIT_BOND_GIFT_RITES: readonly SpiritBondGiftRite[] = [
+  {
+    id: 'jade-bond-gift-rite',
+    name: 'Jade Bond Gift Rite',
+    title: 'First-Court Care Gift',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredGiftItemIds: [ALPHA_ITEMS.mooncakeBox.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredMarketReceiptId: 'jade-court-market-receipt',
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 36,
+    rewardItemId: ALPHA_ITEMS.bondGiftRibbon.id,
+    summary: 'A no-real-value care gift proof for testers who connect full-roster care, provision stocking, fixed-price market receipts, guild social presence, and original Mochirii gift items without creating production inventory or settled assets.'
   }
 ];
 
@@ -6982,6 +7060,104 @@ export function resolveSpiritCareCycle(
       ? `${cycle.name} complete: ${activeName} helps ${caredNames || 'the first-court roster'} rotate care, training, supplies, archive notes, and sanctuary rest.${milestone} No real value.`
       : `${cycle.name} needs ${missing.join(', ')} before the full-roster care rotation can be recorded.`,
     source: 'spirit-care-cycle'
+  };
+}
+
+export function resolveSpiritBondGiftRite(
+  progress: SpiritBondGiftProgress,
+  riteId: string = SPIRIT_BOND_GIFT_RITES[0].id
+): SpiritBondGiftResult {
+  const rite = SPIRIT_BOND_GIFT_RITES.find((entry) => entry.id === riteId) || SPIRIT_BOND_GIFT_RITES[0];
+  const requiredSpiritIds = new Set(rite.requiredSpiritIds);
+  const knownItemIds = new Set<string>(Object.values(ALPHA_ITEMS).map((item) => item.id));
+  const giftItemSet = new Set(progress.giftItemIds.filter(Boolean));
+  const giftItemIds = rite.requiredGiftItemIds.filter((itemId) => giftItemSet.has(itemId) && knownItemIds.has(itemId));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const activeSpiritName = getMochiSpirit(activeSpiritId || '')?.name || 'the first-court roster';
+  const missing: string[] = [];
+
+  for (const spiritId of rite.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) {
+      missing.push(`spirit:${spiritId}`);
+    }
+  }
+
+  for (const itemId of rite.requiredGiftItemIds) {
+    if (!giftItemSet.has(itemId)) {
+      missing.push(`gift:${itemId}`);
+    }
+  }
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === rite.requiredProvisionSatchelId;
+  if (!provisionReady) {
+    missing.push(`provision:${rite.requiredProvisionSatchelId}`);
+  }
+
+  const careReady = progress.careCycleProof && progress.careCycleId === rite.requiredCareCycleId;
+  if (!careReady) {
+    missing.push(`care-cycle:${rite.requiredCareCycleId}`);
+  }
+
+  const marketReady = progress.marketReceiptProof && progress.marketReceiptId === rite.requiredMarketReceiptId;
+  if (!marketReady) {
+    missing.push(`market-receipt:${rite.requiredMarketReceiptId}`);
+  }
+
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  if (localPresenceCount < rite.requiredPresenceCount) {
+    missing.push(`presence:${localPresenceCount}/${rite.requiredPresenceCount}`);
+  }
+
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  if (!statusReady) {
+    missing.push('status');
+  }
+
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  if (chatLines.length < rite.requiredChatLines) {
+    missing.push(`chat:${chatLines.length}/${rite.requiredChatLines}`);
+  }
+
+  const score =
+    giftItemIds.length * 3 +
+    Math.min(roster.length, rite.requiredSpiritIds.length) * 2 +
+    (provisionReady ? 5 : 0) +
+    (careReady ? 5 : 0) +
+    (marketReady ? 5 : 0) +
+    Math.min(localPresenceCount, rite.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(chatLines.length, rite.requiredChatLines);
+  const gifted = missing.length === 0 && score >= rite.requiredScore;
+
+  return {
+    ok: true,
+    gifted,
+    riteId: rite.id,
+    riteName: rite.name,
+    title: rite.title,
+    habitat: rite.habitat,
+    activeSpiritId,
+    activeSpiritName,
+    roster,
+    giftItemIds,
+    localPresenceCount,
+    score,
+    requiredScore: rite.requiredScore,
+    missing,
+    rewardItemId: rite.rewardItemId,
+    message: gifted
+      ? `${rite.name} complete: ${activeSpiritName} receives mooncake, harmony tea, and a jade thread charm with full-roster care, provision, market receipt, and local guild witness proof. No-real-value care gift proof only.`
+      : `${rite.name} needs ${missing.join(', ')} before the first-court care gift can be recorded.`,
+    source: 'item-bond-gift'
   };
 }
 

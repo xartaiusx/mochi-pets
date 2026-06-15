@@ -1137,6 +1137,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritBondGiftRites: true', "'item.bond_gift'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
@@ -1174,6 +1178,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/manifest.ts',
     includes: ['SPIRIT_BLOSSOM_CRADLES', 'blossomCradleIds']
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['SPIRIT_BOND_GIFT_RITES', 'bondGiftRiteIds']
   },
   {
     file: 'apps/game/src/integration/manifest.ts',
@@ -1345,6 +1353,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_BOND_GIFT_RITES', 'resolveSpiritBondGiftRite', 'data-alpha-action="item.bond_gift"', 'data-bond-gift-label', 'bondGiftProof', 'bondGiftRibbonClaimed', 'Jade Bond Gift Rite']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['GUILD_INSIGNIA_CASES', 'resolveGuildInsigniaCase', 'data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case']
   },
   {
@@ -1465,6 +1477,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_BOND_GIFT_RITES', 'Jade Bond Gift Rite', 'jade-bond-gift-ribbon', 'resolveSpiritBondGiftRite', 'item-bond-gift', 'SpiritBondGiftProgress']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -1502,6 +1518,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritBlossomCradles: true', 'spirit.blossom_cradle', 'blossomCradleIds']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritBondGiftRites: true', 'item.bond_gift', 'bondGiftRiteIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1660,6 +1680,14 @@ const checks = [
     includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'spirit.blossom_cradle', 'blossomCradleProof']
   },
   {
+    file: 'apps/game/tests/alpha-contract.test.ts',
+    includes: ['SPIRIT_BOND_GIFT_RITES', 'resolveSpiritBondGiftRite', 'item.bond_gift', 'jade-bond-gift-ribbon']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['spiritBondGiftRites: true', "bondGiftRiteIds: ['jade-bond-gift-rite']"]
+  },
+  {
     file: 'apps/game/tests/alpha-content.test.ts',
     includes: ['SPIRIT_ROUTE_CHARTERS', 'resolveSpiritRouteCharter', 'jade-route-charter-slip', 'routeCharterProof']
   },
@@ -1809,6 +1837,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['item.bond_gift', 'jade-bond-gift-rite', 'Jade Bond Gift Rite', 'bondGift', 'jade-bond-gift-ribbon']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
   },
   {
@@ -1882,6 +1914,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.blossom_cradle"', 'data-blossom-cradle-label', 'blossomCradleProof', 'blossomCradleRibbonClaimed', 'Jade Blossom Cradle settled']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="item.bond_gift"', 'data-bond-gift-label', 'bondGiftProof', 'bondGiftRibbonClaimed', 'Jade Bond Gift Rite complete']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -2066,6 +2102,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['blossomCradleProof', 'blossomCradleRibbonClaimed', 'Jade Blossom Cradle', 'jade-blossom-cradle', 'blossom cradle']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['bondGiftProof', 'bondGiftRibbonClaimed', 'Jade Bond Gift Rite', 'jade-bond-gift-rite', 'bond gift']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

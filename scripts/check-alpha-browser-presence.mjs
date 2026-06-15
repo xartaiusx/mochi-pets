@@ -233,6 +233,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="trade.direct_offer"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care_cycle"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="item.bond_gift"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.temperament_concord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
@@ -305,6 +306,7 @@ async function exerciseAlphaHud(page) {
       const battleKit = document.querySelector('[data-battle-kit-label]')?.textContent || '';
       const remedyPouch = document.querySelector('[data-remedy-pouch-label]')?.textContent || '';
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
+      const bondGift = document.querySelector('[data-bond-gift-label]')?.textContent || '';
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
@@ -386,6 +388,7 @@ async function exerciseAlphaHud(page) {
         && battleKit.includes('Jade Battle Kit')
         && remedyPouch.includes('Jade Remedy Pouch')
         && careCycle.includes('Jade Court Care Cycle')
+        && bondGift.includes('Jade Bond Gift Rite')
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
@@ -629,6 +632,16 @@ async function exerciseAlphaHud(page) {
         && state.careCycleCaredSpiritIds.length === 3
         && state.careCycleTotalBond >= 9
         && state.careCycleKnotClaimed === true
+        && state.bondGiftProof === true
+        && state.bondGiftRiteId === 'jade-bond-gift-rite'
+        && state.bondGiftScore >= 36
+        && state.bondGiftRequiredScore === 36
+        && Array.isArray(state.bondGiftItemIds)
+        && state.bondGiftItemIds.includes('jade-mooncake-box')
+        && state.bondGiftItemIds.includes('lantern-harmony-tea')
+        && state.bondGiftItemIds.includes('jade-thread-charm')
+        && state.bondGiftPresenceCount >= 2
+        && state.bondGiftRibbonClaimed === true
         && state.temperamentConcordProof === true
         && state.temperamentConcordId === 'jade-temperament-concord'
         && state.temperamentConcordName === 'Jade Temperament Concord'
@@ -1308,6 +1321,7 @@ async function exerciseAlphaHud(page) {
       blossomCradle: document.querySelector('[data-blossom-cradle-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
+      bondGift: document.querySelector('[data-bond-gift-label]')?.textContent?.trim() || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
     routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
@@ -1565,6 +1579,17 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.careCycleCaredSpiritIds) && snapshot.state.careCycleCaredSpiritIds.length === 3, 'HUD care cycle action must record every cared spirit.');
   assert(snapshot.state.careCycleTotalBond >= 9, 'HUD care cycle action must record enough full-roster bond proof.');
   assert(snapshot.state.careCycleKnotClaimed === true, 'HUD care cycle action must mark the no-real-value care cycle knot proof.');
+  assert(snapshot.bondGift.includes('Jade Bond Gift Rite'), 'HUD bond gift label must show the completed care gift proof.');
+  assert(snapshot.state.bondGiftProof === true, 'HUD bond gift action must record no-real-value care gift proof.');
+  assert(snapshot.state.bondGiftRiteId === 'jade-bond-gift-rite', 'HUD bond gift action must record the gift rite id.');
+  assert(snapshot.state.bondGiftRiteName === 'Jade Bond Gift Rite', 'HUD bond gift action must record the gift rite name.');
+  assert(snapshot.state.bondGiftScore >= 36, 'HUD bond gift action must record a passing gift rite score.');
+  assert(snapshot.state.bondGiftRequiredScore === 36, 'HUD bond gift action must record the gift rite requirement.');
+  assert(Array.isArray(snapshot.state.bondGiftItemIds) && snapshot.state.bondGiftItemIds.includes('jade-mooncake-box'), 'HUD bond gift action must preserve the Jade Mooncake Box gift.');
+  assert(Array.isArray(snapshot.state.bondGiftItemIds) && snapshot.state.bondGiftItemIds.includes('lantern-harmony-tea'), 'HUD bond gift action must preserve the Lantern Harmony Tea gift.');
+  assert(Array.isArray(snapshot.state.bondGiftItemIds) && snapshot.state.bondGiftItemIds.includes('jade-thread-charm'), 'HUD bond gift action must preserve the Jade Thread Charm gift.');
+  assert(snapshot.state.bondGiftPresenceCount >= 2, 'HUD bond gift action must preserve two-tester local gift witness proof.');
+  assert(snapshot.state.bondGiftRibbonClaimed === true, 'HUD bond gift action must mark the no-real-value gift ribbon proof.');
   assert(snapshot.temperament.includes('Jade Temperament Concord'), 'HUD temperament label must show the completed temperament proof.');
   assert(snapshot.state.temperamentConcordProof === true, 'HUD temperament action must record temperament concord proof.');
   assert(snapshot.state.temperamentConcordId === 'jade-temperament-concord', 'HUD temperament action must record the temperament concord id.');
@@ -2077,6 +2102,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Market Receipt recorded')), 'HUD chat state must record the no-real-value market receipt action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
+  assert(chat.some((line) => String(line).includes('Jade Bond Gift Rite complete')), 'HUD chat state must record the no-real-value bond gift rite action.');
   assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');
   assert(chat.some((line) => String(line).includes('Jade Field Almanac recorded')), 'HUD chat state must record the field almanac action.');
   assert(chat.some((line) => String(line).includes('Jade Route Ecology Survey complete')), 'HUD chat state must record the route ecology survey action.');

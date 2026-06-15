@@ -86,6 +86,7 @@ const ALPHA_FEATURES = {
     fieldAccords: true,
     routePatrols: true,
     itemProvisions: true,
+    spiritBondGiftRites: true,
     itemProvisionCatalogs: true,
     battleItemKits: true,
     remedyPouches: true,
@@ -153,7 +154,8 @@ const PLAYABLE_CONTENT_CATALOG = {
     nurseryGroveIds: ['jade-nursery-grove'],
     bloomAscendanceIds: ['jade-bloom-ascendance'],
     lineageRegisterIds: ['jade-lineage-register'],
-    blossomCradleIds: ['jade-blossom-cradle']
+    blossomCradleIds: ['jade-blossom-cradle'],
+    bondGiftRiteIds: ['jade-bond-gift-rite']
   },
   battle: {
     moveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
@@ -416,6 +418,7 @@ const ALPHA_ACTION_TYPES = [
   'spirit.nursery_grove',
   'spirit.bloom_ascendance',
   'spirit.lineage_register',
+  'item.bond_gift',
   'item.provision_satchel',
   'item.provision_catalog',
   'item.battle_kit',

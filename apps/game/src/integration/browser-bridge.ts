@@ -15,6 +15,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
+  SPIRIT_BOND_GIFT_RITES,
   SPIRIT_BLOSSOM_CRADLES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_CARE_CYCLES,
@@ -79,6 +80,7 @@ import {
   resolveSpiritBattleTactic,
   resolveSpiritBlossomCradle,
   resolveSpiritBloomAscendance,
+  resolveSpiritBondGiftRite,
   resolveSpiritCapture,
   resolveSpiritCaptureRite,
   resolveSpiritCareCycle,
@@ -292,6 +294,14 @@ interface AlphaHudState {
   provisionScore: number;
   provisionStockItemIds: string[];
   provisionSatchelClaimed: boolean;
+  bondGiftProof: boolean;
+  bondGiftRiteId?: string;
+  bondGiftRiteName: string;
+  bondGiftScore: number;
+  bondGiftRequiredScore: number;
+  bondGiftItemIds: string[];
+  bondGiftPresenceCount: number;
+  bondGiftRibbonClaimed: boolean;
   provisionCatalogProof: boolean;
   provisionCatalogId?: string;
   provisionCatalogName: string;
@@ -1339,6 +1349,13 @@ function defaultAlphaState(): AlphaHudState {
     provisionScore: 0,
     provisionStockItemIds: [],
     provisionSatchelClaimed: false,
+    bondGiftProof: false,
+    bondGiftRiteName: 'Ungifted',
+    bondGiftScore: 0,
+    bondGiftRequiredScore: 0,
+    bondGiftItemIds: [],
+    bondGiftPresenceCount: 1,
+    bondGiftRibbonClaimed: false,
     provisionCatalogProof: false,
     provisionCatalogName: 'Uncataloged',
     provisionCatalogScore: 0,
@@ -1899,6 +1916,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-battle-kit-label>Kit: pending</span>
       <span class="mochi-hud__hint" data-remedy-pouch-label>Remedy: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
+      <span class="mochi-hud__hint" data-bond-gift-label>Gift: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
@@ -1976,6 +1994,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.roster_cabinet" aria-label="Organize the no-real-value Jade Roster Cabinet">Cabinet</button>
       <button type="button" data-alpha-action="item.provision_satchel" aria-label="Stock the no-real-value Mochirii provision satchel">Bag</button>
       <button type="button" data-alpha-action="spirit.care_cycle" aria-label="Record the no-real-value Jade Court Care Cycle">Cycle</button>
+      <button type="button" data-alpha-action="item.bond_gift" aria-label="Record the no-real-value Jade Bond Gift Rite">Gift</button>
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
@@ -2074,6 +2093,7 @@ function createHud() {
   const battleKitLabel = hud.querySelector('[data-battle-kit-label]');
   const remedyPouchLabel = hud.querySelector('[data-remedy-pouch-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
+  const bondGiftLabel = hud.querySelector('[data-bond-gift-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
@@ -2272,6 +2292,11 @@ function createHud() {
       careCycleLabel.textContent = state.careCycleProof
         ? `Care Cycle: ${state.careCycleName}, ${state.careCycleCaredSpiritIds.length} spirits, score ${state.careCycleScore}/${state.careCycleRequiredScore}`
         : 'Care Cycle: pending';
+    }
+    if (bondGiftLabel) {
+      bondGiftLabel.textContent = state.bondGiftProof
+        ? `Gift: ${state.bondGiftRiteName}, ${state.bondGiftItemIds.length} items, score ${state.bondGiftScore}/${state.bondGiftRequiredScore}`
+        : 'Gift: pending';
     }
     if (temperamentLabel) {
       temperamentLabel.textContent = state.temperamentConcordProof
@@ -2767,6 +2792,7 @@ function readAlphaState(): AlphaHudState {
       habitatCensusRouteIds: Array.isArray(parsed?.habitatCensusRouteIds) ? parsed.habitatCensusRouteIds.map(String) : [],
       habitatCensusSpiritIds: Array.isArray(parsed?.habitatCensusSpiritIds) ? parsed.habitatCensusSpiritIds.map(String) : [],
       habitatCensusCareLoggedSpiritIds: Array.isArray(parsed?.habitatCensusCareLoggedSpiritIds) ? parsed.habitatCensusCareLoggedSpiritIds.map(String) : [],
+      bondGiftItemIds: Array.isArray(parsed?.bondGiftItemIds) ? parsed.bondGiftItemIds.map(String) : [],
       provisionCatalogItemIds: Array.isArray(parsed?.provisionCatalogItemIds) ? parsed.provisionCatalogItemIds.map(String) : [],
       provisionCatalogCareItemIds: Array.isArray(parsed?.provisionCatalogCareItemIds) ? parsed.provisionCatalogCareItemIds.map(String) : [],
       provisionCatalogRouteItemIds: Array.isArray(parsed?.provisionCatalogRouteItemIds) ? parsed.provisionCatalogRouteItemIds.map(String) : [],
@@ -3888,6 +3914,29 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       sanctuaryRiteId: state.sanctuaryRiteId,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof
+    };
+  }
+
+  if (type === 'item.bond_gift') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const roster = state.attunedSpiritIds.length >= MOCHI_SPIRITS.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    return {
+      riteId: SPIRIT_BOND_GIFT_RITES[0].id,
+      roster,
+      activeSpiritId: state.spiritId || roster[0],
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      marketReceiptProof: state.marketReceiptProof,
+      marketReceiptId: 'jade-court-market-receipt',
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat,
+      noRealValue: true
     };
   }
 
@@ -5939,6 +5988,45 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.attunedSpiritIds = result.roster;
       setRosterProgress(state, result.caredSpiritIds, 4, 'glow');
       state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'item.bond_gift') {
+    const result = resolveSpiritBondGiftRite(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        giftItemIds: Array.isArray(payload.giftItemIds) ? payload.giftItemIds.map(String) : state.provisionStockItemIds,
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
+        marketReceiptId: String(payload.marketReceiptId || state.marketReceiptId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.riteId || SPIRIT_BOND_GIFT_RITES[0].id)
+    );
+    if (result.gifted) {
+      state.bondGiftProof = true;
+      state.bondGiftRiteId = result.riteId;
+      state.bondGiftRiteName = result.riteName;
+      state.bondGiftScore = result.score;
+      state.bondGiftRequiredScore = result.requiredScore;
+      state.bondGiftItemIds = result.giftItemIds;
+      state.bondGiftPresenceCount = result.localPresenceCount;
+      state.bondGiftRibbonClaimed = result.rewardItemId === 'jade-bond-gift-ribbon';
+      state.attunedSpiritIds = result.roster;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      if (result.activeSpiritId) {
+        setSpiritProgress(state, result.activeSpiritId, Math.max(getSpiritBond(state, result.activeSpiritId), 4), getSpiritGrowth(state, result.activeSpiritId));
+      }
     }
     state.chat.push(result.message);
   }

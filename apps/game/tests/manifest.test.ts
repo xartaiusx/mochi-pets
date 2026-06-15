@@ -76,6 +76,7 @@ describe('game manifest', () => {
         spiritBloomAscendances: true,
         spiritLineageRegisters: true,
         spiritBlossomCradles: true,
+        spiritBondGiftRites: true,
         itemProvisions: true,
         itemProvisionCatalogs: true,
         battleItemKits: true,
@@ -234,7 +235,8 @@ describe('game manifest', () => {
           nurseryGroveIds: ['jade-nursery-grove'],
           bloomAscendanceIds: ['jade-bloom-ascendance'],
           lineageRegisterIds: ['jade-lineage-register'],
-          blossomCradleIds: ['jade-blossom-cradle']
+          blossomCradleIds: ['jade-blossom-cradle'],
+          bondGiftRiteIds: ['jade-bond-gift-rite']
         },
         battle: {
           moveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],

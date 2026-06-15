@@ -916,6 +916,29 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-bond-gift`,
+      type: 'item.bond_gift',
+      payload: {
+        riteId: 'jade-bond-gift-rite',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'aozhen',
+        giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        marketReceiptProof: true,
+        marketReceiptId: 'jade-court-market-receipt',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        chatLines: ['Local acceptance Jade Bond Gift Rite proof.'],
+        rewardItemId: 'jade-bond-gift-ribbon',
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-temperament-concord`,
       type: 'spirit.temperament_concord',
       payload: {
@@ -2190,6 +2213,21 @@ async function run() {
   assert(careCycle?.payload?.sanctuaryRiteProof === true, 'Care cycle ledger entry must preserve sanctuary rite proof.');
   assert(careCycle?.payload?.raisingProof === true, 'Care cycle ledger entry must preserve raising proof.');
   assert(careCycle?.payload?.noRealValue === true, 'Care cycle ledger entry must remain no-real-value.');
+  const bondGift = entriesById.get(`${runId}-bond-gift`);
+  assert(bondGift?.payload?.riteId === 'jade-bond-gift-rite', 'Bond gift ledger entry must preserve the Jade Bond Gift Rite id.');
+  assert(Array.isArray(bondGift?.payload?.roster) && bondGift.payload.roster.length === 3, 'Bond gift ledger entry must preserve full roster proof.');
+  assert(Array.isArray(bondGift?.payload?.giftItemIds) && bondGift.payload.giftItemIds.includes('jade-mooncake-box'), 'Bond gift ledger entry must preserve the Jade Mooncake Box gift.');
+  assert(Array.isArray(bondGift?.payload?.giftItemIds) && bondGift.payload.giftItemIds.includes('lantern-harmony-tea'), 'Bond gift ledger entry must preserve the Lantern Harmony Tea gift.');
+  assert(Array.isArray(bondGift?.payload?.giftItemIds) && bondGift.payload.giftItemIds.includes('jade-thread-charm'), 'Bond gift ledger entry must preserve the Jade Thread Charm gift.');
+  assert(bondGift?.payload?.provisionProof === true, 'Bond gift ledger entry must preserve provision satchel proof.');
+  assert(bondGift?.payload?.provisionSatchelId === 'jade-court-provision-satchel', 'Bond gift ledger entry must preserve provision satchel id.');
+  assert(bondGift?.payload?.careCycleProof === true, 'Bond gift ledger entry must preserve care cycle proof.');
+  assert(bondGift?.payload?.careCycleId === 'jade-court-care-cycle', 'Bond gift ledger entry must preserve care cycle id.');
+  assert(bondGift?.payload?.marketReceiptProof === true, 'Bond gift ledger entry must preserve market receipt proof.');
+  assert(bondGift?.payload?.marketReceiptId === 'jade-court-market-receipt', 'Bond gift ledger entry must preserve market receipt id.');
+  assert(bondGift?.payload?.localPresenceCount === 2, 'Bond gift ledger entry must preserve two-tester gift witness proof.');
+  assert(bondGift?.payload?.rewardItemId === 'jade-bond-gift-ribbon', 'Bond gift ledger entry must preserve the no-real-value gift ribbon proof.');
+  assert(bondGift?.payload?.noRealValue === true, 'Bond gift ledger entry must remain no-real-value.');
   const temperamentConcord = entriesById.get(`${runId}-temperament-concord`);
   assert(temperamentConcord?.payload?.concordId === 'jade-temperament-concord', 'Temperament concord ledger entry must preserve the Jade Temperament Concord id.');
   assert(Array.isArray(temperamentConcord?.payload?.roster) && temperamentConcord.payload.roster.length === 3, 'Temperament concord ledger entry must preserve full roster proof.');
