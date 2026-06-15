@@ -39,6 +39,7 @@ import {
   SPIRIT_PROVISION_CATALOGS,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
+  SPIRIT_REMEDY_POUCHES,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
@@ -110,6 +111,7 @@ import {
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritRecoveryTea,
+  resolveSpiritRemedyPouch,
   resolveSpiritRelicAttunement,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
@@ -279,6 +281,16 @@ interface AlphaHudState {
   battleKitPartyIds: string[];
   battleKitPresenceCount: number;
   battleKitTagClaimed: boolean;
+  remedyPouchProof: boolean;
+  remedyPouchId?: string;
+  remedyPouchName: string;
+  remedyPouchScore: number;
+  remedyPouchRequiredScore: number;
+  remedyPouchItemIds: string[];
+  remedyPouchConditionIds: string[];
+  remedyPouchPartyIds: string[];
+  remedyPouchPresenceCount: number;
+  remedyPouchTagClaimed: boolean;
   careCycleProof: boolean;
   careCycleId?: string;
   careCycleName: string;
@@ -825,6 +837,22 @@ export interface AlphaWorldStatePatch {
     requiredScore: number;
     title: string;
   };
+  remedyPouch?: {
+    activeSpiritId?: string;
+    conditionIds: string[];
+    itemIds: string[];
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    pouchId: string;
+    pouchName: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    requiredScore: number;
+    title: string;
+  };
   guildCommission?: {
     activeSpiritId?: string;
     commissionId: string;
@@ -1239,6 +1267,15 @@ function defaultAlphaState(): AlphaHudState {
     battleKitPartyIds: [],
     battleKitPresenceCount: 0,
     battleKitTagClaimed: false,
+    remedyPouchProof: false,
+    remedyPouchName: 'Unpacked',
+    remedyPouchScore: 0,
+    remedyPouchRequiredScore: 0,
+    remedyPouchItemIds: [],
+    remedyPouchConditionIds: [],
+    remedyPouchPartyIds: [],
+    remedyPouchPresenceCount: 0,
+    remedyPouchTagClaimed: false,
     careCycleProof: false,
     careCycleName: 'Uncycled',
     careCycleScore: 0,
@@ -1748,6 +1785,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-provision-catalog-label>Catalog: pending</span>
       <span class="mochi-hud__hint" data-battle-kit-label>Kit: pending</span>
+      <span class="mochi-hud__hint" data-remedy-pouch-label>Remedy: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
@@ -1835,6 +1873,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.recovery_tea" aria-label="Record the no-real-value Jade Teahouse Recovery">Recover</button>
       <button type="button" data-alpha-action="item.provision_catalog" aria-label="Seal the no-real-value Jade Provision Catalog">Catalog</button>
       <button type="button" data-alpha-action="item.battle_kit" aria-label="Pack the no-real-value Jade Battle Kit">Kit</button>
+      <button type="button" data-alpha-action="item.remedy_pouch" aria-label="Pack the no-real-value Jade Remedy Pouch">Remedy</button>
       <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
       <button type="button" data-alpha-action="spirit.nursery_grove" aria-label="Record the no-real-value Jade Nursery Grove">Nursery</button>
       <button type="button" data-alpha-action="spirit.bloom_ascendance" aria-label="Record the no-real-value Jade Bloom Ascendance">Ascend+</button>
@@ -1911,6 +1950,7 @@ function createHud() {
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const provisionCatalogLabel = hud.querySelector('[data-provision-catalog-label]');
   const battleKitLabel = hud.querySelector('[data-battle-kit-label]');
+  const remedyPouchLabel = hud.querySelector('[data-remedy-pouch-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
@@ -2082,6 +2122,11 @@ function createHud() {
       battleKitLabel.textContent = state.battleKitProof
         ? `Kit: ${state.battleKitName}, ${state.battleKitItemIds.length} items, score ${state.battleKitScore}/${state.battleKitRequiredScore}`
         : 'Kit: pending';
+    }
+    if (remedyPouchLabel) {
+      remedyPouchLabel.textContent = state.remedyPouchProof
+        ? `Remedy: ${state.remedyPouchName}, ${state.remedyPouchConditionIds.length} conditions, score ${state.remedyPouchScore}/${state.remedyPouchRequiredScore}`
+        : 'Remedy: pending';
     }
     if (careCycleLabel) {
       careCycleLabel.textContent = state.careCycleProof
@@ -2562,6 +2607,9 @@ function readAlphaState(): AlphaHudState {
       provisionCatalogRouteItemIds: Array.isArray(parsed?.provisionCatalogRouteItemIds) ? parsed.provisionCatalogRouteItemIds.map(String) : [],
       battleKitItemIds: Array.isArray(parsed?.battleKitItemIds) ? parsed.battleKitItemIds.map(String) : [],
       battleKitPartyIds: Array.isArray(parsed?.battleKitPartyIds) ? parsed.battleKitPartyIds.map(String) : [],
+      remedyPouchItemIds: Array.isArray(parsed?.remedyPouchItemIds) ? parsed.remedyPouchItemIds.map(String) : [],
+      remedyPouchConditionIds: Array.isArray(parsed?.remedyPouchConditionIds) ? parsed.remedyPouchConditionIds.map(String) : [],
+      remedyPouchPartyIds: Array.isArray(parsed?.remedyPouchPartyIds) ? parsed.remedyPouchPartyIds.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       exchangeAccordItemIds: Array.isArray(parsed?.exchangeAccordItemIds) ? parsed.exchangeAccordItemIds.map(String) : [],
@@ -2935,6 +2983,30 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.activePartyId = state.partyIds[0] || state.activePartyId;
     state.spiritId = patch.battleKit.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.battleKit.message || `${state.battleKitName} packed as no-real-value battle item kit proof.`);
+  }
+
+  if (patch.remedyPouch) {
+    state.remedyPouchProof = patch.remedyPouch.proof || state.remedyPouchProof;
+    state.remedyPouchId = patch.remedyPouch.pouchId || state.remedyPouchId;
+    state.remedyPouchName = patch.remedyPouch.pouchName || state.remedyPouchName;
+    state.remedyPouchScore = Math.max(state.remedyPouchScore, Number(patch.remedyPouch.score) || 0);
+    state.remedyPouchRequiredScore = Math.max(state.remedyPouchRequiredScore, Number(patch.remedyPouch.requiredScore) || 0);
+    state.remedyPouchItemIds = Array.isArray(patch.remedyPouch.itemIds) ? patch.remedyPouch.itemIds.map(String) : state.remedyPouchItemIds;
+    state.remedyPouchConditionIds = Array.isArray(patch.remedyPouch.conditionIds)
+      ? patch.remedyPouch.conditionIds.map(String)
+      : state.remedyPouchConditionIds;
+    state.remedyPouchPartyIds = Array.isArray(patch.remedyPouch.partyIds)
+      ? patch.remedyPouch.partyIds.map(String)
+      : state.remedyPouchPartyIds;
+    state.remedyPouchPresenceCount = Math.max(state.remedyPouchPresenceCount, Number(patch.remedyPouch.localPresenceCount) || 0);
+    state.remedyPouchTagClaimed = state.remedyPouchTagClaimed || patch.remedyPouch.rewardItemId === 'jade-remedy-pouch-tag';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.remedyPouch.roster.map(String)]));
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...patch.remedyPouch.partyIds.map(String)]));
+    state.conditionIds = Array.from(new Set([...(state.conditionIds || []), ...patch.remedyPouch.conditionIds.map(String)]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.activePartyId = state.partyIds[0] || state.activePartyId;
+    state.spiritId = patch.remedyPouch.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.remedyPouch.message || `${state.remedyPouchName} packed as no-real-value remedy pouch proof.`);
   }
 
   if (patch.guildCommission) {
@@ -3937,6 +4009,42 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'item.remedy_pouch') {
+    const pouch = SPIRIT_REMEDY_POUCHES[0];
+    const presenceCount = Number(
+      document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount ||
+        state.remedyPouchPresenceCount ||
+        state.battleKitPresenceCount ||
+        state.rallyPresenceCount ||
+        1
+    );
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const partyIds = state.partyIds.length ? state.partyIds : roster.slice(0, pouch.requiredPartySize);
+    return {
+      pouchId: pouch.id,
+      roster,
+      partyIds,
+      activeSpiritId: state.spiritId || partyIds[0] || roster[0],
+      conditionIds: state.conditionIds.length ? state.conditionIds : pouch.requiredConditionIds,
+      itemIds: state.battleKitItemIds.length ? state.battleKitItemIds : pouch.requiredItemIds,
+      recoveryTeaProof: state.recoveryTeaProof,
+      recoveryTeaId: state.recoveryTeaId,
+      battleKitProof: state.battleKitProof,
+      battleKitId: state.battleKitId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      sanctuaryRiteProof: state.sanctuaryRiteProof,
+      sanctuaryRiteId: state.sanctuaryRiteId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'spirit.kinship_album') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean);
     const caredSpiritIds = state.nurtureRiteCaredSpiritIds.length
@@ -4265,6 +4373,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       provisionProof: state.provisionProof,
       provisionCatalogProof: state.provisionCatalogProof,
       battleKitProof: state.battleKitProof,
+      remedyPouchProof: state.remedyPouchProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
       nurtureRiteProof: state.nurtureRiteProof,
@@ -4348,6 +4457,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       marketReceiptProof: state.marketReceiptProof,
       provisionCatalogProof: state.provisionCatalogProof,
       battleKitProof: state.battleKitProof,
+      remedyPouchProof: state.remedyPouchProof,
       tradeProof: state.tradeProof,
       canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
       profileViewed: state.profileViewed,
@@ -5960,6 +6070,54 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'item.remedy_pouch') {
+    const result = resolveSpiritRemedyPouch(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.partyIds[0] || state.attunedSpiritIds[0] || ''),
+        conditionIds: Array.isArray(payload.conditionIds) ? payload.conditionIds.map(String) : state.conditionIds,
+        itemIds: Array.isArray(payload.itemIds) ? payload.itemIds.map(String) : state.battleKitItemIds,
+        recoveryTeaProof: Boolean(payload.recoveryTeaProof ?? state.recoveryTeaProof),
+        recoveryTeaId: String(payload.recoveryTeaId || state.recoveryTeaId || ''),
+        battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
+        battleKitId: String(payload.battleKitId || state.battleKitId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        sanctuaryRiteProof: Boolean(payload.sanctuaryRiteProof ?? state.sanctuaryRiteProof),
+        sanctuaryRiteId: String(payload.sanctuaryRiteId || state.sanctuaryRiteId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.remedyPouchPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.pouchId || SPIRIT_REMEDY_POUCHES[0].id)
+    );
+    if (result.prepared) {
+      state.remedyPouchProof = true;
+      state.remedyPouchId = result.pouchId;
+      state.remedyPouchName = result.pouchName;
+      state.remedyPouchScore = result.score;
+      state.remedyPouchRequiredScore = result.requiredScore;
+      state.remedyPouchItemIds = result.itemIds;
+      state.remedyPouchConditionIds = result.conditionIds;
+      state.remedyPouchPartyIds = result.partyIds;
+      state.remedyPouchPresenceCount = result.localPresenceCount;
+      state.remedyPouchTagClaimed = result.rewardItemId === 'jade-remedy-pouch-tag';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      state.conditionIds = result.conditionIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'spirit.kinship_album') {
     const result = resolveSpiritKinshipAlbum(
       {
@@ -6377,6 +6535,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
         provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
         battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
+        remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
@@ -6475,6 +6634,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
         provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
         battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
+        remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),

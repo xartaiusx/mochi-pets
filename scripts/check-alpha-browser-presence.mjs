@@ -253,6 +253,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.habitat_census"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_catalog"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.battle_kit"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="item.remedy_pouch"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.dojo_ladder"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
@@ -295,6 +296,7 @@ async function exerciseAlphaHud(page) {
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
       const provisionCatalog = document.querySelector('[data-provision-catalog-label]')?.textContent || '';
       const battleKit = document.querySelector('[data-battle-kit-label]')?.textContent || '';
+      const remedyPouch = document.querySelector('[data-remedy-pouch-label]')?.textContent || '';
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
@@ -370,6 +372,7 @@ async function exerciseAlphaHud(page) {
         && provision.includes('Jade Court Provision Satchel')
         && provisionCatalog.includes('Jade Provision Catalog')
         && battleKit.includes('Jade Battle Kit')
+        && remedyPouch.includes('Jade Remedy Pouch')
         && careCycle.includes('Jade Court Care Cycle')
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
@@ -557,6 +560,23 @@ async function exerciseAlphaHud(page) {
         && state.battleKitPartyIds.length === 3
         && state.battleKitPresenceCount >= 2
         && state.battleKitTagClaimed === true
+        && state.remedyPouchProof === true
+        && state.remedyPouchId === 'jade-remedy-pouch'
+        && state.remedyPouchName === 'Jade Remedy Pouch'
+        && state.remedyPouchScore >= 50
+        && state.remedyPouchRequiredScore === 50
+        && Array.isArray(state.remedyPouchItemIds)
+        && state.remedyPouchItemIds.includes('lantern-harmony-tea')
+        && state.remedyPouchItemIds.includes('jade-thread-charm')
+        && state.remedyPouchItemIds.includes('jade-mooncake-box')
+        && Array.isArray(state.remedyPouchConditionIds)
+        && state.remedyPouchConditionIds.includes('lantern-ward')
+        && state.remedyPouchConditionIds.includes('goldleaf-tempo')
+        && state.remedyPouchConditionIds.includes('skybell-guard')
+        && Array.isArray(state.remedyPouchPartyIds)
+        && state.remedyPouchPartyIds.length === 3
+        && state.remedyPouchPresenceCount >= 2
+        && state.remedyPouchTagClaimed === true
         && state.careCycleProof === true
         && state.careCycleId === 'jade-court-care-cycle'
         && state.careCycleName === 'Jade Court Care Cycle'

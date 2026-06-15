@@ -39,6 +39,7 @@ import {
   SPIRIT_PROVISION_CATALOGS,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
+  SPIRIT_REMEDY_POUCHES,
   SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
@@ -111,6 +112,7 @@ import {
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
   resolveSpiritRecoveryTea,
+  resolveSpiritRemedyPouch,
   resolveSpiritRelicAttunement,
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
@@ -177,6 +179,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.remedyPouches).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
@@ -265,6 +268,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
     expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
+    expect(ALPHA_ACTION_TYPES).toContain('item.remedy_pouch');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
@@ -961,6 +965,74 @@ describe('alpha contract', () => {
     })).toMatchObject({
       prepared: false,
       missing: ['provision-catalog:jade-provision-catalog']
+    });
+    expect(SPIRIT_REMEDY_POUCHES.map((pouch) => pouch.id)).toEqual(['jade-remedy-pouch']);
+    const remedyPouch = resolveSpiritRemedyPouch({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'lirabao',
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleKitProof: true,
+      battleKitId: 'jade-battle-kit',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Remedy pouch ready.']
+    });
+    expect(remedyPouch).toMatchObject({
+      ok: true,
+      prepared: true,
+      pouchId: 'jade-remedy-pouch',
+      pouchName: 'Jade Remedy Pouch',
+      title: 'First-Court Remedy And Status Care Pouch',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'lirabao',
+      activeSpiritName: 'Lirabao',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      localPresenceCount: 2,
+      score: 53,
+      requiredScore: 50,
+      rewardItemId: 'jade-remedy-pouch-tag',
+      source: 'item-remedy-pouch'
+    });
+    expect(remedyPouch.message).toContain('No real value');
+    expect(resolveSpiritRemedyPouch({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'lirabao',
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleKitProof: false,
+      battleKitId: 'jade-battle-kit',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Remedy pouch ready.']
+    })).toMatchObject({
+      prepared: false,
+      missing: ['battle-kit:jade-battle-kit']
     });
     expect(resolveSpiritProvisionCatalog({
       roster: ['lirabao'],
@@ -2271,6 +2343,7 @@ describe('alpha contract', () => {
       provisionProof: true,
       provisionCatalogProof: true,
       battleKitProof: true,
+      remedyPouchProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2321,7 +2394,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 152,
+      score: 155,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2347,6 +2420,7 @@ describe('alpha contract', () => {
       provisionProof: true,
       provisionCatalogProof: true,
       battleKitProof: true,
+      remedyPouchProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2404,6 +2478,7 @@ describe('alpha contract', () => {
       exchangeAccordProof: true,
       provisionCatalogProof: true,
       battleKitProof: true,
+      remedyPouchProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
@@ -2446,7 +2521,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 114,
+      score: 117,
       requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2465,6 +2540,7 @@ describe('alpha contract', () => {
       exchangeAccordProof: true,
       provisionCatalogProof: true,
       battleKitProof: true,
+      remedyPouchProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,

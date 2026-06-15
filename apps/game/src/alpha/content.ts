@@ -777,6 +777,71 @@ export interface SpiritBattleKitResult {
   source: string;
 }
 
+export interface SpiritRemedyPouch {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredPartySize: number;
+  requiredConditionIds: readonly string[];
+  requiredItemIds: readonly string[];
+  requiredRecoveryTeaId: string;
+  requiredBattleKitId: string;
+  requiredCareCycleId: string;
+  requiredSanctuaryRiteId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRemedyPouchProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  activeSpiritId?: string;
+  conditionIds: readonly string[];
+  itemIds: readonly string[];
+  recoveryTeaProof: boolean;
+  recoveryTeaId?: string;
+  battleKitProof: boolean;
+  battleKitId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  sanctuaryRiteProof: boolean;
+  sanctuaryRiteId?: string;
+  battleRoundProof: boolean;
+  battleRoundVictory: boolean;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritRemedyPouchResult {
+  ok: boolean;
+  prepared: boolean;
+  pouchId: string;
+  pouchName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  partyIds: string[];
+  conditionIds: string[];
+  itemIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritCareCycle {
   id: string;
   name: string;
@@ -2124,6 +2189,7 @@ export interface GuildWayfarerChronicleProgress {
   provisionProof: boolean;
   provisionCatalogProof: boolean;
   battleKitProof: boolean;
+  remedyPouchProof: boolean;
   craftWritProof: boolean;
   routeWaystoneProof: boolean;
   nurtureRiteProof: boolean;
@@ -2209,6 +2275,7 @@ export interface GuildAscensionTrialProgress {
   exchangeAccordProof: boolean;
   provisionCatalogProof: boolean;
   battleKitProof: boolean;
+  remedyPouchProof: boolean;
   affinityMatrixProof: boolean;
   techniqueCodexProof: boolean;
   relicAttunementProof: boolean;
@@ -3792,6 +3859,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Battle Kit Tag',
     description: 'A no-real-value battle item kit proof for closed-alpha Mochirii safe spar, recovery, and route-ready item planning.'
   },
+  remedyPouchTag: {
+    id: 'jade-remedy-pouch-tag',
+    name: 'Jade Remedy Pouch Tag',
+    description: 'A no-real-value remedy pouch proof for closed-alpha Mochirii status care, recovery tea, safe spar, and post-battle raising.'
+  },
   careCycleKnot: {
     id: 'jade-care-cycle-knot',
     name: 'Jade Care Cycle Knot',
@@ -5285,6 +5357,28 @@ export const SPIRIT_BATTLE_KITS: readonly SpiritBattleKit[] = [
     requiredScore: 48,
     rewardItemId: ALPHA_ITEMS.battleKitTag.id,
     summary: 'A no-real-value first-court battle item kit proof for testers who connect provision catalog recipes, prepared lures, care supplies, technique codex planning, condition weave safety, affinity matrix strategy, recovery tea, and a winning no-injury round.'
+  }
+];
+
+export const SPIRIT_REMEDY_POUCHES: readonly SpiritRemedyPouch[] = [
+  {
+    id: 'jade-remedy-pouch',
+    name: 'Jade Remedy Pouch',
+    title: 'First-Court Remedy And Status Care Pouch',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredPartySize: MOCHI_SPIRIT_PARTY_LIMIT,
+    requiredConditionIds: SPIRIT_BATTLE_CONDITIONS.map((condition) => condition.id),
+    requiredItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id, ALPHA_ITEMS.mooncakeBox.id],
+    requiredRecoveryTeaId: SPIRIT_RECOVERY_TEAS[0].id,
+    requiredBattleKitId: SPIRIT_BATTLE_KITS[0].id,
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredSanctuaryRiteId: SPIRIT_SANCTUARY_RITES[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 50,
+    rewardItemId: ALPHA_ITEMS.remedyPouchTag.id,
+    summary: 'A no-real-value first-court remedy pouch proof for testers who connect status conditions, care items, recovery tea, battle kit safety, sanctuary restoration, and a winning no-injury round.'
   }
 ];
 
@@ -7848,6 +7942,109 @@ export function resolveSpiritBattleKit(
   };
 }
 
+export function resolveSpiritRemedyPouch(
+  progress: SpiritRemedyPouchProgress,
+  pouchId: string = SPIRIT_REMEDY_POUCHES[0].id
+): SpiritRemedyPouchResult {
+  const pouch = SPIRIT_REMEDY_POUCHES.find((entry) => entry.id === pouchId) || SPIRIT_REMEDY_POUCHES[0];
+  const requiredSpiritIds = new Set(pouch.requiredSpiritIds);
+  const requiredConditionIds = new Set(pouch.requiredConditionIds);
+  const knownItemIds = new Set<string>(Object.values(ALPHA_ITEMS).map((item) => item.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const conditionIds = pouch.requiredConditionIds.filter((conditionId) => {
+    return requiredConditionIds.has(conditionId) && progress.conditionIds.includes(conditionId);
+  });
+  const itemIds = pouch.requiredItemIds.filter((itemId) => {
+    return knownItemIds.has(itemId) && progress.itemIds.includes(itemId);
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : partyIds[0] || roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of pouch.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  if (partyIds.length < pouch.requiredPartySize) missing.push(`party:${partyIds.length}/${pouch.requiredPartySize}`);
+
+  for (const conditionId of pouch.requiredConditionIds) {
+    if (!conditionIds.includes(conditionId)) missing.push(`condition:${conditionId}`);
+  }
+
+  for (const itemId of pouch.requiredItemIds) {
+    if (!itemIds.includes(itemId)) missing.push(`remedy-item:${itemId}`);
+  }
+
+  const recoveryReady = progress.recoveryTeaProof && progress.recoveryTeaId === pouch.requiredRecoveryTeaId;
+  if (!recoveryReady) missing.push(`recovery:${pouch.requiredRecoveryTeaId}`);
+
+  const battleKitReady = progress.battleKitProof && progress.battleKitId === pouch.requiredBattleKitId;
+  if (!battleKitReady) missing.push(`battle-kit:${pouch.requiredBattleKitId}`);
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === pouch.requiredCareCycleId;
+  if (!careCycleReady) missing.push(`care-cycle:${pouch.requiredCareCycleId}`);
+
+  const sanctuaryReady = progress.sanctuaryRiteProof && progress.sanctuaryRiteId === pouch.requiredSanctuaryRiteId;
+  if (!sanctuaryReady) missing.push(`sanctuary:${pouch.requiredSanctuaryRiteId}`);
+
+  if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
+  if (localPresenceCount < pouch.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${pouch.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < pouch.requiredChatLines) missing.push(`chat:${chatLines.length}/${pouch.requiredChatLines}`);
+
+  const score =
+    Math.min(roster.length, pouch.requiredSpiritIds.length) * 2 +
+    Math.min(partyIds.length, pouch.requiredPartySize) * 2 +
+    Math.min(conditionIds.length, pouch.requiredConditionIds.length) * 3 +
+    Math.min(itemIds.length, pouch.requiredItemIds.length) * 2 +
+    (recoveryReady ? 4 : 0) +
+    (battleKitReady ? 5 : 0) +
+    (careCycleReady ? 3 : 0) +
+    (sanctuaryReady ? 3 : 0) +
+    (progress.battleRoundProof && progress.battleRoundVictory ? 3 : 0) +
+    (localPresenceCount >= pouch.requiredPresenceCount ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length >= pouch.requiredChatLines ? 1 : 0);
+  const prepared = missing.length === 0 && score >= pouch.requiredScore;
+
+  return {
+    ok: true,
+    prepared,
+    pouchId: pouch.id,
+    pouchName: pouch.name,
+    title: pouch.title,
+    habitat: pouch.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    partyIds,
+    conditionIds,
+    itemIds,
+    localPresenceCount,
+    score,
+    requiredScore: pouch.requiredScore,
+    missing,
+    rewardItemId: pouch.rewardItemId,
+    message: prepared
+      ? `${pouch.name} prepared: ${activeSpirit.name} links recovery tea, battle kit safety, condition care, sanctuary rest, and no-injury battle notes for closed-alpha status care. No real value.`
+      : `${pouch.name} needs ${missing.join(', ')} before the remedy pouch can be tagged.`,
+    source: 'item-remedy-pouch'
+  };
+}
+
 export function resolveSpiritKinshipAlbum(
   progress: SpiritKinshipAlbumProgress,
   albumId: string = SPIRIT_KINSHIP_ALBUMS[0].id
@@ -8681,6 +8878,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.provisionProof) missing.push('provision');
   if (!progress.provisionCatalogProof) missing.push('provision-catalog');
   if (!progress.battleKitProof) missing.push('battle-kit');
+  if (!progress.remedyPouchProof) missing.push('remedy-pouch');
   if (!progress.craftWritProof) missing.push('craft-writ');
   if (!progress.routeWaystoneProof) missing.push('route-waystone');
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
@@ -8739,6 +8937,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.provisionProof ? 2 : 0) +
     (progress.provisionCatalogProof ? 3 : 0) +
     (progress.battleKitProof ? 3 : 0) +
+    (progress.remedyPouchProof ? 3 : 0) +
     (progress.craftWritProof ? 3 : 0) +
     (progress.routeWaystoneProof ? 3 : 0) +
     (progress.nurtureRiteProof ? 3 : 0) +
@@ -8795,7 +8994,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, battle item kit readiness, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, battle item kit readiness, remedy pouch status care, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -8830,6 +9029,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.exchangeAccordProof) missing.push('exchange-accord');
   if (!progress.provisionCatalogProof) missing.push('provision-catalog');
   if (!progress.battleKitProof) missing.push('battle-kit');
+  if (!progress.remedyPouchProof) missing.push('remedy-pouch');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.techniqueCodexProof) missing.push('technique-codex');
   if (!progress.relicAttunementProof) missing.push('relic-attunement');
@@ -8872,6 +9072,7 @@ export function resolveGuildAscensionTrial(
     (progress.exchangeAccordProof ? 3 : 0) +
     (progress.provisionCatalogProof ? 3 : 0) +
     (progress.battleKitProof ? 3 : 0) +
+    (progress.remedyPouchProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.techniqueCodexProof ? 3 : 0) +
     (progress.relicAttunementProof ? 3 : 0) +
@@ -8918,7 +9119,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, market receipt, provision catalog, battle kit, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, market receipt, provision catalog, battle kit, remedy pouch, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

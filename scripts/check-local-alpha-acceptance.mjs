@@ -86,6 +86,7 @@ async function run() {
   assert(manifest.body.gameplay?.itemProvisions === true, 'Manifest must expose Mochirii item provision satchels.');
   assert(manifest.body.gameplay?.itemProvisionCatalogs === true, 'Manifest must expose Mochirii item provision catalogs.');
   assert(manifest.body.gameplay?.battleItemKits === true, 'Manifest must expose Mochirii no-real-value battle item kits.');
+  assert(manifest.body.gameplay?.remedyPouches === true, 'Manifest must expose Mochirii no-real-value remedy pouch proofs.');
   assert(manifest.body.gameplay?.guildCommissions === true, 'Manifest must expose Mochirii guild commissions.');
   assert(manifest.body.gameplay?.socialRallies === true, 'Manifest must expose Mochirii social rallies.');
   assert(manifest.body.gameplay?.spiritStoryChapters === true, 'Manifest must expose Mochi Spirit story chapters.');
@@ -160,6 +161,7 @@ async function run() {
   assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
   assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must catalog the no-real-value provision catalog.');
   assert(manifest.body.playableContent?.economyAndCanary?.battleKitIds?.includes('jade-battle-kit'), 'Manifest must catalog the no-real-value battle item kit.');
+  assert(manifest.body.playableContent?.economyAndCanary?.remedyPouchIds?.includes('jade-remedy-pouch'), 'Manifest must catalog the no-real-value remedy pouch.');
   assert(manifest.body.playableContent?.economyAndCanary?.tradeExchangeAccordIds?.includes('jade-exchange-accord'), 'Manifest must catalog the no-real-value exchange accord.');
   assert(manifest.body.playableContent?.economyAndCanary?.canaryCertificateItemIds?.join(',') === 'lirabao-canary-certificate', 'Manifest must catalog only the Lirabao Canary certificate preview item.');
   assert(manifest.body.playableContent?.runtimeAssets?.spritesheets?.length === 21, 'Manifest must catalog all runtime spritesheets.');
@@ -202,6 +204,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.itemProvisions === true, 'Alpha status must expose Mochirii item provision satchels.');
   assert(alphaStatus.body.gameplay?.itemProvisionCatalogs === true, 'Alpha status must expose Mochirii item provision catalogs.');
   assert(alphaStatus.body.gameplay?.battleItemKits === true, 'Alpha status must expose Mochirii no-real-value battle item kits.');
+  assert(alphaStatus.body.gameplay?.remedyPouches === true, 'Alpha status must expose Mochirii no-real-value remedy pouch proofs.');
   assert(alphaStatus.body.gameplay?.guildCommissions === true, 'Alpha status must expose Mochirii guild commissions.');
   assert(alphaStatus.body.gameplay?.socialRallies === true, 'Alpha status must expose Mochirii social rallies.');
   assert(alphaStatus.body.gameplay?.spiritStoryChapters === true, 'Alpha status must expose Mochi Spirit story chapters.');
@@ -1284,6 +1287,35 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-remedy-pouch`,
+      type: 'item.remedy_pouch',
+      payload: {
+        pouchId: 'jade-remedy-pouch',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        activeSpiritId: 'lirabao',
+        conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+        itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+        recoveryTeaProof: true,
+        recoveryTeaId: 'jade-teahouse-recovery',
+        battleKitProof: true,
+        battleKitId: 'jade-battle-kit',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        sanctuaryRiteProof: true,
+        sanctuaryRiteId: 'jade-court-sanctuary-rite',
+        battleRoundProof: true,
+        battleRoundVictory: true,
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-remedy-pouch-tag',
+        chatLines: ['Local acceptance remedy pouch proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-kinship-album`,
       type: 'spirit.kinship_album',
       payload: {
@@ -1760,6 +1792,7 @@ async function run() {
         provisionProof: true,
         provisionCatalogProof: true,
         battleKitProof: true,
+        remedyPouchProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
         nurtureRiteProof: true,
@@ -1822,6 +1855,7 @@ async function run() {
         exchangeAccordId: 'jade-exchange-accord',
         provisionCatalogProof: true,
         battleKitProof: true,
+        remedyPouchProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -2150,6 +2184,25 @@ async function run() {
   assert(battleKit?.payload?.localPresenceCount === 2, 'Battle kit ledger entry must preserve two-tester presence proof.');
   assert(battleKit?.payload?.rewardItemId === 'jade-battle-kit-tag', 'Battle kit ledger entry must preserve the no-real-value kit tag proof.');
   assert(battleKit?.payload?.noRealValue === true, 'Battle kit ledger entry must remain no-real-value.');
+  const remedyPouch = entriesById.get(`${runId}-remedy-pouch`);
+  assert(remedyPouch?.payload?.pouchId === 'jade-remedy-pouch', 'Remedy pouch ledger entry must preserve the Jade Remedy Pouch id.');
+  assert(Array.isArray(remedyPouch?.payload?.roster) && remedyPouch.payload.roster.length === 3, 'Remedy pouch ledger entry must preserve full roster proof.');
+  assert(Array.isArray(remedyPouch?.payload?.partyIds) && remedyPouch.payload.partyIds.length === 3, 'Remedy pouch ledger entry must preserve full-party proof.');
+  assert(Array.isArray(remedyPouch?.payload?.conditionIds) && remedyPouch.payload.conditionIds.includes('lantern-ward') && remedyPouch.payload.conditionIds.includes('goldleaf-tempo') && remedyPouch.payload.conditionIds.includes('skybell-guard'), 'Remedy pouch ledger entry must preserve condition care ids.');
+  assert(Array.isArray(remedyPouch?.payload?.itemIds) && remedyPouch.payload.itemIds.includes('lantern-harmony-tea') && remedyPouch.payload.itemIds.includes('jade-thread-charm') && remedyPouch.payload.itemIds.includes('jade-mooncake-box'), 'Remedy pouch ledger entry must preserve all remedy item ids.');
+  assert(remedyPouch?.payload?.recoveryTeaProof === true, 'Remedy pouch ledger entry must preserve recovery tea proof.');
+  assert(remedyPouch?.payload?.recoveryTeaId === 'jade-teahouse-recovery', 'Remedy pouch ledger entry must preserve recovery tea id.');
+  assert(remedyPouch?.payload?.battleKitProof === true, 'Remedy pouch ledger entry must preserve battle kit proof.');
+  assert(remedyPouch?.payload?.battleKitId === 'jade-battle-kit', 'Remedy pouch ledger entry must preserve battle kit id.');
+  assert(remedyPouch?.payload?.careCycleProof === true, 'Remedy pouch ledger entry must preserve care cycle proof.');
+  assert(remedyPouch?.payload?.careCycleId === 'jade-court-care-cycle', 'Remedy pouch ledger entry must preserve care cycle id.');
+  assert(remedyPouch?.payload?.sanctuaryRiteProof === true, 'Remedy pouch ledger entry must preserve sanctuary rite proof.');
+  assert(remedyPouch?.payload?.sanctuaryRiteId === 'jade-court-sanctuary-rite', 'Remedy pouch ledger entry must preserve sanctuary rite id.');
+  assert(remedyPouch?.payload?.battleRoundProof === true, 'Remedy pouch ledger entry must preserve battle round proof.');
+  assert(remedyPouch?.payload?.battleRoundVictory === true, 'Remedy pouch ledger entry must preserve no-injury battle victory proof.');
+  assert(remedyPouch?.payload?.localPresenceCount === 2, 'Remedy pouch ledger entry must preserve two-tester presence proof.');
+  assert(remedyPouch?.payload?.rewardItemId === 'jade-remedy-pouch-tag', 'Remedy pouch ledger entry must preserve the no-real-value pouch tag proof.');
+  assert(remedyPouch?.payload?.noRealValue === true, 'Remedy pouch ledger entry must remain no-real-value.');
   const kinshipAlbum = entriesById.get(`${runId}-kinship-album`);
   assert(kinshipAlbum?.payload?.albumId === 'jade-kinship-album', 'Kinship album ledger entry must preserve the Jade Kinship Album id.');
   assert(Array.isArray(kinshipAlbum?.payload?.roster) && kinshipAlbum.payload.roster.length === 3, 'Kinship album ledger entry must preserve full roster proof.');
@@ -2441,6 +2494,7 @@ async function run() {
   assert(chronicle?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Wayfarer chronicle ledger entry must preserve the exchange accord id.');
   assert(chronicle?.payload?.provisionCatalogProof === true, 'Wayfarer chronicle ledger entry must preserve provision catalog proof.');
   assert(chronicle?.payload?.battleKitProof === true, 'Wayfarer chronicle ledger entry must preserve battle kit proof.');
+  assert(chronicle?.payload?.remedyPouchProof === true, 'Wayfarer chronicle ledger entry must preserve remedy pouch proof.');
   assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.sifuCouncilProof === true, 'Wayfarer chronicle ledger entry must preserve sifu council proof.');
@@ -2468,6 +2522,7 @@ async function run() {
   assert(ascension?.payload?.exchangeAccordId === 'jade-exchange-accord', 'Ascension trial ledger entry must preserve the exchange accord id.');
   assert(ascension?.payload?.provisionCatalogProof === true, 'Ascension trial ledger entry must preserve provision catalog proof.');
   assert(ascension?.payload?.battleKitProof === true, 'Ascension trial ledger entry must preserve battle kit proof.');
+  assert(ascension?.payload?.remedyPouchProof === true, 'Ascension trial ledger entry must preserve remedy pouch proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

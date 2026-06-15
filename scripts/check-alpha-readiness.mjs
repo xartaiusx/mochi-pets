@@ -728,12 +728,20 @@ const checks = [
     includes: ['item.battle_kit', 'battleItemKits: true', 'Jade Battle Kit label/state', 'Jade Battle Kit Tag payload preservation']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['item.remedy_pouch', 'remedyPouches: true', 'Jade Remedy Pouch label/state', 'Jade Remedy Pouch Tag payload preservation']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['item.provision_catalog', 'Jade Provision Catalog', 'provisionCatalogProof', 'Jade Provision Catalog Seal']
   },
   {
     file: 'docs/alpha-acceptance.md',
     includes: ['item.battle_kit', 'Jade Battle Kit', 'battleKitProof', 'Jade Battle Kit Tag']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['item.remedy_pouch', 'Jade Remedy Pouch', 'remedyPouchProof', 'Jade Remedy Pouch Tag']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -744,12 +752,20 @@ const checks = [
     includes: ['Jade Battle Kit proof', 'Jade Battle Kit Tag', 'Battle kit proof is no-real-value']
   },
   {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Remedy Pouch proof', 'Jade Remedy Pouch Tag', 'Remedy pouch proof is no-real-value']
+  },
+  {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Provision Catalog proof', 'item.provision_catalog', 'Jade Provision Catalog Seal']
   },
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Battle Kit proof', 'item.battle_kit', 'Jade Battle Kit Tag']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Remedy Pouch proof', 'item.remedy_pouch', 'Jade Remedy Pouch Tag']
   },
   {
     file: 'docs/visual-polish-brief.md',
@@ -760,12 +776,20 @@ const checks = [
     includes: ['Jade Battle Kit proof', 'kit', 'content-only']
   },
   {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Remedy Pouch proof', 'Remedy', 'content-only']
+  },
+  {
     file: 'docs/game-art-bible.md',
     includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'content-only item recipe proof']
   },
   {
     file: 'docs/game-art-bible.md',
     includes: ['Jade Battle Kit', 'Jade Battle Kit Tag', 'content-only battle item kit proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Remedy Pouch', 'Jade Remedy Pouch Tag', 'content-only remedy pouch proof']
   },
   {
     file: 'docs/asset-pipeline-contract.md',
@@ -776,12 +800,20 @@ const checks = [
     includes: ['Jade Battle Kit', 'Jade Battle Kit Tag', 'Content-only proof loops']
   },
   {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Remedy Pouch', 'Jade Remedy Pouch Tag', 'Content-only proof loops']
+  },
+  {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Battle Kit', 'Jade Battle Kit Tag', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Remedy Pouch', 'Jade Remedy Pouch Tag', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -792,12 +824,20 @@ const checks = [
     includes: ['battle-kit', 'record the Jade Battle Kit proof']
   },
   {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['remedy-pouch', 'record the Jade Remedy Pouch proof']
+  },
+  {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Provision Catalog proof', 'item.provision_catalog', 'provisionCatalogProof']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Battle Kit proof', 'item.battle_kit', 'battleKitProof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Remedy Pouch proof', 'item.remedy_pouch', 'remedyPouchProof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -874,6 +914,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['battleItemKits: true', "'item.battle_kit'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['remedyPouches: true', "'item.remedy_pouch'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -1009,6 +1053,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_REMEDY_POUCHES', 'resolveSpiritRemedyPouch', 'data-alpha-action="item.remedy_pouch"', 'data-remedy-pouch-label', 'remedyPouchProof', 'remedyPouchTagClaimed', 'Jade Remedy Pouch']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_ROUTE_PATROLS', 'resolveSpiritRoutePatrol', 'data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed']
   },
   {
@@ -1126,6 +1174,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['SPIRIT_BATTLE_KITS', 'Jade Battle Kit', 'jade-battle-kit-tag', 'resolveSpiritBattleKit', 'item-battle-kit', 'battleKitProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_REMEDY_POUCHES', 'Jade Remedy Pouch', 'jade-remedy-pouch-tag', 'resolveSpiritRemedyPouch', 'item-remedy-pouch', 'remedyPouchProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -1253,6 +1305,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['remedyPouches: true', 'item.remedy_pouch', 'remedyPouchIds']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritTemperamentConcords: true', 'spirit.temperament_concord', 'spiritFieldAlmanacs: true', 'spirit.field_almanac']
   },
   {
@@ -1357,6 +1413,10 @@ const checks = [
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
+    includes: ['remedyPouches: true', "remedyPouchIds: ['jade-remedy-pouch']"]
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
     includes: ['spiritBloomAscendances: true']
   },
   {
@@ -1426,6 +1486,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['item.battle_kit', 'jade-battle-kit', 'battleItemKits', 'Jade Battle Kit', 'battleKitProof', 'jade-battle-kit-tag']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['item.remedy_pouch', 'jade-remedy-pouch', 'remedyPouches', 'Jade Remedy Pouch', 'remedyPouchProof', 'jade-remedy-pouch-tag']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -1520,6 +1584,10 @@ const checks = [
     includes: ['battleKitIds', 'jade-battle-kit']
   },
   {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['remedyPouchIds', 'jade-remedy-pouch']
+  },
+  {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="spirit.capture"', 'captureProof', 'data-alpha-action="spirit.route_invite"', 'routeInviteProof', 'data-field-accord-label', 'fieldAccordProof', 'cloudbell-skyvow-accord', 'Cloudbell Skyvow Accord cleared', 'fieldAccordTalismanClaimed', 'data-alpha-action="world.route_mastery"', 'routeMasteryProof', 'data-alpha-action="spirit.habitat_bond"', 'habitatBondProof', 'data-alpha-action="spirit.sanctuary_rite"', 'data-sanctuary-label', 'sanctuaryRiteProof', 'sanctuaryBellClaimed', 'Jade Court Sanctuary Rite complete', 'data-alpha-action="spirit.research"', 'researchProof', 'data-alpha-action="spirit.compendium_complete"', 'compendiumProof', 'data-alpha-action="spirit.roster_archive"', 'data-archive-label', 'rosterArchiveProof', 'rosterArchiveSealClaimed', 'Jade Court Roster Archive sealed', 'data-alpha-action="spirit.care_cycle"', 'data-care-cycle-label', 'careCycleProof', 'careCycleKnotClaimed', 'Jade Court Care Cycle complete', 'data-alpha-action="spirit.temperament_concord"', 'data-temperament-label', 'temperamentConcordProof', 'temperamentCharmClaimed', 'Jade Temperament Concord complete', 'data-alpha-action="spirit.field_almanac"', 'data-field-almanac-label', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac recorded', 'data-alpha-action="spirit.habitat_census"', 'data-habitat-census-label', 'habitatCensusProof', 'habitatCensusSealClaimed', 'Jade Habitat Census recorded', 'data-alpha-action="item.provision_satchel"', 'provisionProof', 'jade-court-provision-satchel', 'data-alpha-action="guild.commission_complete"', 'commissionProof', 'jade-court-commission-ledger', 'data-alpha-action="guild.social_rally"', 'rallyProof', 'emoteProof', 'Jade Courtyard Rally', 'data-alpha-action="guild.wayfarer_chronicle"', 'data-chronicle-label', 'wayfarerChronicleProof', 'wayfarerChronicleClaspClaimed', 'Jade Wayfarer Chronicle complete', 'data-alpha-action="guild.ascension_trial"', 'data-ascension-label', 'guildAscensionProof', 'guildAscensionRibbonClaimed', 'Jade Court Ascension Trial complete', 'data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament cleared', 'jade-court-spirit-compendium', 'jade-cloudbell-circuit', 'jade-court-habitat-bond', 'jade-court-research-folio', 'cloudbell-reed-bank', 'aozhen', 'data-alpha-action="party.harmony_form"', 'harmonyFormProof', 'triune-jade-harmony', 'data-alpha-action="battle.harmony_trial"', 'harmonyTrialProof', 'jade-echo-concord', 'data-alpha-action="battle.team_spar_match"', 'teamSparMatchProof', 'jade-mirror-team-match', 'data-alpha-action="battle.mentor_challenge"', 'mentorChallengeProof', 'silk-banner-mentor-drill', 'data-alpha-action="spirit.technique_loadout"', 'techniqueLoadoutProof', 'jade-step-loadout', 'data-alpha-action="spirit.trait_attune"', 'traitAttunementProof', 'jade-heart-trait', 'data-alpha-action="battle.condition_weave"', 'conditionWeaveProof', 'jade-mirror-condition-weave', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.journal"', 'journalProof', 'data-alpha-action="world.expedition"', 'expeditionProof', 'data-alpha-action="spirit.technique"', 'techniqueProof', 'data-alpha-action="battle.tactic_scroll"', 'tacticProof', 'data-alpha-action="guild.rank_trial"', 'guildRankProof', 'data-alpha-action="spirit.growth_rite"', 'growthRiteProof', 'data-alpha-action="battle.affinity_trial"', 'affinityProof', 'data-alpha-action="party.set"', 'partyIds', 'data-alpha-action="spirit.care"', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="battle.spar_ladder"', 'sparLadderXp', 'battleRoundProof', 'battleRoundTranscript', 'data-battle-round-label', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'completedQuestIds', 'questChainProof', 'chain.withdraw_request', 'chain.deposit_request', 'canaryReturnRequested', 'Jade Vault Return Proof staged', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowLeft', 'ArrowDown', 'canvas']
   },
@@ -1534,6 +1602,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="item.battle_kit"', 'data-battle-kit-label', 'battleKitProof', 'battleKitTagClaimed', 'Jade Battle Kit']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="item.remedy_pouch"', 'data-remedy-pouch-label', 'remedyPouchProof', 'remedyPouchTagClaimed', 'Jade Remedy Pouch']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1698,6 +1770,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['battleKitProof', 'battleKitTagClaimed', 'Jade Battle Kit', 'jade-battle-kit-tag', 'battleKit', 'battle kit']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['remedyPouchProof', 'remedyPouchTagClaimed', 'Jade Remedy Pouch', 'jade-remedy-pouch-tag', 'remedyPouch', 'remedy pouch']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
