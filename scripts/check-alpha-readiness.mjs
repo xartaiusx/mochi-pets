@@ -11,7 +11,7 @@ const checks = [
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
-    includes: ['builtInFingerprints', 'clean-room fingerprint', 'private clean-room denylist literal', 'MOCHI_SOCIAL_CLEAN_ROOM_DENYLIST_PATH', 'MOCHI_SOCIAL_CLEAN_ROOM_DENYLIST', 'docs/asset-ledger.md']
+    includes: ['builtInFingerprints', 'legacyIdentityFingerprints', 'legacy identity fingerprint', 'clean-room fingerprint', 'private clean-room denylist literal', 'MOCHI_SOCIAL_CLEAN_ROOM_DENYLIST_PATH', 'MOCHI_SOCIAL_CLEAN_ROOM_DENYLIST', 'docs/asset-ledger.md']
   },
   {
     file: '.github/workflows/ci.yml',
