@@ -60,6 +60,7 @@ describe('game manifest', () => {
         spiritWeatherVeils: true,
         spiritEncounterRotations: true,
         spiritEncounterAtlases: true,
+        spiritHabitatCensuses: true,
         spiritCraftWrits: true,
         tradeExchangeAccords: true,
         spiritRivalCircles: true,
@@ -265,6 +266,7 @@ describe('game manifest', () => {
           weatherVeilIds: ['jade-weather-veil'],
           encounterRotationIds: ['jade-encounter-rotation'],
           encounterAtlasIds: ['jade-encounter-atlas'],
+          habitatCensusIds: ['jade-habitat-census'],
           routeWaystoneIds: ['jade-cloudbell-waystone']
         },
         economyAndCanary: {

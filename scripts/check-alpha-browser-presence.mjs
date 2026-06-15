@@ -250,6 +250,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.lineage_register"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_rotation"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.habitat_census"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.dojo_ladder"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
@@ -297,6 +298,7 @@ async function exerciseAlphaHud(page) {
       const weatherVeil = document.querySelector('[data-weather-veil-label]')?.textContent || '';
       const encounterRotation = document.querySelector('[data-encounter-rotation-label]')?.textContent || '';
       const encounterAtlas = document.querySelector('[data-encounter-atlas-label]')?.textContent || '';
+      const habitatCensus = document.querySelector('[data-habitat-census-label]')?.textContent || '';
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
       const exchangeAccord = document.querySelector('[data-exchange-accord-label]')?.textContent || '';
       const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
@@ -366,10 +368,11 @@ async function exerciseAlphaHud(page) {
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
-        && weatherVeil.includes('Jade Weather Veil')
-        && encounterRotation.includes('Jade Encounter Rotation')
-        && encounterAtlas.includes('Jade Encounter Atlas')
-        && craftWrit.includes('Jade Court Craft Writ')
+      && weatherVeil.includes('Jade Weather Veil')
+      && encounterRotation.includes('Jade Encounter Rotation')
+      && encounterAtlas.includes('Jade Encounter Atlas')
+      && habitatCensus.includes('Jade Habitat Census')
+      && craftWrit.includes('Jade Court Craft Writ')
         && exchangeAccord.includes('Jade Exchange Accord')
         && routeWaystone.includes('Jade Cloudbell Waystone')
         && nurtureRite.includes('Jade Moonwell Nurture Rite')
@@ -878,6 +881,23 @@ async function exerciseAlphaHud(page) {
         && state.encounterRotationId === 'jade-encounter-rotation'
         && state.weatherVeilId === 'jade-weather-veil'
         && state.encounterAtlasClaimed === true
+        && state.habitatCensusProof === true
+        && state.habitatCensusId === 'jade-habitat-census'
+        && state.habitatCensusName === 'Jade Habitat Census'
+        && state.habitatCensusScore >= 49
+        && state.habitatCensusRequiredScore === 49
+        && Array.isArray(state.habitatCensusRouteIds)
+        && state.habitatCensusRouteIds.includes('moonbridge-bamboo-trail')
+        && state.habitatCensusRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.habitatCensusSpiritIds)
+        && state.habitatCensusSpiritIds.includes('lirabao')
+        && state.habitatCensusSpiritIds.includes('jintari')
+        && state.habitatCensusSpiritIds.includes('aozhen')
+        && Array.isArray(state.habitatCensusCareLoggedSpiritIds)
+        && state.habitatCensusCareLoggedSpiritIds.includes('lirabao')
+        && state.habitatCensusCareLoggedSpiritIds.includes('jintari')
+        && state.habitatCensusCareLoggedSpiritIds.includes('aozhen')
+        && state.habitatCensusSealClaimed === true
         && state.wayfarerChronicleProof === true
         && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
         && state.wayfarerChronicleName === 'Jade Wayfarer Chronicle'
@@ -1098,6 +1118,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Weather Veil recorded')
         && chat.includes('Jade Encounter Rotation recorded')
         && chat.includes('Jade Encounter Atlas recorded')
+        && chat.includes('Jade Habitat Census recorded')
         && chat.includes('Jade Banner Tournament cleared')
         && chat.includes('Jade Rival Circle cleared')
         && chat.includes('Jade Court Commission Ledger complete')
@@ -1142,6 +1163,7 @@ async function exerciseAlphaHud(page) {
       weatherVeil: document.querySelector('[data-weather-veil-label]')?.textContent || '',
       encounterRotation: document.querySelector('[data-encounter-rotation-label]')?.textContent || '',
       encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent || '',
+      habitatCensus: document.querySelector('[data-habitat-census-label]')?.textContent || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
       exchangeAccord: document.querySelector('[data-exchange-accord-label]')?.textContent || '',
       routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
@@ -1212,6 +1234,7 @@ async function exerciseAlphaHud(page) {
     weatherVeil: document.querySelector('[data-weather-veil-label]')?.textContent?.trim() || '',
     encounterRotation: document.querySelector('[data-encounter-rotation-label]')?.textContent?.trim() || '',
     encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent?.trim() || '',
+    habitatCensus: document.querySelector('[data-habitat-census-label]')?.textContent?.trim() || '',
     craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
     exchangeAccord: document.querySelector('[data-exchange-accord-label]')?.textContent?.trim() || '',
     routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
@@ -1348,6 +1371,21 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.encounterRotationId === 'jade-encounter-rotation', 'HUD encounter atlas action must preserve encounter rotation proof.');
   assert(snapshot.state.weatherVeilId === 'jade-weather-veil', 'HUD encounter atlas action must preserve weather veil proof.');
   assert(snapshot.state.encounterAtlasClaimed === true, 'HUD encounter atlas action must mark the no-real-value atlas proof.');
+  assert(snapshot.habitatCensus.includes('Jade Habitat Census'), 'HUD habitat census label must show the completed habitat census.');
+  assert(snapshot.state.habitatCensusProof === true, 'HUD habitat census action must record habitat census proof.');
+  assert(snapshot.state.habitatCensusId === 'jade-habitat-census', 'HUD habitat census action must record the census id.');
+  assert(snapshot.state.habitatCensusName === 'Jade Habitat Census', 'HUD habitat census action must record the census name.');
+  assert(snapshot.state.habitatCensusScore >= 49, 'HUD habitat census action must record a passing census score.');
+  assert(snapshot.state.habitatCensusRequiredScore === 49, 'HUD habitat census action must record the census requirement.');
+  assert(Array.isArray(snapshot.state.habitatCensusRouteIds) && snapshot.state.habitatCensusRouteIds.includes('moonbridge-bamboo-trail'), 'HUD habitat census action must preserve the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.habitatCensusRouteIds) && snapshot.state.habitatCensusRouteIds.includes('cloudbell-reed-bank'), 'HUD habitat census action must preserve the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.habitatCensusSpiritIds) && snapshot.state.habitatCensusSpiritIds.includes('lirabao'), 'HUD habitat census action must preserve Lirabao observation proof.');
+  assert(Array.isArray(snapshot.state.habitatCensusSpiritIds) && snapshot.state.habitatCensusSpiritIds.includes('jintari'), 'HUD habitat census action must preserve Jintari observation proof.');
+  assert(Array.isArray(snapshot.state.habitatCensusSpiritIds) && snapshot.state.habitatCensusSpiritIds.includes('aozhen'), 'HUD habitat census action must preserve Aozhen observation proof.');
+  assert(Array.isArray(snapshot.state.habitatCensusCareLoggedSpiritIds) && snapshot.state.habitatCensusCareLoggedSpiritIds.includes('lirabao'), 'HUD habitat census action must preserve Lirabao care log.');
+  assert(Array.isArray(snapshot.state.habitatCensusCareLoggedSpiritIds) && snapshot.state.habitatCensusCareLoggedSpiritIds.includes('jintari'), 'HUD habitat census action must preserve Jintari care log.');
+  assert(Array.isArray(snapshot.state.habitatCensusCareLoggedSpiritIds) && snapshot.state.habitatCensusCareLoggedSpiritIds.includes('aozhen'), 'HUD habitat census action must preserve Aozhen care log.');
+  assert(snapshot.state.habitatCensusSealClaimed === true, 'HUD habitat census action must mark the no-real-value habitat census seal proof.');
   assert(snapshot.fieldAccord.includes('Cloudbell Skyvow Accord'), 'HUD field accord label must show the cleared Cloudbell accord.');
   assert(snapshot.state.fieldAccordProof === true, 'HUD field accord action must record field accord proof.');
   assert(snapshot.state.fieldAccordId === 'cloudbell-skyvow-accord', 'HUD field accord action must record the Cloudbell accord id.');
@@ -1916,6 +1954,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Capture Rite recorded')), 'HUD chat state must record the capture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Encounter Rotation recorded')), 'HUD chat state must record the encounter rotation action.');
   assert(chat.some((line) => String(line).includes('Jade Encounter Atlas recorded')), 'HUD chat state must record the encounter atlas action.');
+  assert(chat.some((line) => String(line).includes('Jade Habitat Census recorded')), 'HUD chat state must record the habitat census action.');
   assert(chat.some((line) => String(line).includes('Jade Banner Tournament cleared')), 'HUD chat state must record the tournament bracket action.');
   assert(chat.some((line) => String(line).includes('Jade Rival Circle cleared')), 'HUD chat state must record the rival circle action.');
   assert(chat.some((line) => String(line).includes('Jade Sifu Council cleared')), 'HUD chat state must record the sifu council action.');

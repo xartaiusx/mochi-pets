@@ -56,6 +56,7 @@ const ALPHA_FEATURES = {
     spiritWeatherVeils: true,
     spiritEncounterRotations: true,
     spiritEncounterAtlases: true,
+    spiritHabitatCensuses: true,
     spiritCraftWrits: true,
     tradeExchangeAccords: true,
     routeWaystones: true,
@@ -184,6 +185,7 @@ const PLAYABLE_CONTENT_CATALOG = {
     weatherVeilIds: ['jade-weather-veil'],
     encounterRotationIds: ['jade-encounter-rotation'],
     encounterAtlasIds: ['jade-encounter-atlas'],
+    habitatCensusIds: ['jade-habitat-census'],
     routeWaystoneIds: ['jade-cloudbell-waystone']
   },
   economyAndCanary: {
@@ -388,6 +390,7 @@ const ALPHA_ACTION_TYPES = [
   'world.weather_veil',
   'world.encounter_rotation',
   'world.encounter_atlas',
+  'spirit.habitat_census',
   'item.craft_writ',
   'world.route_waystone',
   'spirit.nurture_rite',

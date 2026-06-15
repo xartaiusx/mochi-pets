@@ -74,6 +74,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritWeatherVeils === true, 'Manifest must expose Mochi Spirit weather veils.');
   assert(manifest.body.gameplay?.spiritEncounterRotations === true, 'Manifest must expose Mochi Spirit encounter rotations.');
   assert(manifest.body.gameplay?.spiritEncounterAtlases === true, 'Manifest must expose Mochi Spirit encounter atlases.');
+  assert(manifest.body.gameplay?.spiritHabitatCensuses === true, 'Manifest must expose Mochi Spirit habitat censuses.');
   assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
   assert(manifest.body.gameplay?.tradeExchangeAccords === true, 'Manifest must expose Mochirii trade exchange accords.');
   assert(manifest.body.gameplay?.spiritRivalCircles === true, 'Manifest must expose Mochi Spirit rival circles.');
@@ -183,6 +184,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritWeatherVeils === true, 'Alpha status must expose Mochi Spirit weather veils.');
   assert(alphaStatus.body.gameplay?.spiritEncounterRotations === true, 'Alpha status must expose Mochi Spirit encounter rotations.');
   assert(alphaStatus.body.gameplay?.spiritEncounterAtlases === true, 'Alpha status must expose Mochi Spirit encounter atlases.');
+  assert(alphaStatus.body.gameplay?.spiritHabitatCensuses === true, 'Alpha status must expose Mochi Spirit habitat censuses.');
   assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
   assert(alphaStatus.body.gameplay?.tradeExchangeAccords === true, 'Alpha status must expose Mochirii trade exchange accords.');
   assert(alphaStatus.body.gameplay?.spiritRivalCircles === true, 'Alpha status must expose Mochi Spirit rival circles.');
@@ -1048,6 +1050,34 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-habitat-census`,
+      type: 'spirit.habitat_census',
+      payload: {
+        censusId: 'jade-habitat-census',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        observedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        careLoggedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        encounterAtlasProof: true,
+        encounterAtlasId: 'jade-encounter-atlas',
+        routeEcologyProof: true,
+        routeEcologyId: 'jade-route-ecology-survey',
+        weatherVeilProof: true,
+        weatherVeilId: 'jade-weather-veil',
+        compendiumProof: true,
+        compendiumId: 'jade-court-spirit-compendium',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-habitat-census-seal',
+        chatLines: ['Local acceptance habitat census proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-craft-writ`,
       type: 'item.craft_writ',
       payload: {
@@ -1650,6 +1680,7 @@ async function run() {
         captureRiteProof: true,
         encounterRotationProof: true,
         encounterAtlasProof: true,
+        habitatCensusProof: true,
         routeMasteryProof: true,
         routePatrolProof: true,
         routeEcologyProof: true,
@@ -1914,6 +1945,21 @@ async function run() {
   assert(encounterAtlas?.payload?.localPresenceCount === 2, 'Encounter atlas ledger entry must preserve two-tester witness proof.');
   assert(encounterAtlas?.payload?.rewardItemId === 'jade-encounter-atlas', 'Encounter atlas ledger entry must preserve the no-real-value encounter atlas proof.');
   assert(encounterAtlas?.payload?.noRealValue === true, 'Encounter atlas ledger entry must remain no-real-value.');
+  const habitatCensus = entriesById.get(`${runId}-habitat-census`);
+  assert(habitatCensus?.payload?.censusId === 'jade-habitat-census', 'Habitat census ledger entry must preserve the Jade Habitat Census id.');
+  assert(Array.isArray(habitatCensus?.payload?.roster) && habitatCensus.payload.roster.length === 3, 'Habitat census ledger entry must preserve full roster proof.');
+  assert(Array.isArray(habitatCensus?.payload?.discoveredRoutes) && habitatCensus.payload.discoveredRoutes.length === 2, 'Habitat census ledger entry must preserve Moonbridge and Cloudbell route proof.');
+  assert(Array.isArray(habitatCensus?.payload?.observedSpiritIds) && habitatCensus.payload.observedSpiritIds.includes('lirabao') && habitatCensus.payload.observedSpiritIds.includes('jintari') && habitatCensus.payload.observedSpiritIds.includes('aozhen'), 'Habitat census ledger entry must preserve all first-court spirit observations.');
+  assert(Array.isArray(habitatCensus?.payload?.careLoggedSpiritIds) && habitatCensus.payload.careLoggedSpiritIds.includes('lirabao') && habitatCensus.payload.careLoggedSpiritIds.includes('jintari') && habitatCensus.payload.careLoggedSpiritIds.includes('aozhen'), 'Habitat census ledger entry must preserve all first-court care logs.');
+  assert(habitatCensus?.payload?.encounterAtlasProof === true, 'Habitat census ledger entry must preserve encounter atlas proof.');
+  assert(habitatCensus?.payload?.encounterAtlasId === 'jade-encounter-atlas', 'Habitat census ledger entry must preserve the encounter atlas id.');
+  assert(habitatCensus?.payload?.routeEcologyProof === true, 'Habitat census ledger entry must preserve route ecology proof.');
+  assert(habitatCensus?.payload?.weatherVeilProof === true, 'Habitat census ledger entry must preserve weather veil proof.');
+  assert(habitatCensus?.payload?.compendiumProof === true, 'Habitat census ledger entry must preserve compendium proof.');
+  assert(habitatCensus?.payload?.careCycleProof === true, 'Habitat census ledger entry must preserve care cycle proof.');
+  assert(habitatCensus?.payload?.localPresenceCount === 2, 'Habitat census ledger entry must preserve two-tester witness proof.');
+  assert(habitatCensus?.payload?.rewardItemId === 'jade-habitat-census-seal', 'Habitat census ledger entry must preserve the no-real-value habitat census seal.');
+  assert(habitatCensus?.payload?.noRealValue === true, 'Habitat census ledger entry must remain no-real-value.');
   const craftWrit = entriesById.get(`${runId}-craft-writ`);
   assert(craftWrit?.payload?.writId === 'jade-court-craft-writ', 'Craft writ ledger entry must preserve the Jade Court Craft Writ id.');
   assert(Array.isArray(craftWrit?.payload?.roster) && craftWrit.payload.roster.length === 3, 'Craft writ ledger entry must preserve full roster proof.');
@@ -2264,6 +2310,7 @@ async function run() {
   assert(chronicle?.payload?.captureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve capture rite proof.');
   assert(chronicle?.payload?.encounterRotationProof === true, 'Wayfarer chronicle ledger entry must preserve encounter rotation proof.');
   assert(chronicle?.payload?.encounterAtlasProof === true, 'Wayfarer chronicle ledger entry must preserve encounter atlas proof.');
+  assert(chronicle?.payload?.habitatCensusProof === true, 'Wayfarer chronicle ledger entry must preserve habitat census proof.');
   assert(chronicle?.payload?.routePatrolProof === true, 'Wayfarer chronicle ledger entry must preserve route patrol proof.');
   assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');
   assert(chronicle?.payload?.craftWritProof === true, 'Wayfarer chronicle ledger entry must preserve craft writ proof.');

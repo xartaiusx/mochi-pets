@@ -21,6 +21,7 @@ import {
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITATS,
+  SPIRIT_HABITAT_CENSUSES,
   SPIRIT_MOVES,
   SPIRIT_KINSHIP_ALBUMS,
   SPIRIT_LINEAGE_REGISTERS,
@@ -72,6 +73,7 @@ import {
   resolveSpiritFieldAlmanac,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
+  resolveSpiritHabitatCensus,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
@@ -1174,6 +1176,73 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(encounterAtlas.message).toContain('No real value');
 
+    expect(SPIRIT_HABITAT_CENSUSES.map((census) => census.id)).toEqual(['jade-habitat-census']);
+    const blockedHabitatCensus = resolveSpiritHabitatCensus({
+      roster: fullRoster,
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      observedSpiritIds: ['lirabao', 'jintari'],
+      careLoggedSpiritIds: ['lirabao'],
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      careCycleProof: false,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Habitat census blocked.']
+    });
+    expect(blockedHabitatCensus.recorded).toBe(false);
+    expect(blockedHabitatCensus.missing).toEqual(expect.arrayContaining([
+      'observation:aozhen',
+      'care-log:jintari',
+      'route:cloudbell-reed-bank',
+      'weather-veil:jade-weather-veil',
+      'care-cycle:jade-court-care-cycle',
+      'presence:1/2'
+    ]));
+
+    const habitatCensus = resolveSpiritHabitatCensus({
+      roster: fullRoster,
+      discoveredRoutes: firstRouteIds,
+      observedSpiritIds: fullRoster,
+      careLoggedSpiritIds: fullRoster,
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Habitat census ready.']
+    });
+    expect(habitatCensus).toMatchObject({
+      recorded: true,
+      censusId: 'jade-habitat-census',
+      censusName: 'Jade Habitat Census',
+      routeIds: [...firstRouteIds],
+      observedSpiritIds: [...fullRoster],
+      careLoggedSpiritIds: [...fullRoster],
+      score: 57,
+      requiredScore: 49,
+      rewardItemId: ALPHA_ITEMS.habitatCensusSeal.id,
+      source: 'spirit-habitat-census'
+    });
+    expect(habitatCensus.message).toContain('No real value');
+
     expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
     const blockedCraftWrit = resolveSpiritCraftWrit({
       roster: fullRoster,
@@ -1895,6 +1964,7 @@ describe('Mochi Spirits alpha content contract', () => {
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
+      habitatCensusProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -1958,6 +2028,7 @@ describe('Mochi Spirits alpha content contract', () => {
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
+      habitatCensusProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -2009,7 +2080,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 143,
+      score: 146,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'

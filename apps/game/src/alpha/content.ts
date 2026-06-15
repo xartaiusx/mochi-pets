@@ -1057,6 +1057,67 @@ export interface SpiritEncounterAtlasResult {
   source: string;
 }
 
+export interface SpiritHabitatCensus {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredRouteIds: readonly string[];
+  requiredEncounterAtlasId: string;
+  requiredRouteEcologyId: string;
+  requiredWeatherVeilId: string;
+  requiredCompendiumId: string;
+  requiredCareCycleId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritHabitatCensusProgress {
+  roster: readonly string[];
+  discoveredRoutes: readonly string[];
+  observedSpiritIds: readonly string[];
+  careLoggedSpiritIds: readonly string[];
+  encounterAtlasProof: boolean;
+  encounterAtlasId?: string;
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  weatherVeilProof: boolean;
+  weatherVeilId?: string;
+  compendiumProof: boolean;
+  compendiumId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritHabitatCensusResult {
+  ok: boolean;
+  recorded: boolean;
+  censusId: string;
+  censusName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  routeIds: string[];
+  observedSpiritIds: string[];
+  careLoggedSpiritIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritCraftWrit {
   id: string;
   name: string;
@@ -1916,6 +1977,7 @@ export interface GuildWayfarerChronicleProgress {
   captureProof: boolean;
   captureRiteProof: boolean;
   encounterAtlasProof: boolean;
+  habitatCensusProof: boolean;
   routeMasteryProof: boolean;
   routePatrolProof: boolean;
   routeEcologyProof: boolean;
@@ -3614,6 +3676,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Encounter Atlas',
     description: 'A no-real-value encounter atlas proof for closed-alpha Mochirii route signs, rarity tiers, capture rites, and social witnesses.'
   },
+  habitatCensusSeal: {
+    id: 'jade-habitat-census-seal',
+    name: 'Jade Habitat Census Seal',
+    description: 'A no-real-value habitat census proof for closed-alpha Mochirii species observations, care logs, route ecology, and social witnesses.'
+  },
   craftWrit: {
     id: 'jade-court-craft-writ',
     name: 'Jade Court Craft Writ',
@@ -4319,6 +4386,27 @@ export const SPIRIT_ENCOUNTER_ATLASES: readonly SpiritEncounterAtlas[] = [
     requiredScore: 53,
     rewardItemId: ALPHA_ITEMS.encounterAtlas.id,
     summary: 'A no-real-value encounter index for testers who prove every first-court route sign, rarity tier, journal entry, capture rite, route ecology note, weather veil, encounter rotation, and nearby social witness.'
+  }
+];
+
+export const SPIRIT_HABITAT_CENSUSES: readonly SpiritHabitatCensus[] = [
+  {
+    id: 'jade-habitat-census',
+    name: 'Jade Habitat Census',
+    title: 'First-Court Habitat Census',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredEncounterAtlasId: SPIRIT_ENCOUNTER_ATLASES[0].id,
+    requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+    requiredWeatherVeilId: SPIRIT_WEATHER_VEILS[0].id,
+    requiredCompendiumId: SPIRIT_COMPENDIUMS[0].id,
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 49,
+    rewardItemId: ALPHA_ITEMS.habitatCensusSeal.id,
+    summary: 'A no-real-value habitat census proof for testers who connect original Mochirii species observations, care logs, route ecology, weather veil timing, compendium records, and nearby social witnesses.'
   }
 ];
 
@@ -6696,6 +6784,104 @@ export function resolveSpiritEncounterAtlas(
   };
 }
 
+export function resolveSpiritHabitatCensus(
+  progress: SpiritHabitatCensusProgress,
+  censusId: string = SPIRIT_HABITAT_CENSUSES[0].id
+): SpiritHabitatCensusResult {
+  const census = SPIRIT_HABITAT_CENSUSES.find((entry) => entry.id === censusId) || SPIRIT_HABITAT_CENSUSES[0];
+  const requiredSpiritIds = new Set(census.requiredSpiritIds);
+  const requiredRouteIds = new Set(census.requiredRouteIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const observedSpiritIds = Array.from(new Set(progress.observedSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const careLoggedSpiritIds = Array.from(new Set(progress.careLoggedSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of census.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`roster:${spiritId}`);
+    if (!observedSpiritIds.includes(spiritId)) missing.push(`observation:${spiritId}`);
+    if (!careLoggedSpiritIds.includes(spiritId)) missing.push(`care-log:${spiritId}`);
+  }
+
+  for (const routeId of census.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) missing.push(`route:${routeId}`);
+  }
+
+  const encounterAtlasReady = progress.encounterAtlasProof && progress.encounterAtlasId === census.requiredEncounterAtlasId;
+  if (!encounterAtlasReady) missing.push(`encounter-atlas:${census.requiredEncounterAtlasId}`);
+
+  const routeEcologyReady = progress.routeEcologyProof && progress.routeEcologyId === census.requiredRouteEcologyId;
+  if (!routeEcologyReady) missing.push(`route-ecology:${census.requiredRouteEcologyId}`);
+
+  const weatherVeilReady = progress.weatherVeilProof && progress.weatherVeilId === census.requiredWeatherVeilId;
+  if (!weatherVeilReady) missing.push(`weather-veil:${census.requiredWeatherVeilId}`);
+
+  const compendiumReady = progress.compendiumProof && progress.compendiumId === census.requiredCompendiumId;
+  if (!compendiumReady) missing.push(`compendium:${census.requiredCompendiumId}`);
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === census.requiredCareCycleId;
+  if (!careCycleReady) missing.push(`care-cycle:${census.requiredCareCycleId}`);
+
+  if (localPresenceCount < census.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${census.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < census.requiredChatLines) missing.push(`chat:${chatLines.length}/${census.requiredChatLines}`);
+
+  const score =
+    Math.min(roster.length, census.requiredSpiritIds.length) * 2 +
+    Math.min(routeIds.length, census.requiredRouteIds.length) * 3 +
+    Math.min(observedSpiritIds.length, census.requiredSpiritIds.length) * 3 +
+    Math.min(careLoggedSpiritIds.length, census.requiredSpiritIds.length) * 2 +
+    (encounterAtlasReady ? 6 : 0) +
+    (routeEcologyReady ? 4 : 0) +
+    (weatherVeilReady ? 4 : 0) +
+    (compendiumReady ? 4 : 0) +
+    (careCycleReady ? 4 : 0) +
+    Math.min(localPresenceCount, census.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const recorded = missing.length === 0 && score >= census.requiredScore;
+  const spiritSummary = observedSpiritIds.length
+    ? observedSpiritIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ')
+    : 'unobserved spirits';
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unscouted routes';
+
+  return {
+    ok: true,
+    recorded,
+    censusId: census.id,
+    censusName: census.name,
+    title: census.title,
+    habitat: census.habitat,
+    roster,
+    routeIds,
+    observedSpiritIds,
+    careLoggedSpiritIds,
+    localPresenceCount,
+    score,
+    requiredScore: census.requiredScore,
+    missing,
+    rewardItemId: census.rewardItemId,
+    message: recorded
+      ? `${census.name} recorded: ${spiritSummary} are counted across ${routeSummary} with care logs, route ecology, weather veil timing, compendium records, encounter atlas proof, and nearby social witnesses. No real value.`
+      : `${census.name} needs ${missing.join(', ')} before first-court habitat census records can be sealed.`,
+    source: 'spirit-habitat-census'
+  };
+}
+
 export function resolveSpiritCraftWrit(
   progress: SpiritCraftWritProgress,
   writId: string = SPIRIT_CRAFT_WRITS[0].id
@@ -8072,6 +8258,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.captureProof) missing.push('capture');
   if (!progress.captureRiteProof) missing.push('capture-rite');
   if (!progress.encounterAtlasProof) missing.push('encounter-atlas');
+  if (!progress.habitatCensusProof) missing.push('habitat-census');
   if (!progress.routeMasteryProof) missing.push('route-mastery');
   if (!progress.routePatrolProof) missing.push('route-patrol');
   if (!progress.routeEcologyProof) missing.push('route-ecology');
@@ -8127,6 +8314,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.captureProof ? 2 : 0) +
     (progress.captureRiteProof ? 3 : 0) +
     (progress.encounterAtlasProof ? 3 : 0) +
+    (progress.habitatCensusProof ? 3 : 0) +
     (progress.routeMasteryProof ? 3 : 0) +
     (progress.routePatrolProof ? 3 : 0) +
     (progress.routeEcologyProof ? 3 : 0) +
@@ -8190,7 +8378,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, routes, ecology, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };

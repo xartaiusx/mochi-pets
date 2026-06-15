@@ -27,6 +27,7 @@ import {
   SPIRIT_FIELD_ACCORDS,
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_HABITAT_BONDS,
+  SPIRIT_HABITAT_CENSUSES,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_KINSHIP_ALBUMS,
@@ -101,6 +102,7 @@ import {
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
+  resolveSpiritHabitatCensus,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritProvisionSatchel,
@@ -158,6 +160,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritWeatherVeils).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritEncounterRotations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritHabitatCensuses).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.tradeExchangeAccords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
@@ -244,6 +247,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('world.weather_veil');
     expect(ALPHA_ACTION_TYPES).toContain('world.encounter_rotation');
     expect(ALPHA_ACTION_TYPES).toContain('world.encounter_atlas');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_census');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
@@ -1189,6 +1193,79 @@ describe('alpha contract', () => {
       chatLines: ['Encounter atlas blocked.']
     }).recorded).toBe(false);
 
+    expect(SPIRIT_HABITAT_CENSUSES.map((census) => census.id)).toEqual(['jade-habitat-census']);
+    const blockedHabitatCensus = resolveSpiritHabitatCensus({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      observedSpiritIds: ['lirabao', 'jintari'],
+      careLoggedSpiritIds: ['lirabao'],
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      careCycleProof: false,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Habitat census blocked.']
+    });
+    expect(blockedHabitatCensus).toMatchObject({
+      recorded: false,
+      censusId: 'jade-habitat-census',
+      missing: expect.arrayContaining([
+        'observation:aozhen',
+        'care-log:jintari',
+        'care-log:aozhen',
+        'route:cloudbell-reed-bank',
+        'weather-veil:jade-weather-veil',
+        'care-cycle:jade-court-care-cycle',
+        'presence:1/2'
+      ])
+    });
+
+    const habitatCensus = resolveSpiritHabitatCensus({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      observedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careLoggedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Habitat census ready.']
+    });
+    expect(habitatCensus).toMatchObject({
+      ok: true,
+      recorded: true,
+      censusId: 'jade-habitat-census',
+      censusName: 'Jade Habitat Census',
+      title: 'First-Court Habitat Census',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      observedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careLoggedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 57,
+      requiredScore: 49,
+      rewardItemId: 'jade-habitat-census-seal',
+      source: 'spirit-habitat-census'
+    });
+    expect(habitatCensus.message).toContain('No real value');
+
     expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
     const craftWrit = resolveSpiritCraftWrit({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -2038,6 +2115,7 @@ describe('alpha contract', () => {
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
+      habitatCensusProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,
@@ -2095,7 +2173,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 143,
+      score: 146,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2111,6 +2189,7 @@ describe('alpha contract', () => {
       captureProof: true,
       captureRiteProof: true,
       encounterAtlasProof: true,
+      habitatCensusProof: true,
       routeMasteryProof: true,
       routePatrolProof: true,
       routeEcologyProof: true,

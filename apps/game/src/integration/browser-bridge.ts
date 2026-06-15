@@ -27,6 +27,7 @@ import {
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
+  SPIRIT_HABITAT_CENSUSES,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_KINSHIP_ALBUMS,
@@ -91,6 +92,7 @@ import {
   resolveMarketGuildReceipt,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
+  resolveSpiritHabitatCensus,
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
@@ -316,6 +318,15 @@ interface AlphaHudState {
   encounterAtlasCapturedSpiritIds: string[];
   encounterAtlasRarityTiers: string[];
   encounterAtlasClaimed: boolean;
+  habitatCensusProof: boolean;
+  habitatCensusId?: string;
+  habitatCensusName: string;
+  habitatCensusScore: number;
+  habitatCensusRequiredScore: number;
+  habitatCensusRouteIds: string[];
+  habitatCensusSpiritIds: string[];
+  habitatCensusCareLoggedSpiritIds: string[];
+  habitatCensusSealClaimed: boolean;
   craftWritProof: boolean;
   craftWritId?: string;
   craftWritName: string;
@@ -1211,6 +1222,14 @@ function defaultAlphaState(): AlphaHudState {
     encounterAtlasCapturedSpiritIds: [],
     encounterAtlasRarityTiers: [],
     encounterAtlasClaimed: false,
+    habitatCensusProof: false,
+    habitatCensusName: 'Uncounted',
+    habitatCensusScore: 0,
+    habitatCensusRequiredScore: 0,
+    habitatCensusRouteIds: [],
+    habitatCensusSpiritIds: [],
+    habitatCensusCareLoggedSpiritIds: [],
+    habitatCensusSealClaimed: false,
     craftWritProof: false,
     craftWritName: 'Uncrafted',
     craftWritScore: 0,
@@ -1662,6 +1681,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-weather-veil-label>Weather Veil: pending</span>
       <span class="mochi-hud__hint" data-encounter-rotation-label>Rotation: pending</span>
       <span class="mochi-hud__hint" data-encounter-atlas-label>Atlas: pending</span>
+      <span class="mochi-hud__hint" data-habitat-census-label>Census: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-exchange-accord-label>Exchange: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
@@ -1734,6 +1754,7 @@ function createHud() {
       <button type="button" data-alpha-action="world.weather_veil" aria-label="Record the no-real-value Jade Weather Veil">Veil</button>
       <button type="button" data-alpha-action="world.encounter_rotation" aria-label="Record the no-real-value Jade Encounter Rotation">Rotate</button>
       <button type="button" data-alpha-action="world.encounter_atlas" aria-label="Record the no-real-value Jade Encounter Atlas">Atlas</button>
+      <button type="button" data-alpha-action="spirit.habitat_census" aria-label="Record the no-real-value Jade Habitat Census">Census</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
@@ -1819,6 +1840,7 @@ function createHud() {
   const weatherVeilLabel = hud.querySelector('[data-weather-veil-label]');
   const encounterRotationLabel = hud.querySelector('[data-encounter-rotation-label]');
   const encounterAtlasLabel = hud.querySelector('[data-encounter-atlas-label]');
+  const habitatCensusLabel = hud.querySelector('[data-habitat-census-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const exchangeAccordLabel = hud.querySelector('[data-exchange-accord-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
@@ -2007,6 +2029,11 @@ function createHud() {
       encounterAtlasLabel.textContent = state.encounterAtlasProof
         ? `Atlas: ${state.encounterAtlasName}, ${state.encounterAtlasSpiritIds.length} spirits, ${state.encounterAtlasRarityTiers.length} tiers`
         : 'Atlas: pending';
+    }
+    if (habitatCensusLabel) {
+      habitatCensusLabel.textContent = state.habitatCensusProof
+        ? `Census: ${state.habitatCensusName}, ${state.habitatCensusSpiritIds.length} spirits, ${state.habitatCensusCareLoggedSpiritIds.length} care logs`
+        : 'Census: pending';
     }
     if (craftWritLabel) {
       craftWritLabel.textContent = state.craftWritProof
@@ -2439,6 +2466,9 @@ function readAlphaState(): AlphaHudState {
       encounterAtlasSpiritIds: Array.isArray(parsed?.encounterAtlasSpiritIds) ? parsed.encounterAtlasSpiritIds.map(String) : [],
       encounterAtlasCapturedSpiritIds: Array.isArray(parsed?.encounterAtlasCapturedSpiritIds) ? parsed.encounterAtlasCapturedSpiritIds.map(String) : [],
       encounterAtlasRarityTiers: Array.isArray(parsed?.encounterAtlasRarityTiers) ? parsed.encounterAtlasRarityTiers.map(String) : [],
+      habitatCensusRouteIds: Array.isArray(parsed?.habitatCensusRouteIds) ? parsed.habitatCensusRouteIds.map(String) : [],
+      habitatCensusSpiritIds: Array.isArray(parsed?.habitatCensusSpiritIds) ? parsed.habitatCensusSpiritIds.map(String) : [],
+      habitatCensusCareLoggedSpiritIds: Array.isArray(parsed?.habitatCensusCareLoggedSpiritIds) ? parsed.habitatCensusCareLoggedSpiritIds.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       exchangeAccordItemIds: Array.isArray(parsed?.exchangeAccordItemIds) ? parsed.exchangeAccordItemIds.map(String) : [],
@@ -3540,6 +3570,33 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.habitat_census') {
+    const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      censusId: SPIRIT_HABITAT_CENSUSES[0].id,
+      roster,
+      discoveredRoutes: state.discoveredRouteIds,
+      observedSpiritIds: state.encounterAtlasSpiritIds.length ? state.encounterAtlasSpiritIds : roster,
+      careLoggedSpiritIds: state.careCycleCaredSpiritIds.length ? state.careCycleCaredSpiritIds : roster,
+      encounterAtlasProof: state.encounterAtlasProof,
+      encounterAtlasId: state.encounterAtlasId,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      weatherVeilProof: state.weatherVeilProof,
+      weatherVeilId: state.weatherVeilId,
+      compendiumProof: state.compendiumProof,
+      compendiumId: state.compendiumId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'item.craft_writ') {
     const roster = state.attunedSpiritIds;
     return {
@@ -3996,6 +4053,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       captureProof: state.captureProof,
       captureRiteProof: state.captureRiteProof,
       encounterAtlasProof: state.encounterAtlasProof,
+      habitatCensusProof: state.habitatCensusProof,
       routeMasteryProof: state.routeMasteryProof,
       routePatrolProof: state.routePatrolProof,
       routeEcologyProof: state.routeEcologyProof,
@@ -5354,6 +5412,48 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'spirit.habitat_census') {
+    const result = resolveSpiritHabitatCensus(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        observedSpiritIds: Array.isArray(payload.observedSpiritIds) ? payload.observedSpiritIds.map(String) : state.encounterAtlasSpiritIds,
+        careLoggedSpiritIds: Array.isArray(payload.careLoggedSpiritIds) ? payload.careLoggedSpiritIds.map(String) : state.careCycleCaredSpiritIds,
+        encounterAtlasProof: Boolean(payload.encounterAtlasProof ?? state.encounterAtlasProof),
+        encounterAtlasId: String(payload.encounterAtlasId || state.encounterAtlasId || ''),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        weatherVeilProof: Boolean(payload.weatherVeilProof ?? state.weatherVeilProof),
+        weatherVeilId: String(payload.weatherVeilId || state.weatherVeilId || ''),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        compendiumId: String(payload.compendiumId || state.compendiumId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.censusId || SPIRIT_HABITAT_CENSUSES[0].id)
+    );
+    if (result.recorded) {
+      state.habitatCensusProof = true;
+      state.habitatCensusId = result.censusId;
+      state.habitatCensusName = result.censusName;
+      state.habitatCensusScore = result.score;
+      state.habitatCensusRequiredScore = result.requiredScore;
+      state.habitatCensusRouteIds = result.routeIds;
+      state.habitatCensusSpiritIds = result.observedSpiritIds;
+      state.habitatCensusCareLoggedSpiritIds = result.careLoggedSpiritIds;
+      state.habitatCensusSealClaimed = result.rewardItemId === 'jade-habitat-census-seal';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.attunedSpiritIds = Array.from(new Set([...state.attunedSpiritIds, ...result.roster, ...result.observedSpiritIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'item.craft_writ') {
     const result = resolveSpiritCraftWrit(
       {
@@ -5965,6 +6065,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         captureProof: Boolean(payload.captureProof ?? state.captureProof),
         captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
         encounterAtlasProof: Boolean(payload.encounterAtlasProof ?? state.encounterAtlasProof),
+        habitatCensusProof: Boolean(payload.habitatCensusProof ?? state.habitatCensusProof),
         routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
         routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
         routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),

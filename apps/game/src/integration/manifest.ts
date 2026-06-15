@@ -32,6 +32,7 @@ import {
   SPIRIT_FIELD_ALMANACS,
   SPIRIT_GROWTH_RITES,
   SPIRIT_HABITAT_BONDS,
+  SPIRIT_HABITAT_CENSUSES,
   SPIRIT_HARMONY_FORMS,
   SPIRIT_HARMONY_TRIALS,
   SPIRIT_KINSHIP_ALBUMS,
@@ -144,6 +145,7 @@ export const PLAYABLE_CONTENT_CATALOG = {
     weatherVeilIds: idsFrom(SPIRIT_WEATHER_VEILS),
     encounterRotationIds: idsFrom(SPIRIT_ENCOUNTER_ROTATIONS),
     encounterAtlasIds: idsFrom(SPIRIT_ENCOUNTER_ATLASES),
+    habitatCensusIds: idsFrom(SPIRIT_HABITAT_CENSUSES),
     routeWaystoneIds: idsFrom(SPIRIT_ROUTE_WAYSTONES)
   },
   economyAndCanary: {
