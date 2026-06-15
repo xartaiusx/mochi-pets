@@ -141,6 +141,21 @@ async function run() {
   assert(manifest.body.spirits.roster.filter((spirit) => spirit.certificateEligible).map((spirit) => spirit.id).join(',') === 'lirabao', 'Manifest must keep only Lirabao certificate-eligible for Canary preview.');
   assert(manifest.body.manualReview?.requiredBeforeAlphaPreviewReady === true, 'Manifest must keep manual prompt review required before Alpha Preview Ready.');
   assert(Array.isArray(manifest.body.manualReview?.requiredTargets) && manifest.body.manualReview.requiredTargets.map((target) => target.id).join(',') === 'welcome-npc,guild-seal-chest,care-shrine', 'Manifest must expose the manual prompt review target list.');
+  assert(manifest.body.playableContent?.contentPolicy === 'original-mochirii-feature-parity', 'Manifest must expose original Mochirii feature-parity content policy.');
+  assert(manifest.body.playableContent?.capture?.captureRiteIds?.includes('jade-court-capture-rite'), 'Manifest must catalog the Jade Capture Rite.');
+  assert(manifest.body.playableContent?.capture?.fieldAccordIds?.length === 2, 'Manifest must catalog both first-court field accord proofs.');
+  assert(manifest.body.playableContent?.raising?.bondMilestoneIds?.length === 9, 'Manifest must catalog all first-court bond milestones.');
+  assert(manifest.body.playableContent?.raising?.bloomAscendanceIds?.includes('jade-bloom-ascendance'), 'Manifest must catalog bloom ascendance growth proof.');
+  assert(manifest.body.playableContent?.raising?.lineageRegisterIds?.includes('jade-lineage-register'), 'Manifest must catalog lineage register growth proof.');
+  assert(manifest.body.playableContent?.battle?.moveIds?.length === 3, 'Manifest must catalog all first-court battle moves.');
+  assert(manifest.body.playableContent?.battle?.tacticIds?.length === 3, 'Manifest must catalog all first-court battle tactics.');
+  assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Manifest must catalog the summit circuit battle proof.');
+  assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must catalog the first Mochirii quest chain.');
+  assert(manifest.body.playableContent?.roleplay?.guildAscensionTrialIds?.includes('jade-court-ascension-trial'), 'Manifest must catalog the guild ascension capstone.');
+  assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
+  assert(manifest.body.playableContent?.economyAndCanary?.tradeExchangeAccordIds?.includes('jade-exchange-accord'), 'Manifest must catalog the no-real-value exchange accord.');
+  assert(manifest.body.playableContent?.economyAndCanary?.canaryCertificateItemIds?.join(',') === 'lirabao-canary-certificate', 'Manifest must catalog only the Lirabao Canary certificate preview item.');
+  assert(manifest.body.playableContent?.runtimeAssets?.spritesheets?.length === 21, 'Manifest must catalog all runtime spritesheets.');
 
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
   assert(alphaStatus.body.alpha?.stopPoint === 'alpha-rc-ready', 'Alpha status must expose the RC stop point.');

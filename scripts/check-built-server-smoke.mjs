@@ -79,6 +79,12 @@ async function run() {
   assert(manifest.body.runtimeArt?.tileSizePx === 64, 'Built server manifest must expose the 64px tile contract.');
   assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Built server manifest must expose the three-spirit first-court roster.');
   assert(Array.isArray(manifest.body.manualReview?.requiredTargets) && manifest.body.manualReview.requiredTargets.length === 3, 'Built server manifest must expose the manual prompt review targets.');
+  assert(manifest.body.playableContent?.capture?.spiritIds?.join(',') === 'lirabao,jintari,aozhen', 'Built server manifest must expose the first-court spirit capture roster.');
+  assert(manifest.body.playableContent?.raising?.bondMilestoneIds?.length === 9, 'Built server manifest must expose all bond milestone IDs.');
+  assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Built server manifest must expose summit battle content.');
+  assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Built server manifest must expose the first quest chain.');
+  assert(manifest.body.playableContent?.economyAndCanary?.canaryCertificateItemIds?.join(',') === 'lirabao-canary-certificate', 'Built server manifest must expose the Lirabao Canary certificate preview item.');
+  assert(manifest.body.playableContent?.runtimeAssets?.spritesheets?.length === 21, 'Built server manifest must expose runtime asset coverage.');
 
   const alpha = await getJson('/integration/alpha/status', 'alpha status');
   assert(alpha.body.chainRuntime?.mode === 'configured-preview-stub', 'Built server must expose configured-preview-stub without Enjin secrets.');

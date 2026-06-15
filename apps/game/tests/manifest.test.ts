@@ -180,6 +180,99 @@ describe('game manifest', () => {
           }
         ]
       },
+      playableContent: {
+        scope: 'first-court-alpha-preview',
+        contentPolicy: 'original-mochirii-feature-parity',
+        capture: {
+          spiritIds: ['lirabao', 'jintari', 'aozhen'],
+          starterVowIds: ['jade-starter-vow'],
+          expeditionRouteIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+          fieldAccordIds: ['moonbridge-goldleaf-accord', 'cloudbell-skyvow-accord'],
+          routeMasteryIds: ['jade-cloudbell-circuit'],
+          routePatrolIds: ['jade-cloudbell-patrol'],
+          captureRiteIds: ['jade-court-capture-rite']
+        },
+        raising: {
+          careActionIds: ['tea-ribbon-care'],
+          raiseActionIds: ['jade-brush-groom', 'mooncake-share'],
+          bondMilestoneIds: [
+            'lirabao-lantern-spark',
+            'lirabao-ribbon-warmth',
+            'lirabao-moonwell-glow',
+            'jintari-market-spark',
+            'jintari-trade-step',
+            'jintari-lacquer-glow',
+            'aozhen-skybell-spark',
+            'aozhen-reedwind-step',
+            'aozhen-cloud-vow-glow'
+          ],
+          growthRiteIds: ['moonwell-bloom-rite'],
+          careCycleIds: ['jade-court-care-cycle'],
+          nurtureRiteIds: ['jade-moonwell-nurture-rite'],
+          recoveryTeaIds: ['jade-teahouse-recovery'],
+          kinshipAlbumIds: ['jade-kinship-album'],
+          nurseryGroveIds: ['jade-nursery-grove'],
+          bloomAscendanceIds: ['jade-bloom-ascendance'],
+          lineageRegisterIds: ['jade-lineage-register']
+        },
+        battle: {
+          moveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
+          tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+          techniqueLoadoutIds: ['jade-step-loadout'],
+          techniqueCodexIds: ['jade-technique-codex'],
+          traitAttunementIds: ['jade-heart-trait'],
+          conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+          conditionWeaveIds: ['jade-mirror-condition-weave'],
+          affinityTrialIds: ['jade-mirror-trial', 'silk-cinder-trial'],
+          affinityMatrixIds: ['jade-affinity-matrix'],
+          harmonyFormIds: ['triune-jade-harmony'],
+          harmonyTrialIds: ['jade-echo-concord'],
+          teamSparMatchIds: ['jade-mirror-team-match'],
+          mentorChallengeIds: ['silk-banner-mentor-drill'],
+          dojoLadderIds: ['jade-dojo-ladder'],
+          sparLadderIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+          tournamentBracketIds: ['jade-banner-tournament'],
+          rivalCircleIds: ['jade-rival-circle'],
+          sifuCouncilIds: ['jade-sifu-council'],
+          summitCircuitIds: ['jade-summit-circuit']
+        },
+        roleplay: {
+          questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+          storyChapterIds: ['jade-scroll-story-chapter'],
+          guildRankTrialIds: ['jade-court-initiate'],
+          guildCommissionIds: ['jade-court-commission-ledger'],
+          guildSocialRallyIds: ['jade-courtyard-rally'],
+          guildWayfarerChronicleIds: ['jade-wayfarer-chronicle'],
+          guildAscensionTrialIds: ['jade-court-ascension-trial'],
+          guildInsigniaCaseIds: ['jade-insignia-case'],
+          habitatBondIds: ['jade-court-habitat-bond'],
+          sanctuaryRiteIds: ['jade-court-sanctuary-rite'],
+          researchFolioIds: ['jade-court-research-folio'],
+          compendiumIds: ['jade-court-spirit-compendium'],
+          rosterArchiveIds: ['jade-court-roster-archive'],
+          fieldAlmanacIds: ['jade-field-almanac'],
+          routeEcologySurveyIds: ['jade-route-ecology-survey'],
+          encounterAtlasIds: ['jade-encounter-atlas'],
+          routeWaystoneIds: ['jade-cloudbell-waystone']
+        },
+        economyAndCanary: {
+          provisionSatchelIds: ['jade-court-provision-satchel'],
+          craftWritIds: ['jade-court-craft-writ'],
+          marketReceiptIds: ['jade-court-market-receipt'],
+          tradeExchangeAccordIds: ['jade-exchange-accord'],
+          relicAttunementIds: ['jade-relic-attunement'],
+          canaryCertificateItemIds: ['lirabao-canary-certificate'],
+          canaryActionTypes: ['chain.withdraw_request', 'chain.deposit_request', 'chain.operation_update']
+        },
+        runtimeAssets: {
+          tileSize: 64,
+          tilesheet: {
+            path: 'src/tiled/mochi-tiles.png',
+            width: 512,
+            height: 192
+          }
+        }
+      },
       manualReview: {
         requiredBeforeAlphaPreviewReady: true,
         requiredTargets: [
@@ -199,5 +292,8 @@ describe('game manifest', () => {
         ]
       }
     });
+
+    expect(manifest.playableContent.runtimeAssets.spritesheets).toHaveLength(21);
+    expect(manifest.playableContent.runtimeAssets.spritesheets.map((sheet) => sheet.path)).toContain('public/spritesheets/canary-shrine.png');
   });
 });

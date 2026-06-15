@@ -70,6 +70,13 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `runtimeArt.eventSpritesheet={ width: 384, height: 768, columns: 3, rows: 4, frameWidth: 128, frameHeight: 192 }`
 - `spirits.system="Mochi Spirits"`
 - `spirits.roster` contains exactly `lirabao`, `jintari`, and `aozhen`
+- `playableContent.contentPolicy="original-mochirii-feature-parity"`
+- `playableContent.capture` catalogs the first-court spirit roster, starter vow, route scouting, field accords, route mastery, route patrol, and Jade Capture Rite IDs
+- `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, and lineage register IDs
+- `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
+- `playableContent.roleplay` catalogs the three-posting quest chain, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, and route IDs
+- `playableContent.economyAndCanary` catalogs no-real-value provision, craft, market receipt, direct exchange accord, relic attunement, Lirabao Canary certificate preview, and Canary request/return action types
+- `playableContent.runtimeAssets` mirrors the 64px tile and 384x768 spritesheet runtime asset contract
 - `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
 
 The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.

@@ -1,6 +1,71 @@
 import { BRIDGE_EVENTS, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
 import { ALPHA_FEATURES } from './alpha-contract';
-import { MOCHI_SPIRITS } from '../alpha/content';
+import {
+  GUILD_ASCENSION_TRIALS,
+  GUILD_COMMISSIONS,
+  GUILD_INSIGNIA_CASES,
+  GUILD_RANK_TRIALS,
+  GUILD_SOCIAL_RALLIES,
+  GUILD_WAYFARER_CHRONICLES,
+  MARKET_GUILD_RECEIPTS,
+  MOCHI_SPIRIT_QUESTS,
+  MOCHI_SPIRITS,
+  MOCHI_STORY_CHAPTERS,
+  RUNTIME_ASSET_MANIFEST,
+  SPIRIT_AFFINITY_MATRICES,
+  SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_BATTLE_CONDITIONS,
+  SPIRIT_BATTLE_TACTICS,
+  SPIRIT_BLOOM_ASCENDANCES,
+  SPIRIT_BOND_MILESTONES,
+  SPIRIT_CAPTURE_RITES,
+  SPIRIT_CARE_ACTIONS,
+  SPIRIT_CARE_CYCLES,
+  SPIRIT_COMPENDIUMS,
+  SPIRIT_CONDITION_WEAVES,
+  SPIRIT_CRAFT_WRITS,
+  SPIRIT_DOJO_LADDERS,
+  SPIRIT_ENCOUNTER_ATLASES,
+  SPIRIT_EXPEDITION_ROUTES,
+  SPIRIT_FIELD_ACCORDS,
+  SPIRIT_FIELD_ALMANACS,
+  SPIRIT_GROWTH_RITES,
+  SPIRIT_HABITAT_BONDS,
+  SPIRIT_HARMONY_FORMS,
+  SPIRIT_HARMONY_TRIALS,
+  SPIRIT_KINSHIP_ALBUMS,
+  SPIRIT_LINEAGE_REGISTERS,
+  SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_MOVES,
+  SPIRIT_NURSERY_GROVES,
+  SPIRIT_NURTURE_RITES,
+  SPIRIT_PROVISION_SATCHELS,
+  SPIRIT_RAISE_ACTIONS,
+  SPIRIT_RECOVERY_TEAS,
+  SPIRIT_RELIC_ATTUNEMENTS,
+  SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_RIVAL_CIRCLES,
+  SPIRIT_ROSTER_ARCHIVES,
+  SPIRIT_ROUTE_ECOLOGY_SURVEYS,
+  SPIRIT_ROUTE_MASTERIES,
+  SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROUTE_WAYSTONES,
+  SPIRIT_SANCTUARY_RITES,
+  SPIRIT_SIFU_COUNCILS,
+  SPIRIT_SPAR_LADDER,
+  SPIRIT_STARTER_VOWS,
+  SPIRIT_SUMMIT_CIRCUITS,
+  SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TECHNIQUE_CODEXES,
+  SPIRIT_TECHNIQUE_LOADOUTS,
+  SPIRIT_TOURNAMENT_BRACKETS,
+  SPIRIT_TRAIT_ATTUNEMENTS,
+  TRADE_EXCHANGE_ACCORDS
+} from '../alpha/content';
+
+function idsFrom<T extends { id: string }>(entries: readonly T[]) {
+  return entries.map((entry) => entry.id);
+}
 
 const spiritRoster = MOCHI_SPIRITS.map((spirit) => ({
   id: spirit.id,
@@ -11,6 +76,83 @@ const spiritRoster = MOCHI_SPIRITS.map((spirit) => ({
   habitat: spirit.habitat,
   certificateEligible: spirit.certificateEligible
 }));
+
+export const PLAYABLE_CONTENT_CATALOG = {
+  scope: 'first-court-alpha-preview',
+  contentPolicy: 'original-mochirii-feature-parity',
+  capture: {
+    spiritIds: idsFrom(MOCHI_SPIRITS),
+    starterVowIds: idsFrom(SPIRIT_STARTER_VOWS),
+    expeditionRouteIds: idsFrom(SPIRIT_EXPEDITION_ROUTES),
+    fieldAccordIds: idsFrom(SPIRIT_FIELD_ACCORDS),
+    routeMasteryIds: idsFrom(SPIRIT_ROUTE_MASTERIES),
+    routePatrolIds: idsFrom(SPIRIT_ROUTE_PATROLS),
+    captureRiteIds: idsFrom(SPIRIT_CAPTURE_RITES)
+  },
+  raising: {
+    careActionIds: Object.values(SPIRIT_CARE_ACTIONS).map((action) => action.id),
+    raiseActionIds: Object.values(SPIRIT_RAISE_ACTIONS).map((action) => action.id),
+    bondMilestoneIds: Object.values(SPIRIT_BOND_MILESTONES).map((milestone) => milestone.id),
+    growthRiteIds: idsFrom(SPIRIT_GROWTH_RITES),
+    careCycleIds: idsFrom(SPIRIT_CARE_CYCLES),
+    nurtureRiteIds: idsFrom(SPIRIT_NURTURE_RITES),
+    recoveryTeaIds: idsFrom(SPIRIT_RECOVERY_TEAS),
+    kinshipAlbumIds: idsFrom(SPIRIT_KINSHIP_ALBUMS),
+    nurseryGroveIds: idsFrom(SPIRIT_NURSERY_GROVES),
+    bloomAscendanceIds: idsFrom(SPIRIT_BLOOM_ASCENDANCES),
+    lineageRegisterIds: idsFrom(SPIRIT_LINEAGE_REGISTERS)
+  },
+  battle: {
+    moveIds: Object.values(SPIRIT_MOVES).map((move) => move.id),
+    tacticIds: idsFrom(SPIRIT_BATTLE_TACTICS),
+    techniqueLoadoutIds: idsFrom(SPIRIT_TECHNIQUE_LOADOUTS),
+    techniqueCodexIds: idsFrom(SPIRIT_TECHNIQUE_CODEXES),
+    traitAttunementIds: idsFrom(SPIRIT_TRAIT_ATTUNEMENTS),
+    conditionIds: idsFrom(SPIRIT_BATTLE_CONDITIONS),
+    conditionWeaveIds: idsFrom(SPIRIT_CONDITION_WEAVES),
+    affinityTrialIds: idsFrom(SPIRIT_AFFINITY_TRIALS),
+    affinityMatrixIds: idsFrom(SPIRIT_AFFINITY_MATRICES),
+    harmonyFormIds: idsFrom(SPIRIT_HARMONY_FORMS),
+    harmonyTrialIds: idsFrom(SPIRIT_HARMONY_TRIALS),
+    teamSparMatchIds: idsFrom(SPIRIT_TEAM_SPAR_MATCHES),
+    mentorChallengeIds: idsFrom(SPIRIT_MENTOR_CHALLENGES),
+    dojoLadderIds: idsFrom(SPIRIT_DOJO_LADDERS),
+    sparLadderIds: idsFrom(SPIRIT_SPAR_LADDER),
+    tournamentBracketIds: idsFrom(SPIRIT_TOURNAMENT_BRACKETS),
+    rivalCircleIds: idsFrom(SPIRIT_RIVAL_CIRCLES),
+    sifuCouncilIds: idsFrom(SPIRIT_SIFU_COUNCILS),
+    summitCircuitIds: idsFrom(SPIRIT_SUMMIT_CIRCUITS)
+  },
+  roleplay: {
+    questChainIds: idsFrom(MOCHI_SPIRIT_QUESTS),
+    storyChapterIds: idsFrom(MOCHI_STORY_CHAPTERS),
+    guildRankTrialIds: idsFrom(GUILD_RANK_TRIALS),
+    guildCommissionIds: idsFrom(GUILD_COMMISSIONS),
+    guildSocialRallyIds: idsFrom(GUILD_SOCIAL_RALLIES),
+    guildWayfarerChronicleIds: idsFrom(GUILD_WAYFARER_CHRONICLES),
+    guildAscensionTrialIds: idsFrom(GUILD_ASCENSION_TRIALS),
+    guildInsigniaCaseIds: idsFrom(GUILD_INSIGNIA_CASES),
+    habitatBondIds: idsFrom(SPIRIT_HABITAT_BONDS),
+    sanctuaryRiteIds: idsFrom(SPIRIT_SANCTUARY_RITES),
+    researchFolioIds: idsFrom(SPIRIT_RESEARCH_FOLIOS),
+    compendiumIds: idsFrom(SPIRIT_COMPENDIUMS),
+    rosterArchiveIds: idsFrom(SPIRIT_ROSTER_ARCHIVES),
+    fieldAlmanacIds: idsFrom(SPIRIT_FIELD_ALMANACS),
+    routeEcologySurveyIds: idsFrom(SPIRIT_ROUTE_ECOLOGY_SURVEYS),
+    encounterAtlasIds: idsFrom(SPIRIT_ENCOUNTER_ATLASES),
+    routeWaystoneIds: idsFrom(SPIRIT_ROUTE_WAYSTONES)
+  },
+  economyAndCanary: {
+    provisionSatchelIds: idsFrom(SPIRIT_PROVISION_SATCHELS),
+    craftWritIds: idsFrom(SPIRIT_CRAFT_WRITS),
+    marketReceiptIds: idsFrom(MARKET_GUILD_RECEIPTS),
+    tradeExchangeAccordIds: idsFrom(TRADE_EXCHANGE_ACCORDS),
+    relicAttunementIds: idsFrom(SPIRIT_RELIC_ATTUNEMENTS),
+    canaryCertificateItemIds: ['lirabao-canary-certificate'],
+    canaryActionTypes: ['chain.withdraw_request', 'chain.deposit_request', 'chain.operation_update']
+  },
+  runtimeAssets: RUNTIME_ASSET_MANIFEST
+} as const;
 
 export const MANIFEST_CONTRACTS = {
   routes: {
@@ -75,6 +217,7 @@ export const MANIFEST_CONTRACTS = {
     habitat: 'Jade Lantern Court',
     roster: spiritRoster
   },
+  playableContent: PLAYABLE_CONTENT_CATALOG,
   manualReview: {
     requiredBeforeAlphaPreviewReady: true,
     requiredTargets: [
@@ -130,6 +273,7 @@ export interface GameManifest {
   brand: typeof MANIFEST_CONTRACTS.brand;
   runtimeArt: typeof MANIFEST_CONTRACTS.runtimeArt;
   spirits: typeof MANIFEST_CONTRACTS.spirits;
+  playableContent: typeof MANIFEST_CONTRACTS.playableContent;
   manualReview: typeof MANIFEST_CONTRACTS.manualReview;
 }
 

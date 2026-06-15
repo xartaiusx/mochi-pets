@@ -56,6 +56,9 @@ async function run() {
   assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Manifest must declare zero restricted-source references.');
   assert(manifest.body.runtimeArt?.pixelArt === false, 'Manifest must reject pixel-art direction.');
   assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Manifest must expose the first-court Mochi Spirit roster.');
+  assert(manifest.body.playableContent?.capture?.captureRiteIds?.includes('jade-court-capture-rite'), 'Manifest must expose capture rite content during load smoke.');
+  assert(manifest.body.playableContent?.battle?.mentorChallengeIds?.includes('silk-banner-mentor-drill'), 'Manifest must expose mentor battle content during load smoke.');
+  assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must expose roleplay quest content during load smoke.');
   assert(alphaStatus.body.alpha?.noRealValue === true, 'Alpha status must keep no-real-value enabled.');
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {
