@@ -20,11 +20,12 @@ const reviewUrl = (process.env.MOCHI_SOCIAL_MANUAL_PROMPT_URL || visualReview.da
 const notes = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_NOTES || '');
 const gitState = readGitState();
 const failures = [];
+const logicalTileSizePx = 64;
 
 const interactionContract = {
   source: pathForReport(mapEventSourcePath),
   helper: 'setAlphaInteractable',
-  tileSizePx: 64,
+  tileSizePx: logicalTileSizePx,
   actionHitbox: { width: 64, height: 64 },
   actionInput: 'Focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms.'
 };
@@ -225,9 +226,15 @@ function eventPlacement(source, id) {
   const pattern = new RegExp(`id:\\s*'${escapeRegExp(id)}',\\s*x:\\s*(\\d+),\\s*y:\\s*(\\d+),`);
   const match = source.match(pattern);
   if (!match) return null;
-  return {
+  const worldPx = {
     x: Number(match[1]),
     y: Number(match[2])
+  };
+  return {
+    ...worldPx,
+    unit: 'world-px',
+    worldPx,
+    logicalTile: worldToLogicalTile(worldPx)
   };
 }
 
@@ -247,6 +254,7 @@ function buildReviewRoute() {
   return reviewTargets.map((target, index) => {
     const position = target.position;
     const setupPosition = target.setupTarget?.position || null;
+    const adjacentLogicalTiles = position ? adjacentTiles(position.logicalTile) : [];
     return {
       step: index + 1,
       id: target.id,
@@ -254,12 +262,11 @@ function buildReviewRoute() {
       position,
       approach: position
         ? {
-            adjacentTiles: [
-              { x: position.x, y: Math.max(0, position.y - 1), face: 'down' },
-              { x: Math.max(0, position.x - 1), y: position.y, face: 'right' },
-              { x: position.x + 1, y: position.y, face: 'left' },
-              { x: position.x, y: position.y + 1, face: 'up' }
-            ],
+            adjacentLogicalTiles,
+            adjacentWorldPx: adjacentLogicalTiles.map((tile) => ({
+              ...tile,
+              worldPx: logicalTileToWorld(tile)
+            })),
             actionInput: interactionContract.actionInput
           }
         : null,
@@ -275,6 +282,29 @@ function buildReviewRoute() {
       saveSource: target.saveSource
     };
   });
+}
+
+function worldToLogicalTile(position) {
+  return {
+    x: Math.round(position.x / logicalTileSizePx),
+    y: Math.round(position.y / logicalTileSizePx)
+  };
+}
+
+function logicalTileToWorld(tile) {
+  return {
+    x: tile.x * logicalTileSizePx,
+    y: tile.y * logicalTileSizePx
+  };
+}
+
+function adjacentTiles(tile) {
+  return [
+    { x: tile.x, y: Math.max(0, tile.y - 1), face: 'down' },
+    { x: Math.max(0, tile.x - 1), y: tile.y, face: 'right' },
+    { x: tile.x + 1, y: tile.y, face: 'left' },
+    { x: tile.x, y: tile.y + 1, face: 'up' }
+  ];
 }
 
 function buildSourceEvidence() {
@@ -415,16 +445,18 @@ function renderMarkdown(summary) {
     .join('\n');
   const targetRows = summary.reviewTargets
     .map((target) => {
-      const position = target.position ? `${target.position.x},${target.position.y}` : 'missing';
-      const setupPosition = target.setupTarget?.position ? ` Setup ${target.setupTarget.id}: ${target.setupTarget.position.x},${target.setupTarget.position.y}.` : '';
+      const position = formatPosition(target.position);
+      const setupPosition = target.setupTarget?.position ? ` Setup ${target.setupTarget.id}: ${formatPosition(target.setupTarget.position)}.` : '';
       return `| ${target.id} | ${position} | ${target.graphic} | ${target.expectedRenderedPhrases.join('; ')} | ${target.setup}${setupPosition} |`;
     })
     .join('\n');
   const routeRows = summary.reviewRoute
     .map((target) => {
-      const position = target.position ? `${target.position.x},${target.position.y}` : 'missing';
-      const approach = target.approach?.adjacentTiles?.map((tile) => `${tile.x},${tile.y} face ${tile.face}`).join('; ') || 'missing';
-      const setup = target.setupTarget?.position ? `${target.setupTarget.id} at ${target.setupTarget.position.x},${target.setupTarget.position.y}` : 'none';
+      const position = formatPosition(target.position);
+      const approach = target.approach?.adjacentWorldPx
+        ?.map((tile) => `tile ${tile.x},${tile.y} / px ${tile.worldPx.x},${tile.worldPx.y} face ${tile.face}`)
+        .join('; ') || 'missing';
+      const setup = target.setupTarget?.position ? `${target.setupTarget.id} at ${formatPosition(target.setupTarget.position)}` : 'none';
       return `| ${target.step} | ${target.id} | ${position} | ${approach} | ${setup} |`;
     })
     .join('\n');
@@ -475,7 +507,7 @@ ${targetRows}
 
 ## Review Route
 
-| Step | Target | Tile | Adjacent Action Tiles | Setup Target |
+| Step | Target | Target Position | Adjacent Action Positions | Setup Target |
 | --- | --- | --- | --- | --- |
 ${routeRows}
 
@@ -512,4 +544,11 @@ Use a hosted URL only after explicit hosted-preview approval and set \`MOCHI_SOC
 
 ${failuresText}
 `;
+}
+
+function formatPosition(position) {
+  if (!position) return 'missing';
+  const world = position.worldPx || position;
+  const tile = position.logicalTile || worldToLogicalTile(world);
+  return `tile ${tile.x},${tile.y} / px ${world.x},${world.y}`;
 }
