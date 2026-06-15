@@ -18,6 +18,7 @@ import {
   SPIRIT_BATTLE_KITS,
   SPIRIT_BATTLE_CONDITIONS,
   SPIRIT_BATTLE_TACTICS,
+  SPIRIT_BLOSSOM_CRADLES,
   SPIRIT_BLOOM_ASCENDANCES,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_CAPTURE_RITES,
@@ -108,7 +109,8 @@ export const PLAYABLE_CONTENT_CATALOG = {
     kinshipAlbumIds: idsFrom(SPIRIT_KINSHIP_ALBUMS),
     nurseryGroveIds: idsFrom(SPIRIT_NURSERY_GROVES),
     bloomAscendanceIds: idsFrom(SPIRIT_BLOOM_ASCENDANCES),
-    lineageRegisterIds: idsFrom(SPIRIT_LINEAGE_REGISTERS)
+    lineageRegisterIds: idsFrom(SPIRIT_LINEAGE_REGISTERS),
+    blossomCradleIds: idsFrom(SPIRIT_BLOSSOM_CRADLES)
   },
   battle: {
     moveIds: Object.values(SPIRIT_MOVES).map((move) => move.id),

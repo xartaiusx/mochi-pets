@@ -76,7 +76,7 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `spirits.roster` contains exactly `lirabao`, `jintari`, and `aozhen`
 - `playableContent.contentPolicy="original-mochirii-feature-parity"`
 - `playableContent.capture` catalogs the first-court spirit roster, starter vow, route scouting, field accords, route mastery, route patrol, and Jade Capture Rite IDs
-- `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, and lineage register IDs
+- `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, lineage register, and blossom cradle IDs
 - `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
 - `playableContent.roleplay` catalogs the three-posting quest chain, quest ledger, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
 - `playableContent.economyAndCanary` catalogs no-real-value provision, craft, market receipt, direct exchange accord, relic attunement, Lirabao Canary certificate preview, and Canary request/return action types

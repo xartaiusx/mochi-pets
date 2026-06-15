@@ -35,6 +35,10 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
+    includes: ['spirit.blossom_cradle', 'spiritBlossomCradles: true', 'Jade Blossom Cradle label/state', 'Jade Blossom Cradle Ribbon payload preservation']
+  },
+  {
+    file: 'AGENTS.md',
     includes: ['battle.dojo_ladder', 'dojoLadders: true', 'Jade Dojo Ladder label/state', 'Jade Dojo Ladder Seal payload preservation']
   },
   {
@@ -84,6 +88,10 @@ const checks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: ['Jade Roster Cabinet proof', 'Jade Roster Cabinet Tag', 'Roster cabinet proof is no-real-value']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Blossom Cradle proof', 'Jade Blossom Cradle Ribbon', 'Blossom cradle proof is no-real-value']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -145,6 +153,10 @@ const checks = [
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Blossom Cradle proof', 'Jade Blossom Cradle', 'Record Jade Blossom Cradle proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
     includes: ['Jade Dojo Ladder proof', 'Jade Dojo Ladder', 'clear the Jade Dojo Ladder', 'no-real-value Jade Dojo Ladder']
   },
   {
@@ -181,6 +193,10 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
+    includes: ['spirit.blossom_cradle', 'Jade Blossom Cradle', 'Jade Blossom Cradle Ribbon', 'blossomCradleProof']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
     includes: ['battle.dojo_ladder', 'Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'dojoLadderProof']
   },
   {
@@ -214,6 +230,10 @@ const checks = [
   {
     file: 'docs/alpha-operator-handoff.md',
     includes: ['roster-cabinet', 'organize the Jade Roster Cabinet proof']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['blossom-cradle', 'record the Jade Blossom Cradle proof']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -257,6 +277,10 @@ const checks = [
   },
   {
     file: 'docs/game-art-bible.md',
+    includes: ['Jade Blossom Cradle contribution', 'content-only Jade Blossom Cradle Ribbon proof']
+  },
+  {
+    file: 'docs/game-art-bible.md',
     includes: ['Jade Dojo Ladder contribution', 'content-only Jade Dojo Ladder Seal proof']
   },
   {
@@ -285,6 +309,10 @@ const checks = [
   },
   {
     file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Blossom Cradle proof', 'blossom cradle']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
     includes: ['Jade Dojo Ladder proof', 'ladder', 'content-only']
   },
   {
@@ -310,6 +338,10 @@ const checks = [
   {
     file: 'docs/implementation-brief.md',
     includes: ['Jade Roster Cabinet proof', 'spirit.roster_cabinet', 'rosterCabinetProof']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Blossom Cradle proof', 'spirit.blossom_cradle', 'blossomCradleProof']
   },
   {
     file: 'docs/implementation-brief.md',
@@ -349,6 +381,10 @@ const checks = [
   },
   {
     file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Blossom Cradle', 'Jade Blossom Cradle Ribbon', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
     includes: ['Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'Content-only proof loops']
   },
   {
@@ -374,6 +410,10 @@ const checks = [
   {
     file: 'docs/asset-ledger.md',
     includes: ['Jade Roster Cabinet', 'Jade Roster Cabinet Tag', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Blossom Cradle', 'Jade Blossom Cradle Ribbon', 'Content-only HUD and ledger proofs']
   },
   {
     file: 'docs/asset-ledger.md',
@@ -581,7 +621,7 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/ascendance/lineage/capture-rite', 'nursery grove proof']
+    includes: ['Jade Nursery Grove proof', 'nurture/recover/kinship/nursery/ascendance/lineage/cradle/capture-rite', 'nursery grove proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -621,7 +661,7 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Bloom Ascendance proof', 'nurture/recover/kinship/nursery/ascendance/lineage/capture-rite', 'bloom ascendance proof']
+    includes: ['Jade Bloom Ascendance proof', 'nurture/recover/kinship/nursery/ascendance/lineage/cradle/capture-rite', 'bloom ascendance proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -661,7 +701,7 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/ascendance/lineage/capture-rite/bracket', 'capture rite proof']
+    includes: ['Jade Kinship Album proof', 'Jade Capture Rite proof', 'nurture/recover/kinship/nursery/ascendance/lineage/cradle/capture-rite/bracket', 'capture rite proof']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -1053,6 +1093,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['spiritBlossomCradles: true', "'spirit.blossom_cradle'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
   },
   {
@@ -1086,6 +1130,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/manifest.ts',
     includes: ['SPIRIT_ROSTER_CABINETS', 'rosterCabinetIds']
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['SPIRIT_BLOSSOM_CRADLES', 'blossomCradleIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1245,6 +1293,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'data-alpha-action="spirit.blossom_cradle"', 'data-blossom-cradle-label', 'blossomCradleProof', 'blossomCradleRibbonClaimed', 'Jade Blossom Cradle']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['GUILD_INSIGNIA_CASES', 'resolveGuildInsigniaCase', 'data-alpha-action="guild.insignia_case"', 'data-insignia-label', 'insigniaCaseProof', 'insigniaCaseClaimed', 'Jade Insignia Case']
   },
   {
@@ -1357,6 +1409,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_BLOSSOM_CRADLES', 'Jade Blossom Cradle', 'jade-blossom-cradle-ribbon', 'resolveSpiritBlossomCradle', 'spirit-blossom-cradle', 'blossomCradleProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Capture Rite', 'jade-court-capture-rite', 'jade-capture-rite-tally', 'resolveSpiritCaptureRite', 'spirit-capture-rite', 'captureRiteProof']
   },
   {
@@ -1390,6 +1446,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritRosterCabinets: true', 'spirit.roster_cabinet', 'rosterCabinetIds']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['spiritBlossomCradles: true', 'spirit.blossom_cradle', 'blossomCradleIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1529,6 +1589,18 @@ const checks = [
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
+    includes: ['spiritBlossomCradles: true', "blossomCradleIds: ['jade-blossom-cradle']"]
+  },
+  {
+    file: 'apps/game/tests/alpha-content.test.ts',
+    includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'jade-blossom-cradle-ribbon', 'blossomCradleProof']
+  },
+  {
+    file: 'apps/game/tests/alpha-contract.test.ts',
+    includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'spirit.blossom_cradle', 'blossomCradleProof']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
     includes: ['spiritBloomAscendances: true']
   },
   {
@@ -1661,6 +1733,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['spirit.blossom_cradle', 'jade-blossom-cradle', 'spiritBlossomCradles', 'Jade Blossom Cradle', 'blossomCradleProof', 'jade-blossom-cradle-ribbon']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.capture_rite', 'jade-court-capture-rite', 'spiritCaptureRites', 'Jade Capture Rite', 'captureRiteProof']
   },
   {
@@ -1716,12 +1792,20 @@ const checks = [
     includes: ['rosterCabinetIds', 'jade-roster-cabinet']
   },
   {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['blossomCradleIds', 'jade-blossom-cradle']
+  },
+  {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['playwright-core', 'createHash', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'reports/alpha-browser-presence.json', 'Nearby: 2 testers', 'data-presence-label', 'data-alpha-action="spirit.capture"', 'captureProof', 'data-alpha-action="spirit.route_invite"', 'routeInviteProof', 'data-field-accord-label', 'fieldAccordProof', 'cloudbell-skyvow-accord', 'Cloudbell Skyvow Accord cleared', 'fieldAccordTalismanClaimed', 'data-alpha-action="world.route_mastery"', 'routeMasteryProof', 'data-alpha-action="spirit.habitat_bond"', 'habitatBondProof', 'data-alpha-action="spirit.sanctuary_rite"', 'data-sanctuary-label', 'sanctuaryRiteProof', 'sanctuaryBellClaimed', 'Jade Court Sanctuary Rite complete', 'data-alpha-action="spirit.research"', 'researchProof', 'data-alpha-action="spirit.compendium_complete"', 'compendiumProof', 'data-alpha-action="spirit.roster_archive"', 'data-archive-label', 'rosterArchiveProof', 'rosterArchiveSealClaimed', 'Jade Court Roster Archive sealed', 'data-alpha-action="spirit.care_cycle"', 'data-care-cycle-label', 'careCycleProof', 'careCycleKnotClaimed', 'Jade Court Care Cycle complete', 'data-alpha-action="spirit.temperament_concord"', 'data-temperament-label', 'temperamentConcordProof', 'temperamentCharmClaimed', 'Jade Temperament Concord complete', 'data-alpha-action="spirit.field_almanac"', 'data-field-almanac-label', 'fieldAlmanacProof', 'fieldAlmanacClaspClaimed', 'Jade Field Almanac recorded', 'data-alpha-action="spirit.habitat_census"', 'data-habitat-census-label', 'habitatCensusProof', 'habitatCensusSealClaimed', 'Jade Habitat Census recorded', 'data-alpha-action="item.provision_satchel"', 'provisionProof', 'jade-court-provision-satchel', 'data-alpha-action="guild.commission_complete"', 'commissionProof', 'jade-court-commission-ledger', 'data-alpha-action="guild.social_rally"', 'rallyProof', 'emoteProof', 'Jade Courtyard Rally', 'data-alpha-action="guild.wayfarer_chronicle"', 'data-chronicle-label', 'wayfarerChronicleProof', 'wayfarerChronicleClaspClaimed', 'Jade Wayfarer Chronicle complete', 'data-alpha-action="guild.ascension_trial"', 'data-ascension-label', 'guildAscensionProof', 'guildAscensionRibbonClaimed', 'Jade Court Ascension Trial complete', 'data-alpha-action="battle.tournament_bracket"', 'data-tournament-label', 'tournamentProof', 'tournamentPennantClaimed', 'Jade Banner Tournament cleared', 'jade-court-spirit-compendium', 'jade-cloudbell-circuit', 'jade-court-habitat-bond', 'jade-court-research-folio', 'cloudbell-reed-bank', 'aozhen', 'data-alpha-action="party.harmony_form"', 'harmonyFormProof', 'triune-jade-harmony', 'data-alpha-action="battle.harmony_trial"', 'harmonyTrialProof', 'jade-echo-concord', 'data-alpha-action="battle.team_spar_match"', 'teamSparMatchProof', 'jade-mirror-team-match', 'data-alpha-action="battle.mentor_challenge"', 'mentorChallengeProof', 'silk-banner-mentor-drill', 'data-alpha-action="spirit.technique_loadout"', 'techniqueLoadoutProof', 'jade-step-loadout', 'data-alpha-action="spirit.trait_attune"', 'traitAttunementProof', 'jade-heart-trait', 'data-alpha-action="battle.condition_weave"', 'conditionWeaveProof', 'jade-mirror-condition-weave', 'data-alpha-action="spirit.attune"', 'attunedSpiritIds', 'data-alpha-action="spirit.journal"', 'journalProof', 'data-alpha-action="world.expedition"', 'expeditionProof', 'data-alpha-action="spirit.technique"', 'techniqueProof', 'data-alpha-action="battle.tactic_scroll"', 'tacticProof', 'data-alpha-action="guild.rank_trial"', 'guildRankProof', 'data-alpha-action="spirit.growth_rite"', 'growthRiteProof', 'data-alpha-action="battle.affinity_trial"', 'affinityProof', 'data-alpha-action="party.set"', 'partyIds', 'data-alpha-action="spirit.care"', 'data-alpha-action="spirit.train"', 'trainingXp', 'data-alpha-action="battle.spar_ladder"', 'sparLadderXp', 'battleRoundProof', 'battleRoundTranscript', 'data-battle-round-label', 'data-alpha-action="spirit.raise"', 'raisingProof', 'data-alpha-local-action="profile.view"', 'profileViewed', 'data-alpha-local-action="guild.buddy"', 'guildBuddyProof', 'data-alpha-local-action="status.set"', 'statusMood', 'data-alpha-local-action="spirit.inspect"', 'lastInspectedSpiritId', 'data-alpha-action="quest.accept"', 'activeQuestId', 'data-alpha-action="quest.progress"', 'completedQuestSteps', 'completedQuestIds', 'questChainProof', 'chain.withdraw_request', 'chain.deposit_request', 'canaryReturnRequested', 'Jade Vault Return Proof staged', 'mochiSocial.alphaState', 'canvasMovement', 'changedAfterFirstTabMove', 'ArrowLeft', 'ArrowDown', 'canvas']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="spirit.roster_cabinet"', 'data-roster-cabinet-label', 'rosterCabinetProof', 'rosterCabinetTagClaimed', 'Jade Roster Cabinet organized']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="spirit.blossom_cradle"', 'data-blossom-cradle-label', 'blossomCradleProof', 'blossomCradleRibbonClaimed', 'Jade Blossom Cradle settled']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1898,6 +1982,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['rosterCabinetProof', 'rosterCabinetTagClaimed', 'Jade Roster Cabinet', 'jade-roster-cabinet', 'roster cabinet']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['blossomCradleProof', 'blossomCradleRibbonClaimed', 'Jade Blossom Cradle', 'jade-blossom-cradle', 'blossom cradle']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

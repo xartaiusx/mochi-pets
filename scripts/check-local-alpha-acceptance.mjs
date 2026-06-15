@@ -68,6 +68,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritCompendium === true, 'Manifest must expose Mochi Spirit compendium completion.');
   assert(manifest.body.gameplay?.spiritRosterArchives === true, 'Manifest must expose Mochi Spirit roster archives.');
   assert(manifest.body.gameplay?.spiritRosterCabinets === true, 'Manifest must expose Mochi Spirit roster cabinets.');
+  assert(manifest.body.gameplay?.spiritBlossomCradles === true, 'Manifest must expose Mochi Spirit blossom cradles.');
   assert(manifest.body.gameplay?.spiritCareCycles === true, 'Manifest must expose Mochi Spirit care cycles.');
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
@@ -155,6 +156,7 @@ async function run() {
   assert(manifest.body.playableContent?.raising?.bondMilestoneIds?.length === 9, 'Manifest must catalog all first-court bond milestones.');
   assert(manifest.body.playableContent?.raising?.bloomAscendanceIds?.includes('jade-bloom-ascendance'), 'Manifest must catalog bloom ascendance growth proof.');
   assert(manifest.body.playableContent?.raising?.lineageRegisterIds?.includes('jade-lineage-register'), 'Manifest must catalog lineage register growth proof.');
+  assert(manifest.body.playableContent?.raising?.blossomCradleIds?.includes('jade-blossom-cradle'), 'Manifest must catalog blossom cradle raising proof.');
   assert(manifest.body.playableContent?.battle?.moveIds?.length === 3, 'Manifest must catalog all first-court battle moves.');
   assert(manifest.body.playableContent?.battle?.tacticIds?.length === 3, 'Manifest must catalog all first-court battle tactics.');
   assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Manifest must catalog the summit circuit battle proof.');
@@ -188,6 +190,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritCompendium === true, 'Alpha status must expose Mochi Spirit compendium completion.');
   assert(alphaStatus.body.gameplay?.spiritRosterArchives === true, 'Alpha status must expose Mochi Spirit roster archives.');
   assert(alphaStatus.body.gameplay?.spiritRosterCabinets === true, 'Alpha status must expose Mochi Spirit roster cabinets.');
+  assert(alphaStatus.body.gameplay?.spiritBlossomCradles === true, 'Alpha status must expose Mochi Spirit blossom cradles.');
   assert(alphaStatus.body.gameplay?.spiritCareCycles === true, 'Alpha status must expose Mochi Spirit care cycles.');
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
@@ -1483,6 +1486,40 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-blossom-cradle`,
+      type: 'spirit.blossom_cradle',
+      payload: {
+        cradleId: 'jade-blossom-cradle',
+        roster: ['lirabao', 'jintari', 'aozhen'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+        raisingMilestoneLabels: ['Lantern Spark', 'Goldleaf Step', 'Moonwell Bloom Form'],
+        activeSpiritId: 'lirabao',
+        totalBond: 15,
+        kinshipAlbumProof: true,
+        kinshipAlbumId: 'jade-kinship-album',
+        nurseryGroveProof: true,
+        nurseryGroveId: 'jade-nursery-grove',
+        bloomAscendanceProof: true,
+        bloomAscendanceId: 'jade-bloom-ascendance',
+        lineageRegisterProof: true,
+        lineageRegisterId: 'jade-lineage-register',
+        nurtureRiteProof: true,
+        nurtureRiteId: 'jade-moonwell-nurture-rite',
+        growthRiteProof: true,
+        growthRiteId: 'moonwell-bloom-rite',
+        careCycleProof: true,
+        careCycleId: 'jade-court-care-cycle',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-blossom-cradle-ribbon',
+        chatLines: ['Local acceptance blossom cradle proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-dojo-ladder`,
       type: 'battle.dojo_ladder',
       payload: {
@@ -1858,6 +1895,7 @@ async function run() {
         remedyPouchProof: true,
         questLedgerProof: true,
         rosterCabinetProof: true,
+        blossomCradleProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
         nurtureRiteProof: true,
@@ -1923,6 +1961,7 @@ async function run() {
         remedyPouchProof: true,
         questLedgerProof: true,
         rosterCabinetProof: true,
+        blossomCradleProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -2030,6 +2069,30 @@ async function run() {
   assert(rosterCabinet?.payload?.localPresenceCount === 2, 'Roster cabinet ledger entry must preserve two-tester presence proof.');
   assert(rosterCabinet?.payload?.rewardItemId === 'jade-roster-cabinet-tag', 'Roster cabinet ledger entry must preserve the no-real-value cabinet tag proof.');
   assert(rosterCabinet?.payload?.noRealValue === true, 'Roster cabinet ledger entry must remain no-real-value.');
+  const blossomCradle = entriesById.get(`${runId}-blossom-cradle`);
+  assert(blossomCradle?.payload?.cradleId === 'jade-blossom-cradle', 'Blossom cradle ledger entry must preserve the Jade Blossom Cradle id.');
+  assert(Array.isArray(blossomCradle?.payload?.roster) && blossomCradle.payload.roster.length === 3, 'Blossom cradle ledger entry must preserve full roster proof.');
+  assert(Array.isArray(blossomCradle?.payload?.partyIds) && blossomCradle.payload.partyIds.length === 3, 'Blossom cradle ledger entry must preserve full-party proof.');
+  assert(Array.isArray(blossomCradle?.payload?.caredSpiritIds) && blossomCradle.payload.caredSpiritIds.length === 3, 'Blossom cradle ledger entry must preserve full-care proof.');
+  assert(Array.isArray(blossomCradle?.payload?.raisingMilestoneLabels) && blossomCradle.payload.raisingMilestoneLabels.length === 3, 'Blossom cradle ledger entry must preserve three raising milestone labels.');
+  assert(blossomCradle?.payload?.totalBond === 15, 'Blossom cradle ledger entry must preserve total bond proof.');
+  assert(blossomCradle?.payload?.kinshipAlbumProof === true, 'Blossom cradle ledger entry must preserve kinship album proof.');
+  assert(blossomCradle?.payload?.kinshipAlbumId === 'jade-kinship-album', 'Blossom cradle ledger entry must preserve the kinship album id.');
+  assert(blossomCradle?.payload?.nurseryGroveProof === true, 'Blossom cradle ledger entry must preserve nursery grove proof.');
+  assert(blossomCradle?.payload?.nurseryGroveId === 'jade-nursery-grove', 'Blossom cradle ledger entry must preserve the nursery grove id.');
+  assert(blossomCradle?.payload?.bloomAscendanceProof === true, 'Blossom cradle ledger entry must preserve bloom ascendance proof.');
+  assert(blossomCradle?.payload?.bloomAscendanceId === 'jade-bloom-ascendance', 'Blossom cradle ledger entry must preserve the bloom ascendance id.');
+  assert(blossomCradle?.payload?.lineageRegisterProof === true, 'Blossom cradle ledger entry must preserve lineage register proof.');
+  assert(blossomCradle?.payload?.lineageRegisterId === 'jade-lineage-register', 'Blossom cradle ledger entry must preserve the lineage register id.');
+  assert(blossomCradle?.payload?.nurtureRiteProof === true, 'Blossom cradle ledger entry must preserve nurture rite proof.');
+  assert(blossomCradle?.payload?.nurtureRiteId === 'jade-moonwell-nurture-rite', 'Blossom cradle ledger entry must preserve the nurture rite id.');
+  assert(blossomCradle?.payload?.growthRiteProof === true, 'Blossom cradle ledger entry must preserve growth rite proof.');
+  assert(blossomCradle?.payload?.growthRiteId === 'moonwell-bloom-rite', 'Blossom cradle ledger entry must preserve the growth rite id.');
+  assert(blossomCradle?.payload?.careCycleProof === true, 'Blossom cradle ledger entry must preserve care cycle proof.');
+  assert(blossomCradle?.payload?.careCycleId === 'jade-court-care-cycle', 'Blossom cradle ledger entry must preserve the care cycle id.');
+  assert(blossomCradle?.payload?.localPresenceCount === 2, 'Blossom cradle ledger entry must preserve two-tester presence proof.');
+  assert(blossomCradle?.payload?.rewardItemId === 'jade-blossom-cradle-ribbon', 'Blossom cradle ledger entry must preserve the no-real-value cradle ribbon proof.');
+  assert(blossomCradle?.payload?.noRealValue === true, 'Blossom cradle ledger entry must remain no-real-value.');
   const marketReceipt = entriesById.get(`${runId}-market-receipt`);
   assert(marketReceipt?.payload?.receiptId === 'jade-court-market-receipt', 'Market receipt ledger entry must preserve the Jade Court Market Receipt id.');
   assert(marketReceipt?.payload?.itemId === 'jade-thread-charm', 'Market receipt ledger entry must preserve the purchased Jade Thread Charm id.');
@@ -2596,6 +2659,7 @@ async function run() {
   assert(chronicle?.payload?.remedyPouchProof === true, 'Wayfarer chronicle ledger entry must preserve remedy pouch proof.');
   assert(chronicle?.payload?.questLedgerProof === true, 'Wayfarer chronicle ledger entry must preserve quest ledger proof.');
   assert(chronicle?.payload?.rosterCabinetProof === true, 'Wayfarer chronicle ledger entry must preserve roster cabinet proof.');
+  assert(chronicle?.payload?.blossomCradleProof === true, 'Wayfarer chronicle ledger entry must preserve blossom cradle proof.');
   assert(chronicle?.payload?.dojoLadderProof === true, 'Wayfarer chronicle ledger entry must preserve dojo ladder proof.');
   assert(chronicle?.payload?.tournamentProof === true, 'Wayfarer chronicle ledger entry must preserve tournament proof.');
   assert(chronicle?.payload?.sifuCouncilProof === true, 'Wayfarer chronicle ledger entry must preserve sifu council proof.');
@@ -2626,6 +2690,7 @@ async function run() {
   assert(ascension?.payload?.remedyPouchProof === true, 'Ascension trial ledger entry must preserve remedy pouch proof.');
   assert(ascension?.payload?.questLedgerProof === true, 'Ascension trial ledger entry must preserve quest ledger proof.');
   assert(ascension?.payload?.rosterCabinetProof === true, 'Ascension trial ledger entry must preserve roster cabinet proof.');
+  assert(ascension?.payload?.blossomCradleProof === true, 'Ascension trial ledger entry must preserve blossom cradle proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

@@ -10,6 +10,7 @@ import {
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
   SPIRIT_BLOOM_ASCENDANCES,
+  SPIRIT_BLOSSOM_CRADLES,
   SPIRIT_BOND_MILESTONES,
   SPIRIT_CARE_CYCLES,
   SPIRIT_CAPTURE_RITES,
@@ -64,6 +65,7 @@ import {
   resolveSpiritAffinityTrial,
   resolveSpiritBattleKit,
   resolveSpiritBattleRound,
+  resolveSpiritBlossomCradle,
   resolveSpiritBloomAscendance,
   resolveSpiritBondMilestone,
   resolveSpiritCapture,
@@ -2080,6 +2082,86 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(rosterCabinet.message).toContain('No real value');
 
+    expect(SPIRIT_BLOSSOM_CRADLES.map((entry) => entry.id)).toEqual(['jade-blossom-cradle']);
+    const blockedCradle = resolveSpiritBlossomCradle({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      caredSpiritIds: fullRoster,
+      raisingMilestoneLabels: ['Lantern Spark', 'Goldleaf Step', 'Moonwell Bloom Form'],
+      activeSpiritId: 'lirabao',
+      totalBond: 15,
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      bloomAscendanceProof: true,
+      bloomAscendanceId: 'jade-bloom-ascendance',
+      lineageRegisterProof: false,
+      lineageRegisterId: 'jade-lineage-register',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Blossom cradle ready.']
+    });
+    expect(blockedCradle).toMatchObject({
+      cradled: false,
+      cradleId: 'jade-blossom-cradle',
+      missing: ['lineage:jade-lineage-register']
+    });
+
+    const blossomCradle = resolveSpiritBlossomCradle({
+      roster: fullRoster,
+      partyIds: fullRoster,
+      caredSpiritIds: fullRoster,
+      raisingMilestoneLabels: ['Lantern Spark', 'Goldleaf Step', 'Moonwell Bloom Form'],
+      activeSpiritId: 'lirabao',
+      totalBond: 15,
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      bloomAscendanceProof: true,
+      bloomAscendanceId: 'jade-bloom-ascendance',
+      lineageRegisterProof: true,
+      lineageRegisterId: 'jade-lineage-register',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Blossom cradle ready.']
+    });
+    expect(blossomCradle).toMatchObject({
+      cradled: true,
+      cradleId: 'jade-blossom-cradle',
+      cradleName: 'Jade Blossom Cradle',
+      activeSpiritId: 'lirabao',
+      roster: [...fullRoster],
+      partyIds: [...fullRoster],
+      caredSpiritIds: [...fullRoster],
+      raisingMilestoneLabels: ['Lantern Spark', 'Goldleaf Step', 'Moonwell Bloom Form'],
+      totalBond: 15,
+      localPresenceCount: 2,
+      score: 66,
+      requiredScore: 48,
+      rewardItemId: ALPHA_ITEMS.blossomCradleRibbon.id,
+      source: 'spirit-blossom-cradle'
+    });
+    expect(blossomCradle.rewardItemId).toBe('jade-blossom-cradle-ribbon');
+    expect(blossomCradle.message).toContain('No real value');
+
     const commission = resolveGuildCommission({
       roster: fullRoster,
       activeSpiritId: 'jintari',
@@ -2287,6 +2369,7 @@ describe('Mochi Spirits alpha content contract', () => {
       remedyPouchProof: true,
       questLedgerProof: true,
       rosterCabinetProof: true,
+      blossomCradleProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2356,6 +2439,7 @@ describe('Mochi Spirits alpha content contract', () => {
       remedyPouchProof: true,
       questLedgerProof: true,
       rosterCabinetProof: true,
+      blossomCradleProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2400,7 +2484,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 161,
+      score: 164,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2424,6 +2508,7 @@ describe('Mochi Spirits alpha content contract', () => {
       remedyPouchProof: true,
       questLedgerProof: true,
       rosterCabinetProof: true,
+      blossomCradleProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2478,6 +2563,7 @@ describe('Mochi Spirits alpha content contract', () => {
       remedyPouchProof: true,
       questLedgerProof: true,
       rosterCabinetProof: true,
+      blossomCradleProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2514,7 +2600,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 123,
+      score: 126,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'

@@ -652,6 +652,78 @@ export interface SpiritRosterCabinetResult {
   source: string;
 }
 
+export interface SpiritBlossomCradle {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredPartySize: number;
+  requiredCareCount: number;
+  requiredKinshipAlbumId: string;
+  requiredNurseryGroveId: string;
+  requiredBloomAscendanceId: string;
+  requiredLineageRegisterId: string;
+  requiredNurtureRiteId: string;
+  requiredGrowthRiteId: string;
+  requiredCareCycleId: string;
+  requiredTotalBond: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritBlossomCradleProgress {
+  roster: readonly string[];
+  partyIds: readonly string[];
+  caredSpiritIds: readonly string[];
+  raisingMilestoneLabels: readonly string[];
+  activeSpiritId?: string;
+  totalBond: number;
+  kinshipAlbumProof: boolean;
+  kinshipAlbumId?: string;
+  nurseryGroveProof: boolean;
+  nurseryGroveId?: string;
+  bloomAscendanceProof: boolean;
+  bloomAscendanceId?: string;
+  lineageRegisterProof: boolean;
+  lineageRegisterId?: string;
+  nurtureRiteProof: boolean;
+  nurtureRiteId?: string;
+  growthRiteProof: boolean;
+  growthRiteId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritBlossomCradleResult {
+  ok: boolean;
+  cradled: boolean;
+  cradleId: string;
+  cradleName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName?: string;
+  roster: string[];
+  partyIds: string[];
+  caredSpiritIds: string[];
+  raisingMilestoneLabels: string[];
+  totalBond: number;
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritProvisionSatchel {
   id: string;
   name: string;
@@ -2309,6 +2381,7 @@ export interface GuildWayfarerChronicleProgress {
   remedyPouchProof: boolean;
   questLedgerProof: boolean;
   rosterCabinetProof: boolean;
+  blossomCradleProof: boolean;
   craftWritProof: boolean;
   routeWaystoneProof: boolean;
   nurtureRiteProof: boolean;
@@ -2397,6 +2470,7 @@ export interface GuildAscensionTrialProgress {
   remedyPouchProof: boolean;
   questLedgerProof: boolean;
   rosterCabinetProof: boolean;
+  blossomCradleProof: boolean;
   affinityMatrixProof: boolean;
   techniqueCodexProof: boolean;
   relicAttunementProof: boolean;
@@ -4135,6 +4209,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Roster Cabinet Tag',
     description: 'A no-real-value roster cabinet proof for closed-alpha Mochirii party, reserve, nursery, lineage, and storage-slot organization.'
   },
+  blossomCradleRibbon: {
+    id: 'jade-blossom-cradle-ribbon',
+    name: 'Jade Blossom Cradle Ribbon',
+    description: 'A no-real-value blossom cradle proof for closed-alpha Mochirii nursery continuity, lineage, care, growth, and raising readiness.'
+  },
   rankSeal: {
     id: 'jade-court-rank-seal',
     name: 'Jade Court Rank Seal',
@@ -4596,6 +4675,29 @@ export const SPIRIT_ROSTER_CABINETS: readonly SpiritRosterCabinet[] = [
     requiredScore: 30,
     rewardItemId: ALPHA_ITEMS.rosterCabinetTag.id,
     summary: 'A no-real-value roster cabinet proof for testers who organize all first-court Mochi Spirits across party slots, reserve notes, nursery readiness, lineage records, and social storage labels.'
+  }
+];
+
+export const SPIRIT_BLOSSOM_CRADLES: readonly SpiritBlossomCradle[] = [
+  {
+    id: 'jade-blossom-cradle',
+    name: 'Jade Blossom Cradle',
+    title: 'First-Court Nursery Continuity',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredPartySize: MOCHI_SPIRITS.length,
+    requiredCareCount: MOCHI_SPIRITS.length,
+    requiredKinshipAlbumId: 'jade-kinship-album',
+    requiredNurseryGroveId: 'jade-nursery-grove',
+    requiredBloomAscendanceId: 'jade-bloom-ascendance',
+    requiredLineageRegisterId: 'jade-lineage-register',
+    requiredNurtureRiteId: 'jade-moonwell-nurture-rite',
+    requiredGrowthRiteId: 'moonwell-bloom-rite',
+    requiredCareCycleId: 'jade-court-care-cycle',
+    requiredTotalBond: 15,
+    requiredScore: 48,
+    rewardItemId: ALPHA_ITEMS.blossomCradleRibbon.id,
+    summary: 'A no-real-value blossom cradle proof for testers who connect nursery care, kinship, lineage, growth rites, and raising milestones without creating production inventory or settled assets.'
   }
 ];
 
@@ -6494,6 +6596,102 @@ export function resolveSpiritRosterCabinet(
       ? `${cabinet.name} organized: ${partyNames || 'the first-court party'} are filed across ${slotSummary || 'guild cabinet slots'} with archive, compendium, nursery, lineage, and social proof. No real value.`
       : `${cabinet.name} needs ${missing.join(', ')} before the first-court roster cabinet can be sealed.`,
     source: 'spirit-roster-cabinet'
+  };
+}
+
+export function resolveSpiritBlossomCradle(
+  progress: SpiritBlossomCradleProgress,
+  cradleId: string = SPIRIT_BLOSSOM_CRADLES[0].id
+): SpiritBlossomCradleResult {
+  const cradle = SPIRIT_BLOSSOM_CRADLES.find((entry) => entry.id === cradleId) || SPIRIT_BLOSSOM_CRADLES[0];
+  const requiredSpiritIds = new Set(cradle.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => {
+    return roster.includes(spiritId) && Boolean(getMochiSpirit(spiritId));
+  }).slice(0, cradle.requiredPartySize);
+  const caredSpiritIds = Array.from(new Set(progress.caredSpiritIds.filter(Boolean))).filter((spiritId) => {
+    return roster.includes(spiritId) && Boolean(getMochiSpirit(spiritId));
+  }).slice(0, cradle.requiredCareCount);
+  const raisingMilestoneLabels = Array.from(new Set(progress.raisingMilestoneLabels.map((label) => String(label).trim()).filter(Boolean))).slice(
+    0,
+    cradle.requiredSpiritIds.length
+  );
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : partyIds[0] || roster[0];
+  const activeSpiritName = activeSpiritId ? getMochiSpirit(activeSpiritId)?.name || activeSpiritId : undefined;
+  const totalBond = Math.max(0, Math.floor(progress.totalBond || 0));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of cradle.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+    if (!partyIds.includes(spiritId)) missing.push(`party:${spiritId}`);
+    if (!caredSpiritIds.includes(spiritId)) missing.push(`care:${spiritId}`);
+  }
+
+  if (raisingMilestoneLabels.length < cradle.requiredSpiritIds.length) missing.push(`milestones:${raisingMilestoneLabels.length}/${cradle.requiredSpiritIds.length}`);
+  if (totalBond < cradle.requiredTotalBond) missing.push(`bond:${totalBond}/${cradle.requiredTotalBond}`);
+  if (!progress.kinshipAlbumProof || progress.kinshipAlbumId !== cradle.requiredKinshipAlbumId) missing.push(`kinship:${cradle.requiredKinshipAlbumId}`);
+  if (!progress.nurseryGroveProof || progress.nurseryGroveId !== cradle.requiredNurseryGroveId) missing.push(`nursery:${cradle.requiredNurseryGroveId}`);
+  if (!progress.bloomAscendanceProof || progress.bloomAscendanceId !== cradle.requiredBloomAscendanceId) missing.push(`bloom:${cradle.requiredBloomAscendanceId}`);
+  if (!progress.lineageRegisterProof || progress.lineageRegisterId !== cradle.requiredLineageRegisterId) missing.push(`lineage:${cradle.requiredLineageRegisterId}`);
+  if (!progress.nurtureRiteProof || progress.nurtureRiteId !== cradle.requiredNurtureRiteId) missing.push(`nurture:${cradle.requiredNurtureRiteId}`);
+  if (!progress.growthRiteProof || progress.growthRiteId !== cradle.requiredGrowthRiteId) missing.push(`growth:${cradle.requiredGrowthRiteId}`);
+  if (!progress.careCycleProof || progress.careCycleId !== cradle.requiredCareCycleId) missing.push(`care-cycle:${cradle.requiredCareCycleId}`);
+  if (localPresenceCount < 2) missing.push(`presence:${localPresenceCount}/2`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(roster.length, cradle.requiredSpiritIds.length) * 2 +
+    Math.min(partyIds.length, cradle.requiredPartySize) * 2 +
+    Math.min(caredSpiritIds.length, cradle.requiredCareCount) * 2 +
+    Math.min(raisingMilestoneLabels.length, cradle.requiredSpiritIds.length) +
+    Math.min(totalBond, cradle.requiredTotalBond) +
+    (progress.kinshipAlbumProof && progress.kinshipAlbumId === cradle.requiredKinshipAlbumId ? 3 : 0) +
+    (progress.nurseryGroveProof && progress.nurseryGroveId === cradle.requiredNurseryGroveId ? 4 : 0) +
+    (progress.bloomAscendanceProof && progress.bloomAscendanceId === cradle.requiredBloomAscendanceId ? 4 : 0) +
+    (progress.lineageRegisterProof && progress.lineageRegisterId === cradle.requiredLineageRegisterId ? 4 : 0) +
+    (progress.nurtureRiteProof && progress.nurtureRiteId === cradle.requiredNurtureRiteId ? 3 : 0) +
+    (progress.growthRiteProof && progress.growthRiteId === cradle.requiredGrowthRiteId ? 3 : 0) +
+    (progress.careCycleProof && progress.careCycleId === cradle.requiredCareCycleId ? 3 : 0) +
+    (localPresenceCount >= 2 ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const cradled = missing.length === 0 && score >= cradle.requiredScore;
+  const partyNames = partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ');
+
+  return {
+    ok: true,
+    cradled,
+    cradleId: cradle.id,
+    cradleName: cradle.name,
+    title: cradle.title,
+    habitat: cradle.habitat,
+    activeSpiritId,
+    activeSpiritName,
+    roster,
+    partyIds,
+    caredSpiritIds,
+    raisingMilestoneLabels,
+    totalBond,
+    localPresenceCount,
+    score,
+    requiredScore: cradle.requiredScore,
+    missing,
+    rewardItemId: cradle.rewardItemId,
+    message: cradled
+      ? `${cradle.name} settled: ${partyNames || 'the first-court roster'} link nursery care, bloom, lineage, nurture, growth, and raising milestones around ${activeSpiritName || 'the active spirit'}. No real value.`
+      : `${cradle.name} needs ${missing.join(', ')} before nursery continuity can be sealed.`,
+    source: 'spirit-blossom-cradle'
   };
 }
 
@@ -9210,6 +9408,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.remedyPouchProof) missing.push('remedy-pouch');
   if (!progress.questLedgerProof) missing.push('quest-ledger');
   if (!progress.rosterCabinetProof) missing.push('roster-cabinet');
+  if (!progress.blossomCradleProof) missing.push('blossom-cradle');
   if (!progress.craftWritProof) missing.push('craft-writ');
   if (!progress.routeWaystoneProof) missing.push('route-waystone');
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
@@ -9271,6 +9470,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.remedyPouchProof ? 3 : 0) +
     (progress.questLedgerProof ? 3 : 0) +
     (progress.rosterCabinetProof ? 3 : 0) +
+    (progress.blossomCradleProof ? 3 : 0) +
     (progress.craftWritProof ? 3 : 0) +
     (progress.routeWaystoneProof ? 3 : 0) +
     (progress.nurtureRiteProof ? 3 : 0) +
@@ -9327,7 +9527,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, battle item kit readiness, remedy pouch status care, quest ledger records, roster cabinet organization, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, battle item kit readiness, remedy pouch status care, quest ledger records, roster cabinet organization, blossom cradle continuity, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -9365,6 +9565,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.remedyPouchProof) missing.push('remedy-pouch');
   if (!progress.questLedgerProof) missing.push('quest-ledger');
   if (!progress.rosterCabinetProof) missing.push('roster-cabinet');
+  if (!progress.blossomCradleProof) missing.push('blossom-cradle');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.techniqueCodexProof) missing.push('technique-codex');
   if (!progress.relicAttunementProof) missing.push('relic-attunement');
@@ -9410,6 +9611,7 @@ export function resolveGuildAscensionTrial(
     (progress.remedyPouchProof ? 3 : 0) +
     (progress.questLedgerProof ? 3 : 0) +
     (progress.rosterCabinetProof ? 3 : 0) +
+    (progress.blossomCradleProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.techniqueCodexProof ? 3 : 0) +
     (progress.relicAttunementProof ? 3 : 0) +
@@ -9456,7 +9658,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, market receipt, provision catalog, battle kit, remedy pouch, quest ledger, roster cabinet, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, blossom cradle, technique codex, market receipt, provision catalog, battle kit, remedy pouch, quest ledger, roster cabinet, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

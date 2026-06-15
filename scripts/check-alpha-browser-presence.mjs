@@ -249,6 +249,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.capture_rite"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.lineage_register"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.roster_cabinet"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="spirit.blossom_cradle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_rotation"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.habitat_census"]', { timeout: timeoutMs });
@@ -296,6 +297,7 @@ async function exerciseAlphaHud(page) {
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
       const archive = document.querySelector('[data-archive-label]')?.textContent || '';
       const rosterCabinet = document.querySelector('[data-roster-cabinet-label]')?.textContent || '';
+      const blossomCradle = document.querySelector('[data-blossom-cradle-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
       const provisionCatalog = document.querySelector('[data-provision-catalog-label]')?.textContent || '';
       const battleKit = document.querySelector('[data-battle-kit-label]')?.textContent || '';
@@ -374,6 +376,7 @@ async function exerciseAlphaHud(page) {
         && compendium.includes('Jade Court Spirit Compendium')
         && archive.includes('Jade Court Roster Archive')
         && rosterCabinet.includes('Jade Roster Cabinet')
+        && blossomCradle.includes('Jade Blossom Cradle')
         && provision.includes('Jade Court Provision Satchel')
         && provisionCatalog.includes('Jade Provision Catalog')
         && battleKit.includes('Jade Battle Kit')
@@ -539,6 +542,21 @@ async function exerciseAlphaHud(page) {
         && Array.isArray(state.rosterCabinetSlotLabels)
         && state.rosterCabinetSlotLabels.length === 3
         && state.rosterCabinetTagClaimed === true
+        && state.blossomCradleProof === true
+        && state.blossomCradleId === 'jade-blossom-cradle'
+        && state.blossomCradleName === 'Jade Blossom Cradle'
+        && state.blossomCradleScore >= 48
+        && state.blossomCradleRequiredScore === 48
+        && Array.isArray(state.blossomCradleSpiritIds)
+        && state.blossomCradleSpiritIds.length === 3
+        && Array.isArray(state.blossomCradlePartyIds)
+        && state.blossomCradlePartyIds.length === 3
+        && Array.isArray(state.blossomCradleCareIds)
+        && state.blossomCradleCareIds.length === 3
+        && Array.isArray(state.blossomCradleMilestoneLabels)
+        && state.blossomCradleMilestoneLabels.length === 3
+        && state.blossomCradleTotalBond >= 15
+        && state.blossomCradleRibbonClaimed === true
         && state.provisionProof === true
         && state.provisionSatchelId === 'jade-court-provision-satchel'
         && state.provisionSatchelName === 'Jade Court Provision Satchel'
@@ -1196,6 +1214,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Court Spirit Compendium complete')
         && chat.includes('Jade Court Roster Archive sealed')
         && chat.includes('Jade Roster Cabinet organized')
+        && chat.includes('Jade Blossom Cradle settled')
         && chat.includes('Jade Court Care Cycle complete')
         && chat.includes('Jade Temperament Concord complete')
         && chat.includes('Jade Route Ecology Survey complete')
@@ -1245,6 +1264,7 @@ async function exerciseAlphaHud(page) {
       compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
       archive: document.querySelector('[data-archive-label]')?.textContent || '',
       rosterCabinet: document.querySelector('[data-roster-cabinet-label]')?.textContent || '',
+      blossomCradle: document.querySelector('[data-blossom-cradle-label]')?.textContent || '',
       provision: document.querySelector('[data-provision-label]')?.textContent || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
@@ -1318,6 +1338,7 @@ async function exerciseAlphaHud(page) {
       compendium: document.querySelector('[data-compendium-label]')?.textContent?.trim() || '',
       archive: document.querySelector('[data-archive-label]')?.textContent?.trim() || '',
       rosterCabinet: document.querySelector('[data-roster-cabinet-label]')?.textContent?.trim() || '',
+      blossomCradle: document.querySelector('[data-blossom-cradle-label]')?.textContent?.trim() || '',
       provision: document.querySelector('[data-provision-label]')?.textContent?.trim() || '',
       careCycle: document.querySelector('[data-care-cycle-label]')?.textContent?.trim() || '',
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
@@ -1545,6 +1566,18 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.rosterCabinetPartyIds) && snapshot.state.rosterCabinetPartyIds.length === 3, 'HUD roster cabinet action must record the full cabinet party.');
   assert(Array.isArray(snapshot.state.rosterCabinetSlotLabels) && snapshot.state.rosterCabinetSlotLabels.length === 3, 'HUD roster cabinet action must record three storage labels.');
   assert(snapshot.state.rosterCabinetTagClaimed === true, 'HUD roster cabinet action must mark the no-real-value cabinet tag proof.');
+  assert(snapshot.blossomCradle.includes('Jade Blossom Cradle'), 'HUD blossom cradle label must show the nursery continuity proof.');
+  assert(snapshot.state.blossomCradleProof === true, 'HUD blossom cradle action must record cradle continuity proof.');
+  assert(snapshot.state.blossomCradleId === 'jade-blossom-cradle', 'HUD blossom cradle action must record the cradle id.');
+  assert(snapshot.state.blossomCradleName === 'Jade Blossom Cradle', 'HUD blossom cradle action must record the cradle name.');
+  assert(snapshot.state.blossomCradleScore >= 48, 'HUD blossom cradle action must record a passing cradle score.');
+  assert(snapshot.state.blossomCradleRequiredScore === 48, 'HUD blossom cradle action must record the cradle requirement.');
+  assert(Array.isArray(snapshot.state.blossomCradleSpiritIds) && snapshot.state.blossomCradleSpiritIds.length === 3, 'HUD blossom cradle action must record the full cradle spirit roster.');
+  assert(Array.isArray(snapshot.state.blossomCradlePartyIds) && snapshot.state.blossomCradlePartyIds.length === 3, 'HUD blossom cradle action must record the full cradle party.');
+  assert(Array.isArray(snapshot.state.blossomCradleCareIds) && snapshot.state.blossomCradleCareIds.length === 3, 'HUD blossom cradle action must record every cared spirit.');
+  assert(Array.isArray(snapshot.state.blossomCradleMilestoneLabels) && snapshot.state.blossomCradleMilestoneLabels.length === 3, 'HUD blossom cradle action must record three raising milestones.');
+  assert(snapshot.state.blossomCradleTotalBond >= 15, 'HUD blossom cradle action must record enough full-roster bond proof.');
+  assert(snapshot.state.blossomCradleRibbonClaimed === true, 'HUD blossom cradle action must mark the no-real-value cradle ribbon proof.');
   assert(snapshot.provision.includes('Jade Court Provision Satchel'), 'HUD provision label must show the stocked no-real-value satchel.');
   assert(snapshot.state.provisionProof === true, 'HUD provision action must record provision satchel proof.');
   assert(snapshot.state.provisionSatchelId === 'jade-court-provision-satchel', 'HUD provision action must record the provision satchel id.');
@@ -2049,6 +2082,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
   assert(chat.some((line) => String(line).includes('Jade Court Roster Archive sealed')), 'HUD chat state must record the roster archive action.');
   assert(chat.some((line) => String(line).includes('Jade Roster Cabinet organized')), 'HUD chat state must record the roster cabinet action.');
+  assert(chat.some((line) => String(line).includes('Jade Blossom Cradle settled')), 'HUD chat state must record the blossom cradle action.');
   assert(chat.some((line) => String(line).includes('Jade Court Market Receipt recorded')), 'HUD chat state must record the no-real-value market receipt action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');

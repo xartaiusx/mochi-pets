@@ -15,6 +15,7 @@ import {
   SPIRIT_AFFINITY_TRIALS,
   SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
+  SPIRIT_BLOSSOM_CRADLES,
   SPIRIT_BATTLE_TACTICS,
   SPIRIT_CARE_CYCLES,
   SPIRIT_CAPTURE_RITES,
@@ -75,6 +76,7 @@ import {
   resolveSpiritBattleKit,
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
+  resolveSpiritBlossomCradle,
   resolveSpiritBloomAscendance,
   resolveSpiritCapture,
   resolveSpiritCaptureRite,
@@ -270,6 +272,17 @@ interface AlphaHudState {
   rosterCabinetReserveIds: string[];
   rosterCabinetSlotLabels: string[];
   rosterCabinetTagClaimed: boolean;
+  blossomCradleProof: boolean;
+  blossomCradleId?: string;
+  blossomCradleName: string;
+  blossomCradleScore: number;
+  blossomCradleRequiredScore: number;
+  blossomCradleSpiritIds: string[];
+  blossomCradlePartyIds: string[];
+  blossomCradleCareIds: string[];
+  blossomCradleMilestoneLabels: string[];
+  blossomCradleTotalBond: number;
+  blossomCradleRibbonClaimed: boolean;
   provisionProof: boolean;
   provisionSatchelId?: string;
   provisionSatchelName: string;
@@ -1292,6 +1305,16 @@ function defaultAlphaState(): AlphaHudState {
     rosterCabinetReserveIds: [],
     rosterCabinetSlotLabels: [],
     rosterCabinetTagClaimed: false,
+    blossomCradleProof: false,
+    blossomCradleName: 'Uncradled',
+    blossomCradleScore: 0,
+    blossomCradleRequiredScore: 0,
+    blossomCradleSpiritIds: [],
+    blossomCradlePartyIds: [],
+    blossomCradleCareIds: [],
+    blossomCradleMilestoneLabels: [],
+    blossomCradleTotalBond: 0,
+    blossomCradleRibbonClaimed: false,
     provisionProof: false,
     provisionSatchelName: 'Unstocked',
     provisionScore: 0,
@@ -1838,6 +1861,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
       <span class="mochi-hud__hint" data-roster-cabinet-label>Cabinet: pending</span>
+      <span class="mochi-hud__hint" data-blossom-cradle-label>Cradle: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
       <span class="mochi-hud__hint" data-provision-catalog-label>Catalog: pending</span>
       <span class="mochi-hud__hint" data-battle-kit-label>Kit: pending</span>
@@ -1936,6 +1960,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.nursery_grove" aria-label="Record the no-real-value Jade Nursery Grove">Nursery</button>
       <button type="button" data-alpha-action="spirit.bloom_ascendance" aria-label="Record the no-real-value Jade Bloom Ascendance">Ascend+</button>
       <button type="button" data-alpha-action="spirit.lineage_register" aria-label="Record the no-real-value Jade Lineage Register">Lineage</button>
+      <button type="button" data-alpha-action="spirit.blossom_cradle" aria-label="Settle the no-real-value Jade Blossom Cradle">Cradle</button>
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="quest.ledger_record" aria-label="Seal the no-real-value Jade Quest Ledger">Ledger</button>
@@ -2007,6 +2032,7 @@ function createHud() {
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const archiveLabel = hud.querySelector('[data-archive-label]');
   const rosterCabinetLabel = hud.querySelector('[data-roster-cabinet-label]');
+  const blossomCradleLabel = hud.querySelector('[data-blossom-cradle-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
   const provisionCatalogLabel = hud.querySelector('[data-provision-catalog-label]');
   const battleKitLabel = hud.querySelector('[data-battle-kit-label]');
@@ -2178,6 +2204,11 @@ function createHud() {
       rosterCabinetLabel.textContent = state.rosterCabinetProof
         ? `Cabinet: ${state.rosterCabinetName}, slots ${state.rosterCabinetSlotLabels.length}, score ${state.rosterCabinetScore}/${state.rosterCabinetRequiredScore}`
         : 'Cabinet: pending';
+    }
+    if (blossomCradleLabel) {
+      blossomCradleLabel.textContent = state.blossomCradleProof
+        ? `Cradle: ${state.blossomCradleName}, ${state.blossomCradleCareIds.length} care, bond ${state.blossomCradleTotalBond}, score ${state.blossomCradleScore}/${state.blossomCradleRequiredScore}`
+        : 'Cradle: pending';
     }
     if (provisionLabel) {
       provisionLabel.textContent = state.provisionProof
@@ -2656,6 +2687,10 @@ function readAlphaState(): AlphaHudState {
       rosterCabinetPartyIds: Array.isArray(parsed?.rosterCabinetPartyIds) ? parsed.rosterCabinetPartyIds.map(String) : [],
       rosterCabinetReserveIds: Array.isArray(parsed?.rosterCabinetReserveIds) ? parsed.rosterCabinetReserveIds.map(String) : [],
       rosterCabinetSlotLabels: Array.isArray(parsed?.rosterCabinetSlotLabels) ? parsed.rosterCabinetSlotLabels.map(String) : [],
+      blossomCradleSpiritIds: Array.isArray(parsed?.blossomCradleSpiritIds) ? parsed.blossomCradleSpiritIds.map(String) : [],
+      blossomCradlePartyIds: Array.isArray(parsed?.blossomCradlePartyIds) ? parsed.blossomCradlePartyIds.map(String) : [],
+      blossomCradleCareIds: Array.isArray(parsed?.blossomCradleCareIds) ? parsed.blossomCradleCareIds.map(String) : [],
+      blossomCradleMilestoneLabels: Array.isArray(parsed?.blossomCradleMilestoneLabels) ? parsed.blossomCradleMilestoneLabels.map(String) : [],
       conditionIds: Array.isArray(parsed?.conditionIds) ? parsed.conditionIds.map(String) : [],
       affinityMatrixSpiritIds: Array.isArray(parsed?.affinityMatrixSpiritIds) ? parsed.affinityMatrixSpiritIds.map(String) : [],
       affinityMatrixAffinityLabels: Array.isArray(parsed?.affinityMatrixAffinityLabels) ? parsed.affinityMatrixAffinityLabels.map(String) : [],
@@ -2822,6 +2857,7 @@ function strongestGrowthStage(storedGrowth: string | undefined, bond: number) {
 function rosterProofBond(state: AlphaHudState, spiritId: string) {
   if (
     state.lineageRegisterSpiritIds.includes(spiritId) ||
+    state.blossomCradleSpiritIds.includes(spiritId) ||
     state.bloomAscendanceSpiritIds.includes(spiritId) ||
     state.nurseryGroveSpiritIds.includes(spiritId) ||
     state.kinshipAlbumSpiritIds.includes(spiritId)
@@ -2832,7 +2868,8 @@ function rosterProofBond(state: AlphaHudState, spiritId: string) {
   if (
     state.nurtureRiteRosterIds.includes(spiritId) ||
     state.recoveryTeaPartyIds.includes(spiritId) ||
-    state.careCycleCaredSpiritIds.includes(spiritId)
+    state.careCycleCaredSpiritIds.includes(spiritId) ||
+    state.blossomCradleCareIds.includes(spiritId)
   ) {
     return 3;
   }
@@ -3701,6 +3738,50 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'spirit.blossom_cradle') {
+    const cradle = SPIRIT_BLOSSOM_CRADLES[0];
+    const roster = state.attunedSpiritIds.length >= cradle.requiredSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
+    const partyIds = state.partyIds.length >= cradle.requiredPartySize ? state.partyIds.slice(0, cradle.requiredPartySize) : roster.slice(0, cradle.requiredPartySize);
+    const caredSpiritIds =
+      state.careCycleCaredSpiritIds.length >= cradle.requiredCareCount ? state.careCycleCaredSpiritIds.slice(0, cradle.requiredCareCount) : roster.slice(0, cradle.requiredCareCount);
+    const raisingMilestoneLabels =
+      state.lineageRegisterMilestoneLabels.length >= cradle.requiredSpiritIds.length
+        ? state.lineageRegisterMilestoneLabels.slice(0, cradle.requiredSpiritIds.length)
+        : roster.map((spiritId) => resolveSpiritBondMilestone(spiritId, getSpiritBond(state, spiritId), getSpiritGrowth(state, spiritId)).milestone?.label || 'First-care milestone');
+    const totalBond = Math.max(state.careCycleTotalBond, roster.reduce((total, spiritId) => total + getSpiritBond(state, spiritId), 0), cradle.requiredTotalBond);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      cradleId: cradle.id,
+      roster,
+      partyIds,
+      caredSpiritIds,
+      raisingMilestoneLabels,
+      activeSpiritId: state.spiritId || partyIds[0] || roster[0],
+      totalBond,
+      kinshipAlbumProof: state.kinshipAlbumProof,
+      kinshipAlbumId: state.kinshipAlbumId,
+      nurseryGroveProof: state.nurseryGroveProof,
+      nurseryGroveId: state.nurseryGroveId,
+      bloomAscendanceProof: state.bloomAscendanceProof,
+      bloomAscendanceId: state.bloomAscendanceId,
+      lineageRegisterProof: state.lineageRegisterProof,
+      lineageRegisterId: state.lineageRegisterId,
+      nurtureRiteProof: state.nurtureRiteProof,
+      nurtureRiteId: state.nurtureRiteId,
+      growthRiteProof: state.growthRiteProof,
+      growthRiteId: state.growthRiteId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood || 'cozy',
+      chatLines: state.chat.length ? state.chat : ['Jade Blossom Cradle ready.'],
+      rewardItemId: 'jade-blossom-cradle-ribbon',
+      noRealValue: true
+    };
+  }
+
   if (type === 'market.guild_receipt') {
     return {
       receiptId: MARKET_GUILD_RECEIPTS[0].id,
@@ -4551,6 +4632,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       bloomAscendanceProof: state.bloomAscendanceProof,
       lineageRegisterProof: state.lineageRegisterProof,
       rosterCabinetProof: state.rosterCabinetProof,
+      blossomCradleProof: state.blossomCradleProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
@@ -4600,6 +4682,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       bloomAscendanceProof: state.bloomAscendanceProof,
       lineageRegisterProof: state.lineageRegisterProof,
       rosterCabinetProof: state.rosterCabinetProof,
+      blossomCradleProof: state.blossomCradleProof,
       exchangeAccordProof: state.exchangeAccordProof,
       affinityMatrixProof: state.affinityMatrixProof,
       techniqueCodexProof: state.techniqueCodexProof,
@@ -5618,6 +5701,58 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.attunedSpiritIds = result.roster;
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'spirit.blossom_cradle') {
+    const result = resolveSpiritBlossomCradle(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds,
+        caredSpiritIds: Array.isArray(payload.caredSpiritIds) ? payload.caredSpiritIds.map(String) : state.careCycleCaredSpiritIds,
+        raisingMilestoneLabels: Array.isArray(payload.raisingMilestoneLabels) ? payload.raisingMilestoneLabels.map(String) : state.lineageRegisterMilestoneLabels,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        totalBond: Number(payload.totalBond ?? state.careCycleTotalBond ?? 0),
+        kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
+        kinshipAlbumId: String(payload.kinshipAlbumId || state.kinshipAlbumId || ''),
+        nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
+        nurseryGroveId: String(payload.nurseryGroveId || state.nurseryGroveId || ''),
+        bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
+        bloomAscendanceId: String(payload.bloomAscendanceId || state.bloomAscendanceId || ''),
+        lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
+        lineageRegisterId: String(payload.lineageRegisterId || state.lineageRegisterId || ''),
+        nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
+        nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
+        growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
+        growthRiteId: String(payload.growthRiteId || state.growthRiteId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.cradleId || SPIRIT_BLOSSOM_CRADLES[0].id)
+    );
+    if (result.cradled) {
+      state.blossomCradleProof = true;
+      state.blossomCradleId = result.cradleId;
+      state.blossomCradleName = result.cradleName;
+      state.blossomCradleScore = result.score;
+      state.blossomCradleRequiredScore = result.requiredScore;
+      state.blossomCradleSpiritIds = result.roster;
+      state.blossomCradlePartyIds = result.partyIds;
+      state.blossomCradleCareIds = result.caredSpiritIds;
+      state.blossomCradleMilestoneLabels = result.raisingMilestoneLabels;
+      state.blossomCradleTotalBond = result.totalBond;
+      state.blossomCradleRibbonClaimed = result.rewardItemId === 'jade-blossom-cradle-ribbon';
+      state.attunedSpiritIds = result.roster;
+      state.partyIds = result.partyIds;
+      setRosterProgress(state, result.roster, 5, 'moonwell bloom');
       state.spiritId = result.activeSpiritId || state.spiritId;
       state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
     }
@@ -6805,6 +6940,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
         lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
         rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
+        blossomCradleProof: Boolean(payload.blossomCradleProof ?? state.blossomCradleProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
@@ -6869,6 +7005,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         bloomAscendanceProof: Boolean(payload.bloomAscendanceProof ?? state.bloomAscendanceProof),
         lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
         rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
+        blossomCradleProof: Boolean(payload.blossomCradleProof ?? state.blossomCradleProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),

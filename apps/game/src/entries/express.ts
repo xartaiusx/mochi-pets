@@ -88,6 +88,7 @@ const ALPHA_FEATURES = {
     remedyPouches: true,
     questLedgers: true,
     spiritRosterCabinets: true,
+    spiritBlossomCradles: true,
     guildCommissions: true,
     socialRallies: true,
     wayfarerChronicles: true,
@@ -148,7 +149,8 @@ const PLAYABLE_CONTENT_CATALOG = {
     kinshipAlbumIds: ['jade-kinship-album'],
     nurseryGroveIds: ['jade-nursery-grove'],
     bloomAscendanceIds: ['jade-bloom-ascendance'],
-    lineageRegisterIds: ['jade-lineage-register']
+    lineageRegisterIds: ['jade-lineage-register'],
+    blossomCradleIds: ['jade-blossom-cradle']
   },
   battle: {
     moveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
@@ -415,6 +417,7 @@ const ALPHA_ACTION_TYPES = [
   'item.remedy_pouch',
   'quest.ledger_record',
   'spirit.roster_cabinet',
+  'spirit.blossom_cradle',
   'guild.commission_complete',
   'guild.social_rally',
   'guild.wayfarer_chronicle',
