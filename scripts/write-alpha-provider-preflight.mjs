@@ -39,7 +39,7 @@ const externalFailures = Array.isArray(externalGates.data?.checks)
     .map((check) => `${sanitize(check.name)}: ${sanitize(check.message)}`)
   : [];
 const providerActionQueue = mergeProviderActionQueue(
-  [...actionQueue, ...buildVerifiedMilestoneDeployQueue()],
+  uniqueProviderActions([...buildVerifiedMilestoneDeployQueue(), ...actionQueue]),
   externalGates.data?.checks || []
 );
 
@@ -181,6 +181,20 @@ function sanitizeAction(action) {
     approvalText: sanitize(action.approvalText),
     noCostFallback: sanitize(action.noCostFallback)
   };
+}
+
+function uniqueProviderActions(actions) {
+  const seen = new Set();
+  const unique = [];
+
+  for (const action of actions) {
+    const id = sanitize(action?.id);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    unique.push({ ...action, id });
+  }
+
+  return unique;
 }
 
 function mergeProviderActionQueue(operatorQueue, externalChecks) {
