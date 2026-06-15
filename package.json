@@ -34,6 +34,7 @@
     "alpha:local-suite": "node scripts/check-alpha-local-suite.mjs",
     "alpha:local-evidence": "node scripts/check-alpha-local-evidence.mjs",
     "alpha:report-hygiene": "node scripts/check-alpha-report-hygiene.mjs",
+    "alpha:site-repo-path": "node scripts/check-alpha-site-repo-path.mjs",
     "alpha:gate-contracts": "node scripts/check-alpha-gate-contracts.mjs",
     "alpha:preview-ready": "node scripts/check-alpha-preview-ready.mjs",
     "alpha:external-gates": "node scripts/check-alpha-external-gates.mjs",

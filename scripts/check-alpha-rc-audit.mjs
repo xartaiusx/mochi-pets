@@ -2,9 +2,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const checkedAt = new Date().toISOString();

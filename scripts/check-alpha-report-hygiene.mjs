@@ -2,10 +2,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_REPORT_HYGIENE_JSON || 'reports/alpha-report-hygiene.json');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const files = [
   'reports/alpha-local-suite.json',
   'reports/built-server-smoke.json',
@@ -35,8 +37,8 @@ const files = [
 const optionalFiles = [
   'reports/alpha-preview-ready.json',
   'reports/alpha-preview-ready.md',
-  resolve(siteRepoPath(), 'reports/mochi-social-preview-ready.json'),
-  resolve(siteRepoPath(), 'reports/mochi-social-preview-ready.md'),
+  resolve(siteRepoPath, 'reports/mochi-social-preview-ready.json'),
+  resolve(siteRepoPath, 'reports/mochi-social-preview-ready.md'),
   resolve(credsDir, 'mochi-social-alpha-preview-ready.md'),
   resolve(credsDir, 'mochirii-mochi-social-preview-ready.md')
 ];
@@ -98,10 +100,6 @@ function defaultCredsDir() {
   if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
   if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
   return join(root, '.local', 'creds');
-}
-
-function siteRepoPath() {
-  return resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 }
 
 function pathForReport(absolutePath) {

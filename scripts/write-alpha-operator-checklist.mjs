@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
@@ -9,7 +10,7 @@ const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST
 const externalStatusPath = resolve(credsDir, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_STATUS_MD || 'mochi-social-alpha-external-gates-status.md');
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
 const flyRegion = process.env.MOCHI_SOCIAL_FLY_REGION || 'sjc';
 const flyVolume = process.env.MOCHI_SOCIAL_FLY_VOLUME || 'mochi_social_data';

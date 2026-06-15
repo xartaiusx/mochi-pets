@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
@@ -9,7 +10,7 @@ const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_SYNC_APPROVAL || '
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JSON || 'reports/alpha-sync-approval.json');
 const auditPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const externalGatePath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const prStateFixturePath = process.env.MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE || '';
 const previewEnvPath = resolve(credsDir, process.env.MOCHI_SOCIAL_PREVIEW_ENV_FILE || 'mochi-social-alpha-vercel-preview.local.txt');
 const generatedAt = new Date().toISOString();

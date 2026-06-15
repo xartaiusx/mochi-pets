@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
@@ -13,7 +14,7 @@ const flyVolume = process.env.MOCHI_SOCIAL_FLY_VOLUME || 'mochi_social_data';
 const supabasePreviewRef = process.env.MOCHI_SOCIAL_SUPABASE_PROJECT_REF || 'dnxumaiooljdnbjvzbdc';
 const gameUrl = (process.env.MOCHI_SOCIAL_GAME_URL || process.env.MOCHI_SOCIAL_BASE_URL || previewEnv.gameUrl || '').replace(/\/+$/, '');
 const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || previewEnv.sitePreviewUrl || '').replace(/\/+$/, '');
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const hostedChecksAllowed = process.env.MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS === 'true';
 
 const previewFlySecrets = [
