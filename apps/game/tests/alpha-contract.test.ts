@@ -13,6 +13,7 @@ import {
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_MATRICES,
+  SPIRIT_BATTLE_CHRONICLES,
   SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
   SPIRIT_BLOSSOM_CRADLES,
@@ -116,6 +117,7 @@ import {
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleChronicle,
   resolveSpiritBattleTactic,
   resolveGuildRankTrial,
   resolveSpiritGrowthRite,
@@ -225,6 +227,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.sifuCouncils).toBe(true);
     expect(ALPHA_FEATURES.gameplay.summitCircuits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleChronicles).toBe(true);
     expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
     expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
@@ -324,6 +327,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('battle.dojo_ladder');
     expect(ALPHA_ACTION_TYPES).toContain('battle.sifu_council');
     expect(ALPHA_ACTION_TYPES).toContain('battle.summit_circuit');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.battle_chronicle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
     expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
     expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
@@ -2814,6 +2818,7 @@ describe('alpha contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -2838,7 +2843,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 170,
+      score: 173,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2896,6 +2901,7 @@ describe('alpha contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -2939,6 +2945,7 @@ describe('alpha contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2975,7 +2982,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 132,
+      score: 135,
       requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -3006,6 +3013,7 @@ describe('alpha contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -3845,6 +3853,60 @@ describe('alpha contract', () => {
       source: 'battle-summit-circuit'
     });
     expect(summitCircuit.message).toContain('No real value');
+
+    expect(SPIRIT_BATTLE_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-battle-chronicle']);
+    const battleChronicle = resolveSpiritBattleChronicle({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council', 'jade-summit-circuit'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: true,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      summitCircuitProof: true,
+      summitCircuitId: 'jade-summit-circuit',
+      summitCircuitScore: summitCircuit.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      remedyPouchProof: true,
+      remedyPouchId: 'jade-remedy-pouch',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the battle chronicle.']
+    });
+    expect(battleChronicle).toMatchObject({
+      ok: true,
+      chronicled: true,
+      chronicleId: 'jade-battle-chronicle',
+      chronicleName: 'Jade Battle Chronicle',
+      title: 'First No-Injury Battle Chronicle',
+      archivistName: 'Archivist Lianhua',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council', 'jade-summit-circuit'],
+      localPresenceCount: 2,
+      score: 90,
+      requiredScore: 72,
+      rewardItemId: 'jade-battle-chronicle-seal',
+      source: 'battle-chronicle'
+    });
+    expect(battleChronicle.message).toContain('No real value');
 
     expect(SPIRIT_TRAIT_ATTUNEMENTS.map((trait) => trait.id)).toEqual(['jade-heart-trait']);
     const trait = resolveSpiritTraitAttunement({

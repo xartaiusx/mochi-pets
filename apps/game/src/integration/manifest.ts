@@ -16,6 +16,7 @@ import {
   RUNTIME_ASSET_MANIFEST,
   SPIRIT_AFFINITY_MATRICES,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_BATTLE_CHRONICLES,
   SPIRIT_BATTLE_KITS,
   SPIRIT_BATTLE_CONDITIONS,
   SPIRIT_BATTLE_TACTICS,
@@ -136,7 +137,8 @@ export const PLAYABLE_CONTENT_CATALOG = {
     tournamentBracketIds: idsFrom(SPIRIT_TOURNAMENT_BRACKETS),
     rivalCircleIds: idsFrom(SPIRIT_RIVAL_CIRCLES),
     sifuCouncilIds: idsFrom(SPIRIT_SIFU_COUNCILS),
-    summitCircuitIds: idsFrom(SPIRIT_SUMMIT_CIRCUITS)
+    summitCircuitIds: idsFrom(SPIRIT_SUMMIT_CIRCUITS),
+    battleChronicleIds: idsFrom(SPIRIT_BATTLE_CHRONICLES)
   },
   roleplay: {
     questChainIds: idsFrom(MOCHI_SPIRIT_QUESTS),

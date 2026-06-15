@@ -1169,6 +1169,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['battleChronicles: true', "'battle.battle_chronicle'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
   },
   {
@@ -1202,6 +1206,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/manifest.ts',
     includes: ['SPIRIT_ROUTE_CHARTERS', 'routeCharterIds']
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['SPIRIT_BATTLE_CHRONICLES', 'battleChronicleIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1350,6 +1358,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_SUMMIT_CIRCUITS', 'resolveSpiritSummitCircuit', 'data-alpha-action="battle.summit_circuit"', 'data-summit-circuit-label', 'summitCircuitProof', 'summitCircuitLaurelClaimed', 'Jade Summit Circuit']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_BATTLE_CHRONICLES', 'resolveSpiritBattleChronicle', 'data-alpha-action="battle.battle_chronicle"', 'data-battle-chronicle-label', 'battleChronicleProof', 'battleChronicleSealClaimed', 'Jade Battle Chronicle']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -1532,6 +1544,10 @@ const checks = [
     includes: ['SPIRIT_SUMMIT_CIRCUITS', 'resolveSpiritSummitCircuit', 'Jade Summit Circuit', 'jade-summit-circuit-laurel', 'battle-summit-circuit', 'summitCircuitProof']
   },
   {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_BATTLE_CHRONICLES', 'resolveSpiritBattleChronicle', 'Jade Battle Chronicle', 'jade-battle-chronicle-seal', 'battle-chronicle', 'battleChronicleProof']
+  },
+  {
     file: 'scripts/check-alpha-browser-bridge-auth.mjs',
     includes: ['Mochi Social browser bridge auth check passed', 'payload.accessToken', 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'postToParent(BRIDGE_EVENTS.authState', 'refreshToken', 'SUPABASE_SERVICE_ROLE_KEY', 'ENJIN_PLATFORM_TOKEN']
   },
@@ -1661,6 +1677,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['battleChronicles: true', 'battle.battle_chronicle', 'battleChronicleIds']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
   },
   {
@@ -1766,6 +1786,10 @@ const checks = [
   {
     file: 'apps/game/tests/manifest.test.ts',
     includes: ['summitCircuits: true']
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['battleChronicles: true', 'battleChronicleIds']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
@@ -1914,6 +1938,10 @@ const checks = [
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['battle.summit_circuit', 'jade-summit-circuit', 'summitCircuits === true', 'summitCircuitProof', 'jade-summit-circuit-laurel']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['battle.battle_chronicle', 'jade-battle-chronicle', 'battleChronicles === true', 'battleChronicle', 'jade-battle-chronicle-seal']
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
@@ -2090,6 +2118,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="battle.summit_circuit"', 'data-summit-circuit-label', 'summitCircuitProof', 'summitCircuitLaurelClaimed', 'Jade Summit Circuit cleared']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="battle.battle_chronicle"', 'data-battle-chronicle-label', 'battleChronicleProof', 'battleChronicleSealClaimed', 'Jade Battle Chronicle recorded']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',

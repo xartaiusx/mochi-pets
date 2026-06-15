@@ -77,6 +77,7 @@ const ALPHA_FEATURES = {
     dojoLadders: true,
     sifuCouncils: true,
     summitCircuits: true,
+    battleChronicles: true,
     spiritTournamentBrackets: true,
     spiritRivalCircles: true,
     spiritStoryChapters: true,
@@ -178,7 +179,8 @@ const PLAYABLE_CONTENT_CATALOG = {
     tournamentBracketIds: ['jade-banner-tournament'],
     rivalCircleIds: ['jade-rival-circle'],
     sifuCouncilIds: ['jade-sifu-council'],
-    summitCircuitIds: ['jade-summit-circuit']
+    summitCircuitIds: ['jade-summit-circuit'],
+    battleChronicleIds: ['jade-battle-chronicle']
   },
   roleplay: {
           questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
@@ -457,6 +459,7 @@ const ALPHA_ACTION_TYPES = [
   'battle.dojo_ladder',
   'battle.sifu_council',
   'battle.summit_circuit',
+  'battle.battle_chronicle',
   'battle.tournament_bracket',
   'battle.rival_circle',
   'story.chapter_complete',

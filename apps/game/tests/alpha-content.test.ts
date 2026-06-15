@@ -16,6 +16,7 @@ import {
   SPIRIT_CARE_CYCLES,
   SPIRIT_CAPTURE_RITES,
   SPIRIT_AFFINITY_MATRICES,
+  SPIRIT_BATTLE_CHRONICLES,
   SPIRIT_BATTLE_KITS,
   SPIRIT_CRAFT_WRITS,
   SPIRIT_DOJO_LADDERS,
@@ -66,6 +67,7 @@ import {
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleChronicle,
   resolveSpiritBattleKit,
   resolveSpiritBattleRound,
   resolveSpiritBlossomCradle,
@@ -2522,6 +2524,7 @@ describe('Mochi Spirits alpha content contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -2594,6 +2597,7 @@ describe('Mochi Spirits alpha content contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       battleRoundProof: true,
@@ -2612,7 +2616,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 170,
+      score: 173,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2648,6 +2652,7 @@ describe('Mochi Spirits alpha content contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2705,6 +2710,7 @@ describe('Mochi Spirits alpha content contract', () => {
       tournamentProof: true,
       sifuCouncilProof: true,
       summitCircuitProof: true,
+      battleChronicleProof: true,
       storyChapterProof: true,
       insigniaCaseProof: true,
       rivalCircleProof: true,
@@ -2732,7 +2738,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 132,
+      score: 135,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
@@ -3528,6 +3534,101 @@ describe('Mochi Spirits alpha content contract', () => {
       source: 'battle-summit-circuit'
     });
     expect(summitCircuit.message).toContain('No real value');
+
+    expect(SPIRIT_BATTLE_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-battle-chronicle']);
+    const blockedBattleChronicle = resolveSpiritBattleChronicle({
+      partyIds: fullRoster,
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: true,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      summitCircuitProof: false,
+      summitCircuitId: 'jade-summit-circuit',
+      summitCircuitScore: summitCircuit.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      remedyPouchProof: true,
+      remedyPouchId: 'jade-remedy-pouch',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle chronicle ready.']
+    });
+    expect(blockedBattleChronicle).toMatchObject({
+      chronicled: false,
+      chronicleId: 'jade-battle-chronicle',
+      missing: ['battle-proof:jade-summit-circuit', 'summit:jade-summit-circuit']
+    });
+
+    const battleChronicle = resolveSpiritBattleChronicle({
+      partyIds: fullRoster,
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council', 'jade-summit-circuit'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: true,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      summitCircuitProof: true,
+      summitCircuitId: 'jade-summit-circuit',
+      summitCircuitScore: summitCircuit.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      remedyPouchProof: true,
+      remedyPouchId: 'jade-remedy-pouch',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: battleRound.focusScore,
+      battleRoundOpponentScore: battleRound.opponentScore,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle chronicle ready.']
+    });
+    expect(battleChronicle).toMatchObject({
+      chronicled: true,
+      chronicleId: 'jade-battle-chronicle',
+      chronicleName: 'Jade Battle Chronicle',
+      title: 'First No-Injury Battle Chronicle',
+      archivistName: 'Archivist Lianhua',
+      partyIds: [...fullRoster],
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council', 'jade-summit-circuit'],
+      localPresenceCount: 2,
+      score: 90,
+      requiredScore: 72,
+      rewardItemId: ALPHA_ITEMS.battleChronicleSeal.id,
+      source: 'battle-chronicle'
+    });
+    expect(battleChronicle.message).toContain('No real value');
 
     expect(growthStageFromBond(2)).toBe('seed');
     expect(growthStageFromBond(3)).toBe('sprout');

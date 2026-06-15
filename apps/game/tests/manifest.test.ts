@@ -99,6 +99,7 @@ describe('game manifest', () => {
         spiritTournamentBrackets: true,
         sifuCouncils: true,
         summitCircuits: true,
+        battleChronicles: true,
         battleRoundTranscripts: true,
         conditionWeaves: true,
         fieldExpeditions: true,
@@ -259,7 +260,8 @@ describe('game manifest', () => {
           tournamentBracketIds: ['jade-banner-tournament'],
           rivalCircleIds: ['jade-rival-circle'],
           sifuCouncilIds: ['jade-sifu-council'],
-          summitCircuitIds: ['jade-summit-circuit']
+          summitCircuitIds: ['jade-summit-circuit'],
+          battleChronicleIds: ['jade-battle-chronicle']
         },
         roleplay: {
           questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],

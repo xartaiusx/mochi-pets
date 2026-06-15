@@ -14,6 +14,7 @@ import {
   MOCHI_SPIRITS,
   SPIRIT_AFFINITY_MATRICES,
   SPIRIT_AFFINITY_TRIALS,
+  SPIRIT_BATTLE_CHRONICLES,
   SPIRIT_BATTLE_KITS,
   SPIRIT_BLOOM_ASCENDANCES,
   SPIRIT_BOND_GIFT_RITES,
@@ -77,6 +78,7 @@ import {
   resolveSpiritAttunement,
   resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
+  resolveSpiritBattleChronicle,
   resolveSpiritBattleKit,
   resolveSpiritBattleRound,
   resolveSpiritBattleTactic,
@@ -673,6 +675,15 @@ interface AlphaHudState {
   summitCircuitPartyIds: string[];
   summitCircuitSealIds: string[];
   summitCircuitLaurelClaimed: boolean;
+  battleChronicleProof: boolean;
+  battleChronicleId?: string;
+  battleChronicleName: string;
+  battleChronicleScore: number;
+  battleChronicleRequiredScore: number;
+  battleChroniclePartyIds: string[];
+  battleChronicleProofIds: string[];
+  battleChroniclePresenceCount: number;
+  battleChronicleSealClaimed: boolean;
   tournamentProof: boolean;
   tournamentId?: string;
   tournamentName: string;
@@ -1194,6 +1205,20 @@ export interface AlphaWorldStatePatch {
     summitSealIds: string[];
     title: string;
   };
+  battleChronicle?: {
+    archivistName: string;
+    battleProofIds: string[];
+    chronicleId: string;
+    chronicleName: string;
+    localPresenceCount: number;
+    message?: string;
+    partyIds: string[];
+    proof: boolean;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   spirit?: {
     bond: number;
     growth: string;
@@ -1712,6 +1737,14 @@ function defaultAlphaState(): AlphaHudState {
     summitCircuitPartyIds: [],
     summitCircuitSealIds: [],
     summitCircuitLaurelClaimed: false,
+    battleChronicleProof: false,
+    battleChronicleName: 'Pending',
+    battleChronicleScore: 0,
+    battleChronicleRequiredScore: 0,
+    battleChroniclePartyIds: [],
+    battleChronicleProofIds: [],
+    battleChroniclePresenceCount: 1,
+    battleChronicleSealClaimed: false,
     tournamentProof: false,
     tournamentName: 'Pending',
     tournamentScore: 0,
@@ -2018,6 +2051,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-rival-circle-label>Rival: pending</span>
       <span class="mochi-hud__hint" data-sifu-council-label>Sifu Council: pending</span>
       <span class="mochi-hud__hint" data-summit-circuit-label>Summit: pending</span>
+      <span class="mochi-hud__hint" data-battle-chronicle-label>Battle Chronicle: pending</span>
       <span class="mochi-hud__hint" data-training-label>Attune, train, raise, and quest. Canary remains preview stub.</span>
       <span class="mochi-hud__hint" data-battle-round-label>Battle Round: pending</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
@@ -2042,6 +2076,7 @@ function createHud() {
       <button type="button" data-alpha-action="battle.rival_circle" aria-label="Clear the no-injury Jade Rival Circle">Rival</button>
       <button type="button" data-alpha-action="battle.sifu_council" aria-label="Clear the no-injury Jade Sifu Council">Council</button>
       <button type="button" data-alpha-action="battle.summit_circuit" aria-label="Clear the no-injury Jade Summit Circuit">Summit</button>
+      <button type="button" data-alpha-action="battle.battle_chronicle" aria-label="Record the no-real-value Jade Battle Chronicle">Chronicle+</button>
       <button type="button" data-alpha-action="spirit.care" aria-label="Care for active Mochi Spirit">Care</button>
       <button type="button" data-alpha-action="spirit.journal" aria-label="Open the Mochirii spirit journal">Journal</button>
       <button type="button" data-alpha-action="spirit.habitat_bond" aria-label="Record a shared Mochi Spirit habitat bond">Habitat</button>
@@ -2200,6 +2235,7 @@ function createHud() {
   const tournamentLabel = hud.querySelector('[data-tournament-label]');
   const rivalCircleLabel = hud.querySelector('[data-rival-circle-label]');
   const trainingLabel = hud.querySelector('[data-training-label]');
+  const battleChronicleLabel = hud.querySelector('[data-battle-chronicle-label]');
   const battleRoundLabel = hud.querySelector('[data-battle-round-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
@@ -2547,6 +2583,11 @@ function createHud() {
       summitCircuitLabel.textContent = state.summitCircuitProof
         ? `Summit: ${state.summitCircuitName}, ${state.summitCircuitSealIds.length} seals, score ${state.summitCircuitScore}/${state.summitCircuitRequiredScore}`
         : 'Summit: pending';
+    }
+    if (battleChronicleLabel) {
+      battleChronicleLabel.textContent = state.battleChronicleProof
+        ? `Battle Chronicle: ${state.battleChronicleName}, ${state.battleChronicleProofIds.length}/${SPIRIT_BATTLE_CHRONICLES[0].requiredSpiritIds.length + 2} proofs, score ${state.battleChronicleScore}/${state.battleChronicleRequiredScore}`
+        : 'Battle Chronicle: pending';
     }
     if (tournamentLabel) {
       tournamentLabel.textContent = state.tournamentProof
@@ -2915,6 +2956,8 @@ function readAlphaState(): AlphaHudState {
       sifuCouncilMemberIds: Array.isArray(parsed?.sifuCouncilMemberIds) ? parsed.sifuCouncilMemberIds.map(String) : [],
       summitCircuitPartyIds: Array.isArray(parsed?.summitCircuitPartyIds) ? parsed.summitCircuitPartyIds.map(String) : [],
       summitCircuitSealIds: Array.isArray(parsed?.summitCircuitSealIds) ? parsed.summitCircuitSealIds.map(String) : [],
+      battleChroniclePartyIds: Array.isArray(parsed?.battleChroniclePartyIds) ? parsed.battleChroniclePartyIds.map(String) : [],
+      battleChronicleProofIds: Array.isArray(parsed?.battleChronicleProofIds) ? parsed.battleChronicleProofIds.map(String) : [],
       tournamentPartyIds: Array.isArray(parsed?.tournamentPartyIds) ? parsed.tournamentPartyIds.map(String) : [],
       rivalCirclePartyIds: Array.isArray(parsed?.rivalCirclePartyIds) ? parsed.rivalCirclePartyIds.map(String) : [],
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
@@ -3638,6 +3681,22 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.supportSpiritIds = state.partyIds.slice(1);
     state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.summitCircuit.localPresenceCount) || 1);
     appendUniqueAlphaChat(state, patch.summitCircuit.message || `${state.summitCircuitName} recorded as no-real-value summit circuit proof.`);
+  }
+
+  if (patch.battleChronicle) {
+    state.battleChronicleProof = patch.battleChronicle.proof || state.battleChronicleProof;
+    state.battleChronicleId = patch.battleChronicle.chronicleId || state.battleChronicleId;
+    state.battleChronicleName = patch.battleChronicle.chronicleName || state.battleChronicleName;
+    state.battleChronicleScore = Math.max(state.battleChronicleScore, Number(patch.battleChronicle.score) || 0);
+    state.battleChronicleRequiredScore = Math.max(state.battleChronicleRequiredScore, Number(patch.battleChronicle.requiredScore) || 0);
+    state.battleChroniclePartyIds = Array.isArray(patch.battleChronicle.partyIds) ? patch.battleChronicle.partyIds.map(String) : state.battleChroniclePartyIds;
+    state.battleChronicleProofIds = Array.isArray(patch.battleChronicle.battleProofIds) ? patch.battleChronicle.battleProofIds.map(String) : state.battleChronicleProofIds;
+    state.battleChroniclePresenceCount = Math.max(state.battleChroniclePresenceCount, Number(patch.battleChronicle.localPresenceCount) || 1);
+    state.battleChronicleSealClaimed = state.battleChronicleSealClaimed || patch.battleChronicle.rewardItemId === 'jade-battle-chronicle-seal';
+    state.partyIds = Array.from(new Set([...(state.partyIds || []), ...state.battleChroniclePartyIds]));
+    state.supportSpiritIds = state.partyIds.slice(1);
+    state.rallyPresenceCount = Math.max(state.rallyPresenceCount, state.battleChroniclePresenceCount);
+    appendUniqueAlphaChat(state, patch.battleChronicle.message || `${state.battleChronicleName} recorded as no-real-value battle chronicle proof.`);
   }
 
   if (patch.training) {
@@ -4953,6 +5012,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       dojoLadderProof: state.dojoLadderProof,
       sifuCouncilProof: state.sifuCouncilProof,
       summitCircuitProof: state.summitCircuitProof,
+      battleChronicleProof: state.battleChronicleProof,
       tournamentProof: state.tournamentProof,
       battleRoundProof: state.battleRoundProof,
       battleRoundVictory: state.battleRoundVictory,
@@ -4995,6 +5055,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       dojoLadderProof: state.dojoLadderProof,
       sifuCouncilProof: state.sifuCouncilProof,
       summitCircuitProof: state.summitCircuitProof,
+      battleChronicleProof: state.battleChronicleProof,
       battleRoundProof: state.battleRoundProof,
       battleRoundVictory: state.battleRoundVictory,
       battleRoundFocusScore: state.battleRoundFocusScore,
@@ -5438,6 +5499,55 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       guildRankProof: state.guildRankProof,
       growthRiteProof: state.growthRiteProof,
       routePatrolProof: state.routePatrolProof,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
+  if (type === 'battle.battle_chronicle') {
+    const chronicle = SPIRIT_BATTLE_CHRONICLES[0];
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    const partyIds = state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3);
+    return {
+      chronicleId: chronicle.id,
+      partyIds,
+      battleProofIds: [
+        state.dojoLadderId || chronicle.requiredDojoLadderId,
+        state.tournamentId || chronicle.requiredTournamentBracketId,
+        state.rivalCircleId || chronicle.requiredRivalCircleId,
+        state.sifuCouncilId || chronicle.requiredSifuCouncilId,
+        state.summitCircuitId || chronicle.requiredSummitCircuitId
+      ],
+      dojoLadderProof: state.dojoLadderProof,
+      dojoLadderId: state.dojoLadderId,
+      dojoLadderScore: state.dojoLadderScore,
+      tournamentProof: state.tournamentProof,
+      tournamentId: state.tournamentId,
+      tournamentScore: state.tournamentScore,
+      rivalCircleProof: state.rivalCircleProof,
+      rivalCircleId: state.rivalCircleId,
+      rivalCircleScore: state.rivalCircleScore,
+      sifuCouncilProof: state.sifuCouncilProof,
+      sifuCouncilId: state.sifuCouncilId,
+      sifuCouncilScore: state.sifuCouncilScore,
+      summitCircuitProof: state.summitCircuitProof,
+      summitCircuitId: state.summitCircuitId,
+      summitCircuitScore: state.summitCircuitScore,
+      techniqueCodexProof: state.techniqueCodexProof,
+      techniqueCodexId: state.techniqueCodexId,
+      conditionWeaveProof: state.conditionWeaveProof,
+      conditionWeaveId: state.conditionWeaveId,
+      affinityMatrixProof: state.affinityMatrixProof,
+      affinityMatrixId: state.affinityMatrixId,
+      remedyPouchProof: state.remedyPouchProof,
+      remedyPouchId: state.remedyPouchId,
+      battleRoundProof: state.battleRoundProof,
+      battleRoundVictory: state.battleRoundVictory,
+      battleRoundFocusScore: state.battleRoundFocusScore,
+      battleRoundOpponentScore: state.battleRoundOpponentScore,
       localPresenceCount: presenceCount,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
@@ -7460,6 +7570,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
         sifuCouncilProof: Boolean(payload.sifuCouncilProof ?? state.sifuCouncilProof),
         summitCircuitProof: Boolean(payload.summitCircuitProof ?? state.summitCircuitProof),
+        battleChronicleProof: Boolean(payload.battleChronicleProof ?? state.battleChronicleProof),
         tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
         battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
@@ -7518,6 +7629,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
         sifuCouncilProof: Boolean(payload.sifuCouncilProof ?? state.sifuCouncilProof),
         summitCircuitProof: Boolean(payload.summitCircuitProof ?? state.summitCircuitProof),
+        battleChronicleProof: Boolean(payload.battleChronicleProof ?? state.battleChronicleProof),
         battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
         battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
         battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
@@ -8333,6 +8445,65 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.summitCircuitPartyIds = result.partyIds;
       state.summitCircuitSealIds = result.summitSealIds;
       state.summitCircuitLaurelClaimed = result.rewardItemId === 'jade-summit-circuit-laurel';
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0];
+      state.spiritId = result.partyIds[0] || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
+  if (type === 'battle.battle_chronicle') {
+    const result = resolveSpiritBattleChronicle(
+      {
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds,
+        battleProofIds: Array.isArray(payload.battleProofIds) ? payload.battleProofIds.map(String) : state.battleChronicleProofIds,
+        dojoLadderProof: Boolean(payload.dojoLadderProof ?? state.dojoLadderProof),
+        dojoLadderId: String(payload.dojoLadderId || state.dojoLadderId || ''),
+        dojoLadderScore: Number(payload.dojoLadderScore ?? state.dojoLadderScore ?? 0),
+        tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
+        tournamentId: String(payload.tournamentId || state.tournamentId || ''),
+        tournamentScore: Number(payload.tournamentScore ?? state.tournamentScore ?? 0),
+        rivalCircleProof: Boolean(payload.rivalCircleProof ?? state.rivalCircleProof),
+        rivalCircleId: String(payload.rivalCircleId || state.rivalCircleId || ''),
+        rivalCircleScore: Number(payload.rivalCircleScore ?? state.rivalCircleScore ?? 0),
+        sifuCouncilProof: Boolean(payload.sifuCouncilProof ?? state.sifuCouncilProof),
+        sifuCouncilId: String(payload.sifuCouncilId || state.sifuCouncilId || ''),
+        sifuCouncilScore: Number(payload.sifuCouncilScore ?? state.sifuCouncilScore ?? 0),
+        summitCircuitProof: Boolean(payload.summitCircuitProof ?? state.summitCircuitProof),
+        summitCircuitId: String(payload.summitCircuitId || state.summitCircuitId || ''),
+        summitCircuitScore: Number(payload.summitCircuitScore ?? state.summitCircuitScore ?? 0),
+        techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),
+        techniqueCodexId: String(payload.techniqueCodexId || state.techniqueCodexId || ''),
+        conditionWeaveProof: Boolean(payload.conditionWeaveProof ?? state.conditionWeaveProof),
+        conditionWeaveId: String(payload.conditionWeaveId || state.conditionWeaveId || ''),
+        affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
+        affinityMatrixId: String(payload.affinityMatrixId || state.affinityMatrixId || ''),
+        remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
+        remedyPouchId: String(payload.remedyPouchId || state.remedyPouchId || ''),
+        battleRoundProof: Boolean(payload.battleRoundProof ?? state.battleRoundProof),
+        battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
+        battleRoundFocusScore: Number(payload.battleRoundFocusScore ?? state.battleRoundFocusScore ?? 0),
+        battleRoundOpponentScore: Number(payload.battleRoundOpponentScore ?? state.battleRoundOpponentScore ?? 0),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.chronicleId || SPIRIT_BATTLE_CHRONICLES[0].id)
+    );
+    if (result.chronicled) {
+      state.battleChronicleProof = true;
+      state.battleChronicleId = result.chronicleId;
+      state.battleChronicleName = result.chronicleName;
+      state.battleChronicleScore = result.score;
+      state.battleChronicleRequiredScore = result.requiredScore;
+      state.battleChroniclePartyIds = result.partyIds;
+      state.battleChronicleProofIds = result.battleProofIds;
+      state.battleChroniclePresenceCount = result.localPresenceCount;
+      state.battleChronicleSealClaimed = result.rewardItemId === 'jade-battle-chronicle-seal';
       state.partyIds = result.partyIds;
       state.supportSpiritIds = result.partyIds.slice(1);
       state.activePartyId = result.partyIds[0];
