@@ -980,6 +980,42 @@ const checks = [
     includes: ['exchange-accord', 'record the Jade Exchange Accord proof']
   },
   {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['world.route_charter', 'Jade Route Charter', 'routeCharterProof', 'Jade Route Charter Slip']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Route Charter proof', 'Jade Route Charter Slip', 'no-real-value']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Route Charter proof', 'world.route_charter', 'routeCharterProof']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Route Charter proof', 'route charter', 'content-only']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Route Charter', 'Jade Route Charter Slip', 'content-only route charter proof']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Route Charter', 'Jade Route Charter Slip', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Route Charter', 'Jade Route Charter Slip', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['route-charter', 'record the Jade Route Charter proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Route Charter proof', 'world.route_charter', 'routeCharterProof']
+  },
+  {
     file: 'docs/site-integration.md',
     includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
   },
@@ -1065,6 +1101,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['routeCharters: true', "'world.route_charter'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritNurtureRites: true', "'spirit.nurture_rite'"]
   },
   {
@@ -1134,6 +1174,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/manifest.ts',
     includes: ['SPIRIT_BLOSSOM_CRADLES', 'blossomCradleIds']
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['SPIRIT_ROUTE_CHARTERS', 'routeCharterIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1230,6 +1274,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_ROUTE_WAYSTONES', 'resolveSpiritRouteWaystone', 'data-alpha-action="world.route_waystone"', 'data-route-waystone-label', 'routeWaystoneProof', 'routeWaystoneSealClaimed', 'Jade Cloudbell Waystone']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_ROUTE_CHARTERS', 'resolveSpiritRouteCharter', 'data-alpha-action="world.route_charter"', 'data-route-charter-label', 'routeCharterProof', 'routeCharterSlipClaimed', 'Jade Route Charter']
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
@@ -1381,6 +1429,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_ROUTE_CHARTERS', 'Jade Route Charter', 'jade-route-charter-slip', 'resolveSpiritRouteCharter', 'world-route-charter', 'routeCharterProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
     includes: ['Jade Moonwell Nurture Rite', 'jade-moonwell-nurture-ribbon', 'resolveSpiritNurtureRite', 'spirit-nurture-rite', 'nurtureRiteProof']
   },
   {
@@ -1501,6 +1553,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/entries/express.ts',
+    includes: ['routeCharters: true', 'world.route_charter', 'routeCharterIds']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
     includes: ['spiritNurtureRites: true', 'spirit.nurture_rite']
   },
   {
@@ -1592,12 +1648,24 @@ const checks = [
     includes: ['spiritBlossomCradles: true', "blossomCradleIds: ['jade-blossom-cradle']"]
   },
   {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: ['routeCharters: true', "routeCharterIds: ['jade-route-charter']"]
+  },
+  {
     file: 'apps/game/tests/alpha-content.test.ts',
     includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'jade-blossom-cradle-ribbon', 'blossomCradleProof']
   },
   {
     file: 'apps/game/tests/alpha-contract.test.ts',
     includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'spirit.blossom_cradle', 'blossomCradleProof']
+  },
+  {
+    file: 'apps/game/tests/alpha-content.test.ts',
+    includes: ['SPIRIT_ROUTE_CHARTERS', 'resolveSpiritRouteCharter', 'jade-route-charter-slip', 'routeCharterProof']
+  },
+  {
+    file: 'apps/game/tests/alpha-contract.test.ts',
+    includes: ['SPIRIT_ROUTE_CHARTERS', 'resolveSpiritRouteCharter', 'world.route_charter', 'routeCharterProof']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
@@ -1705,6 +1773,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['world.route_charter', 'jade-route-charter', 'routeCharters', 'Jade Route Charter', 'routeCharterProof', 'jade-route-charter-slip']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['spirit.nurture_rite', 'jade-moonwell-nurture-rite', 'spiritNurtureRites', 'Jade Moonwell Nurture Rite', 'nurtureRiteProof']
   },
   {
@@ -1793,6 +1865,10 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: ['routeCharterIds', 'jade-route-charter']
+  },
+  {
+    file: 'scripts/check-alpha-load-smoke.mjs',
     includes: ['blossomCradleIds', 'jade-blossom-cradle']
   },
   {
@@ -1870,6 +1946,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="world.route_waystone"', 'data-route-waystone-label', 'routeWaystoneProof', 'routeWaystoneSealClaimed', 'Jade Cloudbell Waystone activated']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="world.route_charter"', 'data-route-charter-label', 'routeCharterProof', 'routeCharterSlipClaimed', 'Jade Route Charter recorded']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -2054,6 +2134,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['routeWaystoneProof', 'routeWaystoneSealClaimed', 'Jade Cloudbell Waystone', 'jade-waystone-travel-seal', 'world-route-waystone', 'route waystone']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['routeCharterProof', 'routeCharterSlipClaimed', 'Jade Route Charter', 'jade-route-charter-slip', 'world-route-charter', 'route charter']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',

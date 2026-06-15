@@ -79,6 +79,7 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, lineage register, and blossom cradle IDs
 - `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
 - `playableContent.roleplay` catalogs the three-posting quest chain, quest ledger, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
+- `playableContent.roleplay` catalogs first-court quest, guild, habitat, story, census, waystone, and Jade Route Charter route-travel proof IDs for website readiness copy.
 - `playableContent.economyAndCanary` catalogs no-real-value provision, craft, market receipt, direct exchange accord, relic attunement, Lirabao Canary certificate preview, and Canary request/return action types
 - `playableContent.runtimeAssets` mirrors the 64px tile and 384x768 spritesheet runtime asset contract
 - `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`

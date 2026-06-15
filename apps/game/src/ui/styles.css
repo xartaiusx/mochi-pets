@@ -253,10 +253,14 @@ body::before {
 .mochi-hud__actions {
   left: 50%;
   bottom: 12px;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(9, minmax(62px, 1fr));
   gap: 6px;
   width: min(820px, calc(100vw - 24px));
+  max-height: clamp(160px, calc(100vh - 480px), 240px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px;
   transform: translateX(-50%);
 }
@@ -271,6 +275,7 @@ body::before {
 .mochi-hud__feed-panel {
   right: 12px;
   top: 82px;
+  z-index: 1;
   display: grid;
   gap: 8px;
   width: min(340px, calc(100vw - 24px));
@@ -357,6 +362,7 @@ body::before {
 
   .mochi-hud__actions {
     grid-template-columns: repeat(3, minmax(72px, 1fr));
+    max-height: clamp(160px, calc(100vh - 360px), 220px);
   }
 }
 
@@ -392,5 +398,6 @@ body::before {
   .mochi-hud__actions {
     bottom: 8px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: clamp(160px, calc(100vh - 360px), 220px);
   }
 }

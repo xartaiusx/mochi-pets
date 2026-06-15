@@ -60,6 +60,7 @@ const ALPHA_FEATURES = {
     spiritCraftWrits: true,
     tradeExchangeAccords: true,
     routeWaystones: true,
+    routeCharters: true,
     spiritNurtureRites: true,
     spiritRecoveryTeas: true,
     spiritKinshipAlbums: true,
@@ -195,7 +196,8 @@ const PLAYABLE_CONTENT_CATALOG = {
     encounterRotationIds: ['jade-encounter-rotation'],
     encounterAtlasIds: ['jade-encounter-atlas'],
     habitatCensusIds: ['jade-habitat-census'],
-    routeWaystoneIds: ['jade-cloudbell-waystone']
+    routeWaystoneIds: ['jade-cloudbell-waystone'],
+    routeCharterIds: ['jade-route-charter']
   },
   economyAndCanary: {
     provisionSatchelIds: ['jade-court-provision-satchel'],
@@ -405,6 +407,7 @@ const ALPHA_ACTION_TYPES = [
   'spirit.habitat_census',
   'item.craft_writ',
   'world.route_waystone',
+  'world.route_charter',
   'spirit.nurture_rite',
   'spirit.recovery_tea',
   'spirit.kinship_album',

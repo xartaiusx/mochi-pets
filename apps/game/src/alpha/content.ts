@@ -1667,6 +1667,76 @@ export interface SpiritRouteWaystoneResult {
   source: string;
 }
 
+export interface SpiritRouteCharter {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredRouteIds: readonly string[];
+  requiredPartySize: number;
+  requiredRouteMasteryId: string;
+  requiredRoutePatrolId: string;
+  requiredRouteWaystoneId: string;
+  requiredRouteEcologyId: string;
+  requiredWeatherVeilId: string;
+  requiredEncounterAtlasId: string;
+  requiredHabitatCensusId: string;
+  requiredProvisionSatchelId: string;
+  requiredCraftWritId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritRouteCharterProgress {
+  discoveredRoutes: readonly string[];
+  partyIds: readonly string[];
+  routeMasteryProof: boolean;
+  routeMasteryId?: string;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  routeWaystoneProof: boolean;
+  routeWaystoneId?: string;
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  weatherVeilProof: boolean;
+  weatherVeilId?: string;
+  encounterAtlasProof: boolean;
+  encounterAtlasId?: string;
+  habitatCensusProof: boolean;
+  habitatCensusId?: string;
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  craftWritProof: boolean;
+  craftWritId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritRouteCharterResult {
+  ok: boolean;
+  charted: boolean;
+  charterId: string;
+  charterName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  routeIds: string[];
+  partyIds: string[];
+  proofIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritNurtureRite {
   id: string;
   name: string;
@@ -2384,6 +2454,7 @@ export interface GuildWayfarerChronicleProgress {
   blossomCradleProof: boolean;
   craftWritProof: boolean;
   routeWaystoneProof: boolean;
+  routeCharterProof: boolean;
   nurtureRiteProof: boolean;
   kinshipAlbumProof: boolean;
   nurseryGroveProof: boolean;
@@ -2471,6 +2542,7 @@ export interface GuildAscensionTrialProgress {
   questLedgerProof: boolean;
   rosterCabinetProof: boolean;
   blossomCradleProof: boolean;
+  routeCharterProof: boolean;
   affinityMatrixProof: boolean;
   techniqueCodexProof: boolean;
   relicAttunementProof: boolean;
@@ -4119,6 +4191,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Waystone Travel Seal',
     description: 'A no-real-value route navigation proof for closed-alpha Mochirii Moonbridge and Cloudbell travel.'
   },
+  routeCharterSlip: {
+    id: 'jade-route-charter-slip',
+    name: 'Jade Route Charter Slip',
+    description: 'A no-real-value route charter proof for closed-alpha Mochirii travel readiness, route records, party safety, provisions, and guild witness.'
+  },
   nurtureRibbon: {
     id: 'jade-moonwell-nurture-ribbon',
     name: 'Jade Moonwell Nurture Ribbon',
@@ -4957,6 +5034,31 @@ export const SPIRIT_ROUTE_WAYSTONES: readonly SpiritRouteWaystone[] = [
     requiredScore: 30,
     rewardItemId: ALPHA_ITEMS.waystoneSeal.id,
     summary: 'A no-real-value first route navigation proof for testers who connect Moonbridge, Cloudbell, route spirits, patrol safety, ecology, and crafted travel supplies.'
+  }
+];
+
+export const SPIRIT_ROUTE_CHARTERS: readonly SpiritRouteCharter[] = [
+  {
+    id: 'jade-route-charter',
+    name: 'Jade Route Charter',
+    title: 'First-Court Travel Readiness',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredPartySize: MOCHI_SPIRIT_PARTY_LIMIT,
+    requiredRouteMasteryId: SPIRIT_ROUTE_MASTERIES[0].id,
+    requiredRoutePatrolId: SPIRIT_ROUTE_PATROLS[0].id,
+    requiredRouteWaystoneId: SPIRIT_ROUTE_WAYSTONES[0].id,
+    requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+    requiredWeatherVeilId: SPIRIT_WEATHER_VEILS[0].id,
+    requiredEncounterAtlasId: SPIRIT_ENCOUNTER_ATLASES[0].id,
+    requiredHabitatCensusId: SPIRIT_HABITAT_CENSUSES[0].id,
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredCraftWritId: SPIRIT_CRAFT_WRITS[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 40,
+    rewardItemId: ALPHA_ITEMS.routeCharterSlip.id,
+    summary: 'A no-real-value route charter proof for testers who connect Moonbridge and Cloudbell travel, party safety, route records, waystone access, provisions, craft supplies, and guild witness.'
   }
 ];
 
@@ -7984,6 +8086,112 @@ export function resolveSpiritRouteWaystone(
   };
 }
 
+export function resolveSpiritRouteCharter(
+  progress: SpiritRouteCharterProgress,
+  charterId: string = SPIRIT_ROUTE_CHARTERS[0].id
+): SpiritRouteCharterResult {
+  const charter = SPIRIT_ROUTE_CHARTERS.find((entry) => entry.id === charterId) || SPIRIT_ROUTE_CHARTERS[0];
+  const requiredRouteIds = new Set(charter.requiredRouteIds);
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const partyIds = Array.from(new Set(progress.partyIds.filter(Boolean))).filter((spiritId) => Boolean(getMochiSpirit(spiritId))).slice(0, charter.requiredPartySize);
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const routeId of charter.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) missing.push(`route:${routeId}`);
+  }
+  if (partyIds.length < charter.requiredPartySize) missing.push(`party:${partyIds.length}/${charter.requiredPartySize}`);
+
+  const routeMasteryReady = progress.routeMasteryProof && progress.routeMasteryId === charter.requiredRouteMasteryId;
+  if (!routeMasteryReady) missing.push(`route-mastery:${charter.requiredRouteMasteryId}`);
+
+  const routePatrolReady = progress.routePatrolProof && progress.routePatrolId === charter.requiredRoutePatrolId;
+  if (!routePatrolReady) missing.push(`route-patrol:${charter.requiredRoutePatrolId}`);
+
+  const routeWaystoneReady = progress.routeWaystoneProof && progress.routeWaystoneId === charter.requiredRouteWaystoneId;
+  if (!routeWaystoneReady) missing.push(`route-waystone:${charter.requiredRouteWaystoneId}`);
+
+  const routeEcologyReady = progress.routeEcologyProof && progress.routeEcologyId === charter.requiredRouteEcologyId;
+  if (!routeEcologyReady) missing.push(`route-ecology:${charter.requiredRouteEcologyId}`);
+
+  const weatherVeilReady = progress.weatherVeilProof && progress.weatherVeilId === charter.requiredWeatherVeilId;
+  if (!weatherVeilReady) missing.push(`weather-veil:${charter.requiredWeatherVeilId}`);
+
+  const encounterAtlasReady = progress.encounterAtlasProof && progress.encounterAtlasId === charter.requiredEncounterAtlasId;
+  if (!encounterAtlasReady) missing.push(`encounter-atlas:${charter.requiredEncounterAtlasId}`);
+
+  const habitatCensusReady = progress.habitatCensusProof && progress.habitatCensusId === charter.requiredHabitatCensusId;
+  if (!habitatCensusReady) missing.push(`habitat-census:${charter.requiredHabitatCensusId}`);
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === charter.requiredProvisionSatchelId;
+  if (!provisionReady) missing.push(`provision:${charter.requiredProvisionSatchelId}`);
+
+  const craftReady = progress.craftWritProof && progress.craftWritId === charter.requiredCraftWritId;
+  if (!craftReady) missing.push(`craft-writ:${charter.requiredCraftWritId}`);
+
+  if (localPresenceCount < charter.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${charter.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < charter.requiredChatLines) missing.push(`chat:${chatLines.length}/${charter.requiredChatLines}`);
+
+  const score =
+    Math.min(routeIds.length, charter.requiredRouteIds.length) * 3 +
+    Math.min(partyIds.length, charter.requiredPartySize) * 2 +
+    (routeMasteryReady ? 4 : 0) +
+    (routePatrolReady ? 4 : 0) +
+    (routeWaystoneReady ? 5 : 0) +
+    (routeEcologyReady ? 4 : 0) +
+    (weatherVeilReady ? 4 : 0) +
+    (encounterAtlasReady ? 4 : 0) +
+    (habitatCensusReady ? 4 : 0) +
+    (provisionReady ? 3 : 0) +
+    (craftReady ? 3 : 0) +
+    Math.min(localPresenceCount, charter.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const charted = missing.length === 0 && score >= charter.requiredScore;
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unchartered routes';
+  const partySummary = partyIds.length ? partyIds.map((spiritId) => getMochiSpirit(spiritId)?.name || spiritId).join(', ') : 'unformed party';
+  const proofIds = [
+    progress.routeMasteryId,
+    progress.routePatrolId,
+    progress.routeWaystoneId,
+    progress.routeEcologyId,
+    progress.weatherVeilId,
+    progress.encounterAtlasId,
+    progress.habitatCensusId,
+    progress.provisionSatchelId,
+    progress.craftWritId
+  ].filter((value): value is string => Boolean(value));
+
+  return {
+    ok: true,
+    charted,
+    charterId: charter.id,
+    charterName: charter.name,
+    title: charter.title,
+    habitat: charter.habitat,
+    routeIds,
+    partyIds,
+    proofIds,
+    localPresenceCount,
+    score,
+    requiredScore: charter.requiredScore,
+    missing,
+    rewardItemId: charter.rewardItemId,
+    message: charted
+      ? `${charter.name} recorded: ${partySummary} can travel ${routeSummary} with waystone access, route records, provisions, craft supplies, and two-tester guild witness proof. No real value.`
+      : `${charter.name} needs ${missing.join(', ')} before first-court route travel can be chartered.`,
+    source: 'world-route-charter'
+  };
+}
+
 export function resolveSpiritNurtureRite(
   progress: SpiritNurtureRiteProgress,
   riteId: string = SPIRIT_NURTURE_RITES[0].id
@@ -9411,6 +9619,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.blossomCradleProof) missing.push('blossom-cradle');
   if (!progress.craftWritProof) missing.push('craft-writ');
   if (!progress.routeWaystoneProof) missing.push('route-waystone');
+  if (!progress.routeCharterProof) missing.push('route-charter');
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
   if (!progress.kinshipAlbumProof) missing.push('kinship');
   if (!progress.nurseryGroveProof) missing.push('nursery-grove');
@@ -9473,6 +9682,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.blossomCradleProof ? 3 : 0) +
     (progress.craftWritProof ? 3 : 0) +
     (progress.routeWaystoneProof ? 3 : 0) +
+    (progress.routeCharterProof ? 3 : 0) +
     (progress.nurtureRiteProof ? 3 : 0) +
     (progress.kinshipAlbumProof ? 3 : 0) +
     (progress.nurseryGroveProof ? 3 : 0) +
@@ -9527,7 +9737,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, battle item kit readiness, remedy pouch status care, quest ledger records, roster cabinet organization, blossom cradle continuity, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, battle item kit readiness, remedy pouch status care, quest ledger records, roster cabinet organization, blossom cradle continuity, crafting, market receipt, exchange accords, relic attunement, waystone travel, route charter travel readiness, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -9566,6 +9776,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.questLedgerProof) missing.push('quest-ledger');
   if (!progress.rosterCabinetProof) missing.push('roster-cabinet');
   if (!progress.blossomCradleProof) missing.push('blossom-cradle');
+  if (!progress.routeCharterProof) missing.push('route-charter');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.techniqueCodexProof) missing.push('technique-codex');
   if (!progress.relicAttunementProof) missing.push('relic-attunement');
@@ -9612,6 +9823,7 @@ export function resolveGuildAscensionTrial(
     (progress.questLedgerProof ? 3 : 0) +
     (progress.rosterCabinetProof ? 3 : 0) +
     (progress.blossomCradleProof ? 3 : 0) +
+    (progress.routeCharterProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.techniqueCodexProof ? 3 : 0) +
     (progress.relicAttunementProof ? 3 : 0) +
@@ -9658,7 +9870,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, blossom cradle, technique codex, market receipt, provision catalog, battle kit, remedy pouch, quest ledger, roster cabinet, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, blossom cradle, route charter, technique codex, market receipt, provision catalog, battle kit, remedy pouch, quest ledger, roster cabinet, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

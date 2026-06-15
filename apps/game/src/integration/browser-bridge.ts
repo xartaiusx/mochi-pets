@@ -45,6 +45,7 @@ import {
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
   SPIRIT_ROSTER_CABINETS,
+  SPIRIT_ROUTE_CHARTERS,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROSTER_ARCHIVES,
   SPIRIT_ROUTE_MASTERIES,
@@ -122,6 +123,7 @@ import {
   resolveSpiritRivalCircle,
   resolveSpiritRosterArchive,
   resolveSpiritRosterCabinet,
+  resolveSpiritRouteCharter,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteWaystone,
@@ -155,6 +157,7 @@ const PRESENCE_TAB_KEY = 'mochiSocial.presenceTabId';
 const PRESENCE_STORAGE_PREFIX = 'mochiSocial.presence.';
 const MOVEMENT_STORAGE_PREFIX = 'mochiSocial.movement.';
 const PRESENCE_TTL_MS = 4000;
+const ALPHA_CHAT_HISTORY_LIMIT = 140;
 
 interface AlphaHudState {
   spiritId?: string;
@@ -413,6 +416,16 @@ interface AlphaHudState {
   routeWaystoneRouteIds: string[];
   routeWaystoneInvitedSpiritIds: string[];
   routeWaystoneSealClaimed: boolean;
+  routeCharterProof: boolean;
+  routeCharterId?: string;
+  routeCharterName: string;
+  routeCharterScore: number;
+  routeCharterRequiredScore: number;
+  routeCharterRouteIds: string[];
+  routeCharterPartyIds: string[];
+  routeCharterProofIds: string[];
+  routeCharterPresenceCount: number;
+  routeCharterSlipClaimed: boolean;
   nurtureRiteProof: boolean;
   nurtureRiteId?: string;
   nurtureRiteName: string;
@@ -1430,6 +1443,15 @@ function defaultAlphaState(): AlphaHudState {
     routeWaystoneRouteIds: [],
     routeWaystoneInvitedSpiritIds: [],
     routeWaystoneSealClaimed: false,
+    routeCharterProof: false,
+    routeCharterName: 'Uncharted',
+    routeCharterScore: 0,
+    routeCharterRequiredScore: 0,
+    routeCharterRouteIds: [],
+    routeCharterPartyIds: [],
+    routeCharterProofIds: [],
+    routeCharterPresenceCount: 1,
+    routeCharterSlipClaimed: false,
     nurtureRiteProof: false,
     nurtureRiteName: 'Unsealed',
     nurtureRiteScore: 0,
@@ -1706,7 +1728,7 @@ function applyAuthoritativeAlphaProgress(progress: AlphaProgressSnapshot | null)
 
   const state = {
     ...progress.state,
-    chat: Array.isArray(progress.state.chat) ? progress.state.chat.slice(-80).map(String) : []
+    chat: Array.isArray(progress.state.chat) ? progress.state.chat.slice(-ALPHA_CHAT_HISTORY_LIMIT).map(String) : []
   };
   localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify(state));
   localStorage.setItem(ALPHA_STATE_REVISION_KEY, String(Math.max(0, Math.floor(Number(progress.revision || 0)))));
@@ -1877,6 +1899,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
       <span class="mochi-hud__hint" data-exchange-accord-label>Exchange: pending</span>
       <span class="mochi-hud__hint" data-route-waystone-label>Waystone: pending</span>
+      <span class="mochi-hud__hint" data-route-charter-label>Charter: pending</span>
       <span class="mochi-hud__hint" data-nurture-rite-label>Nurture: pending</span>
       <span class="mochi-hud__hint" data-recovery-tea-label>Recovery: pending</span>
       <span class="mochi-hud__hint" data-kinship-album-label>Kinship: pending</span>
@@ -1951,6 +1974,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.habitat_census" aria-label="Record the no-real-value Jade Habitat Census">Census</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
+      <button type="button" data-alpha-action="world.route_charter" aria-label="Record the no-real-value Jade Route Charter">Charter</button>
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
       <button type="button" data-alpha-action="spirit.recovery_tea" aria-label="Record the no-real-value Jade Teahouse Recovery">Recover</button>
       <button type="button" data-alpha-action="item.provision_catalog" aria-label="Seal the no-real-value Jade Provision Catalog">Catalog</button>
@@ -2048,6 +2072,7 @@ function createHud() {
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
   const exchangeAccordLabel = hud.querySelector('[data-exchange-accord-label]');
   const routeWaystoneLabel = hud.querySelector('[data-route-waystone-label]');
+  const routeCharterLabel = hud.querySelector('[data-route-charter-label]');
   const nurtureRiteLabel = hud.querySelector('[data-nurture-rite-label]');
   const recoveryTeaLabel = hud.querySelector('[data-recovery-tea-label]');
   const kinshipAlbumLabel = hud.querySelector('[data-kinship-album-label]');
@@ -2284,6 +2309,11 @@ function createHud() {
       routeWaystoneLabel.textContent = state.routeWaystoneProof
         ? `Waystone: ${state.routeWaystoneName}, ${state.routeWaystoneRouteIds.length} routes, score ${state.routeWaystoneScore}/${state.routeWaystoneRequiredScore}`
         : 'Waystone: pending';
+    }
+    if (routeCharterLabel) {
+      routeCharterLabel.textContent = state.routeCharterProof
+        ? `Charter: ${state.routeCharterName}, ${state.routeCharterRouteIds.length} routes, ${state.routeCharterPartyIds.length} party, score ${state.routeCharterScore}/${state.routeCharterRequiredScore}`
+        : 'Charter: pending';
     }
     if (nurtureRiteLabel) {
       nurtureRiteLabel.textContent = state.nurtureRiteProof
@@ -2727,6 +2757,9 @@ function readAlphaState(): AlphaHudState {
       exchangeAccordItemIds: Array.isArray(parsed?.exchangeAccordItemIds) ? parsed.exchangeAccordItemIds.map(String) : [],
       routeWaystoneRouteIds: Array.isArray(parsed?.routeWaystoneRouteIds) ? parsed.routeWaystoneRouteIds.map(String) : [],
       routeWaystoneInvitedSpiritIds: Array.isArray(parsed?.routeWaystoneInvitedSpiritIds) ? parsed.routeWaystoneInvitedSpiritIds.map(String) : [],
+      routeCharterRouteIds: Array.isArray(parsed?.routeCharterRouteIds) ? parsed.routeCharterRouteIds.map(String) : [],
+      routeCharterPartyIds: Array.isArray(parsed?.routeCharterPartyIds) ? parsed.routeCharterPartyIds.map(String) : [],
+      routeCharterProofIds: Array.isArray(parsed?.routeCharterProofIds) ? parsed.routeCharterProofIds.map(String) : [],
       nurtureRiteRosterIds: Array.isArray(parsed?.nurtureRiteRosterIds) ? parsed.nurtureRiteRosterIds.map(String) : [],
       nurtureRiteCaredSpiritIds: Array.isArray(parsed?.nurtureRiteCaredSpiritIds) ? parsed.nurtureRiteCaredSpiritIds.map(String) : [],
       recoveryTeaPartyIds: Array.isArray(parsed?.recoveryTeaPartyIds) ? parsed.recoveryTeaPartyIds.map(String) : [],
@@ -2760,7 +2793,7 @@ function readAlphaState(): AlphaHudState {
       battleRoundTranscript: Array.isArray(parsed?.battleRoundTranscript) ? parsed.battleRoundTranscript.map(String) : [],
       acceptedQuestIds: Array.isArray(parsed?.acceptedQuestIds) ? parsed.acceptedQuestIds.map(String) : [],
       completedQuestSteps: Array.isArray(parsed?.completedQuestSteps) ? parsed.completedQuestSteps.map(String) : [],
-      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-80).map(String) : []
+      chat: Array.isArray(parsed?.chat) ? parsed.chat.slice(-ALPHA_CHAT_HISTORY_LIMIT).map(String) : []
     };
   } catch {
     return defaultAlphaState();
@@ -2768,7 +2801,7 @@ function readAlphaState(): AlphaHudState {
 }
 
 function writeAlphaState(state: AlphaHudState, options: { preserveSyncMetadata?: boolean } = {}) {
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-80) }));
+  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-ALPHA_CHAT_HISTORY_LIMIT) }));
   if (!options.preserveSyncMetadata) {
     localStorage.setItem(ALPHA_STATE_UPDATED_AT_KEY, new Date().toISOString());
   }
@@ -4090,6 +4123,46 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.route_charter') {
+    const charter = SPIRIT_ROUTE_CHARTERS[0];
+    const partyIds = state.partyIds.length >= charter.requiredPartySize
+      ? state.partyIds.slice(0, charter.requiredPartySize)
+      : (state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id)).slice(0, charter.requiredPartySize);
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      charterId: charter.id,
+      discoveredRoutes: state.discoveredRouteIds.length >= charter.requiredRouteIds.length
+        ? state.discoveredRouteIds
+        : SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+      partyIds,
+      routeMasteryProof: state.routeMasteryProof,
+      routeMasteryId: state.routeMasteryId,
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId,
+      routeWaystoneProof: state.routeWaystoneProof,
+      routeWaystoneId: state.routeWaystoneId,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      weatherVeilProof: state.weatherVeilProof,
+      weatherVeilId: state.weatherVeilId,
+      encounterAtlasProof: state.encounterAtlasProof,
+      encounterAtlasId: state.encounterAtlasId,
+      habitatCensusProof: state.habitatCensusProof,
+      habitatCensusId: state.habitatCensusId,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      craftWritProof: state.craftWritProof,
+      craftWritId: state.craftWritId,
+      localPresenceCount: Math.max(presenceCount, 2),
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood || 'cozy',
+      chatLines: state.chat.length ? state.chat : ['Jade Route Charter ready.'],
+      rewardItemId: 'jade-route-charter-slip',
+      noRealValue: true
+    };
+  }
+
   if (type === 'spirit.nurture_rite') {
     return {
       riteId: SPIRIT_NURTURE_RITES[0].id,
@@ -4626,6 +4699,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       questLedgerProof: state.questLedgerProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
+      routeCharterProof: state.routeCharterProof,
       nurtureRiteProof: state.nurtureRiteProof,
       kinshipAlbumProof: state.kinshipAlbumProof,
       nurseryGroveProof: state.nurseryGroveProof,
@@ -6235,6 +6309,58 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'world.route_charter') {
+    const result = resolveSpiritRouteCharter(
+      {
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        partyIds: Array.isArray(payload.partyIds) ? payload.partyIds.map(String) : state.partyIds.length ? state.partyIds : state.attunedSpiritIds.slice(0, 3),
+        routeMasteryProof: Boolean(payload.routeMasteryProof ?? state.routeMasteryProof),
+        routeMasteryId: String(payload.routeMasteryId || state.routeMasteryId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
+        routeWaystoneId: String(payload.routeWaystoneId || state.routeWaystoneId || ''),
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        weatherVeilProof: Boolean(payload.weatherVeilProof ?? state.weatherVeilProof),
+        weatherVeilId: String(payload.weatherVeilId || state.weatherVeilId || ''),
+        encounterAtlasProof: Boolean(payload.encounterAtlasProof ?? state.encounterAtlasProof),
+        encounterAtlasId: String(payload.encounterAtlasId || state.encounterAtlasId || ''),
+        habitatCensusProof: Boolean(payload.habitatCensusProof ?? state.habitatCensusProof),
+        habitatCensusId: String(payload.habitatCensusId || state.habitatCensusId || ''),
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        craftWritId: String(payload.craftWritId || state.craftWritId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.charterId || SPIRIT_ROUTE_CHARTERS[0].id)
+    );
+    if (result.charted) {
+      state.routeCharterProof = true;
+      state.routeCharterId = result.charterId;
+      state.routeCharterName = result.charterName;
+      state.routeCharterScore = result.score;
+      state.routeCharterRequiredScore = result.requiredScore;
+      state.routeCharterRouteIds = result.routeIds;
+      state.routeCharterPartyIds = result.partyIds;
+      state.routeCharterProofIds = result.proofIds;
+      state.routeCharterPresenceCount = result.localPresenceCount;
+      state.routeCharterSlipClaimed = result.rewardItemId === 'jade-route-charter-slip';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.partyIds = result.partyIds;
+      state.supportSpiritIds = result.partyIds.slice(1);
+      state.activePartyId = result.partyIds[0] || state.activePartyId;
+      state.spiritId = result.partyIds[0] || state.spiritId;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'spirit.nurture_rite') {
     const result = resolveSpiritNurtureRite(
       {
@@ -6934,6 +7060,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
+        routeCharterProof: Boolean(payload.routeCharterProof ?? state.routeCharterProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         kinshipAlbumProof: Boolean(payload.kinshipAlbumProof ?? state.kinshipAlbumProof),
         nurseryGroveProof: Boolean(payload.nurseryGroveProof ?? state.nurseryGroveProof),
@@ -7006,6 +7133,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         lineageRegisterProof: Boolean(payload.lineageRegisterProof ?? state.lineageRegisterProof),
         rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
         blossomCradleProof: Boolean(payload.blossomCradleProof ?? state.blossomCradleProof),
+        routeCharterProof: Boolean(payload.routeCharterProof ?? state.routeCharterProof),
         exchangeAccordProof: Boolean(payload.exchangeAccordProof ?? state.exchangeAccordProof),
         affinityMatrixProof: Boolean(payload.affinityMatrixProof ?? state.affinityMatrixProof),
         techniqueCodexProof: Boolean(payload.techniqueCodexProof ?? state.techniqueCodexProof),

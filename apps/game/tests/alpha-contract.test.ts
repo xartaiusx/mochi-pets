@@ -45,6 +45,7 @@ import {
   SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_RESEARCH_FOLIOS,
   SPIRIT_RIVAL_CIRCLES,
+  SPIRIT_ROUTE_CHARTERS,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
@@ -100,6 +101,7 @@ import {
   resolveSpiritBondMilestone,
   resolveSpiritProvisionCatalog,
   resolveSpiritRouteInvitation,
+  resolveSpiritRouteCharter,
   resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteWaystone,
   resolveSpiritRouteMastery,
@@ -177,6 +179,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
     expect(ALPHA_FEATURES.gameplay.tradeExchangeAccords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeCharters).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritRecoveryTeas).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritKinshipAlbums).toBe(true);
@@ -268,6 +271,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_census');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_charter');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.recovery_tea');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.kinship_album');
@@ -1667,6 +1671,78 @@ describe('alpha contract', () => {
       chatLines: ['Waystone ready.']
     }).activated).toBe(false);
 
+    expect(SPIRIT_ROUTE_CHARTERS.map((charter) => charter.id)).toEqual(['jade-route-charter']);
+    const routeCharter = resolveSpiritRouteCharter({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Charter ready.']
+    });
+    expect(routeCharter).toMatchObject({
+      ok: true,
+      charted: true,
+      charterId: 'jade-route-charter',
+      charterName: 'Jade Route Charter',
+      title: 'First-Court Travel Readiness',
+      habitat: 'Jade Lantern Court',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 55,
+      requiredScore: 40,
+      rewardItemId: 'jade-route-charter-slip',
+      source: 'world-route-charter'
+    });
+    expect(routeCharter.proofIds).toContain('jade-cloudbell-waystone');
+    expect(routeCharter.message).toContain('No real value');
+    expect(resolveSpiritRouteCharter({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeWaystoneProof: false,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Charter ready.']
+    }).charted).toBe(false);
+
     expect(SPIRIT_NURTURE_RITES.map((rite) => rite.id)).toEqual(['jade-moonwell-nurture-rite']);
     const nurtureRite = resolveSpiritNurtureRite({
       roster: ['lirabao', 'jintari', 'aozhen'],
@@ -2519,6 +2595,7 @@ describe('alpha contract', () => {
       questLedgerProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      routeCharterProof: true,
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -2569,7 +2646,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 164,
+      score: 167,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2599,6 +2676,7 @@ describe('alpha contract', () => {
       questLedgerProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      routeCharterProof: true,
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -2655,6 +2733,7 @@ describe('alpha contract', () => {
       lineageRegisterProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
+      routeCharterProof: true,
       exchangeAccordProof: true,
       provisionCatalogProof: true,
       battleKitProof: true,
@@ -2702,7 +2781,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 126,
+      score: 129,
       requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2720,6 +2799,7 @@ describe('alpha contract', () => {
       lineageRegisterProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
+      routeCharterProof: true,
       exchangeAccordProof: true,
       provisionCatalogProof: true,
       battleKitProof: true,

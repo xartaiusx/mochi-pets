@@ -81,6 +81,7 @@ async function run() {
   assert(manifest.body.gameplay?.tradeExchangeAccords === true, 'Manifest must expose Mochirii trade exchange accords.');
   assert(manifest.body.gameplay?.spiritRivalCircles === true, 'Manifest must expose Mochi Spirit rival circles.');
   assert(manifest.body.gameplay?.routeWaystones === true, 'Manifest must expose Mochi Spirit route waystones.');
+  assert(manifest.body.gameplay?.routeCharters === true, 'Manifest must expose Mochi Spirit route charters.');
   assert(manifest.body.gameplay?.spiritNurtureRites === true, 'Manifest must expose Mochi Spirit nurture rites.');
   assert(manifest.body.gameplay?.spiritKinshipAlbums === true, 'Manifest must expose Mochi Spirit kinship albums.');
   assert(manifest.body.gameplay?.spiritBloomAscendances === true, 'Manifest must expose Mochi Spirit bloom ascendance proofs.');
@@ -163,6 +164,7 @@ async function run() {
   assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must catalog the first Mochirii quest chain.');
   assert(manifest.body.playableContent?.roleplay?.questLedgerIds?.includes('jade-quest-ledger'), 'Manifest must catalog the Jade Quest Ledger proof.');
   assert(manifest.body.playableContent?.roleplay?.rosterCabinetIds?.includes('jade-roster-cabinet'), 'Manifest must catalog the Jade Roster Cabinet proof.');
+  assert(manifest.body.playableContent?.roleplay?.routeCharterIds?.includes('jade-route-charter'), 'Manifest must catalog the Jade Route Charter proof.');
   assert(manifest.body.playableContent?.roleplay?.guildAscensionTrialIds?.includes('jade-court-ascension-trial'), 'Manifest must catalog the guild ascension capstone.');
   assert(manifest.body.playableContent?.economyAndCanary?.marketReceiptIds?.includes('jade-court-market-receipt'), 'Manifest must catalog the no-real-value market receipt.');
   assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must catalog the no-real-value provision catalog.');
@@ -203,6 +205,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.tradeExchangeAccords === true, 'Alpha status must expose Mochirii trade exchange accords.');
   assert(alphaStatus.body.gameplay?.spiritRivalCircles === true, 'Alpha status must expose Mochi Spirit rival circles.');
   assert(alphaStatus.body.gameplay?.routeWaystones === true, 'Alpha status must expose Mochi Spirit route waystones.');
+  assert(alphaStatus.body.gameplay?.routeCharters === true, 'Alpha status must expose Mochi Spirit route charters.');
   assert(alphaStatus.body.gameplay?.spiritNurtureRites === true, 'Alpha status must expose Mochi Spirit nurture rites.');
   assert(alphaStatus.body.gameplay?.spiritRecoveryTeas === true, 'Alpha status must expose Mochi Spirit recovery tea proofs.');
   assert(alphaStatus.body.gameplay?.spiritKinshipAlbums === true, 'Alpha status must expose Mochi Spirit kinship albums.');
@@ -1173,6 +1176,40 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-route-charter`,
+      type: 'world.route_charter',
+      payload: {
+        charterId: 'jade-route-charter',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        partyIds: ['lirabao', 'jintari', 'aozhen'],
+        routeMasteryProof: true,
+        routeMasteryId: 'jade-cloudbell-circuit',
+        routePatrolProof: true,
+        routePatrolId: 'jade-cloudbell-patrol',
+        routeWaystoneProof: true,
+        routeWaystoneId: 'jade-cloudbell-waystone',
+        routeEcologyProof: true,
+        routeEcologyId: 'jade-route-ecology-survey',
+        weatherVeilProof: true,
+        weatherVeilId: 'jade-weather-veil',
+        encounterAtlasProof: true,
+        encounterAtlasId: 'jade-encounter-atlas',
+        habitatCensusProof: true,
+        habitatCensusId: 'jade-habitat-census',
+        provisionProof: true,
+        provisionSatchelId: 'jade-court-provision-satchel',
+        craftWritProof: true,
+        craftWritId: 'jade-court-craft-writ',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-route-charter-slip',
+        chatLines: ['Local acceptance route charter proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-nurture-rite`,
       type: 'spirit.nurture_rite',
       payload: {
@@ -1898,6 +1935,7 @@ async function run() {
         blossomCradleProof: true,
         craftWritProof: true,
         routeWaystoneProof: true,
+        routeCharterProof: true,
         nurtureRiteProof: true,
         kinshipAlbumProof: true,
         nurseryGroveProof: true,
@@ -1962,6 +2000,7 @@ async function run() {
         questLedgerProof: true,
         rosterCabinetProof: true,
         blossomCradleProof: true,
+        routeCharterProof: true,
         storyChapterProof: true,
         insigniaCaseProof: true,
         routePatrolProof: true,
@@ -2259,6 +2298,32 @@ async function run() {
   assert(routeWaystone?.payload?.craftWritProof === true, 'Route waystone ledger entry must preserve craft writ proof.');
   assert(routeWaystone?.payload?.rewardItemId === 'jade-waystone-travel-seal', 'Route waystone ledger entry must preserve the no-real-value waystone travel seal proof.');
   assert(routeWaystone?.payload?.noRealValue === true, 'Route waystone ledger entry must remain no-real-value.');
+  const routeCharter = entriesById.get(`${runId}-route-charter`);
+  assert(routeCharter?.payload?.charterId === 'jade-route-charter', 'Route charter ledger entry must preserve the Jade Route Charter id.');
+  assert(Array.isArray(routeCharter?.payload?.discoveredRoutes) && routeCharter.payload.discoveredRoutes.includes('moonbridge-bamboo-trail'), 'Route charter ledger entry must preserve the Moonbridge route.');
+  assert(Array.isArray(routeCharter?.payload?.discoveredRoutes) && routeCharter.payload.discoveredRoutes.includes('cloudbell-reed-bank'), 'Route charter ledger entry must preserve the Cloudbell route.');
+  assert(Array.isArray(routeCharter?.payload?.partyIds) && routeCharter.payload.partyIds.length === 3, 'Route charter ledger entry must preserve the three-spirit party.');
+  assert(routeCharter?.payload?.routeMasteryProof === true, 'Route charter ledger entry must preserve route mastery proof.');
+  assert(routeCharter?.payload?.routeMasteryId === 'jade-cloudbell-circuit', 'Route charter ledger entry must preserve the route mastery id.');
+  assert(routeCharter?.payload?.routePatrolProof === true, 'Route charter ledger entry must preserve route patrol proof.');
+  assert(routeCharter?.payload?.routePatrolId === 'jade-cloudbell-patrol', 'Route charter ledger entry must preserve the route patrol id.');
+  assert(routeCharter?.payload?.routeWaystoneProof === true, 'Route charter ledger entry must preserve route waystone proof.');
+  assert(routeCharter?.payload?.routeWaystoneId === 'jade-cloudbell-waystone', 'Route charter ledger entry must preserve the route waystone id.');
+  assert(routeCharter?.payload?.routeEcologyProof === true, 'Route charter ledger entry must preserve route ecology proof.');
+  assert(routeCharter?.payload?.routeEcologyId === 'jade-route-ecology-survey', 'Route charter ledger entry must preserve the route ecology id.');
+  assert(routeCharter?.payload?.weatherVeilProof === true, 'Route charter ledger entry must preserve weather veil proof.');
+  assert(routeCharter?.payload?.weatherVeilId === 'jade-weather-veil', 'Route charter ledger entry must preserve the weather veil id.');
+  assert(routeCharter?.payload?.encounterAtlasProof === true, 'Route charter ledger entry must preserve encounter atlas proof.');
+  assert(routeCharter?.payload?.encounterAtlasId === 'jade-encounter-atlas', 'Route charter ledger entry must preserve the encounter atlas id.');
+  assert(routeCharter?.payload?.habitatCensusProof === true, 'Route charter ledger entry must preserve habitat census proof.');
+  assert(routeCharter?.payload?.habitatCensusId === 'jade-habitat-census', 'Route charter ledger entry must preserve the habitat census id.');
+  assert(routeCharter?.payload?.provisionProof === true, 'Route charter ledger entry must preserve provision proof.');
+  assert(routeCharter?.payload?.provisionSatchelId === 'jade-court-provision-satchel', 'Route charter ledger entry must preserve the provision satchel id.');
+  assert(routeCharter?.payload?.craftWritProof === true, 'Route charter ledger entry must preserve craft writ proof.');
+  assert(routeCharter?.payload?.craftWritId === 'jade-court-craft-writ', 'Route charter ledger entry must preserve the craft writ id.');
+  assert(routeCharter?.payload?.localPresenceCount === 2, 'Route charter ledger entry must preserve two-tester presence proof.');
+  assert(routeCharter?.payload?.rewardItemId === 'jade-route-charter-slip', 'Route charter ledger entry must preserve the no-real-value route charter slip.');
+  assert(routeCharter?.payload?.noRealValue === true, 'Route charter ledger entry must remain no-real-value.');
   const nurtureRite = entriesById.get(`${runId}-nurture-rite`);
   assert(nurtureRite?.payload?.riteId === 'jade-moonwell-nurture-rite', 'Nurture rite ledger entry must preserve the Jade Moonwell Nurture Rite id.');
   assert(Array.isArray(nurtureRite?.payload?.roster) && nurtureRite.payload.roster.length === 3, 'Nurture rite ledger entry must preserve full roster proof.');
@@ -2647,6 +2712,7 @@ async function run() {
   assert(chronicle?.payload?.routeEcologyProof === true, 'Wayfarer chronicle ledger entry must preserve route ecology proof.');
   assert(chronicle?.payload?.craftWritProof === true, 'Wayfarer chronicle ledger entry must preserve craft writ proof.');
   assert(chronicle?.payload?.routeWaystoneProof === true, 'Wayfarer chronicle ledger entry must preserve route waystone proof.');
+  assert(chronicle?.payload?.routeCharterProof === true, 'Wayfarer chronicle ledger entry must preserve route charter proof.');
   assert(chronicle?.payload?.nurtureRiteProof === true, 'Wayfarer chronicle ledger entry must preserve nurture rite proof.');
   assert(chronicle?.payload?.kinshipAlbumProof === true, 'Wayfarer chronicle ledger entry must preserve kinship album proof.');
   assert(chronicle?.payload?.nurseryGroveProof === true, 'Wayfarer chronicle ledger entry must preserve nursery grove proof.');
@@ -2691,6 +2757,7 @@ async function run() {
   assert(ascension?.payload?.questLedgerProof === true, 'Ascension trial ledger entry must preserve quest ledger proof.');
   assert(ascension?.payload?.rosterCabinetProof === true, 'Ascension trial ledger entry must preserve roster cabinet proof.');
   assert(ascension?.payload?.blossomCradleProof === true, 'Ascension trial ledger entry must preserve blossom cradle proof.');
+  assert(ascension?.payload?.routeCharterProof === true, 'Ascension trial ledger entry must preserve route charter proof.');
   assert(ascension?.payload?.storyChapterProof === true, 'Ascension trial ledger entry must preserve story chapter proof.');
   assert(ascension?.payload?.insigniaCaseProof === true, 'Ascension trial ledger entry must preserve insignia case proof.');
   assert(ascension?.payload?.mentorChallengeProof === true, 'Ascension trial ledger entry must preserve mentor challenge proof.');

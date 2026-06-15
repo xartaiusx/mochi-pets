@@ -35,6 +35,7 @@ import {
   SPIRIT_REMEDY_POUCHES,
   SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_RIVAL_CIRCLES,
+  SPIRIT_ROUTE_CHARTERS,
   SPIRIT_ROUTE_ECOLOGY_SURVEYS,
   SPIRIT_ROUTE_MASTERIES,
   SPIRIT_ROUTE_PATROLS,
@@ -100,6 +101,7 @@ import {
   resolveSpiritResearchFolio,
   resolveSpiritRivalCircle,
   resolveSpiritRouteInvitation,
+  resolveSpiritRouteCharter,
   resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteWaystone,
   resolveSpiritRouteMastery,
@@ -1605,6 +1607,93 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(routeWaystone.message).toContain('No real value');
 
+    expect(SPIRIT_ROUTE_CHARTERS.map((charter) => charter.id)).toEqual(['jade-route-charter']);
+    const blockedRouteCharter = resolveSpiritRouteCharter({
+      discoveredRoutes: firstRouteIds,
+      partyIds: fullRoster,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeWaystoneProof: false,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Charter ready.']
+    });
+    expect(blockedRouteCharter).toMatchObject({
+      charted: false,
+      charterId: 'jade-route-charter',
+      missing: ['route-waystone:jade-cloudbell-waystone']
+    });
+
+    const routeCharter = resolveSpiritRouteCharter({
+      discoveredRoutes: firstRouteIds,
+      partyIds: fullRoster,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Charter ready.']
+    });
+    expect(routeCharter).toMatchObject({
+      charted: true,
+      charterId: 'jade-route-charter',
+      charterName: 'Jade Route Charter',
+      routeIds: [...firstRouteIds],
+      partyIds: [...fullRoster],
+      proofIds: [
+        'jade-cloudbell-circuit',
+        'jade-cloudbell-patrol',
+        'jade-cloudbell-waystone',
+        'jade-route-ecology-survey',
+        'jade-weather-veil',
+        'jade-encounter-atlas',
+        'jade-habitat-census',
+        'jade-court-provision-satchel',
+        'jade-court-craft-writ'
+      ],
+      localPresenceCount: 2,
+      score: 55,
+      requiredScore: 40,
+      rewardItemId: ALPHA_ITEMS.routeCharterSlip.id,
+      source: 'world-route-charter'
+    });
+    expect(routeCharter.rewardItemId).toBe('jade-route-charter-slip');
+    expect(routeCharter.message).toContain('No real value');
+
     expect(SPIRIT_NURTURE_RITES.map((rite) => rite.id)).toEqual(['jade-moonwell-nurture-rite']);
     const blockedNurtureRite = resolveSpiritNurtureRite({
       roster: fullRoster,
@@ -2372,6 +2461,7 @@ describe('Mochi Spirits alpha content contract', () => {
       blossomCradleProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      routeCharterProof: true,
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -2442,6 +2532,7 @@ describe('Mochi Spirits alpha content contract', () => {
       blossomCradleProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
+      routeCharterProof: true,
       nurtureRiteProof: true,
       kinshipAlbumProof: true,
       nurseryGroveProof: true,
@@ -2484,7 +2575,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 164,
+      score: 167,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2509,6 +2600,7 @@ describe('Mochi Spirits alpha content contract', () => {
       questLedgerProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
+      routeCharterProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2564,6 +2656,7 @@ describe('Mochi Spirits alpha content contract', () => {
       questLedgerProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
+      routeCharterProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2600,7 +2693,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 126,
+      score: 129,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'

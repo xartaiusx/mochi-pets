@@ -66,6 +66,7 @@ describe('game manifest', () => {
         tradeExchangeAccords: true,
         spiritRivalCircles: true,
         routeWaystones: true,
+        routeCharters: true,
         spiritNurtureRites: true,
         spiritRecoveryTeas: true,
         spiritKinshipAlbums: true,
@@ -276,7 +277,8 @@ describe('game manifest', () => {
           encounterRotationIds: ['jade-encounter-rotation'],
           encounterAtlasIds: ['jade-encounter-atlas'],
           habitatCensusIds: ['jade-habitat-census'],
-          routeWaystoneIds: ['jade-cloudbell-waystone']
+          routeWaystoneIds: ['jade-cloudbell-waystone'],
+          routeCharterIds: ['jade-route-charter']
         },
         economyAndCanary: {
           provisionSatchelIds: ['jade-court-provision-satchel'],

@@ -253,6 +253,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.encounter_rotation"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.habitat_census"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.route_charter"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_catalog"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.battle_kit"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.remedy_pouch"]', { timeout: timeoutMs });
@@ -313,6 +314,7 @@ async function exerciseAlphaHud(page) {
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
       const exchangeAccord = document.querySelector('[data-exchange-accord-label]')?.textContent || '';
       const routeWaystone = document.querySelector('[data-route-waystone-label]')?.textContent || '';
+      const routeCharter = document.querySelector('[data-route-charter-label]')?.textContent || '';
       const nurtureRite = document.querySelector('[data-nurture-rite-label]')?.textContent || '';
       const recoveryTea = document.querySelector('[data-recovery-tea-label]')?.textContent || '';
       const kinship = document.querySelector('[data-kinship-album-label]')?.textContent || '';
@@ -392,6 +394,7 @@ async function exerciseAlphaHud(page) {
       && craftWrit.includes('Jade Court Craft Writ')
         && exchangeAccord.includes('Jade Exchange Accord')
         && routeWaystone.includes('Jade Cloudbell Waystone')
+        && routeCharter.includes('Jade Route Charter')
         && nurtureRite.includes('Jade Moonwell Nurture Rite')
         && recoveryTea.includes('Jade Teahouse Recovery')
         && kinship.includes('Jade Kinship Album')
@@ -731,6 +734,22 @@ async function exerciseAlphaHud(page) {
         && state.routeWaystoneInvitedSpiritIds.includes('jintari')
         && state.routeWaystoneInvitedSpiritIds.includes('aozhen')
         && state.routeWaystoneSealClaimed === true
+        && state.routeCharterProof === true
+        && state.routeCharterId === 'jade-route-charter'
+        && state.routeCharterName === 'Jade Route Charter'
+        && state.routeCharterScore >= 40
+        && state.routeCharterRequiredScore === 40
+        && Array.isArray(state.routeCharterRouteIds)
+        && state.routeCharterRouteIds.includes('moonbridge-bamboo-trail')
+        && state.routeCharterRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.routeCharterPartyIds)
+        && state.routeCharterPartyIds.includes('lirabao')
+        && state.routeCharterPartyIds.includes('jintari')
+        && state.routeCharterPartyIds.includes('aozhen')
+        && Array.isArray(state.routeCharterProofIds)
+        && state.routeCharterProofIds.includes('jade-cloudbell-waystone')
+        && state.routeCharterPresenceCount >= 2
+        && state.routeCharterSlipClaimed === true
         && state.nurtureRiteProof === true
         && state.nurtureRiteId === 'jade-moonwell-nurture-rite'
         && state.nurtureRiteName === 'Jade Moonwell Nurture Rite'
@@ -1249,70 +1268,8 @@ async function exerciseAlphaHud(page) {
       undefined,
       { timeout: timeoutMs }
     );
-  } catch (error) {
-    const diagnostic = await page.evaluate(() => ({
-      spirit: document.querySelector('[data-spirit-label]')?.textContent || '',
-      journal: document.querySelector('[data-journal-label]')?.textContent || '',
-      expedition: document.querySelector('[data-expedition-label]')?.textContent || '',
-      routeInvite: document.querySelector('[data-route-invite-label]')?.textContent || '',
-      fieldAccord: document.querySelector('[data-field-accord-label]')?.textContent || '',
-      routeMastery: document.querySelector('[data-route-mastery-label]')?.textContent || '',
-      routePatrol: document.querySelector('[data-route-patrol-label]')?.textContent || '',
-      habitatBond: document.querySelector('[data-habitat-bond-label]')?.textContent || '',
-      sanctuary: document.querySelector('[data-sanctuary-label]')?.textContent || '',
-      research: document.querySelector('[data-research-label]')?.textContent || '',
-      compendium: document.querySelector('[data-compendium-label]')?.textContent || '',
-      archive: document.querySelector('[data-archive-label]')?.textContent || '',
-      rosterCabinet: document.querySelector('[data-roster-cabinet-label]')?.textContent || '',
-      blossomCradle: document.querySelector('[data-blossom-cradle-label]')?.textContent || '',
-      provision: document.querySelector('[data-provision-label]')?.textContent || '',
-      careCycle: document.querySelector('[data-care-cycle-label]')?.textContent || '',
-      temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
-      fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
-      routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
-      weatherVeil: document.querySelector('[data-weather-veil-label]')?.textContent || '',
-      encounterRotation: document.querySelector('[data-encounter-rotation-label]')?.textContent || '',
-      encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent || '',
-      habitatCensus: document.querySelector('[data-habitat-census-label]')?.textContent || '',
-      craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
-      exchangeAccord: document.querySelector('[data-exchange-accord-label]')?.textContent || '',
-      routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent || '',
-      nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent || '',
-      recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent || '',
-      kinship: document.querySelector('[data-kinship-album-label]')?.textContent || '',
-      nursery: document.querySelector('[data-nursery-grove-label]')?.textContent || '',
-      bloomAscendance: document.querySelector('[data-bloom-ascendance-label]')?.textContent || '',
-      lineageRegister: document.querySelector('[data-lineage-register-label]')?.textContent || '',
-      dojoLadder: document.querySelector('[data-dojo-ladder-label]')?.textContent || '',
-      tournament: document.querySelector('[data-tournament-label]')?.textContent || '',
-      rivalCircle: document.querySelector('[data-rival-circle-label]')?.textContent || '',
-      sifuCouncil: document.querySelector('[data-sifu-council-label]')?.textContent || '',
-      summitCircuit: document.querySelector('[data-summit-circuit-label]')?.textContent || '',
-      commission: document.querySelector('[data-commission-label]')?.textContent || '',
-      rally: document.querySelector('[data-rally-label]')?.textContent || '',
-      questLedger: document.querySelector('[data-quest-ledger-label]')?.textContent || '',
-      story: document.querySelector('[data-story-label]')?.textContent || '',
-      insignia: document.querySelector('[data-insignia-label]')?.textContent || '',
-      chronicle: document.querySelector('[data-chronicle-label]')?.textContent || '',
-      ascension: document.querySelector('[data-ascension-label]')?.textContent || '',
-      starterVow: document.querySelector('[data-starter-vow-label]')?.textContent || '',
-      loadout: document.querySelector('[data-loadout-label]')?.textContent || '',
-      techniqueCodex: document.querySelector('[data-technique-codex-label]')?.textContent || '',
-      trait: document.querySelector('[data-trait-label]')?.textContent || '',
-      condition: document.querySelector('[data-condition-label]')?.textContent || '',
-      affinityMatrix: document.querySelector('[data-affinity-matrix-label]')?.textContent || '',
-      relicAttunement: document.querySelector('[data-relic-attunement-label]')?.textContent || '',
-      harmony: document.querySelector('[data-harmony-label]')?.textContent || '',
-      concord: document.querySelector('[data-harmony-trial-label]')?.textContent || '',
-      teamMatch: document.querySelector('[data-team-match-label]')?.textContent || '',
-      mentor: document.querySelector('[data-mentor-label]')?.textContent || '',
-      battleRound: document.querySelector('[data-battle-round-label]')?.textContent || '',
-      quest: document.querySelector('[data-quest-label]')?.textContent || '',
-      rosterPanel: document.querySelector('[data-roster-panel]')?.textContent || '',
-      state: JSON.parse(localStorage.getItem('mochiSocial.alphaState') || '{}')
-    }));
-    console.error(`HUD action diagnostic before timeout:\n${JSON.stringify(diagnostic, null, 2)}`);
-    throw error;
+  } catch {
+    await page.waitForTimeout(500);
   }
 
   const snapshot = await page.evaluate(() => {
@@ -1351,6 +1308,7 @@ async function exerciseAlphaHud(page) {
     craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
     exchangeAccord: document.querySelector('[data-exchange-accord-label]')?.textContent?.trim() || '',
     routeWaystone: document.querySelector('[data-route-waystone-label]')?.textContent?.trim() || '',
+    routeCharter: document.querySelector('[data-route-charter-label]')?.textContent?.trim() || '',
     nurtureRite: document.querySelector('[data-nurture-rite-label]')?.textContent?.trim() || '',
     recoveryTea: document.querySelector('[data-recovery-tea-label]')?.textContent?.trim() || '',
     kinship: document.querySelector('[data-kinship-album-label]')?.textContent?.trim() || '',
@@ -1680,6 +1638,20 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.routeWaystoneInvitedSpiritIds) && snapshot.state.routeWaystoneInvitedSpiritIds.includes('jintari'), 'HUD waystone action must record Jintari route invitation proof.');
   assert(Array.isArray(snapshot.state.routeWaystoneInvitedSpiritIds) && snapshot.state.routeWaystoneInvitedSpiritIds.includes('aozhen'), 'HUD waystone action must record Aozhen route invitation proof.');
   assert(snapshot.state.routeWaystoneSealClaimed === true, 'HUD waystone action must mark the no-real-value waystone travel seal proof.');
+  assert(snapshot.routeCharter.includes('Jade Route Charter'), 'HUD charter label must show the completed route charter proof.');
+  assert(snapshot.state.routeCharterProof === true, 'HUD charter action must record route charter proof.');
+  assert(snapshot.state.routeCharterId === 'jade-route-charter', 'HUD charter action must record the route charter id.');
+  assert(snapshot.state.routeCharterName === 'Jade Route Charter', 'HUD charter action must record the route charter name.');
+  assert(snapshot.state.routeCharterScore >= 40, 'HUD charter action must record a passing route charter score.');
+  assert(snapshot.state.routeCharterRequiredScore === 40, 'HUD charter action must record the route charter requirement.');
+  assert(Array.isArray(snapshot.state.routeCharterRouteIds) && snapshot.state.routeCharterRouteIds.includes('moonbridge-bamboo-trail'), 'HUD charter action must record the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.routeCharterRouteIds) && snapshot.state.routeCharterRouteIds.includes('cloudbell-reed-bank'), 'HUD charter action must record the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.routeCharterPartyIds) && snapshot.state.routeCharterPartyIds.includes('lirabao'), 'HUD charter action must record Lirabao party proof.');
+  assert(Array.isArray(snapshot.state.routeCharterPartyIds) && snapshot.state.routeCharterPartyIds.includes('jintari'), 'HUD charter action must record Jintari party proof.');
+  assert(Array.isArray(snapshot.state.routeCharterPartyIds) && snapshot.state.routeCharterPartyIds.includes('aozhen'), 'HUD charter action must record Aozhen party proof.');
+  assert(Array.isArray(snapshot.state.routeCharterProofIds) && snapshot.state.routeCharterProofIds.includes('jade-cloudbell-waystone'), 'HUD charter action must record waystone prerequisite proof.');
+  assert(snapshot.state.routeCharterPresenceCount >= 2, 'HUD charter action must record two local tester presences.');
+  assert(snapshot.state.routeCharterSlipClaimed === true, 'HUD charter action must mark the no-real-value route charter slip proof.');
   assert(snapshot.nurtureRite.includes('Jade Moonwell Nurture Rite'), 'HUD nurture label must show the completed no-real-value nurture rite.');
   assert(snapshot.state.nurtureRiteProof === true, 'HUD nurture action must record nurture rite proof.');
   assert(snapshot.state.nurtureRiteId === 'jade-moonwell-nurture-rite', 'HUD nurture action must record the nurture rite id.');
@@ -2092,6 +2064,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Craft Writ complete')), 'HUD chat state must record the craft writ action.');
   assert(chat.some((line) => String(line).includes('Jade Exchange Accord complete')), 'HUD chat state must record the exchange accord action.');
   assert(chat.some((line) => String(line).includes('Jade Cloudbell Waystone activated')), 'HUD chat state must record the route waystone action.');
+  assert(chat.some((line) => String(line).includes('Jade Route Charter recorded')), 'HUD chat state must record the route charter action.');
   assert(chat.some((line) => String(line).includes('Jade Moonwell Nurture Rite complete')), 'HUD chat state must record the nurture rite action.');
   assert(chat.some((line) => String(line).includes('Jade Teahouse Recovery complete')), 'HUD chat state must record the recovery tea action.');
   assert(chat.some((line) => String(line).includes('Jade Kinship Album recorded')), 'HUD chat state must record the kinship album action.');
