@@ -65,8 +65,12 @@ function createFakePlayer() {
 function createEventContext() {
   return {
     graphic: '',
+    hitbox: { width: 0, height: 0 },
     setGraphic(graphic: string) {
       this.graphic = graphic;
+    },
+    setHitbox(width: number, height: number) {
+      this.hitbox = { width, height };
     }
   };
 }
@@ -87,10 +91,27 @@ describe('Mochi town event behavior', () => {
     const { context, player } = await runAction(WelcomeNpc());
 
     expect(context.graphic).toBe('sifu-narao');
+    expect(context.hitbox).toEqual({ width: 64, height: 64 });
     expect(player.texts.at(-1)).toContain('Welcome to Mochi Social');
     expect(player.texts.at(-1)).toContain('no-real-value');
     expect(player.texts.at(-1)).toContain('Canary-only');
     expect(player.notifications.at(-1)?.message).toBe('Guild spark found');
+  });
+
+  it('keeps prompt-critical town events aligned to the 64px logical tile action hitbox', async () => {
+    const events = [
+      { definition: WelcomeNpc(), graphic: 'sifu-narao' },
+      { definition: SpiritEvent(SPIRITS[0]), graphic: 'spirit-lirabao' },
+      { definition: CareShrine(), graphic: 'sifu-narao' },
+      { definition: GuildSealChest(), graphic: 'chest' }
+    ];
+
+    for (const { definition, graphic } of events) {
+      const context = createEventContext();
+      definition.onInit?.call(context as never);
+      expect(context.graphic).toBe(graphic);
+      expect(context.hitbox).toEqual({ width: 64, height: 64 });
+    }
   });
 
   it('opens alpha prompts without blocking movement and auto-closes by dialog id', async () => {

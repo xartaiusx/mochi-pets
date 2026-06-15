@@ -1,5 +1,5 @@
 import { PrebuiltGui } from '@rpgjs/common';
-import type { EventDefinition, RpgPlayer } from '@rpgjs/server';
+import type { EventDefinition, RpgEvent, RpgPlayer } from '@rpgjs/server';
 import {
   ALPHA_ITEMS,
   GUILD_COMMISSIONS,
@@ -61,6 +61,12 @@ import {
 } from '../../alpha/content';
 
 const ALPHA_PROMPT_MS = 2600;
+const ALPHA_INTERACTABLE_HITBOX = { width: 64, height: 64 } as const;
+
+function setAlphaInteractable(event: Pick<RpgEvent, 'setGraphic' | 'setHitbox'>, graphic: string) {
+  event.setGraphic(graphic);
+  event.setHitbox(ALPHA_INTERACTABLE_HITBOX.width, ALPHA_INTERACTABLE_HITBOX.height);
+}
 
 type AlphaHudStatePatch = {
   expedition?: {
@@ -445,7 +451,7 @@ export const SPIRITS = [
 export function WelcomeNpc(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('sifu-narao');
+      setAlphaInteractable(this, 'sifu-narao');
     },
 
     async onAction(player: RpgPlayer) {
@@ -547,7 +553,7 @@ function selectQuestBoardQuest(player: RpgPlayer) {
 export function SpiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
-      this.setGraphic(spirit.sprite);
+      setAlphaInteractable(this, spirit.sprite);
     },
 
     async onAction(player: RpgPlayer) {
@@ -574,7 +580,7 @@ export function SpiritEvent(spirit: MochiSpirit): EventDefinition {
 export function CareShrine(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('sifu-narao');
+      setAlphaInteractable(this, 'sifu-narao');
     },
 
     async onAction(player: RpgPlayer) {
@@ -2190,7 +2196,7 @@ export function CanaryShrine(): EventDefinition {
 export function GuildSealChest(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('chest');
+      setAlphaInteractable(this, 'chest');
     },
 
     async onAction(player: RpgPlayer) {

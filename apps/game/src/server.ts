@@ -7,6 +7,7 @@ import {
   provideSaveStorage,
   provideServerModules,
   type EventDefinition,
+  type RpgEvent,
   type RpgPlayer,
   type RpgPlayerHooks,
   type SaveStorageStrategy
@@ -33,6 +34,12 @@ const playerSpawnSlots = new Map<string, number>();
 let nextSpawnSlot = 0;
 
 const alphaPromptMs = 2600;
+const alphaInteractableHitbox = { width: 64, height: 64 } as const;
+
+function setAlphaInteractable(event: Pick<RpgEvent, 'setGraphic' | 'setHitbox'>, graphic: string) {
+  event.setGraphic(graphic);
+  event.setHitbox(alphaInteractableHitbox.width, alphaInteractableHitbox.height);
+}
 
 type AlphaHudStatePatch = {
   canaryRequested?: boolean;
@@ -3904,7 +3911,7 @@ function getSpawn(connectedPlayer: RpgPlayer) {
 function welcomeNpc(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('sifu-narao');
+      setAlphaInteractable(this, 'sifu-narao');
     },
 
     async onAction(actingPlayer: RpgPlayer) {
@@ -4006,7 +4013,7 @@ function selectQuestBoardQuest(actingPlayer: RpgPlayer) {
 function spiritEvent(spirit: MochiSpirit): EventDefinition {
   return {
     onInit() {
-      this.setGraphic(spirit.sprite);
+      setAlphaInteractable(this, spirit.sprite);
     },
 
     async onAction(actingPlayer: RpgPlayer) {
@@ -4033,7 +4040,7 @@ function spiritEvent(spirit: MochiSpirit): EventDefinition {
 function careShrine(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('sifu-narao');
+      setAlphaInteractable(this, 'sifu-narao');
     },
 
     async onAction(actingPlayer: RpgPlayer) {
@@ -5651,7 +5658,7 @@ function canaryShrine(): EventDefinition {
 function guildSealChest(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('chest');
+      setAlphaInteractable(this, 'chest');
     },
 
     async onAction(actingPlayer: RpgPlayer) {

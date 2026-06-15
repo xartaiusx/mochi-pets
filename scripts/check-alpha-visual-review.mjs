@@ -497,8 +497,9 @@ for (const id of mapObjects) {
 }
 
 for (const snippet of [
-  "this.setGraphic('sifu-narao')",
-  "this.setGraphic('chest')",
+  "setAlphaInteractable(this, 'sifu-narao')",
+  'setAlphaInteractable(this, spirit.sprite)',
+  "setAlphaInteractable(this, 'chest')",
   "this.setGraphic('journal-pavilion')",
   "this.setGraphic('expedition-gate')",
   "this.setGraphic('route-invitation-altar')",
