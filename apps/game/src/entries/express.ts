@@ -83,6 +83,7 @@ const ALPHA_FEATURES = {
     fieldAccords: true,
     routePatrols: true,
     itemProvisions: true,
+    itemProvisionCatalogs: true,
     guildCommissions: true,
     socialRallies: true,
     wayfarerChronicles: true,
@@ -190,6 +191,7 @@ const PLAYABLE_CONTENT_CATALOG = {
   },
   economyAndCanary: {
     provisionSatchelIds: ['jade-court-provision-satchel'],
+    provisionCatalogIds: ['jade-provision-catalog'],
     craftWritIds: ['jade-court-craft-writ'],
     marketReceiptIds: ['jade-court-market-receipt'],
     tradeExchangeAccordIds: ['jade-exchange-accord'],
@@ -400,6 +402,7 @@ const ALPHA_ACTION_TYPES = [
   'spirit.bloom_ascendance',
   'spirit.lineage_register',
   'item.provision_satchel',
+  'item.provision_catalog',
   'guild.commission_complete',
   'guild.social_rally',
   'guild.wayfarer_chronicle',

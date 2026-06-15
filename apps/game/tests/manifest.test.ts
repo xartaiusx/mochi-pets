@@ -72,6 +72,7 @@ describe('game manifest', () => {
         spiritBloomAscendances: true,
         spiritLineageRegisters: true,
         itemProvisions: true,
+        itemProvisionCatalogs: true,
         guildCommissions: true,
         socialRallies: true,
         spiritStoryChapters: true,
@@ -271,6 +272,7 @@ describe('game manifest', () => {
         },
         economyAndCanary: {
           provisionSatchelIds: ['jade-court-provision-satchel'],
+          provisionCatalogIds: ['jade-provision-catalog'],
           craftWritIds: ['jade-court-craft-writ'],
           marketReceiptIds: ['jade-court-market-receipt'],
           tradeExchangeAccordIds: ['jade-exchange-accord'],

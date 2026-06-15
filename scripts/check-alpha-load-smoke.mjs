@@ -60,6 +60,7 @@ async function run() {
   assert(manifest.body.playableContent?.battle?.mentorChallengeIds?.includes('silk-banner-mentor-drill'), 'Manifest must expose mentor battle content during load smoke.');
   assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must expose roleplay quest content during load smoke.');
   assert(manifest.body.playableContent?.roleplay?.habitatCensusIds?.includes('jade-habitat-census'), 'Manifest must expose habitat census content during load smoke.');
+  assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must expose provision catalog content during load smoke.');
   assert(alphaStatus.body.alpha?.noRealValue === true, 'Alpha status must keep no-real-value enabled.');
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {

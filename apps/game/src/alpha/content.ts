@@ -640,6 +640,76 @@ export interface SpiritProvisionSatchelResult {
   source: string;
 }
 
+export interface SpiritProvisionCatalog {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredStockItemIds: readonly string[];
+  requiredCareItemIds: readonly string[];
+  requiredRouteItemIds: readonly string[];
+  requiredProvisionSatchelId: string;
+  requiredMarketReceiptId: string;
+  requiredCraftWritId: string;
+  requiredRecoveryTeaId: string;
+  requiredCareCycleId: string;
+  requiredHabitatCensusId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritProvisionCatalogProgress {
+  roster: readonly string[];
+  activeSpiritId?: string;
+  stockItemIds: readonly string[];
+  careItemIds: readonly string[];
+  routeItemIds: readonly string[];
+  provisionProof: boolean;
+  provisionSatchelId?: string;
+  marketReceiptProof: boolean;
+  marketReceiptId?: string;
+  tradeProof: boolean;
+  craftWritProof: boolean;
+  craftWritId?: string;
+  recoveryTeaProof: boolean;
+  recoveryTeaId?: string;
+  careCycleProof: boolean;
+  careCycleId?: string;
+  habitatCensusProof: boolean;
+  habitatCensusId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritProvisionCatalogResult {
+  ok: boolean;
+  cataloged: boolean;
+  catalogId: string;
+  catalogName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  activeSpiritId?: string;
+  activeSpiritName: string;
+  roster: string[];
+  itemIds: string[];
+  careItemIds: string[];
+  routeItemIds: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritCareCycle {
   id: string;
   name: string;
@@ -1985,6 +2055,7 @@ export interface GuildWayfarerChronicleProgress {
   researchProof: boolean;
   compendiumProof: boolean;
   provisionProof: boolean;
+  provisionCatalogProof: boolean;
   craftWritProof: boolean;
   routeWaystoneProof: boolean;
   nurtureRiteProof: boolean;
@@ -2068,6 +2139,7 @@ export interface GuildAscensionTrialProgress {
   bloomAscendanceProof: boolean;
   lineageRegisterProof: boolean;
   exchangeAccordProof: boolean;
+  provisionCatalogProof: boolean;
   affinityMatrixProof: boolean;
   techniqueCodexProof: boolean;
   relicAttunementProof: boolean;
@@ -3641,6 +3713,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Court Provision Satchel',
     description: 'A no-real-value item bag proof for closed-alpha Mochirii shop, care, route, and trade preparation.'
   },
+  provisionCatalogSeal: {
+    id: 'jade-provision-catalog-seal',
+    name: 'Jade Provision Catalog Seal',
+    description: 'A no-real-value recipe catalog proof for closed-alpha Mochirii supply, care, craft, route, and recovery planning.'
+  },
   careCycleKnot: {
     id: 'jade-care-cycle-knot',
     name: 'Jade Care Cycle Knot',
@@ -4520,6 +4597,30 @@ export const SPIRIT_RECOVERY_TEAS: readonly SpiritRecoveryTea[] = [
     requiredScore: 36,
     rewardItemId: ALPHA_ITEMS.recoveryTeaCup.id,
     summary: 'A no-real-value first-court recovery proof for testers who connect care rhythm, sanctuary rest, nurture, battle safety, and social witness before the next route or rival bout.'
+  }
+];
+
+export const SPIRIT_PROVISION_CATALOGS: readonly SpiritProvisionCatalog[] = [
+  {
+    id: 'jade-provision-catalog',
+    name: 'Jade Provision Catalog',
+    title: 'First-Court Item Recipe Catalog',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredStockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+    requiredCareItemIds: [ALPHA_ITEMS.mooncakeBox.id, ALPHA_ITEMS.harmonyTea.id],
+    requiredRouteItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+    requiredProvisionSatchelId: SPIRIT_PROVISION_SATCHELS[0].id,
+    requiredMarketReceiptId: MARKET_GUILD_RECEIPTS[0].id,
+    requiredCraftWritId: SPIRIT_CRAFT_WRITS[0].id,
+    requiredRecoveryTeaId: SPIRIT_RECOVERY_TEAS[0].id,
+    requiredCareCycleId: SPIRIT_CARE_CYCLES[0].id,
+    requiredHabitatCensusId: SPIRIT_HABITAT_CENSUSES[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 50,
+    rewardItemId: ALPHA_ITEMS.provisionCatalogSeal.id,
+    summary: 'A no-real-value first-court recipe catalog proof for testers who connect market receipts, provision stock, craft writs, care-cycle supplies, route lures, habitat census notes, recovery tea, and two-tester social readiness.'
   }
 ];
 
@@ -7435,6 +7536,120 @@ export function resolveSpiritRecoveryTea(
   };
 }
 
+export function resolveSpiritProvisionCatalog(
+  progress: SpiritProvisionCatalogProgress,
+  catalogId: string = SPIRIT_PROVISION_CATALOGS[0].id
+): SpiritProvisionCatalogResult {
+  const catalog = SPIRIT_PROVISION_CATALOGS.find((entry) => entry.id === catalogId) || SPIRIT_PROVISION_CATALOGS[0];
+  const requiredSpiritIds = new Set(catalog.requiredSpiritIds);
+  const knownItemIds = new Set<string>(Object.values(ALPHA_ITEMS).map((item) => item.id));
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const activeSpiritId = progress.activeSpiritId && roster.includes(progress.activeSpiritId) ? progress.activeSpiritId : roster[0];
+  const activeSpirit = getMochiSpirit(activeSpiritId || '') || MOCHI_SPIRITS[0];
+  const stockItemIds = catalog.requiredStockItemIds.filter((itemId) => {
+    return knownItemIds.has(itemId) && progress.stockItemIds.includes(itemId);
+  });
+  const careItemIds = catalog.requiredCareItemIds.filter((itemId) => {
+    return knownItemIds.has(itemId) && progress.careItemIds.includes(itemId);
+  });
+  const routeItemIds = catalog.requiredRouteItemIds.filter((itemId) => {
+    return knownItemIds.has(itemId) && progress.routeItemIds.includes(itemId);
+  });
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of catalog.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  for (const itemId of catalog.requiredStockItemIds) {
+    if (!stockItemIds.includes(itemId)) missing.push(`stock:${itemId}`);
+  }
+
+  for (const itemId of catalog.requiredCareItemIds) {
+    if (!careItemIds.includes(itemId)) missing.push(`care-item:${itemId}`);
+  }
+
+  for (const itemId of catalog.requiredRouteItemIds) {
+    if (!routeItemIds.includes(itemId)) missing.push(`route-item:${itemId}`);
+  }
+
+  const provisionReady = progress.provisionProof && progress.provisionSatchelId === catalog.requiredProvisionSatchelId;
+  if (!provisionReady) missing.push(`provision:${catalog.requiredProvisionSatchelId}`);
+
+  const marketReady = progress.marketReceiptProof && progress.marketReceiptId === catalog.requiredMarketReceiptId;
+  if (!marketReady) missing.push(`market-receipt:${catalog.requiredMarketReceiptId}`);
+
+  if (!progress.tradeProof) missing.push('direct-trade');
+
+  const craftReady = progress.craftWritProof && progress.craftWritId === catalog.requiredCraftWritId;
+  if (!craftReady) missing.push(`craft:${catalog.requiredCraftWritId}`);
+
+  const recoveryReady = progress.recoveryTeaProof && progress.recoveryTeaId === catalog.requiredRecoveryTeaId;
+  if (!recoveryReady) missing.push(`recovery:${catalog.requiredRecoveryTeaId}`);
+
+  const careCycleReady = progress.careCycleProof && progress.careCycleId === catalog.requiredCareCycleId;
+  if (!careCycleReady) missing.push(`care-cycle:${catalog.requiredCareCycleId}`);
+
+  const censusReady = progress.habitatCensusProof && progress.habitatCensusId === catalog.requiredHabitatCensusId;
+  if (!censusReady) missing.push(`habitat-census:${catalog.requiredHabitatCensusId}`);
+
+  if (localPresenceCount < catalog.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${catalog.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < catalog.requiredChatLines) missing.push(`chat:${chatLines.length}/${catalog.requiredChatLines}`);
+
+  const score =
+    Math.min(roster.length, catalog.requiredSpiritIds.length) * 2 +
+    Math.min(stockItemIds.length, catalog.requiredStockItemIds.length) * 2 +
+    Math.min(careItemIds.length, catalog.requiredCareItemIds.length) * 2 +
+    Math.min(routeItemIds.length, catalog.requiredRouteItemIds.length) * 2 +
+    (provisionReady ? 4 : 0) +
+    (marketReady ? 3 : 0) +
+    (progress.tradeProof ? 3 : 0) +
+    (craftReady ? 4 : 0) +
+    (recoveryReady ? 4 : 0) +
+    (careCycleReady ? 3 : 0) +
+    (censusReady ? 4 : 0) +
+    (localPresenceCount >= catalog.requiredPresenceCount ? 4 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length >= catalog.requiredChatLines ? 1 : 0);
+  const cataloged = missing.length === 0 && score >= catalog.requiredScore;
+  const itemIds = Array.from(new Set([...stockItemIds, ...careItemIds, ...routeItemIds]));
+
+  return {
+    ok: true,
+    cataloged,
+    catalogId: catalog.id,
+    catalogName: catalog.name,
+    title: catalog.title,
+    habitat: catalog.habitat,
+    activeSpiritId: activeSpirit.id,
+    activeSpiritName: activeSpirit.name,
+    roster,
+    itemIds,
+    careItemIds,
+    routeItemIds,
+    localPresenceCount,
+    score,
+    requiredScore: catalog.requiredScore,
+    missing,
+    rewardItemId: catalog.rewardItemId,
+    message: cataloged
+      ? `${catalog.name} complete: ${activeSpirit.name} indexes first-court lures, care provisions, recipe notes, habitat census records, recovery tea, market receipt, and direct trade proof for closed-alpha supply planning. No real value.`
+      : `${catalog.name} needs ${missing.join(', ')} before the first-court recipe catalog can be sealed.`,
+    source: 'item-provision-catalog'
+  };
+}
+
 export function resolveSpiritKinshipAlbum(
   progress: SpiritKinshipAlbumProgress,
   albumId: string = SPIRIT_KINSHIP_ALBUMS[0].id
@@ -8266,6 +8481,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.researchProof) missing.push('research');
   if (!progress.compendiumProof) missing.push('compendium');
   if (!progress.provisionProof) missing.push('provision');
+  if (!progress.provisionCatalogProof) missing.push('provision-catalog');
   if (!progress.craftWritProof) missing.push('craft-writ');
   if (!progress.routeWaystoneProof) missing.push('route-waystone');
   if (!progress.nurtureRiteProof) missing.push('nurture-rite');
@@ -8322,6 +8538,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.researchProof ? 2 : 0) +
     (progress.compendiumProof ? 3 : 0) +
     (progress.provisionProof ? 2 : 0) +
+    (progress.provisionCatalogProof ? 3 : 0) +
     (progress.craftWritProof ? 3 : 0) +
     (progress.routeWaystoneProof ? 3 : 0) +
     (progress.nurtureRiteProof ? 3 : 0) +
@@ -8378,7 +8595,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, habitat census records, routes, ecology, provision catalog planning, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -8411,6 +8628,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.bloomAscendanceProof) missing.push('bloom-ascendance');
   if (!progress.lineageRegisterProof) missing.push('lineage-register');
   if (!progress.exchangeAccordProof) missing.push('exchange-accord');
+  if (!progress.provisionCatalogProof) missing.push('provision-catalog');
   if (!progress.affinityMatrixProof) missing.push('affinity-matrix');
   if (!progress.techniqueCodexProof) missing.push('technique-codex');
   if (!progress.relicAttunementProof) missing.push('relic-attunement');
@@ -8451,6 +8669,7 @@ export function resolveGuildAscensionTrial(
     (progress.bloomAscendanceProof ? 3 : 0) +
     (progress.lineageRegisterProof ? 3 : 0) +
     (progress.exchangeAccordProof ? 3 : 0) +
+    (progress.provisionCatalogProof ? 3 : 0) +
     (progress.affinityMatrixProof ? 3 : 0) +
     (progress.techniqueCodexProof ? 3 : 0) +
     (progress.relicAttunementProof ? 3 : 0) +
@@ -8497,7 +8716,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, market receipt, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, market receipt, provision catalog, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

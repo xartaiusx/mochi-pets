@@ -35,6 +35,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
+  SPIRIT_PROVISION_CATALOGS,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
   SPIRIT_RELIC_ATTUNEMENTS,
@@ -89,6 +90,7 @@ import {
   resolveSpiritBattleRound,
   resolveSpiritBloomAscendance,
   resolveSpiritBondMilestone,
+  resolveSpiritProvisionCatalog,
   resolveSpiritRouteInvitation,
   resolveSpiritRouteEcologySurvey,
   resolveSpiritRouteWaystone,
@@ -171,6 +173,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritBloomAscendances).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritLineageRegisters).toBe(true);
     expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
     expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
@@ -257,6 +260,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.bloom_ascendance');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.lineage_register');
     expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
+    expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
     expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
     expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
     expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
@@ -834,6 +838,71 @@ describe('alpha contract', () => {
       careStreak: 0,
       completedQuestIds: []
     }).stocked).toBe(false);
+
+    expect(SPIRIT_PROVISION_CATALOGS.map((catalog) => catalog.id)).toEqual(['jade-provision-catalog']);
+    const catalog = resolveSpiritProvisionCatalog({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      careItemIds: ['jade-mooncake-box', 'lantern-harmony-tea'],
+      routeItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      tradeProof: true,
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Catalog ready.']
+    });
+    expect(catalog).toMatchObject({
+      ok: true,
+      cataloged: true,
+      catalogId: 'jade-provision-catalog',
+      catalogName: 'Jade Provision Catalog',
+      title: 'First-Court Item Recipe Catalog',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      careItemIds: ['jade-mooncake-box', 'lantern-harmony-tea'],
+      routeItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      localPresenceCount: 2,
+      score: 53,
+      requiredScore: 50,
+      rewardItemId: 'jade-provision-catalog-seal',
+      source: 'item-provision-catalog'
+    });
+    expect(catalog.message).toContain('No real value');
+    expect(resolveSpiritProvisionCatalog({
+      roster: ['lirabao'],
+      stockItemIds: ['jade-thread-charm'],
+      careItemIds: ['jade-mooncake-box'],
+      routeItemIds: [],
+      provisionProof: false,
+      marketReceiptProof: false,
+      tradeProof: false,
+      craftWritProof: false,
+      recoveryTeaProof: false,
+      careCycleProof: false,
+      habitatCensusProof: false,
+      localPresenceCount: 1,
+      profileViewed: false,
+      guildBuddyProof: false,
+      statusMood: 'exploring',
+      chatLines: []
+    }).cataloged).toBe(false);
 
     expect(SPIRIT_CARE_CYCLES.map((cycle) => cycle.id)).toEqual(['jade-court-care-cycle']);
     const careCycle = resolveSpiritCareCycle({
@@ -2123,6 +2192,7 @@ describe('alpha contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      provisionCatalogProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2173,7 +2243,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 146,
+      score: 149,
       requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
@@ -2197,6 +2267,7 @@ describe('alpha contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      provisionCatalogProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2252,6 +2323,7 @@ describe('alpha contract', () => {
       bloomAscendanceProof: true,
       lineageRegisterProof: true,
       exchangeAccordProof: true,
+      provisionCatalogProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,
@@ -2294,7 +2366,7 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 108,
+      score: 111,
       requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
@@ -2311,6 +2383,7 @@ describe('alpha contract', () => {
       bloomAscendanceProof: true,
       lineageRegisterProof: true,
       exchangeAccordProof: true,
+      provisionCatalogProof: true,
       routePatrolProof: true,
       mentorChallengeProof: true,
       dojoLadderProof: true,

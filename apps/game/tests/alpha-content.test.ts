@@ -27,6 +27,7 @@ import {
   SPIRIT_LINEAGE_REGISTERS,
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
+  SPIRIT_PROVISION_CATALOGS,
   SPIRIT_RECOVERY_TEAS,
   SPIRIT_RELIC_ATTUNEMENTS,
   SPIRIT_RIVAL_CIRCLES,
@@ -83,6 +84,7 @@ import {
   resolveSpiritNurtureRite,
   resolveSpiritNurseryGrove,
   resolveSpiritParty,
+  resolveSpiritProvisionCatalog,
   resolveSpiritProvisionSatchel,
   resolveSpiritRecoveryTea,
   resolveSpiritRelicAttunement,
@@ -743,6 +745,46 @@ describe('Mochi Spirits alpha content contract', () => {
       score: 34,
       rewardItemId: ALPHA_ITEMS.provisionSatchel.id
     });
+
+    expect(SPIRIT_PROVISION_CATALOGS.map((catalog) => catalog.id)).toEqual(['jade-provision-catalog']);
+    const provisionCatalog = resolveSpiritProvisionCatalog({
+      roster: fullRoster,
+      activeSpiritId: 'jintari',
+      stockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      careItemIds: [ALPHA_ITEMS.mooncakeBox.id, ALPHA_ITEMS.harmonyTea.id],
+      routeItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      tradeProof: true,
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Provision catalog ready.']
+    });
+    expect(provisionCatalog).toMatchObject({
+      cataloged: true,
+      catalogId: 'jade-provision-catalog',
+      catalogName: 'Jade Provision Catalog',
+      itemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+      careItemIds: [ALPHA_ITEMS.mooncakeBox.id, ALPHA_ITEMS.harmonyTea.id],
+      routeItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
+      score: 53,
+      requiredScore: 50,
+      rewardItemId: ALPHA_ITEMS.provisionCatalogSeal.id,
+      source: 'item-provision-catalog'
+    });
+    expect(provisionCatalog.message).toContain('No real value');
 
     expect(SPIRIT_CARE_CYCLES.map((cycle) => cycle.id)).toEqual(['jade-court-care-cycle']);
     const blockedCareCycle = resolveSpiritCareCycle({
@@ -1972,6 +2014,7 @@ describe('Mochi Spirits alpha content contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      provisionCatalogProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2036,6 +2079,7 @@ describe('Mochi Spirits alpha content contract', () => {
       researchProof: true,
       compendiumProof: true,
       provisionProof: true,
+      provisionCatalogProof: true,
       craftWritProof: true,
       routeWaystoneProof: true,
       nurtureRiteProof: true,
@@ -2080,7 +2124,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 146,
+      score: 149,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2099,6 +2143,7 @@ describe('Mochi Spirits alpha content contract', () => {
       bloomAscendanceProof: true,
       lineageRegisterProof: true,
       exchangeAccordProof: true,
+      provisionCatalogProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2148,6 +2193,7 @@ describe('Mochi Spirits alpha content contract', () => {
       bloomAscendanceProof: true,
       lineageRegisterProof: true,
       exchangeAccordProof: true,
+      provisionCatalogProof: true,
       affinityMatrixProof: true,
       techniqueCodexProof: true,
       relicAttunementProof: true,
@@ -2184,7 +2230,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 108,
+      score: 111,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'

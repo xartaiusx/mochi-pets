@@ -35,6 +35,7 @@ import {
   SPIRIT_MENTOR_CHALLENGES,
   SPIRIT_NURTURE_RITES,
   SPIRIT_NURSERY_GROVES,
+  SPIRIT_PROVISION_CATALOGS,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RECOVERY_TEAS,
   SPIRIT_RESEARCH_FOLIOS,
@@ -103,6 +104,7 @@ import {
   resolveSpiritNurtureRite,
   resolveSpiritParty,
   resolveSpiritBondMilestone,
+  resolveSpiritProvisionCatalog,
   resolveSpiritProvisionSatchel,
   resolveSpiritRaisingAction,
   resolveSpiritRecoveryTea,
@@ -256,6 +258,16 @@ interface AlphaHudState {
   provisionScore: number;
   provisionStockItemIds: string[];
   provisionSatchelClaimed: boolean;
+  provisionCatalogProof: boolean;
+  provisionCatalogId?: string;
+  provisionCatalogName: string;
+  provisionCatalogScore: number;
+  provisionCatalogRequiredScore: number;
+  provisionCatalogItemIds: string[];
+  provisionCatalogCareItemIds: string[];
+  provisionCatalogRouteItemIds: string[];
+  provisionCatalogPresenceCount: number;
+  provisionCatalogSealClaimed: boolean;
   careCycleProof: boolean;
   careCycleId?: string;
   careCycleName: string;
@@ -770,6 +782,23 @@ export interface AlphaWorldStatePatch {
     stockItemIds: string[];
     title: string;
   };
+  provisionCatalog?: {
+    activeSpiritId?: string;
+    catalogId: string;
+    catalogName: string;
+    careItemIds: string[];
+    habitat: string;
+    itemIds: string[];
+    localPresenceCount: number;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    routeItemIds: string[];
+    score: number;
+    requiredScore: number;
+    title: string;
+  };
   guildCommission?: {
     activeSpiritId?: string;
     commissionId: string;
@@ -1167,6 +1196,15 @@ function defaultAlphaState(): AlphaHudState {
     provisionScore: 0,
     provisionStockItemIds: [],
     provisionSatchelClaimed: false,
+    provisionCatalogProof: false,
+    provisionCatalogName: 'Uncataloged',
+    provisionCatalogScore: 0,
+    provisionCatalogRequiredScore: 0,
+    provisionCatalogItemIds: [],
+    provisionCatalogCareItemIds: [],
+    provisionCatalogRouteItemIds: [],
+    provisionCatalogPresenceCount: 0,
+    provisionCatalogSealClaimed: false,
     careCycleProof: false,
     careCycleName: 'Uncycled',
     careCycleScore: 0,
@@ -1674,6 +1712,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-compendium-label>Compendium: pending</span>
       <span class="mochi-hud__hint" data-archive-label>Archive: pending</span>
       <span class="mochi-hud__hint" data-provision-label>Satchel: pending</span>
+      <span class="mochi-hud__hint" data-provision-catalog-label>Catalog: pending</span>
       <span class="mochi-hud__hint" data-care-cycle-label>Care Cycle: pending</span>
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
@@ -1759,6 +1798,7 @@ function createHud() {
       <button type="button" data-alpha-action="world.route_waystone" aria-label="Record the no-real-value Jade Cloudbell Waystone">Waystone</button>
       <button type="button" data-alpha-action="spirit.nurture_rite" aria-label="Record the no-real-value Jade Moonwell Nurture Rite">Nurture</button>
       <button type="button" data-alpha-action="spirit.recovery_tea" aria-label="Record the no-real-value Jade Teahouse Recovery">Recover</button>
+      <button type="button" data-alpha-action="item.provision_catalog" aria-label="Seal the no-real-value Jade Provision Catalog">Catalog</button>
       <button type="button" data-alpha-action="spirit.kinship_album" aria-label="Record the no-real-value Jade Kinship Album">Kinship</button>
       <button type="button" data-alpha-action="spirit.nursery_grove" aria-label="Record the no-real-value Jade Nursery Grove">Nursery</button>
       <button type="button" data-alpha-action="spirit.bloom_ascendance" aria-label="Record the no-real-value Jade Bloom Ascendance">Ascend+</button>
@@ -1833,6 +1873,7 @@ function createHud() {
   const compendiumLabel = hud.querySelector('[data-compendium-label]');
   const archiveLabel = hud.querySelector('[data-archive-label]');
   const provisionLabel = hud.querySelector('[data-provision-label]');
+  const provisionCatalogLabel = hud.querySelector('[data-provision-catalog-label]');
   const careCycleLabel = hud.querySelector('[data-care-cycle-label]');
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
@@ -1994,6 +2035,11 @@ function createHud() {
       provisionLabel.textContent = state.provisionProof
         ? `Satchel: ${state.provisionSatchelName}, ${state.provisionStockItemIds.length} items`
         : 'Satchel: pending';
+    }
+    if (provisionCatalogLabel) {
+      provisionCatalogLabel.textContent = state.provisionCatalogProof
+        ? `Catalog: ${state.provisionCatalogName}, ${state.provisionCatalogItemIds.length} items, score ${state.provisionCatalogScore}/${state.provisionCatalogRequiredScore}`
+        : 'Catalog: pending';
     }
     if (careCycleLabel) {
       careCycleLabel.textContent = state.careCycleProof
@@ -2469,6 +2515,9 @@ function readAlphaState(): AlphaHudState {
       habitatCensusRouteIds: Array.isArray(parsed?.habitatCensusRouteIds) ? parsed.habitatCensusRouteIds.map(String) : [],
       habitatCensusSpiritIds: Array.isArray(parsed?.habitatCensusSpiritIds) ? parsed.habitatCensusSpiritIds.map(String) : [],
       habitatCensusCareLoggedSpiritIds: Array.isArray(parsed?.habitatCensusCareLoggedSpiritIds) ? parsed.habitatCensusCareLoggedSpiritIds.map(String) : [],
+      provisionCatalogItemIds: Array.isArray(parsed?.provisionCatalogItemIds) ? parsed.provisionCatalogItemIds.map(String) : [],
+      provisionCatalogCareItemIds: Array.isArray(parsed?.provisionCatalogCareItemIds) ? parsed.provisionCatalogCareItemIds.map(String) : [],
+      provisionCatalogRouteItemIds: Array.isArray(parsed?.provisionCatalogRouteItemIds) ? parsed.provisionCatalogRouteItemIds.map(String) : [],
       craftWritRecipeIds: Array.isArray(parsed?.craftWritRecipeIds) ? parsed.craftWritRecipeIds.map(String) : [],
       craftWritStockItemIds: Array.isArray(parsed?.craftWritStockItemIds) ? parsed.craftWritStockItemIds.map(String) : [],
       exchangeAccordItemIds: Array.isArray(parsed?.exchangeAccordItemIds) ? parsed.exchangeAccordItemIds.map(String) : [],
@@ -2802,6 +2851,28 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.provisionSatchel.completedQuestIds.map(String)]));
     state.spiritId = patch.provisionSatchel.activeSpiritId || state.spiritId;
     appendUniqueAlphaChat(state, patch.provisionSatchel.message || `${state.provisionSatchelName} stocked as no-real-value item proof.`);
+  }
+
+  if (patch.provisionCatalog) {
+    state.provisionCatalogProof = patch.provisionCatalog.proof || state.provisionCatalogProof;
+    state.provisionCatalogId = patch.provisionCatalog.catalogId || state.provisionCatalogId;
+    state.provisionCatalogName = patch.provisionCatalog.catalogName || state.provisionCatalogName;
+    state.provisionCatalogScore = Math.max(state.provisionCatalogScore, Number(patch.provisionCatalog.score) || 0);
+    state.provisionCatalogRequiredScore = Math.max(state.provisionCatalogRequiredScore, Number(patch.provisionCatalog.requiredScore) || 0);
+    state.provisionCatalogItemIds = Array.isArray(patch.provisionCatalog.itemIds)
+      ? patch.provisionCatalog.itemIds.map(String)
+      : state.provisionCatalogItemIds;
+    state.provisionCatalogCareItemIds = Array.isArray(patch.provisionCatalog.careItemIds)
+      ? patch.provisionCatalog.careItemIds.map(String)
+      : state.provisionCatalogCareItemIds;
+    state.provisionCatalogRouteItemIds = Array.isArray(patch.provisionCatalog.routeItemIds)
+      ? patch.provisionCatalog.routeItemIds.map(String)
+      : state.provisionCatalogRouteItemIds;
+    state.provisionCatalogPresenceCount = Math.max(state.provisionCatalogPresenceCount, Number(patch.provisionCatalog.localPresenceCount) || 0);
+    state.provisionCatalogSealClaimed = state.provisionCatalogSealClaimed || patch.provisionCatalog.rewardItemId === 'jade-provision-catalog-seal';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.provisionCatalog.roster.map(String)]));
+    state.spiritId = patch.provisionCatalog.activeSpiritId || state.spiritId;
+    appendUniqueAlphaChat(state, patch.provisionCatalog.message || `${state.provisionCatalogName} sealed as no-real-value item catalog proof.`);
   }
 
   if (patch.guildCommission) {
@@ -3735,6 +3806,37 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'item.provision_catalog') {
+    const catalog = SPIRIT_PROVISION_CATALOGS[0];
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      catalogId: catalog.id,
+      roster: state.attunedSpiritIds,
+      activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
+      stockItemIds: state.provisionStockItemIds.length ? state.provisionStockItemIds : catalog.requiredStockItemIds,
+      careItemIds: catalog.requiredCareItemIds,
+      routeItemIds: catalog.requiredRouteItemIds,
+      provisionProof: state.provisionProof,
+      provisionSatchelId: state.provisionSatchelId,
+      marketReceiptProof: state.marketReceiptProof,
+      marketReceiptId: state.marketReceiptId,
+      tradeProof: state.tradeProof,
+      craftWritProof: state.craftWritProof,
+      craftWritId: state.craftWritId,
+      recoveryTeaProof: state.recoveryTeaProof,
+      recoveryTeaId: state.recoveryTeaId,
+      careCycleProof: state.careCycleProof,
+      careCycleId: state.careCycleId,
+      habitatCensusProof: state.habitatCensusProof,
+      habitatCensusId: state.habitatCensusId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'spirit.kinship_album') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : [state.spiritId].filter(Boolean);
     const caredSpiritIds = state.nurtureRiteCaredSpiritIds.length
@@ -4061,6 +4163,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       researchProof: state.researchProof,
       compendiumProof: state.compendiumProof,
       provisionProof: state.provisionProof,
+      provisionCatalogProof: state.provisionCatalogProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
       nurtureRiteProof: state.nurtureRiteProof,
@@ -5658,6 +5761,53 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'item.provision_catalog') {
+    const result = resolveSpiritProvisionCatalog(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
+        stockItemIds: Array.isArray(payload.stockItemIds) ? payload.stockItemIds.map(String) : state.provisionStockItemIds,
+        careItemIds: Array.isArray(payload.careItemIds) ? payload.careItemIds.map(String) : SPIRIT_PROVISION_CATALOGS[0].requiredCareItemIds,
+        routeItemIds: Array.isArray(payload.routeItemIds) ? payload.routeItemIds.map(String) : SPIRIT_PROVISION_CATALOGS[0].requiredRouteItemIds,
+        provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionSatchelId: String(payload.provisionSatchelId || state.provisionSatchelId || ''),
+        marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
+        marketReceiptId: String(payload.marketReceiptId || state.marketReceiptId || ''),
+        tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
+        craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
+        craftWritId: String(payload.craftWritId || state.craftWritId || ''),
+        recoveryTeaProof: Boolean(payload.recoveryTeaProof ?? state.recoveryTeaProof),
+        recoveryTeaId: String(payload.recoveryTeaId || state.recoveryTeaId || ''),
+        careCycleProof: Boolean(payload.careCycleProof ?? state.careCycleProof),
+        careCycleId: String(payload.careCycleId || state.careCycleId || ''),
+        habitatCensusProof: Boolean(payload.habitatCensusProof ?? state.habitatCensusProof),
+        habitatCensusId: String(payload.habitatCensusId || state.habitatCensusId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.catalogId || SPIRIT_PROVISION_CATALOGS[0].id)
+    );
+    if (result.cataloged) {
+      state.provisionCatalogProof = true;
+      state.provisionCatalogId = result.catalogId;
+      state.provisionCatalogName = result.catalogName;
+      state.provisionCatalogScore = result.score;
+      state.provisionCatalogRequiredScore = result.requiredScore;
+      state.provisionCatalogItemIds = result.itemIds;
+      state.provisionCatalogCareItemIds = result.careItemIds;
+      state.provisionCatalogRouteItemIds = result.routeItemIds;
+      state.provisionCatalogPresenceCount = result.localPresenceCount;
+      state.provisionCatalogSealClaimed = result.rewardItemId === 'jade-provision-catalog-seal';
+      state.attunedSpiritIds = result.roster;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+      state.spiritId = result.activeSpiritId || state.spiritId;
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'spirit.kinship_album') {
     const result = resolveSpiritKinshipAlbum(
       {
@@ -6073,6 +6223,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         researchProof: Boolean(payload.researchProof ?? state.researchProof),
         compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
         provisionProof: Boolean(payload.provisionProof ?? state.provisionProof),
+        provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
@@ -6169,6 +6320,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
         marketProof: Boolean(payload.marketProof ?? state.charmListed),
         marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
+        provisionCatalogProof: Boolean(payload.provisionCatalogProof ?? state.provisionCatalogProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),

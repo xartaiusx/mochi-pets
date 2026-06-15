@@ -41,6 +41,7 @@ import {
   SPIRIT_MOVES,
   SPIRIT_NURSERY_GROVES,
   SPIRIT_NURTURE_RITES,
+  SPIRIT_PROVISION_CATALOGS,
   SPIRIT_PROVISION_SATCHELS,
   SPIRIT_RAISE_ACTIONS,
   SPIRIT_RECOVERY_TEAS,
@@ -150,6 +151,7 @@ export const PLAYABLE_CONTENT_CATALOG = {
   },
   economyAndCanary: {
     provisionSatchelIds: idsFrom(SPIRIT_PROVISION_SATCHELS),
+    provisionCatalogIds: idsFrom(SPIRIT_PROVISION_CATALOGS),
     craftWritIds: idsFrom(SPIRIT_CRAFT_WRITS),
     marketReceiptIds: idsFrom(MARKET_GUILD_RECEIPTS),
     tradeExchangeAccordIds: idsFrom(TRADE_EXCHANGE_ACCORDS),

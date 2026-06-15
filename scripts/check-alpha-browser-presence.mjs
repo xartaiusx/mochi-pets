@@ -251,6 +251,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="world.encounter_rotation"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.encounter_atlas"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.habitat_census"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="item.provision_catalog"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.dojo_ladder"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.tournament_bracket"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="battle.rival_circle"]', { timeout: timeoutMs });
@@ -291,6 +292,7 @@ async function exerciseAlphaHud(page) {
       const compendium = document.querySelector('[data-compendium-label]')?.textContent || '';
       const archive = document.querySelector('[data-archive-label]')?.textContent || '';
       const provision = document.querySelector('[data-provision-label]')?.textContent || '';
+      const provisionCatalog = document.querySelector('[data-provision-catalog-label]')?.textContent || '';
       const careCycle = document.querySelector('[data-care-cycle-label]')?.textContent || '';
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
@@ -364,6 +366,7 @@ async function exerciseAlphaHud(page) {
         && compendium.includes('Jade Court Spirit Compendium')
         && archive.includes('Jade Court Roster Archive')
         && provision.includes('Jade Court Provision Satchel')
+        && provisionCatalog.includes('Jade Provision Catalog')
         && careCycle.includes('Jade Court Care Cycle')
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
@@ -521,6 +524,23 @@ async function exerciseAlphaHud(page) {
         && state.provisionStockItemIds.includes('lantern-harmony-tea')
         && state.provisionStockItemIds.includes('jade-mooncake-box')
         && state.provisionSatchelClaimed === true
+        && state.provisionCatalogProof === true
+        && state.provisionCatalogId === 'jade-provision-catalog'
+        && state.provisionCatalogName === 'Jade Provision Catalog'
+        && state.provisionCatalogScore >= 50
+        && state.provisionCatalogRequiredScore === 50
+        && Array.isArray(state.provisionCatalogItemIds)
+        && state.provisionCatalogItemIds.includes('jade-thread-charm')
+        && state.provisionCatalogItemIds.includes('lantern-harmony-tea')
+        && state.provisionCatalogItemIds.includes('jade-mooncake-box')
+        && Array.isArray(state.provisionCatalogCareItemIds)
+        && state.provisionCatalogCareItemIds.includes('jade-mooncake-box')
+        && state.provisionCatalogCareItemIds.includes('lantern-harmony-tea')
+        && Array.isArray(state.provisionCatalogRouteItemIds)
+        && state.provisionCatalogRouteItemIds.includes('lantern-harmony-tea')
+        && state.provisionCatalogRouteItemIds.includes('jade-thread-charm')
+        && state.provisionCatalogPresenceCount >= 2
+        && state.provisionCatalogSealClaimed === true
         && state.careCycleProof === true
         && state.careCycleId === 'jade-court-care-cycle'
         && state.careCycleName === 'Jade Court Care Cycle'

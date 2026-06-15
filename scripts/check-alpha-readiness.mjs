@@ -720,6 +720,46 @@ const checks = [
     includes: ['market-receipt', 'record the Jade Court Market Receipt proof']
   },
   {
+    file: 'AGENTS.md',
+    includes: ['item.provision_catalog', 'itemProvisionCatalogs: true', 'Jade Provision Catalog label/state', 'Jade Provision Catalog Seal payload preservation']
+  },
+  {
+    file: 'docs/alpha-acceptance.md',
+    includes: ['item.provision_catalog', 'Jade Provision Catalog', 'provisionCatalogProof', 'Jade Provision Catalog Seal']
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: ['Jade Provision Catalog proof', 'Jade Provision Catalog Seal', 'Provision catalog proof is no-real-value']
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: ['Jade Provision Catalog proof', 'item.provision_catalog', 'Jade Provision Catalog Seal']
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: ['Jade Provision Catalog proof', 'catalog', 'content-only']
+  },
+  {
+    file: 'docs/game-art-bible.md',
+    includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'content-only item recipe proof']
+  },
+  {
+    file: 'docs/asset-pipeline-contract.md',
+    includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'Content-only proof loops']
+  },
+  {
+    file: 'docs/asset-ledger.md',
+    includes: ['Jade Provision Catalog', 'Jade Provision Catalog Seal', 'Content-only HUD and ledger proofs']
+  },
+  {
+    file: 'docs/alpha-operator-handoff.md',
+    includes: ['provision-catalog', 'record the Jade Provision Catalog proof']
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: ['Jade Provision Catalog proof', 'item.provision_catalog', 'provisionCatalogProof']
+  },
+  {
     file: 'docs/alpha-acceptance.md',
     includes: ['trade.exchange_accord', 'Jade Exchange Accord', 'exchangeAccordProof', 'Jade Exchange Accord Tally']
   },
@@ -786,6 +826,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['itemProvisionCatalogs: true', "'item.provision_catalog'"]
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
@@ -913,6 +957,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['SPIRIT_PROVISION_CATALOGS', 'resolveSpiritProvisionCatalog', 'data-alpha-action="item.provision_catalog"', 'data-provision-catalog-label', 'provisionCatalogProof', 'provisionCatalogSealClaimed', 'Jade Provision Catalog']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['SPIRIT_ROUTE_PATROLS', 'resolveSpiritRoutePatrol', 'data-alpha-action="world.route_patrol"', 'data-route-patrol-label', 'routePatrolProof', 'routePatrolPennantClaimed']
   },
   {
@@ -1022,6 +1070,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['MARKET_GUILD_RECEIPTS', 'Jade Court Market Receipt', 'jade-market-receipt', 'resolveMarketGuildReceipt', 'market-guild-receipt', 'marketReceiptProof']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['SPIRIT_PROVISION_CATALOGS', 'Jade Provision Catalog', 'jade-provision-catalog-seal', 'resolveSpiritProvisionCatalog', 'item-provision-catalog', 'provisionCatalogProof']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -1138,6 +1190,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['routePatrols: true', 'world.route_patrol']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['itemProvisionCatalogs: true', 'item.provision_catalog', 'provisionCatalogIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1285,6 +1341,10 @@ const checks = [
   },
   {
     file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: ['item.provision_catalog', 'jade-provision-catalog', 'itemProvisionCatalogs', 'Jade Provision Catalog', 'provisionCatalogProof', 'jade-provision-catalog-seal']
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
     includes: ['world.route_patrol', 'jade-cloudbell-patrol', 'routePatrols', 'Jade Cloudbell Patrol', 'two-tester presence proof']
   },
   {
@@ -1398,6 +1458,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
     includes: ['data-alpha-action="market.guild_receipt"', 'marketReceiptProof', 'marketReceiptClaimed', 'Jade Court Market Receipt recorded']
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: ['data-alpha-action="item.provision_catalog"', 'data-provision-catalog-label', 'provisionCatalogProof', 'provisionCatalogSealClaimed', 'Jade Provision Catalog']
   },
   {
     file: 'scripts/check-alpha-browser-presence.mjs',
@@ -1554,6 +1618,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-visual-review.mjs',
     includes: ['marketReceiptProof', 'marketReceiptClaimed', 'Jade Court Market Receipt', 'jade-market-receipt', 'market-guild-receipt', 'market receipt']
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: ['provisionCatalogProof', 'provisionCatalogSealClaimed', 'Jade Provision Catalog', 'jade-provision-catalog-seal', 'provisionCatalog', 'provision catalog']
   },
   {
     file: 'scripts/check-alpha-visual-review.mjs',
