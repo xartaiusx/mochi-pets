@@ -99,6 +99,7 @@ export const ALPHA_FEATURES = {
 export const ALPHA_EDGE_FUNCTIONS = {
   session: 'mochi-social-alpha-session',
   action: 'mochi-social-alpha-action',
+  progress: 'mochi-social-alpha-progress',
   admin: 'mochi-social-alpha-admin',
   feedback: 'submit-mochi-social-feedback'
 } as const;

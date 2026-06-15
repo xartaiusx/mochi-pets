@@ -73,6 +73,8 @@ async function run() {
   assert(manifest.body.market?.auctions === false, 'Built server manifest must keep auctions disabled.');
   assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Built server manifest must expose Alpha Preview Ready as the website stop point.');
   assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Built server manifest must reject provider mutation by default.');
+  assert(manifest.body.progress?.authority === 'mochirii-edge', 'Built server manifest must expose Mochirii Edge account-progress authority.');
+  assert(manifest.body.progress?.snapshotEndpoint === '/integration/alpha/progress', 'Built server manifest must expose the local progress snapshot endpoint.');
   assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Built server manifest must declare zero restricted-source references.');
   assert(manifest.body.cleanRoom?.copiedRestrictedSourceAssets === false, 'Built server manifest must declare zero copied restricted-source assets.');
   assert(manifest.body.brand?.artDirection === 'Mochirii High-Fidelity Wuxia', 'Built server manifest must expose Mochirii High-Fidelity Wuxia art direction.');
@@ -89,6 +91,11 @@ async function run() {
   const alpha = await getJson('/integration/alpha/status', 'alpha status');
   assert(alpha.body.chainRuntime?.mode === 'configured-preview-stub', 'Built server must expose configured-preview-stub without Enjin secrets.');
   assert(alpha.body.enjinCanaryConfigured === false, 'Built server must not report Enjin configured under smoke env.');
+  assert(alpha.body.edgeFunctions?.progress === 'mochi-social-alpha-progress', 'Built server alpha status must expose the progress Edge Function name.');
+
+  const progress = await getJson('/integration/alpha/progress', 'guest progress');
+  assert(progress.body.ok === true, 'Guest progress endpoint must stay playable without Supabase auth.');
+  assert(progress.body.mode === 'guest-local', 'Guest progress endpoint must identify local guest fallback.');
 
   const play = await request('/play', 'play route');
   assert(play.status === 200 && String(play.body).includes('Mochi Social'), 'Built server /play must return the game HTML.');

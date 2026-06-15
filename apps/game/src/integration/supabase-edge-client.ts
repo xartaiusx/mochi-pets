@@ -31,3 +31,19 @@ export function buildAlphaActionRequest(action: AlphaActionEnvelope, config = ge
     }
   };
 }
+
+export function buildAlphaProgressRequest(playerId: string, config = getSupabaseEdgeConfig()) {
+  if (!isSupabaseEdgeConfigured(config)) return null;
+
+  return {
+    url: `${config.functionsUrl!.replace(/\/+$/, '')}/${ALPHA_EDGE_FUNCTIONS.progress}`,
+    init: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mochi-social-server-token': config.serverToken!
+      },
+      body: JSON.stringify({ playerId })
+    }
+  };
+}

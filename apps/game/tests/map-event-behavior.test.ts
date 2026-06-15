@@ -103,6 +103,21 @@ describe('Mochi town event behavior', () => {
       { definition: WelcomeNpc(), graphic: 'sifu-narao' },
       { definition: SpiritEvent(SPIRITS[0]), graphic: 'spirit-lirabao' },
       { definition: CareShrine(), graphic: 'sifu-narao' },
+      { definition: HabitatGrove(), graphic: 'habitat-grove' },
+      { definition: PartyBanner(), graphic: 'party-banner' },
+      { definition: JournalPavilion(), graphic: 'journal-pavilion' },
+      { definition: ExpeditionGate(), graphic: 'expedition-gate' },
+      { definition: RouteInvitationAltar(), graphic: 'route-invitation-altar' },
+      { definition: TechniqueDojo(), graphic: 'technique-dojo' },
+      { definition: TacticScrollStand(), graphic: 'tactic-scroll-stand' },
+      { definition: AffinityDais(), graphic: 'affinity-dais' },
+      { definition: TrainingRing(), graphic: 'training-ring' },
+      { definition: QuestBoard(), graphic: 'quest-board' },
+      { definition: GuildRankBell(), graphic: 'guild-rank-bell' },
+      { definition: GrowthMoonwell(), graphic: 'growth-moonwell' },
+      { definition: MarketBoard(), graphic: 'market-board' },
+      { definition: TradePost(), graphic: 'trade-post' },
+      { definition: CanaryShrine(), graphic: 'canary-shrine' },
       { definition: GuildSealChest(), graphic: 'chest' }
     ];
 

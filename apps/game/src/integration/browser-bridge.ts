@@ -128,6 +128,9 @@ import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MO
 const TOKEN_KEY = 'mochiSocial.accessToken';
 const EXPIRES_KEY = 'mochiSocial.accessTokenExpiresAt';
 const ALPHA_STATE_KEY = 'mochiSocial.alphaState';
+const ALPHA_STATE_REVISION_KEY = 'mochiSocial.alphaStateRevision';
+const ALPHA_STATE_UPDATED_AT_KEY = 'mochiSocial.alphaStateUpdatedAt';
+const ALPHA_STATE_AUTHORITY_KEY = 'mochiSocial.alphaStateAuthority';
 const PRESENCE_CHANNEL = 'mochi-social-presence';
 const MOVEMENT_CHANNEL = 'mochi-social-movement';
 const PRESENCE_TAB_KEY = 'mochiSocial.presenceTabId';
@@ -1022,11 +1025,24 @@ interface MovementMessage {
 }
 
 interface AlphaActionResponse {
+  ok?: boolean;
+  error?: string;
   chainRuntime?: {
     mode?: string;
     message?: string;
   };
+  data?: {
+    progress?: AlphaProgressSnapshot | null;
+  };
+  progress?: AlphaProgressSnapshot | null;
   message?: string;
+}
+
+interface AlphaProgressSnapshot {
+  authority?: string;
+  revision?: number;
+  state?: Partial<AlphaHudState>;
+  updatedAt?: string;
 }
 
 function defaultAlphaState(): AlphaHudState {
@@ -1410,6 +1426,84 @@ function postToParent(type: BridgeMessage['type'], payload?: unknown) {
   );
 }
 
+function clearAlphaStateForSignedOutAccount() {
+  localStorage.removeItem(ALPHA_STATE_KEY);
+  localStorage.removeItem(ALPHA_STATE_REVISION_KEY);
+  localStorage.removeItem(ALPHA_STATE_UPDATED_AT_KEY);
+  localStorage.removeItem(ALPHA_STATE_AUTHORITY_KEY);
+  window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
+}
+
+function alphaProgressFromResponse(body: AlphaActionResponse | null): AlphaProgressSnapshot | null {
+  return body?.progress || body?.data?.progress || null;
+}
+
+function alphaProgressUpdatedAt(progress: AlphaProgressSnapshot) {
+  const timestamp = Date.parse(progress.updatedAt || '');
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function isRemoteAlphaProgressNewer(progress: AlphaProgressSnapshot) {
+  const remoteRevision = Number(progress.revision || 0);
+  const localRevision = Number(localStorage.getItem(ALPHA_STATE_REVISION_KEY) || '0');
+  if (remoteRevision > localRevision) return true;
+  if (remoteRevision < localRevision) return false;
+
+  const remoteUpdatedAt = alphaProgressUpdatedAt(progress);
+  const localUpdatedAt = Date.parse(localStorage.getItem(ALPHA_STATE_UPDATED_AT_KEY) || '') || 0;
+  return remoteUpdatedAt > localUpdatedAt;
+}
+
+function applyAuthoritativeAlphaProgress(progress: AlphaProgressSnapshot | null) {
+  if (!progress?.state || typeof progress.state !== 'object' || Array.isArray(progress.state)) return false;
+  if (!isRemoteAlphaProgressNewer(progress)) return false;
+
+  const state = {
+    ...progress.state,
+    chat: Array.isArray(progress.state.chat) ? progress.state.chat.slice(-80).map(String) : []
+  };
+  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify(state));
+  localStorage.setItem(ALPHA_STATE_REVISION_KEY, String(Math.max(0, Math.floor(Number(progress.revision || 0)))));
+  localStorage.setItem(ALPHA_STATE_UPDATED_AT_KEY, progress.updatedAt || new Date().toISOString());
+  localStorage.setItem(ALPHA_STATE_AUTHORITY_KEY, progress.authority || 'mochirii-edge');
+  window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
+  return true;
+}
+
+async function loadLinkedAlphaProgress(accessToken: string) {
+  try {
+    const response = await fetch('/integration/alpha/progress', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    const body = (await response.json().catch(() => null)) as AlphaActionResponse | null;
+    if (response.ok && applyAuthoritativeAlphaProgress(alphaProgressFromResponse(body))) {
+      const state = readAlphaState();
+      appendUniqueAlphaChat(state, 'Account progress synced from Mochirii.');
+      writeAlphaState(state, {
+        preserveSyncMetadata: true
+      });
+      return;
+    }
+    if (!response.ok || body?.ok === false) {
+      const state = readAlphaState();
+      appendUniqueAlphaChat(state, body?.message || 'Account progress sync is unavailable. Local HUD feedback remains no-real-value preview state.');
+      writeAlphaState(state, {
+        preserveSyncMetadata: true
+      });
+      postToParent(BRIDGE_EVENTS.error, { message: 'Mochi Social account progress could not sync.' });
+    }
+  } catch {
+    const state = readAlphaState();
+    appendUniqueAlphaChat(state, 'Account progress sync is offline. Local HUD feedback remains no-real-value preview state.');
+    writeAlphaState(state, {
+      preserveSyncMetadata: true
+    });
+    postToParent(BRIDGE_EVENTS.error, { message: 'Mochi Social account progress could not sync.' });
+  }
+}
+
 function updateHudAuthState(state: AuthState) {
   document.documentElement.dataset.authState = state;
   window.dispatchEvent(new CustomEvent('mochi-social-auth-state', { detail: { state } }));
@@ -1422,11 +1516,16 @@ function setAuth(payload: AuthPayload) {
   }
   updateHudAuthState('linked');
   postToParent(BRIDGE_EVENTS.authState, { state: 'linked' });
+  void loadLinkedAlphaProgress(payload.accessToken);
 }
 
 function clearAuth() {
+  const hadLinkedToken = Boolean(localStorage.getItem(TOKEN_KEY));
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(EXPIRES_KEY);
+  if (hadLinkedToken) {
+    clearAlphaStateForSignedOutAccount();
+  }
   updateHudAuthState('guest');
   postToParent(BRIDGE_EVENTS.authState, { state: 'guest' });
 }
@@ -1464,6 +1563,9 @@ export function installMochiSocialBridge() {
 
   const existingToken = localStorage.getItem(TOKEN_KEY);
   updateHudAuthState(existingToken ? 'linked' : 'guest');
+  if (existingToken) {
+    void loadLinkedAlphaProgress(existingToken);
+  }
   postToParent(BRIDGE_EVENTS.ready, {
     name: 'Mochi Social',
     protocolVersion: MOCHI_SOCIAL_PROTOCOL_VERSION
@@ -2316,8 +2418,11 @@ function readAlphaState(): AlphaHudState {
   }
 }
 
-function writeAlphaState(state: AlphaHudState) {
+function writeAlphaState(state: AlphaHudState, options: { preserveSyncMetadata?: boolean } = {}) {
   localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-80) }));
+  if (!options.preserveSyncMetadata) {
+    localStorage.setItem(ALPHA_STATE_UPDATED_AT_KEY, new Date().toISOString());
+  }
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
 
@@ -6940,6 +7045,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       })
     });
     const body = (await response.json().catch(() => null)) as AlphaActionResponse | null;
+    applyAuthoritativeAlphaProgress(alphaProgressFromResponse(body));
     const chainMessage = type.startsWith('chain.') && body?.chainRuntime?.mode === 'configured-preview-stub'
       ? body.chainRuntime.message
       : null;
@@ -6948,7 +7054,22 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       nextState.chat.push(chainMessage);
       writeAlphaState(nextState);
     }
+    if ((!response.ok || body?.ok === false) && accessToken) {
+      const nextState = readAlphaState();
+      appendUniqueAlphaChat(nextState, body?.message || 'Account progress sync failed. The local HUD update remains preview-only until the next successful save.');
+      writeAlphaState(nextState, {
+        preserveSyncMetadata: true
+      });
+      postToParent(BRIDGE_EVENTS.error, { message: 'Mochi Social account progress could not sync.' });
+    }
   } catch {
-    // Local HUD state remains the immediate alpha feedback path.
+    if (localStorage.getItem(TOKEN_KEY)) {
+      const nextState = readAlphaState();
+      appendUniqueAlphaChat(nextState, 'Account progress sync failed. The local HUD update remains preview-only until the next successful save.');
+      writeAlphaState(nextState, {
+        preserveSyncMetadata: true
+      });
+      postToParent(BRIDGE_EVENTS.error, { message: 'Mochi Social account progress could not sync.' });
+    }
   }
 }

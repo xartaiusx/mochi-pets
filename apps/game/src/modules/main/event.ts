@@ -639,7 +639,7 @@ export function CareShrine(): EventDefinition {
 export function HabitatGrove(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('habitat-grove');
+      setAlphaInteractable(this, 'habitat-grove');
     },
 
     async onAction(player: RpgPlayer) {
@@ -737,7 +737,7 @@ export function HabitatGrove(): EventDefinition {
 export function PartyBanner(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('party-banner');
+      setAlphaInteractable(this, 'party-banner');
     },
 
     async onAction(player: RpgPlayer) {
@@ -812,7 +812,7 @@ export function PartyBanner(): EventDefinition {
 export function JournalPavilion(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('journal-pavilion');
+      setAlphaInteractable(this, 'journal-pavilion');
     },
 
     async onAction(player: RpgPlayer) {
@@ -934,7 +934,7 @@ export function JournalPavilion(): EventDefinition {
 export function ExpeditionGate(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('expedition-gate');
+      setAlphaInteractable(this, 'expedition-gate');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1033,7 +1033,7 @@ export function ExpeditionGate(): EventDefinition {
 export function RouteInvitationAltar(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('route-invitation-altar');
+      setAlphaInteractable(this, 'route-invitation-altar');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1145,7 +1145,7 @@ export function RouteInvitationAltar(): EventDefinition {
 export function TechniqueDojo(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('technique-dojo');
+      setAlphaInteractable(this, 'technique-dojo');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1246,7 +1246,7 @@ export function TechniqueDojo(): EventDefinition {
 export function TacticScrollStand(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('tactic-scroll-stand');
+      setAlphaInteractable(this, 'tactic-scroll-stand');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1313,7 +1313,7 @@ export function TacticScrollStand(): EventDefinition {
 export function AffinityDais(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('affinity-dais');
+      setAlphaInteractable(this, 'affinity-dais');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1422,7 +1422,7 @@ export function AffinityDais(): EventDefinition {
 export function TrainingRing(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('training-ring');
+      setAlphaInteractable(this, 'training-ring');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1717,7 +1717,7 @@ export function TrainingRing(): EventDefinition {
 export function QuestBoard(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('quest-board');
+      setAlphaInteractable(this, 'quest-board');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1899,7 +1899,7 @@ export function QuestBoard(): EventDefinition {
 export function GuildRankBell(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('guild-rank-bell');
+      setAlphaInteractable(this, 'guild-rank-bell');
     },
 
     async onAction(player: RpgPlayer) {
@@ -1957,7 +1957,7 @@ export function GuildRankBell(): EventDefinition {
 export function GrowthMoonwell(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('growth-moonwell');
+      setAlphaInteractable(this, 'growth-moonwell');
     },
 
     async onAction(player: RpgPlayer) {
@@ -2019,7 +2019,7 @@ export function GrowthMoonwell(): EventDefinition {
 export function MarketBoard(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('market-board');
+      setAlphaInteractable(this, 'market-board');
     },
 
     async onAction(player: RpgPlayer) {
@@ -2143,7 +2143,7 @@ export function MarketBoard(): EventDefinition {
 export function TradePost(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('trade-post');
+      setAlphaInteractable(this, 'trade-post');
     },
 
     async onAction(player: RpgPlayer) {
@@ -2159,7 +2159,7 @@ export function TradePost(): EventDefinition {
 export function CanaryShrine(): EventDefinition {
   return {
     onInit() {
-      this.setGraphic('canary-shrine');
+      setAlphaInteractable(this, 'canary-shrine');
     },
 
     async onAction(player: RpgPlayer) {

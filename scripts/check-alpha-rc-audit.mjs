@@ -57,6 +57,7 @@ function addStaticRequirements() {
     '/embed',
     '/integration/game-manifest.json',
     '/integration/alpha/status',
+    '/integration/alpha/progress',
     '/integration/alpha/action',
     '/integration/alpha/enjin/submit'
   ]);
@@ -90,13 +91,17 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
     'x-mochi-social-server-token',
     'ALPHA_EDGE_FUNCTIONS.action',
+    'ALPHA_EDGE_FUNCTIONS.progress',
+    'buildAlphaProgressRequest',
     'JSON.stringify(action)'
   ]);
   requireFileIncludes('game.supabase-edge-tests', 'Supabase Edge bridge tests prove no service-role fallback and no server token in the action body.', 'apps/game/tests/supabase-edge-client.test.ts', [
     'scoped server token in a header only',
+    'authoritative progress snapshot request',
     'not.toContain',
     'SUPABASE_SERVICE_ROLE_KEY',
-    'mochi-social-alpha-action'
+    'mochi-social-alpha-action',
+    'mochi-social-alpha-progress'
   ]);
   requireFileIncludes('game.enjin-finality', 'Enjin helper enforces Canary, Fuel Tank, idempotency, and finality before hot credit.', 'apps/game/src/integration/enjin-canary.ts', [
     "network: 'CANARY'",
@@ -537,6 +542,7 @@ function addSiteRequirements() {
   requireSiteFileIncludes('site.edge-functions', 'Mochirii Supabase config owns all alpha Edge Functions.', 'supabase/config.toml', [
     'mochi-social-alpha-session',
     'mochi-social-alpha-action',
+    'mochi-social-alpha-progress',
     'mochi-social-alpha-admin',
     'submit-mochi-social-feedback'
   ]);
@@ -554,6 +560,7 @@ function addSiteRequirements() {
   ]);
   requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms and finality-aware chain updates.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
     'alphaAccess(adminClient, playerId)',
+    'upsertAlphaProgressSnapshot(adminClient',
     'alpha_terms_required',
     'chain.operation_update',
     'chain_request_missing',
@@ -569,6 +576,12 @@ function addSiteRequirements() {
     'finalityRequired: true',
     'applyFinalizedChainInventory',
     'Mochi Social Edge authority check passed'
+  ]);
+  requireSiteFileIncludes('site.progress-authority', 'Mochirii progress Edge Function loads account-linked alpha snapshots behind the game server token.', 'supabase/functions/mochi-social-alpha-progress/index.ts', [
+    'requireGameServer(req)',
+    'alphaAccess(adminClient, playerId)',
+    'loadAlphaProgressSnapshot(adminClient, playerId)',
+    'normalizeAlphaProgressSnapshot(data)'
   ]);
   requireSiteFileIncludes('site.preview-key-loader-self-test', 'Mochirii repo locally self-tests preview publishable-key loading without leaking key values before hosted Edge smoke.', 'scripts/check-mochi-social-preview-key-loader.mjs', [
     'MOCHI_SOCIAL_ALPHA_EDGE_PUBLISHABLE_KEY_FILE',

@@ -108,7 +108,15 @@ describe('game manifest', () => {
       },
       routes: {
         public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
-        integration: ['/integration/alpha/status', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+        integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+      },
+      progress: {
+        authority: 'mochirii-edge',
+        linkedAccount: true,
+        guestFallback: true,
+        snapshotEndpoint: '/integration/alpha/progress',
+        accountMode: 'signed-in-supabase',
+        guestMode: 'local-file-and-local-storage'
       },
       alphaPreview: {
         status: 'closed-preview',

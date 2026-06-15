@@ -227,6 +227,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.copiedUpstreamContent === false, 'Alpha status must reject copied upstream content.');
   assert(alphaStatus.body.chain?.network === 'CANARY', 'Alpha status must stay Canary-only.');
   assert(alphaStatus.body.edgeFunctions?.action === 'mochi-social-alpha-action', 'Alpha status must expose the Mochirii action function name.');
+  assert(alphaStatus.body.edgeFunctions?.progress === 'mochi-social-alpha-progress', 'Alpha status must expose the Mochirii progress function name.');
   assert(alphaStatus.body.chainRuntime?.network === 'CANARY', 'Alpha status must expose Enjin Canary runtime details.');
   if (alphaStatus.body.enjinCanaryConfigured === false) {
     assert(alphaStatus.body.chainRuntime?.mode === 'configured-preview-stub', 'Missing Enjin env must expose configured-preview-stub mode.');

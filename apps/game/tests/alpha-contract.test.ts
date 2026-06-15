@@ -122,7 +122,7 @@ import {
   resolveSpiritTrainingBattle,
   resolveTradeExchangeAccord
 } from '../src/alpha/content';
-import { ALPHA_ACTION_TYPES, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
+import { ALPHA_ACTION_TYPES, ALPHA_EDGE_FUNCTIONS, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
 
 describe('alpha contract', () => {
   it('keeps the closed alpha no-real-value and Canary scoped', () => {
@@ -215,6 +215,7 @@ describe('alpha contract', () => {
   it('documents server-only environment names without service-role keys', () => {
     expect(SERVER_ENV_CONTRACT).toContain('MOCHI_SOCIAL_GAME_SERVER_TOKEN');
     expect(SERVER_ENV_CONTRACT.some((name) => name.includes('SERVICE_ROLE'))).toBe(false);
+    expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-social-alpha-progress');
   });
 
   it('validates alpha action envelopes', () => {

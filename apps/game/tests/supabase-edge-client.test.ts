@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildAlphaActionRequest, getSupabaseEdgeConfig, isSupabaseEdgeConfigured } from '../src/integration/supabase-edge-client';
+import { buildAlphaActionRequest, buildAlphaProgressRequest, getSupabaseEdgeConfig, isSupabaseEdgeConfigured } from '../src/integration/supabase-edge-client';
 import type { AlphaActionEnvelope } from '../src/integration/alpha-contract';
 
 const action: AlphaActionEnvelope = {
@@ -32,6 +32,22 @@ describe('supabase edge bridge client', () => {
       'x-mochi-social-server-token': 'scoped-game-token'
     });
     expect(JSON.parse(String(request?.init.body))).toEqual(action);
+    expect(String(request?.init.body)).not.toContain('scoped-game-token');
+  });
+
+  it('builds an authoritative progress snapshot request without putting the server token in the body', () => {
+    const request = buildAlphaProgressRequest('00000000-0000-4000-8000-000000000001', {
+      functionsUrl: 'https://example.supabase.co/functions/v1///',
+      serverToken: 'scoped-game-token'
+    });
+
+    expect(request?.url).toBe('https://example.supabase.co/functions/v1/mochi-social-alpha-progress');
+    expect(request?.init.method).toBe('POST');
+    expect(request?.init.headers).toEqual({
+      'Content-Type': 'application/json',
+      'x-mochi-social-server-token': 'scoped-game-token'
+    });
+    expect(JSON.parse(String(request?.init.body))).toEqual({ playerId: '00000000-0000-4000-8000-000000000001' });
     expect(String(request?.init.body)).not.toContain('scoped-game-token');
   });
 

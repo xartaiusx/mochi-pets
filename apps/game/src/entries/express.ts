@@ -235,7 +235,15 @@ const PLAYABLE_CONTENT_CATALOG = {
 const MANIFEST_CONTRACTS = {
   routes: {
     public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
-    integration: ['/integration/alpha/status', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+    integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+  },
+  progress: {
+    authority: 'mochirii-edge',
+    linkedAccount: true,
+    guestFallback: true,
+    snapshotEndpoint: '/integration/alpha/progress',
+    accountMode: 'signed-in-supabase',
+    guestMode: 'local-file-and-local-storage'
   },
   alphaPreview: {
     status: 'closed-preview',
@@ -350,6 +358,7 @@ const MANIFEST_CONTRACTS = {
 const ALPHA_EDGE_FUNCTIONS = {
   session: 'mochi-social-alpha-session',
   action: 'mochi-social-alpha-action',
+  progress: 'mochi-social-alpha-progress',
   admin: 'mochi-social-alpha-admin',
   feedback: 'submit-mochi-social-feedback'
 } as const;
@@ -543,6 +552,33 @@ app.get('/integration/alpha/status', (_req, res) => {
     chainRuntime: enjinRuntime,
     edgeFunctions: ALPHA_EDGE_FUNCTIONS
   });
+});
+
+app.get('/integration/alpha/progress', async (req, res) => {
+  const accessToken = getBearerToken(req);
+  const authResult = await validateSupabaseAccessTokenForExpress(accessToken);
+  if (!authResult.ok) {
+    res.status(process.env.SUPABASE_AUTH_REQUIRED === 'true' ? 401 : 200).json({
+      ok: process.env.SUPABASE_AUTH_REQUIRED !== 'true',
+      mode: 'guest-local',
+      progress: null,
+      message: authResult.error ?? 'Guest progress remains local until a signed-in Supabase session is linked.'
+    });
+    return;
+  }
+
+  if (authResult.mode !== 'linked' || !authResult.userId) {
+    res.json({
+      ok: true,
+      mode: 'guest-local',
+      progress: null,
+      message: 'Guest progress remains local until a signed-in Supabase session is linked.'
+    });
+    return;
+  }
+
+  const forwarded = await forwardAlphaProgress(authResult.userId);
+  res.status(forwarded.status).json(forwarded.body);
 });
 
 app.post('/integration/alpha/action', strictIntegrationJson, async (req, res) => {
@@ -772,6 +808,38 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
   };
 }
 
+async function forwardAlphaProgress(playerId: string): Promise<{ status: number; body: Record<string, unknown> }> {
+  const request = buildAlphaProgressRequest(playerId);
+  if (!request) {
+    return {
+      status: 503,
+      body: {
+        ok: false,
+        error: 'alpha_progress_edge_not_configured',
+        message: 'Signed-in account progress requires Mochirii Supabase Edge Functions and a scoped game server token.'
+      }
+    };
+  }
+
+  try {
+    const response = await fetch(request.url, request.init);
+    const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    return {
+      status: response.status,
+      body
+    };
+  } catch (error) {
+    return {
+      status: 502,
+      body: {
+        ok: false,
+        error: 'alpha_progress_edge_unreachable',
+        message: error instanceof Error ? error.message : 'Mochirii Supabase alpha progress could not be reached.'
+      }
+    };
+  }
+}
+
 async function buildEnjinOperatorUpdateAction(envelope: ValidEnjinOperatorEnvelope) {
   const baseInput = {
     requestId: envelope.requestId,
@@ -932,6 +1000,23 @@ function buildAlphaActionRequest(action: AlphaActionEnvelope) {
         'x-mochi-social-server-token': config.serverToken
       },
       body: JSON.stringify(action)
+    }
+  };
+}
+
+function buildAlphaProgressRequest(playerId: string) {
+  const config = getSupabaseEdgeConfig();
+  if (!config.functionsUrl || !config.serverToken) return null;
+
+  return {
+    url: `${config.functionsUrl.replace(/\/+$/, '')}/${ALPHA_EDGE_FUNCTIONS.progress}`,
+    init: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mochi-social-server-token': config.serverToken
+      },
+      body: JSON.stringify({ playerId })
     }
   };
 }

@@ -57,6 +57,10 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `alphaPreview.providerMutationAllowedByDefault=false`
 - `alphaPreview.fundedChainRequiredForPreview=false`
 - `alphaPreview.enjinCanaryModeBeforeFunding="configured-preview-stub"`
+- `progress.authority="mochirii-edge"`
+- `progress.linkedAccount=true`
+- `progress.guestFallback=true`
+- `progress.snapshotEndpoint="/integration/alpha/progress"`
 - `cleanRoom.restrictedSourceReferences=false`
 - `cleanRoom.copiedRestrictedSourceNames=false`
 - `cleanRoom.copiedRestrictedSourceAssets=false`
@@ -102,6 +106,17 @@ Recommended website flow:
 2. When a signed-in session exists, send `{ type: "MOCHI_SOCIAL_AUTH", protocolVersion: 1, payload: { accessToken, expiresAt } }`.
 3. On sign-out, send `{ type: "MOCHI_SOCIAL_SIGN_OUT", protocolVersion: 1 }`.
 4. Treat `MOCHI_SOCIAL_AUTH_STATE` as display/status only; the game server remains authoritative.
+
+## Account Progress Contract
+
+Signed-in Supabase mode is the account-persistent path. Tester-password mode remains guest-only.
+
+- The game calls `GET /integration/alpha/progress` with `Authorization: Bearer <access token>`.
+- The game server validates the token with Supabase `getUser(jwt)` and forwards only the derived user id to Mochirii Edge with the scoped game server token.
+- Mochirii Edge returns the latest `mochi_social_progress_snapshots` row for that tester after allowlist and terms checks.
+- The HUD adopts the remote snapshot only when its revision/timestamp is newer than local browser state.
+- If account sync is unavailable, the HUD must show sync-unavailable copy and keep the local preview state no-real-value.
+- The parent website must not send progress snapshots, service-role keys, refresh tokens, or game server tokens through `postMessage`.
 
 ## Chain Finality Contract
 

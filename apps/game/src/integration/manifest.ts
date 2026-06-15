@@ -157,7 +157,15 @@ export const PLAYABLE_CONTENT_CATALOG = {
 export const MANIFEST_CONTRACTS = {
   routes: {
     public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
-    integration: ['/integration/alpha/status', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+    integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+  },
+  progress: {
+    authority: 'mochirii-edge',
+    linkedAccount: true,
+    guestFallback: true,
+    snapshotEndpoint: '/integration/alpha/progress',
+    accountMode: 'signed-in-supabase',
+    guestMode: 'local-file-and-local-storage'
   },
   alphaPreview: {
     status: 'closed-preview',
@@ -268,6 +276,7 @@ export interface GameManifest {
   gameplay: typeof ALPHA_FEATURES.gameplay;
   ugc: typeof ALPHA_FEATURES.ugc;
   routes: typeof MANIFEST_CONTRACTS.routes;
+  progress: typeof MANIFEST_CONTRACTS.progress;
   alphaPreview: typeof MANIFEST_CONTRACTS.alphaPreview;
   cleanRoom: typeof MANIFEST_CONTRACTS.cleanRoom;
   brand: typeof MANIFEST_CONTRACTS.brand;

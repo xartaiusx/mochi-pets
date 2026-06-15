@@ -12,6 +12,10 @@ describe('Express runtime entry', () => {
     for (const route of ['/integration/alpha/action', '/integration/alpha/enjin/submit', '/integration/auth/verify']) {
       expect(expressEntrySource).toContain(`app.post('${route}', strictIntegrationJson,`);
     }
+    expect(expressEntrySource).toContain("app.get('/integration/alpha/progress', async (req, res) => {");
+    expect(expressEntrySource).toContain('forwardAlphaProgress(authResult.userId)');
+    expect(expressEntrySource).toContain('buildAlphaProgressRequest(playerId)');
+    expect(expressEntrySource).toContain("ALPHA_EDGE_FUNCTIONS.progress");
 
     expect(expressEntrySource).toContain("app.use('/parties', async (req, res, next) => {");
     expect(expressEntrySource).toContain('await transport.handleNodeRequest(req, res, next');
