@@ -2407,6 +2407,68 @@ export interface MochiQuestLedgerResult {
   source: string;
 }
 
+export interface MochiDialogueScrollBeat {
+  id: string;
+  speakerId: string;
+  speakerName: string;
+  line: string;
+}
+
+export interface MochiDialogueScroll {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredSpiritIds: readonly string[];
+  requiredBeatIds: readonly string[];
+  requiredQuestLedgerId: string;
+  requiredNameBannerRiteId: string;
+  requiredJournalCount: number;
+  requiredPresenceCount: number;
+  requiredScore: number;
+  rewardItemId: string;
+  beats: readonly MochiDialogueScrollBeat[];
+  summary: string;
+}
+
+export interface MochiDialogueScrollProgress {
+  roster: readonly string[];
+  recordedBeatIds: readonly string[];
+  journalDiscoveredCount: number;
+  localPresenceCount: number;
+  questLedgerProof: boolean;
+  questLedgerId?: string;
+  nameBannerProof: boolean;
+  nameBannerRiteId?: string;
+  compendiumProof: boolean;
+  rosterArchiveProof: boolean;
+  rosterCabinetProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface MochiDialogueScrollResult {
+  ok: boolean;
+  recorded: boolean;
+  scrollId: string;
+  scrollName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  roster: string[];
+  dialogueBeatIds: string[];
+  dialogueSpeakers: string[];
+  dialogueLines: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface MochiStoryChapter {
   id: string;
   name: string;
@@ -2417,6 +2479,7 @@ export interface MochiStoryChapter {
   requiredQuestIds: readonly string[];
   requiredRouteIds: readonly string[];
   requiredQuestLedgerId: string;
+  requiredDialogueScrollId: string;
   requiredNurtureRiteId: string;
   requiredTournamentBracketId: string;
   requiredCommissionId: string;
@@ -2440,6 +2503,8 @@ export interface MochiStoryChapterProgress {
   routeWaystoneId?: string;
   questLedgerProof: boolean;
   questLedgerId?: string;
+  dialogueScrollProof: boolean;
+  dialogueScrollId?: string;
   nurtureRiteProof: boolean;
   nurtureRiteId?: string;
   tournamentProof: boolean;
@@ -2467,6 +2532,7 @@ export interface MochiStoryChapterResult {
   partyIds: string[];
   completedQuestIds: string[];
   routeIds: string[];
+  dialogueScrollId: string;
   localPresenceCount: number;
   score: number;
   requiredScore: number;
@@ -2567,6 +2633,7 @@ export interface GuildWayfarerChronicleProgress {
   battleKitProof: boolean;
   remedyPouchProof: boolean;
   questLedgerProof: boolean;
+  dialogueScrollProof: boolean;
   rosterCabinetProof: boolean;
   blossomCradleProof: boolean;
   craftWritProof: boolean;
@@ -2657,6 +2724,7 @@ export interface GuildAscensionTrialProgress {
   battleKitProof: boolean;
   remedyPouchProof: boolean;
   questLedgerProof: boolean;
+  dialogueScrollProof: boolean;
   rosterCabinetProof: boolean;
   blossomCradleProof: boolean;
   routeCharterProof: boolean;
@@ -4263,6 +4331,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Quest Ledger Seal',
     description: 'A no-real-value quest ledger proof for closed-alpha Mochirii roleplay postings, journal records, route patrol, market receipt, and guild commission readiness.'
   },
+  dialogueScrollSeal: {
+    id: 'jade-dialogue-scroll-seal',
+    name: 'Jade Dialogue Scroll Seal',
+    description: 'A no-real-value original dialogue proof for closed-alpha Mochirii names, guild speakers, journal records, and story readiness.'
+  },
   careCycleKnot: {
     id: 'jade-care-cycle-knot',
     name: 'Jade Care Cycle Knot',
@@ -5634,6 +5707,44 @@ export const MOCHI_QUEST_LEDGERS: readonly MochiQuestLedger[] = [
   }
 ];
 
+export const MOCHI_DIALOGUE_SCROLLS: readonly MochiDialogueScroll[] = [
+  {
+    id: 'jade-dialogue-scroll',
+    name: 'Jade Dialogue Scroll',
+    title: 'First-Court Original Dialogue Scroll',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredSpiritIds: MOCHI_SPIRITS.map((spirit) => spirit.id),
+    requiredBeatIds: ['sifu-narao-lantern-name', 'warden-meilin-goldleaf-step', 'keeper-haoran-skybell-vow'],
+    requiredQuestLedgerId: MOCHI_QUEST_LEDGERS[0].id,
+    requiredNameBannerRiteId: SPIRIT_NAME_BANNER_RITES[0].id,
+    requiredJournalCount: MOCHI_SPIRITS.length,
+    requiredPresenceCount: 2,
+    requiredScore: 40,
+    rewardItemId: ALPHA_ITEMS.dialogueScrollSeal.id,
+    beats: [
+      {
+        id: 'sifu-narao-lantern-name',
+        speakerId: 'sifu-narao',
+        speakerName: 'Sifu Narao',
+        line: 'Carry your name like a lantern, and let the court answer it.'
+      },
+      {
+        id: 'warden-meilin-goldleaf-step',
+        speakerId: 'warden-meilin',
+        speakerName: 'Warden Meilin',
+        line: 'Goldleaf steps grow bright when the guild walks together.'
+      },
+      {
+        id: 'keeper-haoran-skybell-vow',
+        speakerId: 'keeper-haoran',
+        speakerName: 'Keeper Haoran',
+        line: 'Skybell vows travel farther when every spirit hears the same call.'
+      }
+    ],
+    summary: 'A no-real-value original dialogue scroll proving the first Mochirii court speakers, spirit names, journal records, and guild social readiness before the story chapter.'
+  }
+];
+
 export const MOCHI_STORY_CHAPTERS: readonly MochiStoryChapter[] = [
   {
     id: 'jade-scroll-story-chapter',
@@ -5645,6 +5756,7 @@ export const MOCHI_STORY_CHAPTERS: readonly MochiStoryChapter[] = [
     requiredQuestIds: MOCHI_SPIRIT_QUESTS.map((quest) => quest.id),
     requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
     requiredQuestLedgerId: MOCHI_QUEST_LEDGERS[0].id,
+    requiredDialogueScrollId: MOCHI_DIALOGUE_SCROLLS[0].id,
     requiredNurtureRiteId: SPIRIT_NURTURE_RITES[0].id,
     requiredTournamentBracketId: SPIRIT_TOURNAMENT_BRACKETS[0].id,
     requiredCommissionId: GUILD_COMMISSIONS[0].id,
@@ -9801,6 +9913,86 @@ export function resolveMochiQuestLedger(
   };
 }
 
+export function resolveMochiDialogueScroll(
+  progress: MochiDialogueScrollProgress,
+  scrollId: string = MOCHI_DIALOGUE_SCROLLS[0].id
+): MochiDialogueScrollResult {
+  const scroll = MOCHI_DIALOGUE_SCROLLS.find((entry) => entry.id === scrollId) || MOCHI_DIALOGUE_SCROLLS[0];
+  const requiredSpiritIds = new Set(scroll.requiredSpiritIds);
+  const roster = Array.from(new Set(progress.roster.filter(Boolean))).filter((spiritId) => {
+    return requiredSpiritIds.has(spiritId) && Boolean(getMochiSpirit(spiritId));
+  });
+  const recordedBeatIds = Array.from(new Set(progress.recordedBeatIds.filter(Boolean))).filter((beatId) => {
+    return scroll.requiredBeatIds.includes(beatId);
+  });
+  const dialogueBeats = scroll.beats.filter((beat) => recordedBeatIds.includes(beat.id));
+  const journalDiscoveredCount = Math.max(0, Math.floor(progress.journalDiscoveredCount || 0));
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const spiritId of scroll.requiredSpiritIds) {
+    if (!roster.includes(spiritId)) missing.push(`spirit:${spiritId}`);
+  }
+
+  for (const beatId of scroll.requiredBeatIds) {
+    if (!recordedBeatIds.includes(beatId)) missing.push(`beat:${beatId}`);
+  }
+
+  if (journalDiscoveredCount < scroll.requiredJournalCount) missing.push(`journal:${journalDiscoveredCount}/${scroll.requiredJournalCount}`);
+  if (localPresenceCount < scroll.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${scroll.requiredPresenceCount}`);
+  if (!progress.questLedgerProof || progress.questLedgerId !== scroll.requiredQuestLedgerId) missing.push(`quest-ledger:${scroll.requiredQuestLedgerId}`);
+  if (!progress.nameBannerProof || progress.nameBannerRiteId !== scroll.requiredNameBannerRiteId) missing.push(`name-banner:${scroll.requiredNameBannerRiteId}`);
+  if (!progress.compendiumProof) missing.push('compendium');
+  if (!progress.rosterArchiveProof) missing.push('roster-archive');
+  if (!progress.rosterCabinetProof) missing.push('roster-cabinet');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (!chatLines.length) missing.push('chat');
+
+  const score =
+    Math.min(roster.length, scroll.requiredSpiritIds.length) * 2 +
+    Math.min(recordedBeatIds.length, scroll.requiredBeatIds.length) * 3 +
+    Math.min(journalDiscoveredCount, scroll.requiredJournalCount) * 2 +
+    Math.min(localPresenceCount, scroll.requiredPresenceCount) * 2 +
+    (progress.questLedgerProof && progress.questLedgerId === scroll.requiredQuestLedgerId ? 4 : 0) +
+    (progress.nameBannerProof && progress.nameBannerRiteId === scroll.requiredNameBannerRiteId ? 4 : 0) +
+    (progress.compendiumProof ? 3 : 0) +
+    (progress.rosterArchiveProof ? 2 : 0) +
+    (progress.rosterCabinetProof ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    (chatLines.length ? 1 : 0);
+  const recorded = missing.length === 0 && score >= scroll.requiredScore;
+  const speakerNames = dialogueBeats.map((beat) => beat.speakerName);
+
+  return {
+    ok: true,
+    recorded,
+    scrollId: scroll.id,
+    scrollName: scroll.name,
+    title: scroll.title,
+    habitat: scroll.habitat,
+    roster,
+    dialogueBeatIds: recordedBeatIds,
+    dialogueSpeakers: speakerNames,
+    dialogueLines: dialogueBeats.map((beat) => beat.line),
+    localPresenceCount,
+    score,
+    requiredScore: scroll.requiredScore,
+    missing,
+    rewardItemId: scroll.rewardItemId,
+    message: recorded
+      ? `${scroll.name} recorded: ${speakerNames.join(', ')} answer the first-court names with project-authored Mochirii dialogue for the guild story path. No real value.`
+      : `${scroll.name} needs ${missing.join(', ')} before original first-court dialogue can be sealed.`,
+    source: 'story-dialogue-scroll'
+  };
+}
+
 export function resolveMochiStoryChapter(
   progress: MochiStoryChapterProgress,
   chapterId: string = MOCHI_STORY_CHAPTERS[0].id
@@ -9840,6 +10032,7 @@ export function resolveMochiStoryChapter(
   if (!progress.routeEcologyProof || progress.routeEcologyId !== SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id) missing.push('route-ecology');
   if (!progress.routeWaystoneProof || progress.routeWaystoneId !== SPIRIT_ROUTE_WAYSTONES[0].id) missing.push('route-waystone');
   if (!progress.questLedgerProof || progress.questLedgerId !== chapter.requiredQuestLedgerId) missing.push(`quest-ledger:${chapter.requiredQuestLedgerId}`);
+  if (!progress.dialogueScrollProof || progress.dialogueScrollId !== chapter.requiredDialogueScrollId) missing.push(`dialogue:${chapter.requiredDialogueScrollId}`);
   if (!progress.nurtureRiteProof || progress.nurtureRiteId !== chapter.requiredNurtureRiteId) missing.push(`nurture:${chapter.requiredNurtureRiteId}`);
   if (!progress.tournamentProof || progress.tournamentId !== chapter.requiredTournamentBracketId) missing.push(`tournament:${chapter.requiredTournamentBracketId}`);
   if (!progress.commissionProof || progress.commissionId !== chapter.requiredCommissionId) missing.push(`commission:${chapter.requiredCommissionId}`);
@@ -9860,6 +10053,7 @@ export function resolveMochiStoryChapter(
     (progress.routeEcologyProof && progress.routeEcologyId === SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id ? 3 : 0) +
     (progress.routeWaystoneProof && progress.routeWaystoneId === SPIRIT_ROUTE_WAYSTONES[0].id ? 3 : 0) +
     (progress.questLedgerProof && progress.questLedgerId === chapter.requiredQuestLedgerId ? 3 : 0) +
+    (progress.dialogueScrollProof && progress.dialogueScrollId === chapter.requiredDialogueScrollId ? 3 : 0) +
     (progress.nurtureRiteProof && progress.nurtureRiteId === chapter.requiredNurtureRiteId ? 3 : 0) +
     (progress.tournamentProof && progress.tournamentId === chapter.requiredTournamentBracketId ? 4 : 0) +
     (progress.commissionProof && progress.commissionId === chapter.requiredCommissionId ? 3 : 0) +
@@ -9884,6 +10078,7 @@ export function resolveMochiStoryChapter(
     partyIds,
     completedQuestIds,
     routeIds,
+    dialogueScrollId: chapter.requiredDialogueScrollId,
     localPresenceCount,
     score,
     requiredScore: chapter.requiredScore,
@@ -10005,6 +10200,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.battleKitProof) missing.push('battle-kit');
   if (!progress.remedyPouchProof) missing.push('remedy-pouch');
   if (!progress.questLedgerProof) missing.push('quest-ledger');
+  if (!progress.dialogueScrollProof) missing.push('dialogue-scroll');
   if (!progress.rosterCabinetProof) missing.push('roster-cabinet');
   if (!progress.blossomCradleProof) missing.push('blossom-cradle');
   if (!progress.craftWritProof) missing.push('craft-writ');
@@ -10068,6 +10264,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.battleKitProof ? 3 : 0) +
     (progress.remedyPouchProof ? 3 : 0) +
     (progress.questLedgerProof ? 3 : 0) +
+    (progress.dialogueScrollProof ? 3 : 0) +
     (progress.rosterCabinetProof ? 3 : 0) +
     (progress.blossomCradleProof ? 3 : 0) +
     (progress.craftWritProof ? 3 : 0) +
@@ -10164,6 +10361,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.battleKitProof) missing.push('battle-kit');
   if (!progress.remedyPouchProof) missing.push('remedy-pouch');
   if (!progress.questLedgerProof) missing.push('quest-ledger');
+  if (!progress.dialogueScrollProof) missing.push('dialogue-scroll');
   if (!progress.rosterCabinetProof) missing.push('roster-cabinet');
   if (!progress.blossomCradleProof) missing.push('blossom-cradle');
   if (!progress.routeCharterProof) missing.push('route-charter');
@@ -10211,6 +10409,7 @@ export function resolveGuildAscensionTrial(
     (progress.battleKitProof ? 3 : 0) +
     (progress.remedyPouchProof ? 3 : 0) +
     (progress.questLedgerProof ? 3 : 0) +
+    (progress.dialogueScrollProof ? 3 : 0) +
     (progress.rosterCabinetProof ? 3 : 0) +
     (progress.blossomCradleProof ? 3 : 0) +
     (progress.routeCharterProof ? 3 : 0) +

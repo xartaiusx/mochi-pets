@@ -5,6 +5,7 @@ import {
   GUILD_INSIGNIA_CASES,
   GUILD_WAYFARER_CHRONICLES,
   MARKET_GUILD_RECEIPTS,
+  MOCHI_DIALOGUE_SCROLLS,
   MOCHI_QUEST_LEDGERS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRITS,
@@ -59,6 +60,7 @@ import {
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
   resolveMarketGuildReceipt,
+  resolveMochiDialogueScroll,
   resolveMochiQuestLedger,
   resolveMochiStoryChapter,
   resolveMochiSpiritQuestProgress,
@@ -2359,6 +2361,37 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(questLedger.message).toContain('No real value');
 
+    expect(MOCHI_DIALOGUE_SCROLLS.map((scroll) => scroll.id)).toEqual(['jade-dialogue-scroll']);
+    const dialogueScroll = resolveMochiDialogueScroll({
+      roster: fullRoster,
+      recordedBeatIds: ['sifu-narao-lantern-name', 'warden-meilin-goldleaf-step', 'keeper-haoran-skybell-vow'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
+      nameBannerProof: true,
+      nameBannerRiteId: 'jade-name-banner-rite',
+      compendiumProof: true,
+      rosterArchiveProof: true,
+      rosterCabinetProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Dialogue scroll ready.']
+    });
+    expect(dialogueScroll).toMatchObject({
+      recorded: true,
+      scrollId: 'jade-dialogue-scroll',
+      scrollName: 'Jade Dialogue Scroll',
+      dialogueBeatIds: ['sifu-narao-lantern-name', 'warden-meilin-goldleaf-step', 'keeper-haoran-skybell-vow'],
+      dialogueSpeakers: ['Sifu Narao', 'Warden Meilin', 'Keeper Haoran'],
+      score: 44,
+      requiredScore: 40,
+      rewardItemId: ALPHA_ITEMS.dialogueScrollSeal.id,
+      source: 'story-dialogue-scroll'
+    });
+    expect(dialogueScroll.message).toContain('No real value');
+
     expect(MOCHI_STORY_CHAPTERS.map((chapter) => chapter.id)).toEqual(['jade-scroll-story-chapter']);
     const storyChapter = resolveMochiStoryChapter({
       roster: fullRoster,
@@ -2373,6 +2406,8 @@ describe('Mochi Spirits alpha content contract', () => {
       routeWaystoneId: 'jade-cloudbell-waystone',
       questLedgerProof: true,
       questLedgerId: 'jade-quest-ledger',
+      dialogueScrollProof: true,
+      dialogueScrollId: 'jade-dialogue-scroll',
       nurtureRiteProof: true,
       nurtureRiteId: 'jade-moonwell-nurture-rite',
       tournamentProof: true,
@@ -2391,7 +2426,7 @@ describe('Mochi Spirits alpha content contract', () => {
       recorded: true,
       chapterId: 'jade-scroll-story-chapter',
       chapterName: 'Jade Scroll Story Chapter',
-      score: 59,
+      score: 62,
       requiredScore: 42,
       rewardItemId: ALPHA_ITEMS.storyScroll.id,
       source: 'story-chapter'
@@ -2457,6 +2492,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      dialogueScrollProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
       craftWritProof: true,
@@ -2528,6 +2564,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      dialogueScrollProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
       craftWritProof: true,
@@ -2575,7 +2612,7 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 167,
+      score: 170,
       requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
@@ -2598,6 +2635,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      dialogueScrollProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
       routeCharterProof: true,
@@ -2654,6 +2692,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleKitProof: true,
       remedyPouchProof: true,
       questLedgerProof: true,
+      dialogueScrollProof: true,
       rosterCabinetProof: true,
       blossomCradleProof: true,
       routeCharterProof: true,
@@ -2693,7 +2732,7 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 129,
+      score: 132,
       requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'

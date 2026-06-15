@@ -267,6 +267,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="guild.commission_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.social_rally"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="quest.ledger_record"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="story.dialogue_scroll"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="story.chapter_complete"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.insignia_case"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
@@ -335,6 +336,7 @@ async function exerciseAlphaHud(page) {
       const commission = document.querySelector('[data-commission-label]')?.textContent || '';
       const rally = document.querySelector('[data-rally-label]')?.textContent || '';
       const questLedger = document.querySelector('[data-quest-ledger-label]')?.textContent || '';
+      const dialogueScroll = document.querySelector('[data-dialogue-scroll-label]')?.textContent || '';
       const story = document.querySelector('[data-story-label]')?.textContent || '';
       const insignia = document.querySelector('[data-insignia-label]')?.textContent || '';
       const chronicle = document.querySelector('[data-chronicle-label]')?.textContent || '';
@@ -418,6 +420,7 @@ async function exerciseAlphaHud(page) {
         && commission.includes('Jade Court Commission Ledger')
         && rally.includes('Jade Courtyard Rally')
         && questLedger.includes('Jade Quest Ledger')
+        && dialogueScroll.includes('Jade Dialogue Scroll')
         && story.includes('Jade Scroll Story Chapter')
         && insignia.includes('Jade Insignia Case')
         && chronicle.includes('Jade Wayfarer Chronicle')
@@ -976,6 +979,20 @@ async function exerciseAlphaHud(page) {
         && state.questLedgerCompletedQuestIds.includes('silk-market-kindness')
         && state.questLedgerCompletedQuestIds.includes('skybell-spar')
         && state.questLedgerSealClaimed === true
+        && state.dialogueScrollProof === true
+        && state.dialogueScrollId === 'jade-dialogue-scroll'
+        && state.dialogueScrollName === 'Jade Dialogue Scroll'
+        && state.dialogueScrollScore >= 40
+        && state.dialogueScrollRequiredScore === 40
+        && Array.isArray(state.dialogueScrollBeatIds)
+        && state.dialogueScrollBeatIds.includes('sifu-narao-lantern-name')
+        && state.dialogueScrollBeatIds.includes('warden-meilin-goldleaf-step')
+        && state.dialogueScrollBeatIds.includes('keeper-haoran-skybell-vow')
+        && Array.isArray(state.dialogueScrollSpeakers)
+        && state.dialogueScrollSpeakers.includes('Sifu Narao')
+        && state.dialogueScrollSpeakers.includes('Warden Meilin')
+        && state.dialogueScrollSpeakers.includes('Keeper Haoran')
+        && state.dialogueScrollSealClaimed === true
         && state.storyChapterProof === true
         && state.storyChapterId === 'jade-scroll-story-chapter'
         && state.storyChapterName === 'Jade Scroll Story Chapter'
@@ -1290,6 +1307,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Rival Circle cleared')
         && chat.includes('Jade Court Commission Ledger complete')
         && chat.includes('Jade Courtyard Rally complete')
+        && chat.includes('Jade Dialogue Scroll recorded')
         && chat.includes('Jade Scroll Story Chapter recorded')
         && chat.includes('Jade Wayfarer Chronicle complete')
         && chat.includes('Jade Court Ascension Trial complete')
@@ -1365,6 +1383,7 @@ async function exerciseAlphaHud(page) {
     commission: document.querySelector('[data-commission-label]')?.textContent?.trim() || '',
       rally: document.querySelector('[data-rally-label]')?.textContent?.trim() || '',
       questLedger: document.querySelector('[data-quest-ledger-label]')?.textContent?.trim() || '',
+      dialogueScroll: document.querySelector('[data-dialogue-scroll-label]')?.textContent?.trim() || '',
       story: document.querySelector('[data-story-label]')?.textContent?.trim() || '',
       insignia: document.querySelector('[data-insignia-label]')?.textContent?.trim() || '',
       chronicle: document.querySelector('[data-chronicle-label]')?.textContent?.trim() || '',
@@ -1895,6 +1914,18 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.questLedgerAcceptedQuestIds) && snapshot.state.questLedgerAcceptedQuestIds.length === 3, 'HUD quest ledger action must record all accepted quest ids.');
   assert(Array.isArray(snapshot.state.questLedgerCompletedQuestIds) && snapshot.state.questLedgerCompletedQuestIds.length === 3, 'HUD quest ledger action must record all completed quest ids.');
   assert(snapshot.state.questLedgerSealClaimed === true, 'HUD quest ledger action must mark the no-real-value quest ledger seal proof.');
+  assert(snapshot.dialogueScroll.includes('Jade Dialogue Scroll'), 'HUD dialogue label must show the completed no-real-value dialogue scroll.');
+  assert(snapshot.state.dialogueScrollProof === true, 'HUD dialogue action must record dialogue scroll proof.');
+  assert(snapshot.state.dialogueScrollId === 'jade-dialogue-scroll', 'HUD dialogue action must record the Jade Dialogue Scroll id.');
+  assert(snapshot.state.dialogueScrollName === 'Jade Dialogue Scroll', 'HUD dialogue action must record the Jade Dialogue Scroll name.');
+  assert(snapshot.state.dialogueScrollScore >= 40, 'HUD dialogue action must record a passing dialogue scroll score.');
+  assert(snapshot.state.dialogueScrollRequiredScore === 40, 'HUD dialogue action must record the dialogue scroll requirement.');
+  assert(Array.isArray(snapshot.state.dialogueScrollBeatIds) && snapshot.state.dialogueScrollBeatIds.length === 3, 'HUD dialogue action must record all three original dialogue beats.');
+  assert(Array.isArray(snapshot.state.dialogueScrollSpeakers) && snapshot.state.dialogueScrollSpeakers.includes('Sifu Narao'), 'HUD dialogue action must record Sifu Narao as an original speaker.');
+  assert(Array.isArray(snapshot.state.dialogueScrollSpeakers) && snapshot.state.dialogueScrollSpeakers.includes('Warden Meilin'), 'HUD dialogue action must record Warden Meilin as an original speaker.');
+  assert(Array.isArray(snapshot.state.dialogueScrollSpeakers) && snapshot.state.dialogueScrollSpeakers.includes('Keeper Haoran'), 'HUD dialogue action must record Keeper Haoran as an original speaker.');
+  assert(Array.isArray(snapshot.state.dialogueScrollLines) && snapshot.state.dialogueScrollLines.length === 3, 'HUD dialogue action must preserve original project-authored lines.');
+  assert(snapshot.state.dialogueScrollSealClaimed === true, 'HUD dialogue action must mark the no-real-value dialogue scroll seal proof.');
   assert(snapshot.story.includes('Jade Scroll Story Chapter'), 'HUD story label must show the completed no-real-value roleplay chapter.');
   assert(snapshot.state.storyChapterProof === true, 'HUD story action must record story chapter proof.');
   assert(snapshot.state.storyChapterId === 'jade-scroll-story-chapter', 'HUD story action must record the Jade Scroll Story Chapter id.');

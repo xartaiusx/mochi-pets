@@ -83,6 +83,7 @@ describe('game manifest', () => {
         battleItemKits: true,
         remedyPouches: true,
         questLedgers: true,
+        storyDialogueScrolls: true,
         guildCommissions: true,
         socialRallies: true,
         spiritStoryChapters: true,
@@ -263,6 +264,7 @@ describe('game manifest', () => {
         roleplay: {
           questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
           questLedgerIds: ['jade-quest-ledger'],
+          dialogueScrollIds: ['jade-dialogue-scroll'],
           storyChapterIds: ['jade-scroll-story-chapter'],
           guildRankTrialIds: ['jade-court-initiate'],
           guildCommissionIds: ['jade-court-commission-ledger'],

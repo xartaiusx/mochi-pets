@@ -7,6 +7,7 @@ import {
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
   MARKET_GUILD_RECEIPTS,
+  MOCHI_DIALOGUE_SCROLLS,
   MOCHI_QUEST_LEDGERS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
@@ -100,6 +101,7 @@ import {
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMochiDialogueScroll,
   resolveMochiQuestLedger,
   resolveMochiStoryChapter,
   resolveMarketGuildReceipt,
@@ -524,6 +526,15 @@ interface AlphaHudState {
   questLedgerAcceptedQuestIds: string[];
   questLedgerCompletedQuestIds: string[];
   questLedgerSealClaimed: boolean;
+  dialogueScrollProof: boolean;
+  dialogueScrollId?: string;
+  dialogueScrollName: string;
+  dialogueScrollScore: number;
+  dialogueScrollRequiredScore: number;
+  dialogueScrollBeatIds: string[];
+  dialogueScrollSpeakers: string[];
+  dialogueScrollLines: string[];
+  dialogueScrollSealClaimed: boolean;
   storyChapterProof: boolean;
   storyChapterId?: string;
   storyChapterName: string;
@@ -968,6 +979,22 @@ export interface AlphaWorldStatePatch {
     roster: string[];
     score: number;
     requiredScore: number;
+    title: string;
+  };
+  dialogueScroll?: {
+    dialogueBeatIds: string[];
+    dialogueLines: string[];
+    dialogueSpeakers: string[];
+    habitat: string;
+    localPresenceCount: number;
+    message?: string;
+    proof: boolean;
+    rewardItemId: string;
+    roster: string[];
+    score: number;
+    requiredScore: number;
+    scrollId: string;
+    scrollName: string;
     title: string;
   };
   technique?: {
@@ -1563,6 +1590,14 @@ function defaultAlphaState(): AlphaHudState {
     questLedgerAcceptedQuestIds: [],
     questLedgerCompletedQuestIds: [],
     questLedgerSealClaimed: false,
+    dialogueScrollProof: false,
+    dialogueScrollName: 'Unrecorded',
+    dialogueScrollScore: 0,
+    dialogueScrollRequiredScore: 0,
+    dialogueScrollBeatIds: [],
+    dialogueScrollSpeakers: [],
+    dialogueScrollLines: [],
+    dialogueScrollSealClaimed: false,
     storyChapterProof: false,
     storyChapterName: 'Unrecorded',
     storyChapterScore: 0,
@@ -1959,6 +1994,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-commission-label>Commission: pending</span>
       <span class="mochi-hud__hint" data-rally-label>Rally: pending</span>
       <span class="mochi-hud__hint" data-quest-ledger-label>Quest Ledger: pending</span>
+      <span class="mochi-hud__hint" data-dialogue-scroll-label>Dialogue: pending</span>
       <span class="mochi-hud__hint" data-story-label>Story: pending</span>
       <span class="mochi-hud__hint" data-insignia-label>Insignia: pending</span>
       <span class="mochi-hud__hint" data-chronicle-label>Chronicle: pending</span>
@@ -2041,6 +2077,7 @@ function createHud() {
       <button type="button" data-alpha-action="guild.commission_complete" aria-label="Record the no-real-value Mochirii guild commission">Comm</button>
       <button type="button" data-alpha-action="guild.social_rally" aria-label="Record the no-real-value Jade Courtyard Rally">Rally</button>
       <button type="button" data-alpha-action="quest.ledger_record" aria-label="Seal the no-real-value Jade Quest Ledger">Ledger</button>
+      <button type="button" data-alpha-action="story.dialogue_scroll" aria-label="Record the no-real-value Jade Dialogue Scroll">Dialogue</button>
       <button type="button" data-alpha-action="story.chapter_complete" aria-label="Record the no-real-value Jade Scroll Story Chapter">Story</button>
       <button type="button" data-alpha-action="guild.insignia_case" aria-label="Seal the no-real-value Jade Insignia Case">Insignia</button>
       <button type="button" data-alpha-action="guild.wayfarer_chronicle" aria-label="Record the no-real-value Jade Wayfarer Chronicle">Chronicle</button>
@@ -2138,6 +2175,7 @@ function createHud() {
   const commissionLabel = hud.querySelector('[data-commission-label]');
   const rallyLabel = hud.querySelector('[data-rally-label]');
   const questLedgerLabel = hud.querySelector('[data-quest-ledger-label]');
+  const dialogueScrollLabel = hud.querySelector('[data-dialogue-scroll-label]');
   const storyLabel = hud.querySelector('[data-story-label]');
   const insigniaLabel = hud.querySelector('[data-insignia-label]');
   const chronicleLabel = hud.querySelector('[data-chronicle-label]');
@@ -2236,6 +2274,11 @@ function createHud() {
       questLedgerLabel.textContent = state.questLedgerProof
         ? `Quest Ledger: ${state.questLedgerName}, ${state.questLedgerCompletedQuestIds.length}/${MOCHI_SPIRIT_QUESTS.length} quests, score ${state.questLedgerScore}/${state.questLedgerRequiredScore}`
         : 'Quest Ledger: pending';
+    }
+    if (dialogueScrollLabel) {
+      dialogueScrollLabel.textContent = state.dialogueScrollProof
+        ? `Dialogue: ${state.dialogueScrollName}, ${state.dialogueScrollBeatIds.length}/${MOCHI_DIALOGUE_SCROLLS[0].requiredBeatIds.length} beats, score ${state.dialogueScrollScore}/${state.dialogueScrollRequiredScore}`
+        : 'Dialogue: pending';
     }
     if (storyLabel) {
       storyLabel.textContent = state.storyChapterProof
@@ -2859,6 +2902,9 @@ function readAlphaState(): AlphaHudState {
       lineageRegisterMilestoneLabels: Array.isArray(parsed?.lineageRegisterMilestoneLabels) ? parsed.lineageRegisterMilestoneLabels.map(String) : [],
       questLedgerAcceptedQuestIds: Array.isArray(parsed?.questLedgerAcceptedQuestIds) ? parsed.questLedgerAcceptedQuestIds.map(String) : [],
       questLedgerCompletedQuestIds: Array.isArray(parsed?.questLedgerCompletedQuestIds) ? parsed.questLedgerCompletedQuestIds.map(String) : [],
+      dialogueScrollBeatIds: Array.isArray(parsed?.dialogueScrollBeatIds) ? parsed.dialogueScrollBeatIds.map(String) : [],
+      dialogueScrollSpeakers: Array.isArray(parsed?.dialogueScrollSpeakers) ? parsed.dialogueScrollSpeakers.map(String) : [],
+      dialogueScrollLines: Array.isArray(parsed?.dialogueScrollLines) ? parsed.dialogueScrollLines.map(String) : [],
       storyChapterRouteIds: Array.isArray(parsed?.storyChapterRouteIds) ? parsed.storyChapterRouteIds.map(String) : [],
       storyChapterQuestIds: Array.isArray(parsed?.storyChapterQuestIds) ? parsed.storyChapterQuestIds.map(String) : [],
       insigniaCaseSpiritIds: Array.isArray(parsed?.insigniaCaseSpiritIds) ? parsed.insigniaCaseSpiritIds.map(String) : [],
@@ -3280,6 +3326,27 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     state.completedQuestIds = Array.from(new Set([...(state.completedQuestIds || []), ...patch.questLedger.completedQuestIds.map(String)]));
     state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.questLedger.localPresenceCount) || 1);
     appendUniqueAlphaChat(state, patch.questLedger.message || `${state.questLedgerName} sealed as no-real-value quest ledger proof.`);
+  }
+
+  if (patch.dialogueScroll) {
+    state.dialogueScrollProof = patch.dialogueScroll.proof || state.dialogueScrollProof;
+    state.dialogueScrollId = patch.dialogueScroll.scrollId || state.dialogueScrollId;
+    state.dialogueScrollName = patch.dialogueScroll.scrollName || state.dialogueScrollName;
+    state.dialogueScrollScore = Math.max(state.dialogueScrollScore, Number(patch.dialogueScroll.score) || 0);
+    state.dialogueScrollRequiredScore = Math.max(state.dialogueScrollRequiredScore, Number(patch.dialogueScroll.requiredScore) || 0);
+    state.dialogueScrollBeatIds = Array.isArray(patch.dialogueScroll.dialogueBeatIds)
+      ? patch.dialogueScroll.dialogueBeatIds.map(String)
+      : state.dialogueScrollBeatIds;
+    state.dialogueScrollSpeakers = Array.isArray(patch.dialogueScroll.dialogueSpeakers)
+      ? patch.dialogueScroll.dialogueSpeakers.map(String)
+      : state.dialogueScrollSpeakers;
+    state.dialogueScrollLines = Array.isArray(patch.dialogueScroll.dialogueLines)
+      ? patch.dialogueScroll.dialogueLines.map(String)
+      : state.dialogueScrollLines;
+    state.dialogueScrollSealClaimed = state.dialogueScrollSealClaimed || patch.dialogueScroll.rewardItemId === 'jade-dialogue-scroll-seal';
+    state.attunedSpiritIds = Array.from(new Set([...(state.attunedSpiritIds || []), ...patch.dialogueScroll.roster.map(String)]));
+    state.rallyPresenceCount = Math.max(state.rallyPresenceCount, Number(patch.dialogueScroll.localPresenceCount) || 1);
+    appendUniqueAlphaChat(state, patch.dialogueScroll.message || `${state.dialogueScrollName} recorded as no-real-value original dialogue proof.`);
   }
 
   if (patch.expedition) {
@@ -4742,6 +4809,31 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'story.dialogue_scroll') {
+    const scroll = MOCHI_DIALOGUE_SCROLLS[0];
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      scrollId: scroll.id,
+      roster: state.attunedSpiritIds.length >= scroll.requiredSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id),
+      recordedBeatIds: [...scroll.requiredBeatIds],
+      journalDiscoveredCount: Math.max(state.journalDiscoveredCount, scroll.requiredJournalCount),
+      localPresenceCount: Math.max(presenceCount, scroll.requiredPresenceCount),
+      questLedgerProof: state.questLedgerProof,
+      questLedgerId: state.questLedgerId || MOCHI_QUEST_LEDGERS[0].id,
+      nameBannerProof: state.nameBannerProof,
+      nameBannerRiteId: state.nameBannerRiteId || SPIRIT_NAME_BANNER_RITES[0].id,
+      compendiumProof: state.compendiumProof,
+      rosterArchiveProof: state.rosterArchiveProof,
+      rosterCabinetProof: state.rosterCabinetProof,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood || 'cozy',
+      rewardItemId: 'jade-dialogue-scroll-seal',
+      chatLines: state.chat.length ? state.chat : ['Jade Dialogue Scroll ready.'],
+      noRealValue: true
+    };
+  }
+
   if (type === 'story.chapter_complete') {
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
     return {
@@ -4758,6 +4850,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       routeWaystoneId: state.routeWaystoneId,
       questLedgerProof: state.questLedgerProof,
       questLedgerId: state.questLedgerId || MOCHI_QUEST_LEDGERS[0].id,
+      dialogueScrollProof: state.dialogueScrollProof,
+      dialogueScrollId: state.dialogueScrollId || MOCHI_DIALOGUE_SCROLLS[0].id,
       nurtureRiteProof: state.nurtureRiteProof,
       nurtureRiteId: state.nurtureRiteId,
       tournamentProof: state.tournamentProof,
@@ -4828,6 +4922,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       battleKitProof: state.battleKitProof,
       remedyPouchProof: state.remedyPouchProof,
       questLedgerProof: state.questLedgerProof,
+      dialogueScrollProof: state.dialogueScrollProof,
       craftWritProof: state.craftWritProof,
       routeWaystoneProof: state.routeWaystoneProof,
       routeCharterProof: state.routeCharterProof,
@@ -4918,6 +5013,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       battleKitProof: state.battleKitProof,
       remedyPouchProof: state.remedyPouchProof,
       questLedgerProof: state.questLedgerProof,
+      dialogueScrollProof: state.dialogueScrollProof,
       tradeProof: state.tradeProof,
       canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
       profileViewed: state.profileViewed,
@@ -7175,6 +7271,45 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'story.dialogue_scroll') {
+    const result = resolveMochiDialogueScroll(
+      {
+        roster: Array.isArray(payload.roster) ? payload.roster.map(String) : state.attunedSpiritIds,
+        recordedBeatIds: Array.isArray(payload.recordedBeatIds)
+          ? payload.recordedBeatIds.map(String)
+          : MOCHI_DIALOGUE_SCROLLS[0].requiredBeatIds,
+        journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
+        questLedgerId: String(payload.questLedgerId || state.questLedgerId || MOCHI_QUEST_LEDGERS[0].id),
+        nameBannerProof: Boolean(payload.nameBannerProof ?? state.nameBannerProof),
+        nameBannerRiteId: String(payload.nameBannerRiteId || state.nameBannerRiteId || SPIRIT_NAME_BANNER_RITES[0].id),
+        compendiumProof: Boolean(payload.compendiumProof ?? state.compendiumProof),
+        rosterArchiveProof: Boolean(payload.rosterArchiveProof ?? state.rosterArchiveProof),
+        rosterCabinetProof: Boolean(payload.rosterCabinetProof ?? state.rosterCabinetProof),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.scrollId || MOCHI_DIALOGUE_SCROLLS[0].id)
+    );
+    if (result.recorded) {
+      state.dialogueScrollProof = true;
+      state.dialogueScrollId = result.scrollId;
+      state.dialogueScrollName = result.scrollName;
+      state.dialogueScrollScore = result.score;
+      state.dialogueScrollRequiredScore = result.requiredScore;
+      state.dialogueScrollBeatIds = result.dialogueBeatIds;
+      state.dialogueScrollSpeakers = result.dialogueSpeakers;
+      state.dialogueScrollLines = result.dialogueLines;
+      state.dialogueScrollSealClaimed = result.rewardItemId === 'jade-dialogue-scroll-seal';
+      state.attunedSpiritIds = result.roster;
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'story.chapter_complete') {
     const result = resolveMochiStoryChapter(
       {
@@ -7190,6 +7325,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         routeWaystoneId: String(payload.routeWaystoneId || state.routeWaystoneId || ''),
         questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
         questLedgerId: String(payload.questLedgerId || state.questLedgerId || MOCHI_QUEST_LEDGERS[0].id),
+        dialogueScrollProof: Boolean(payload.dialogueScrollProof ?? state.dialogueScrollProof),
+        dialogueScrollId: String(payload.dialogueScrollId || state.dialogueScrollId || MOCHI_DIALOGUE_SCROLLS[0].id),
         nurtureRiteProof: Boolean(payload.nurtureRiteProof ?? state.nurtureRiteProof),
         nurtureRiteId: String(payload.nurtureRiteId || state.nurtureRiteId || ''),
         tournamentProof: Boolean(payload.tournamentProof ?? state.tournamentProof),
@@ -7292,6 +7429,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
         remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
         questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
+        dialogueScrollProof: Boolean(payload.dialogueScrollProof ?? state.dialogueScrollProof),
         craftWritProof: Boolean(payload.craftWritProof ?? state.craftWritProof),
         routeWaystoneProof: Boolean(payload.routeWaystoneProof ?? state.routeWaystoneProof),
         routeCharterProof: Boolean(payload.routeCharterProof ?? state.routeCharterProof),
@@ -7398,6 +7536,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         battleKitProof: Boolean(payload.battleKitProof ?? state.battleKitProof),
         remedyPouchProof: Boolean(payload.remedyPouchProof ?? state.remedyPouchProof),
         questLedgerProof: Boolean(payload.questLedgerProof ?? state.questLedgerProof),
+        dialogueScrollProof: Boolean(payload.dialogueScrollProof ?? state.dialogueScrollProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),

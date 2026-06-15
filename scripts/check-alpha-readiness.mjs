@@ -813,7 +813,7 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['quest.ledger_record', 'questLedgers: true', 'Jade Quest Ledger label/state', 'Jade Quest Ledger Seal payload preservation']
+    includes: ['quest.ledger_record', 'story.dialogue_scroll', 'questLedgers: true', 'storyDialogueScrolls: true', 'Jade Quest Ledger/Jade Dialogue Scroll label state']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -845,7 +845,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-preview-ready.md',
-    includes: ['Jade Quest Ledger proof', 'Jade Quest Ledger Seal', 'Quest ledger proof is no-real-value']
+    includes: ['Jade Quest Ledger proof', 'Jade Dialogue Scroll', 'Jade Dialogue Scroll Seal', 'Quest ledger and dialogue scroll proof are no-real-value']
   },
   {
     file: 'docs/implementation-brief.md',
@@ -1173,6 +1173,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
+    includes: ['storyDialogueScrolls: true', "'story.dialogue_scroll'"]
+  },
+  {
+    file: 'apps/game/src/integration/alpha-contract.ts',
     includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
   },
   {
@@ -1190,6 +1194,10 @@ const checks = [
   {
     file: 'apps/game/src/integration/manifest.ts',
     includes: ['SPIRIT_NAME_BANNER_RITES', 'nameBannerRiteIds']
+  },
+  {
+    file: 'apps/game/src/integration/manifest.ts',
+    includes: ['MOCHI_DIALOGUE_SCROLLS', 'dialogueScrollIds']
   },
   {
     file: 'apps/game/src/integration/manifest.ts',
@@ -1349,6 +1357,10 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/browser-bridge.ts',
+    includes: ['MOCHI_DIALOGUE_SCROLLS', 'resolveMochiDialogueScroll', 'data-alpha-action="story.dialogue_scroll"', 'data-dialogue-scroll-label', 'dialogueScrollProof', 'dialogueScrollSealClaimed', 'Jade Dialogue Scroll']
+  },
+  {
+    file: 'apps/game/src/integration/browser-bridge.ts',
     includes: ['MOCHI_QUEST_LEDGERS', 'resolveMochiQuestLedger', 'data-alpha-action="quest.ledger_record"', 'data-quest-ledger-label', 'questLedgerProof', 'questLedgerSealClaimed', 'Jade Quest Ledger']
   },
   {
@@ -1374,6 +1386,10 @@ const checks = [
   {
     file: 'apps/game/src/alpha/content.ts',
     includes: ['cloudbell-reed-bank', 'aozhen', 'Moonbridge Goldleaf Accord', 'Cloudbell Skyvow Accord', 'jade-field-accord-talisman', 'resolveSpiritFieldAccord', 'spirit-field-accord', 'Jade Cloudbell Circuit', 'cloudbell-route-knot', 'resolveSpiritRouteMastery', 'world-route-mastery', 'Jade Court Habitat Bond', 'jade-court-habitat-tassel', 'resolveSpiritHabitatBond', 'spirit-habitat-bond', 'Jade Court Sanctuary Rite', 'jade-sanctuary-bell', 'resolveSpiritSanctuaryRite', 'spirit-sanctuary-rite', 'Jade Court Research Folio', 'jade-court-research-folio', 'resolveSpiritResearchFolio', 'spirit-research-folio', 'Jade Court Spirit Compendium', 'jade-court-compendium-seal', 'resolveSpiritCompendiumCompletion', 'spirit-compendium', 'Jade Court Roster Archive', 'jade-roster-archive-seal', 'resolveSpiritRosterArchive', 'spirit-roster-archive', 'Jade Court Care Cycle', 'jade-care-cycle-knot', 'resolveSpiritCareCycle', 'spirit-care-cycle', 'Jade Temperament Concord', 'jade-temperament-charm', 'resolveSpiritTemperamentConcord', 'spirit-temperament-concord', 'Jade Field Almanac', 'jade-field-almanac-clasp', 'resolveSpiritFieldAlmanac', 'spirit-field-almanac', 'Jade Court Provision Satchel', 'jade-court-provision-satchel', 'Jade Mooncake Box', 'jade-mooncake-box', 'resolveSpiritProvisionSatchel', 'item-provision-satchel', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'resolveGuildSocialRally', 'guild-social-rally', 'Jade Wayfarer Chronicle', 'jade-wayfarer-chronicle-clasp', 'resolveGuildWayfarerChronicle', 'guild-wayfarer-chronicle', 'Jade Court Ascension Trial', 'jade-court-ascension-ribbon', 'resolveGuildAscensionTrial', 'guild-ascension-trial', 'Jade Step Loadout', 'jade-step-loadout-slip', 'resolveSpiritTechniqueLoadout', 'spirit-technique-loadout', 'Jade Heart Trait Attunement', 'jade-heart-trait-thread', 'resolveSpiritTraitAttunement', 'spirit-trait-attunement', 'Jade Mirror Condition Weave', 'jade-mirror-condition-charm', 'Lantern Ward', 'Goldleaf Tempo', 'Skybell Guard', 'resolveSpiritConditionWeave', 'battle-condition-weave', 'Silk Banner Mentor Drill', 'silk-banner-mentor-seal', 'resolveSpiritMentorChallenge', 'battle-mentor-challenge', 'Jade Banner Tournament', 'jade-banner-tournament-pennant', 'resolveSpiritTournamentBracket', 'battle-tournament-bracket', 'tournamentProof', 'Silk Market Kindness', 'Skybell Spar', 'selectMochiSpiritQuest', 'resolveMochiSpiritQuestProgress', 'quest-chain']
+  },
+  {
+    file: 'apps/game/src/alpha/content.ts',
+    includes: ['MOCHI_DIALOGUE_SCROLLS', 'Jade Dialogue Scroll', 'jade-dialogue-scroll-seal', 'resolveMochiDialogueScroll', 'story-dialogue-scroll', 'Sifu Narao', 'Warden Meilin', 'Keeper Haoran']
   },
   {
     file: 'apps/game/src/alpha/content.ts',
@@ -1646,6 +1662,10 @@ const checks = [
   {
     file: 'apps/game/src/entries/express.ts',
     includes: ['spiritStoryChapters: true', 'story.chapter_complete']
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: ['storyDialogueScrolls: true', 'story.dialogue_scroll', 'dialogueScrollIds']
   },
   {
     file: 'apps/game/src/entries/express.ts',
