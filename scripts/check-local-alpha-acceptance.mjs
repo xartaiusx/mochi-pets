@@ -53,6 +53,7 @@ async function run() {
   assert(manifest.body.chain?.provider === 'enjin', 'Manifest must keep Enjin as chain provider.');
   assert(manifest.body.chain?.network === 'CANARY', 'Manifest must keep Canary network.');
   assert(manifest.body.market?.fixedPrice === true, 'Manifest must keep fixed-price market enabled.');
+  assert(manifest.body.market?.guildReceipts === true, 'Manifest must expose no-real-value market receipts.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
   assert(manifest.body.gameplay?.spiritCapture === true, 'Manifest must expose Mochi Spirit capture.');
   assert(manifest.body.gameplay?.spiritStarterVows === true, 'Manifest must expose Mochi Spirit starter vows.');
@@ -115,6 +116,7 @@ async function run() {
   const alphaStatus = await getJson('/integration/alpha/status', 'alpha status');
   assert(alphaStatus.body.alpha?.stopPoint === 'alpha-rc-ready', 'Alpha status must expose the RC stop point.');
   assert(alphaStatus.body.market?.fixedPrice === true, 'Alpha status must keep fixed-price enabled.');
+  assert(alphaStatus.body.market?.guildReceipts === true, 'Alpha status must expose no-real-value market receipts.');
   assert(alphaStatus.body.market?.auctions === false, 'Alpha status must keep auctions disabled.');
   assert(alphaStatus.body.gameplay?.spiritCapture === true, 'Alpha status must expose Mochi Spirit capture.');
   assert(alphaStatus.body.gameplay?.spiritCaptureRites === true, 'Alpha status must expose Mochi Spirit capture rites.');
@@ -789,6 +791,11 @@ async function run() {
       payload: { itemId: 'jade-thread-charm', quantity: 1, currency: 'guild-seals', price: 5, noRealValue: true }
     },
     {
+      requestId: `${runId}-market-receipt`,
+      type: 'market.guild_receipt',
+      payload: { receiptId: 'jade-court-market-receipt', itemId: 'jade-thread-charm', quantity: 1, currency: 'guild-seals', price: 5, marketProof: true, profileViewed: true, guildBuddyProof: true, statusMood: 'cozy', chatLines: ['Local acceptance market receipt proof.'], rewardItemId: 'jade-market-receipt', noRealValue: true }
+    },
+    {
       requestId: `${runId}-trade`,
       type: 'trade.direct_offer',
       payload: { targetPlayerId: 'local-acceptance-peer', offered: ['jade-thread-charm'], requested: ['guild-seals:5'] }
@@ -802,6 +809,7 @@ async function run() {
         activeSpiritId: 'aozhen',
         journalDiscoveredCount: 3,
         marketProof: true,
+        marketReceiptProof: true,
         tradeProof: true,
         routeInviteProof: true,
         fieldAccordProof: true,
@@ -1578,6 +1586,7 @@ async function run() {
         battleRoundVictory: true,
         questChainProof: true,
         marketProof: true,
+        marketReceiptProof: true,
         tradeProof: true,
         canaryPreviewProof: true,
         profileViewed: true,
@@ -1628,6 +1637,7 @@ async function run() {
         growthRiteProof: true,
         questChainProof: true,
         marketProof: true,
+        marketReceiptProof: true,
         tradeProof: true,
         canaryPreviewProof: true,
         profileViewed: true,
@@ -1693,6 +1703,26 @@ async function run() {
   assert(rosterArchive?.payload?.compendiumProof === true, 'Roster archive ledger entry must preserve compendium proof.');
   assert(rosterArchive?.payload?.sanctuaryRiteProof === true, 'Roster archive ledger entry must preserve sanctuary rite proof.');
   assert(rosterArchive?.payload?.noRealValue === true, 'Roster archive ledger entry must remain no-real-value.');
+  const marketReceipt = entriesById.get(`${runId}-market-receipt`);
+  assert(marketReceipt?.payload?.receiptId === 'jade-court-market-receipt', 'Market receipt ledger entry must preserve the Jade Court Market Receipt id.');
+  assert(marketReceipt?.payload?.itemId === 'jade-thread-charm', 'Market receipt ledger entry must preserve the purchased Jade Thread Charm id.');
+  assert(marketReceipt?.payload?.quantity === 1, 'Market receipt ledger entry must preserve the purchased quantity.');
+  assert(marketReceipt?.payload?.price === 5, 'Market receipt ledger entry must preserve the fixed test price.');
+  assert(marketReceipt?.payload?.currency === 'guild-seals', 'Market receipt ledger entry must preserve the test currency.');
+  assert(marketReceipt?.payload?.marketProof === true, 'Market receipt ledger entry must preserve fixed listing proof.');
+  assert(marketReceipt?.payload?.profileViewed === true, 'Market receipt ledger entry must preserve profile proof.');
+  assert(marketReceipt?.payload?.guildBuddyProof === true, 'Market receipt ledger entry must preserve guild buddy proof.');
+  assert(marketReceipt?.payload?.statusMood === 'cozy', 'Market receipt ledger entry must preserve social status proof.');
+  assert(marketReceipt?.payload?.rewardItemId === 'jade-market-receipt', 'Market receipt ledger entry must preserve the no-real-value Jade Market Receipt item.');
+  assert(marketReceipt?.payload?.noRealValue === true, 'Market receipt ledger entry must remain no-real-value.');
+  const provision = entriesById.get(`${runId}-provision-satchel`);
+  assert(provision?.payload?.satchelId === 'jade-court-provision-satchel', 'Provision satchel ledger entry must preserve the Jade Court Provision Satchel id.');
+  assert(provision?.payload?.marketProof === true, 'Provision satchel ledger entry must preserve fixed market proof.');
+  assert(provision?.payload?.marketReceiptProof === true, 'Provision satchel ledger entry must preserve market receipt proof.');
+  assert(provision?.payload?.tradeProof === true, 'Provision satchel ledger entry must preserve direct trade proof.');
+  assert(provision?.payload?.routeInviteProof === true, 'Provision satchel ledger entry must preserve route invitation proof.');
+  assert(Array.isArray(provision?.payload?.completedQuestIds) && provision.payload.completedQuestIds.length === 3, 'Provision satchel ledger entry must preserve completed quest proof.');
+  assert(provision?.payload?.noRealValue === true, 'Provision satchel ledger entry must remain no-real-value.');
   const careCycle = entriesById.get(`${runId}-care-cycle`);
   assert(careCycle?.payload?.cycleId === 'jade-court-care-cycle', 'Care cycle ledger entry must preserve the Jade Court Care Cycle id.');
   assert(Array.isArray(careCycle?.payload?.roster) && careCycle.payload.roster.length === 3, 'Care cycle ledger entry must preserve full roster proof.');
@@ -2121,6 +2151,7 @@ async function run() {
   assert(chronicle?.payload?.storyChapterProof === true, 'Wayfarer chronicle ledger entry must preserve story chapter proof.');
   assert(chronicle?.payload?.insigniaCaseProof === true, 'Wayfarer chronicle ledger entry must preserve insignia case proof.');
   assert(chronicle?.payload?.techniqueCodexProof === true, 'Wayfarer chronicle ledger entry must preserve technique codex proof.');
+  assert(chronicle?.payload?.marketReceiptProof === true, 'Wayfarer chronicle ledger entry must preserve market receipt proof.');
   assert(chronicle?.payload?.canaryPreviewProof === true, 'Wayfarer chronicle ledger entry must preserve Canary preview proof.');
   assert(chronicle?.payload?.noRealValue === true, 'Wayfarer chronicle ledger entry must remain no-real-value.');
   const ascension = entriesById.get(`${runId}-ascension-trial`);
@@ -2147,6 +2178,7 @@ async function run() {
   assert(ascension?.payload?.affinityMatrixId === 'jade-affinity-matrix', 'Ascension trial ledger entry must preserve the affinity matrix id.');
   assert(ascension?.payload?.relicAttunementProof === true, 'Ascension trial ledger entry must preserve relic attunement proof.');
   assert(ascension?.payload?.techniqueCodexProof === true, 'Ascension trial ledger entry must preserve technique codex proof.');
+  assert(ascension?.payload?.marketReceiptProof === true, 'Ascension trial ledger entry must preserve market receipt proof.');
   assert(ascension?.payload?.canaryPreviewProof === true, 'Ascension trial ledger entry must preserve Canary preview proof.');
   assert(ascension?.payload?.noRealValue === true, 'Ascension trial ledger entry must remain no-real-value.');
 }

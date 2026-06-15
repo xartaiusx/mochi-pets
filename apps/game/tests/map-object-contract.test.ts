@@ -154,6 +154,9 @@ describe('Mochi town map object contract', () => {
     expect(alphaContentSource).toContain('spirit-compendium');
     expect(alphaContentSource).toContain('Jade Court Provision Satchel');
     expect(alphaContentSource).toContain('jade-court-provision-satchel');
+    expect(alphaContentSource).toContain('Jade Court Market Receipt');
+    expect(alphaContentSource).toContain('jade-market-receipt');
+    expect(alphaContentSource).toContain('market-guild-receipt');
     expect(alphaContentSource).toContain('Jade Mooncake Box');
     expect(alphaContentSource).toContain('jade-mooncake-box');
     expect(alphaContentSource).toContain('item-provision-satchel');
@@ -221,6 +224,9 @@ describe('Mochi town map object contract', () => {
     expect(runtimeServerSource).toContain('spirit-compendium');
     expect(runtimeServerSource).toContain('Jade Court Provision Satchel');
     expect(runtimeServerSource).toContain('jade-court-provision-satchel');
+    expect(runtimeServerSource).toContain('Jade Court Market Receipt');
+    expect(runtimeServerSource).toContain('jade-market-receipt');
+    expect(runtimeServerSource).toContain('market-guild-receipt');
     expect(runtimeServerSource).toContain('Jade Mooncake Box');
     expect(runtimeServerSource).toContain('jade-mooncake-box');
     expect(runtimeServerSource).toContain('item-provision-satchel');

@@ -5,6 +5,7 @@ import {
   GUILD_COMMISSIONS,
   GUILD_SOCIAL_RALLIES,
   GUILD_RANK_TRIALS,
+  MARKET_GUILD_RECEIPTS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
   SPIRIT_COMPENDIUMS,
@@ -41,6 +42,7 @@ import {
   resolveSpiritHarmonyForm,
   resolveSpiritHarmonyTrial,
   resolveSpiritJournal,
+  resolveMarketGuildReceipt,
   resolveSpiritMentorChallenge,
   resolveSpiritParty,
   resolveSpiritProvisionSatchel,
@@ -199,6 +201,20 @@ type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   canaryReturnRequested?: boolean;
   charmListed?: boolean;
+  marketReceipt?: {
+    currency: string;
+    itemId: string;
+    message?: string;
+    price: number;
+    proof: boolean;
+    quantity: number;
+    receiptId: string;
+    receiptName: string;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   capture?: {
     message?: string;
     roster: string[];
@@ -2011,6 +2027,56 @@ export function MarketBoard(): EventDefinition {
         return;
       }
 
+      if (!player.getVariable<boolean>('mochiSocial.alpha.marketReceiptProof')) {
+        const receipt = resolveMarketGuildReceipt(
+          {
+            itemId: ALPHA_ITEMS.charm.id,
+            quantity: 1,
+            currency: MARKET_GUILD_RECEIPTS[0].requiredCurrency,
+            price: MARKET_GUILD_RECEIPTS[0].requiredPrice,
+            marketProof: true,
+            profileViewed: true,
+            guildBuddyProof: true,
+            statusMood: 'trading',
+            chatLines: ['Jade Court Market Receipt recorded from the town board.'],
+            noRealValue: true
+          },
+          MARKET_GUILD_RECEIPTS[0].id
+        );
+
+        if (!receipt.purchased) {
+          showAlphaPrompt(player, receipt.message);
+          return;
+        }
+
+        player.setVariable('mochiSocial.alpha.marketReceiptProof', true);
+        player.setVariable('mochiSocial.alpha.marketReceipt', receipt.receiptId);
+        player.setVariable('mochiSocial.alpha.marketReceiptName', receipt.receiptName);
+        player.setVariable('mochiSocial.alpha.marketReceiptScore', receipt.score);
+        player.setVariable('mochiSocial.alpha.marketReceiptItemId', receipt.itemId);
+        player.addItem(ALPHA_ITEMS.marketReceipt, 1);
+        player.showNotification('Market receipt recorded', { time: 1800, icon: 'market-board' });
+        emitAlphaHudState(player, {
+          marketReceipt: {
+            receiptId: receipt.receiptId,
+            receiptName: receipt.receiptName,
+            title: receipt.title,
+            itemId: receipt.itemId,
+            quantity: receipt.quantity,
+            currency: receipt.currency,
+            price: receipt.price,
+            score: receipt.score,
+            requiredScore: receipt.requiredScore,
+            rewardItemId: receipt.rewardItemId,
+            proof: true,
+            message: receipt.message
+          }
+        });
+        await player.save('auto', { title: 'Alpha market receipt proof' }, { reason: 'auto', source: 'market-board' });
+        showAlphaPrompt(player, `${receipt.message} The Jade Market Receipt is no-real-value fixed-price purchase proof.`);
+        return;
+      }
+
       if (player.getVariable<boolean>('mochiSocial.alpha.provisionSatchelClaimed')) {
         showAlphaPrompt(player, 'Your Jade Court Provision Satchel is already stocked for this alpha save. Item prep remains no-real-value.');
         return;
@@ -2023,6 +2089,7 @@ export function MarketBoard(): EventDefinition {
           activeSpiritId: activeSpiritId(player),
           journalDiscoveredCount: Number(player.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
           marketProof: true,
+          marketReceiptProof: Boolean(player.getVariable<boolean>('mochiSocial.alpha.marketReceiptProof')),
           tradeProof: Boolean(player.getVariable<boolean>('mochiSocial.alpha.tradeProof')),
           routeInviteProof: Boolean(player.getVariable<boolean>('mochiSocial.world.routeInvitationProof')),
           careStreak: careStreakTotal(player, roster),

@@ -32,6 +32,7 @@ const ALPHA_FEATURES = {
   },
   market: {
     fixedPrice: true,
+    guildReceipts: true,
     directTrade: true,
     auctions: false,
     cashout: false
@@ -179,6 +180,7 @@ const ALPHA_ACTION_TYPES = [
   'quest.accept',
   'quest.progress',
   'market.fixed_list',
+  'market.guild_receipt',
   'trade.direct_offer',
   'trade.exchange_accord',
   'chain.withdraw_request',

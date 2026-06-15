@@ -38,6 +38,20 @@ type AlphaHudStatePatch = {
   canaryRequested?: boolean;
   canaryReturnRequested?: boolean;
   charmListed?: boolean;
+  marketReceipt?: {
+    currency: string;
+    itemId: string;
+    message?: string;
+    price: number;
+    proof: boolean;
+    quantity: number;
+    receiptId: string;
+    receiptName: string;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   expedition?: {
     count: number;
     discoveredRoutes: string[];
@@ -645,10 +659,58 @@ type SpiritProvisionSatchelProgress = {
   activeSpiritId?: string;
   journalDiscoveredCount: number;
   marketProof: boolean;
+  marketReceiptProof: boolean;
   tradeProof: boolean;
   routeInviteProof: boolean;
   careStreak: number;
   completedQuestIds: readonly string[];
+};
+
+type MarketGuildReceipt = {
+  id: string;
+  name: string;
+  title: string;
+  habitat: 'Jade Lantern Court';
+  listingItemIds: readonly string[];
+  requiredCurrency: string;
+  requiredPrice: number;
+  requiredQuantity: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+};
+
+type MarketGuildReceiptProgress = {
+  itemId: string;
+  quantity: number;
+  currency: string;
+  price: number;
+  marketProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+  noRealValue: boolean;
+};
+
+type MarketGuildReceiptResult = {
+  ok: boolean;
+  purchased: boolean;
+  receiptId: string;
+  receiptName: string;
+  title: string;
+  habitat: 'Jade Lantern Court';
+  itemId: string;
+  quantity: number;
+  currency: string;
+  price: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
 };
 
 type GuildCommission = {
@@ -965,6 +1027,11 @@ const alphaItems = {
     id: 'jade-thread-charm',
     name: 'Jade Thread Charm',
     description: 'A no-real-value alpha market item for fixed-price and trade testing.'
+  },
+  marketReceipt: {
+    id: 'jade-market-receipt',
+    name: 'Jade Market Receipt',
+    description: 'A no-real-value fixed-price market purchase receipt for closed-alpha Mochirii testing.'
   },
   harmonyTea: {
     id: 'lantern-harmony-tea',
@@ -1522,9 +1589,26 @@ const provisionSatchels: readonly SpiritProvisionSatchel[] = [
     requiredJournalCount: spirits.length,
     requiredCareStreak: 1,
     requiredCompletedQuestCount: quests.length,
-    requiredScore: 24,
+    requiredScore: 27,
     rewardItemId: alphaItems.provisionSatchel.id,
-    summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, market listings, direct trades, and quest supplies.'
+    summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, market listings, fixed-price receipts, direct trades, and quest supplies.'
+  }
+];
+
+const marketGuildReceipts: readonly MarketGuildReceipt[] = [
+  {
+    id: 'jade-court-market-receipt',
+    name: 'Jade Court Market Receipt',
+    title: 'First Fixed-Price Guild Purchase',
+    habitat: 'Jade Lantern Court',
+    listingItemIds: [alphaItems.charm.id, alphaItems.harmonyTea.id, alphaItems.mooncakeBox.id],
+    requiredCurrency: 'guild-seals',
+    requiredPrice: 5,
+    requiredQuantity: 1,
+    requiredChatLines: 1,
+    requiredScore: 16,
+    rewardItemId: alphaItems.marketReceipt.id,
+    summary: 'A no-real-value market receipt proof for testers who complete a fixed-price Mochirii supply purchase with profile, guild buddy, status, and chat context.'
   }
 ];
 
@@ -2188,6 +2272,10 @@ function resolveSpiritProvisionSatchel(progress: SpiritProvisionSatchelProgress,
     missing.push('market-listing');
   }
 
+  if (!progress.marketReceiptProof) {
+    missing.push('market-receipt');
+  }
+
   if (!progress.tradeProof) {
     missing.push('direct-trade');
   }
@@ -2210,6 +2298,7 @@ function resolveSpiritProvisionSatchel(progress: SpiritProvisionSatchelProgress,
     Math.min(roster.length, satchel.requiredRosterCount) * 2 +
     Math.min(journalCount, satchel.requiredJournalCount) +
     (progress.marketProof ? 3 : 0) +
+    (progress.marketReceiptProof ? 3 : 0) +
     (progress.tradeProof ? 3 : 0) +
     (progress.routeInviteProof ? 2 : 0) +
     Math.min(careStreak, 2) +
@@ -2233,9 +2322,69 @@ function resolveSpiritProvisionSatchel(progress: SpiritProvisionSatchelProgress,
     missing,
     rewardItemId: satchel.rewardItemId,
     message: stocked
-      ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market proof, trade proof, and quest supplies. No-real-value item preparation only.`
+      ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market listing, receipt proof, trade proof, and quest supplies. No-real-value item preparation only.`
       : `${satchel.name} needs ${missing.join(', ')} before the first-court provision bag can be stocked.`,
     source: 'item-provision-satchel'
+  };
+}
+
+function resolveMarketGuildReceipt(
+  progress: MarketGuildReceiptProgress,
+  receiptId: string = marketGuildReceipts[0].id
+): MarketGuildReceiptResult {
+  const receipt = marketGuildReceipts.find((entry) => entry.id === receiptId) || marketGuildReceipts[0];
+  const listingItemIds = new Set(receipt.listingItemIds);
+  const itemId = String(progress.itemId || '').trim();
+  const quantity = Math.max(0, Math.floor(progress.quantity || 0));
+  const price = Math.max(0, Math.floor(progress.price || 0));
+  const currency = String(progress.currency || '').trim();
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (!listingItemIds.has(itemId)) missing.push(`item:${itemId || 'missing'}`);
+  if (quantity < receipt.requiredQuantity) missing.push(`quantity:${quantity}/${receipt.requiredQuantity}`);
+  if (currency !== receipt.requiredCurrency) missing.push(`currency:${currency || 'missing'}`);
+  if (price !== receipt.requiredPrice) missing.push(`price:${price}/${receipt.requiredPrice}`);
+  if (!progress.marketProof) missing.push('market-listing');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < receipt.requiredChatLines) missing.push(`chat:${chatLines.length}/${receipt.requiredChatLines}`);
+  if (!progress.noRealValue) missing.push('no-real-value');
+
+  const score =
+    (listingItemIds.has(itemId) ? 4 : 0) +
+    (quantity >= receipt.requiredQuantity ? 2 : 0) +
+    (currency === receipt.requiredCurrency ? 2 : 0) +
+    (price === receipt.requiredPrice ? 2 : 0) +
+    (progress.marketProof ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(chatLines.length, receipt.requiredChatLines);
+  const purchased = missing.length === 0 && score >= receipt.requiredScore;
+
+  return {
+    ok: true,
+    purchased,
+    receiptId: receipt.id,
+    receiptName: receipt.name,
+    title: receipt.title,
+    habitat: receipt.habitat,
+    itemId,
+    quantity,
+    currency,
+    price,
+    score,
+    requiredScore: receipt.requiredScore,
+    missing,
+    rewardItemId: receipt.rewardItemId,
+    message: purchased
+      ? `${receipt.name} recorded: ${itemId} was bought through fixed-price Mochirii market practice for ${price} ${currency}. No real value.`
+      : `${receipt.name} needs ${missing.join(', ')} before the fixed-price market receipt can be recorded.`,
+    source: 'market-guild-receipt'
   };
 }
 
@@ -5339,6 +5488,56 @@ function marketBoard(): EventDefinition {
         return;
       }
 
+      if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.marketReceiptProof')) {
+        const receipt = resolveMarketGuildReceipt(
+          {
+            itemId: alphaItems.charm.id,
+            quantity: 1,
+            currency: marketGuildReceipts[0].requiredCurrency,
+            price: marketGuildReceipts[0].requiredPrice,
+            marketProof: true,
+            profileViewed: true,
+            guildBuddyProof: true,
+            statusMood: 'trading',
+            chatLines: ['Jade Court Market Receipt recorded from the town board.'],
+            noRealValue: true
+          },
+          marketGuildReceipts[0].id
+        );
+
+        if (!receipt.purchased) {
+          showAlphaPrompt(actingPlayer, receipt.message);
+          return;
+        }
+
+        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptProof', true);
+        actingPlayer.setVariable('mochiSocial.alpha.marketReceipt', receipt.receiptId);
+        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptName', receipt.receiptName);
+        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptScore', receipt.score);
+        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptItemId', receipt.itemId);
+        actingPlayer.addItem(alphaItems.marketReceipt, 1);
+        actingPlayer.showNotification('Market receipt recorded', { time: 1800, icon: 'market-board' });
+        emitAlphaHudState(actingPlayer, {
+          marketReceipt: {
+            receiptId: receipt.receiptId,
+            receiptName: receipt.receiptName,
+            title: receipt.title,
+            itemId: receipt.itemId,
+            quantity: receipt.quantity,
+            currency: receipt.currency,
+            price: receipt.price,
+            score: receipt.score,
+            requiredScore: receipt.requiredScore,
+            rewardItemId: receipt.rewardItemId,
+            proof: true,
+            message: receipt.message
+          }
+        });
+        await actingPlayer.save('auto', { title: 'Alpha market receipt proof' }, { reason: 'auto', source: 'market-board' });
+        showAlphaPrompt(actingPlayer, `${receipt.message} The Jade Market Receipt is no-real-value fixed-price purchase proof.`);
+        return;
+      }
+
       if (actingPlayer.getVariable<boolean>('mochiSocial.alpha.provisionSatchelClaimed')) {
         showAlphaPrompt(actingPlayer, 'Your Jade Court Provision Satchel is already stocked for this alpha save. Item prep remains no-real-value.');
         return;
@@ -5351,6 +5550,7 @@ function marketBoard(): EventDefinition {
           activeSpiritId: activeSpiritId(actingPlayer),
           journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
           marketProof: true,
+          marketReceiptProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.marketReceiptProof')),
           tradeProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.tradeProof')),
           routeInviteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeInvitationProof')),
           careStreak: careStreakTotal(actingPlayer, roster),

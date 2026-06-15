@@ -614,6 +614,7 @@ export interface SpiritProvisionSatchelProgress {
   activeSpiritId?: string;
   journalDiscoveredCount: number;
   marketProof: boolean;
+  marketReceiptProof: boolean;
   tradeProof: boolean;
   routeInviteProof: boolean;
   careStreak: number;
@@ -985,6 +986,53 @@ export interface SpiritCraftWritResult {
   roster: string[];
   recipeIds: string[];
   stockItemIds: string[];
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
+export interface MarketGuildReceipt {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  listingItemIds: readonly string[];
+  requiredCurrency: string;
+  requiredPrice: number;
+  requiredQuantity: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface MarketGuildReceiptProgress {
+  itemId: string;
+  quantity: number;
+  currency: string;
+  price: number;
+  marketProof: boolean;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+  noRealValue: boolean;
+}
+
+export interface MarketGuildReceiptResult {
+  ok: boolean;
+  purchased: boolean;
+  receiptId: string;
+  receiptName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  itemId: string;
+  quantity: number;
+  currency: string;
+  price: number;
   score: number;
   requiredScore: number;
   missing: string[];
@@ -1782,6 +1830,7 @@ export interface GuildWayfarerChronicleProgress {
   battleRoundVictory: boolean;
   questChainProof: boolean;
   marketProof: boolean;
+  marketReceiptProof: boolean;
   tradeProof: boolean;
   canaryPreviewProof: boolean;
   profileViewed: boolean;
@@ -1856,6 +1905,7 @@ export interface GuildAscensionTrialProgress {
   growthRiteProof: boolean;
   questChainProof: boolean;
   marketProof: boolean;
+  marketReceiptProof: boolean;
   tradeProof: boolean;
   canaryPreviewProof: boolean;
   profileViewed: boolean;
@@ -3379,6 +3429,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Thread Charm',
     description: 'A no-real-value alpha market item for fixed-price and trade testing.'
   },
+  marketReceipt: {
+    id: 'jade-market-receipt',
+    name: 'Jade Market Receipt',
+    description: 'A no-real-value fixed-price purchase receipt for closed-alpha Mochirii market testing.'
+  },
   harmonyTea: {
     id: 'lantern-harmony-tea',
     name: 'Lantern Harmony Tea',
@@ -3980,9 +4035,9 @@ export const SPIRIT_PROVISION_SATCHELS: readonly SpiritProvisionSatchel[] = [
     requiredJournalCount: MOCHI_SPIRITS.length,
     requiredCareStreak: 1,
     requiredCompletedQuestCount: MOCHI_SPIRIT_QUESTS.length,
-    requiredScore: 24,
+    requiredScore: 27,
     rewardItemId: ALPHA_ITEMS.provisionSatchel.id,
-    summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, market listings, direct trades, and quest supplies.'
+    summary: 'A no-real-value first-court item bag proof for testers who stock original Mochirii lures, care provisions, fixed-price receipt proof, direct trades, and quest supplies.'
   }
 ];
 
@@ -4106,6 +4161,23 @@ export const SPIRIT_CRAFT_WRITS: readonly SpiritCraftWrit[] = [
     requiredScore: 44,
     rewardItemId: ALPHA_ITEMS.craftWrit.id,
     summary: 'A no-real-value craft writ proof for testers who turn original Mochirii provisions, route ecology, care-cycle notes, and market/trade handoff into guild-ready supplies.'
+  }
+];
+
+export const MARKET_GUILD_RECEIPTS: readonly MarketGuildReceipt[] = [
+  {
+    id: 'jade-court-market-receipt',
+    name: 'Jade Court Market Receipt',
+    title: 'First Fixed-Price Guild Purchase',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    listingItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
+    requiredCurrency: 'guild-seals',
+    requiredPrice: 5,
+    requiredQuantity: 1,
+    requiredChatLines: 1,
+    requiredScore: 16,
+    rewardItemId: ALPHA_ITEMS.marketReceipt.id,
+    summary: 'A no-real-value market receipt proof for testers who complete a fixed-price Mochirii supply purchase with profile, guild buddy, status, and chat context.'
   }
 ];
 
@@ -4315,9 +4387,9 @@ export const GUILD_WAYFARER_CHRONICLES: readonly GuildWayfarerChronicle[] = [
     requiredJournalCount: MOCHI_SPIRITS.length,
     requiredQuestCount: MOCHI_SPIRIT_QUESTS.length,
     requiredPresenceCount: 2,
-    requiredScore: 75,
+    requiredScore: 77,
     rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
-    summary: 'A no-real-value alpha passport proof for testers who complete the first-court starter vow, capture, route, battle, raising, quest, market, trade, social, and Canary preview loops.'
+    summary: 'A no-real-value alpha passport proof for testers who complete the first-court starter vow, capture, route, battle, raising, quest, market receipt, trade, social, and Canary preview loops.'
   }
 ];
 
@@ -4329,9 +4401,9 @@ export const GUILD_ASCENSION_TRIALS: readonly GuildAscensionTrial[] = [
     habitat: SPIRIT_HABITATS.jadeLanternCourt,
     requiredSpiritCount: MOCHI_SPIRITS.length,
     requiredPresenceCount: 2,
-    requiredScore: 64,
+    requiredScore: 66,
     rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
-    summary: 'A no-real-value guild capstone for testers who complete the first Mochirii starter vow, chronicle, social party proof, no-injury battle proof, route patrol, and Canary preview.'
+    summary: 'A no-real-value guild capstone for testers who complete the first Mochirii starter vow, chronicle, social party proof, no-injury battle proof, market receipt proof, route patrol, and Canary preview.'
   }
 ];
 
@@ -5649,6 +5721,10 @@ export function resolveSpiritProvisionSatchel(
     missing.push('market-listing');
   }
 
+  if (!progress.marketReceiptProof) {
+    missing.push('market-receipt');
+  }
+
   if (!progress.tradeProof) {
     missing.push('direct-trade');
   }
@@ -5671,6 +5747,7 @@ export function resolveSpiritProvisionSatchel(
     Math.min(roster.length, satchel.requiredRosterCount) * 2 +
     Math.min(journalCount, satchel.requiredJournalCount) +
     (progress.marketProof ? 3 : 0) +
+    (progress.marketReceiptProof ? 3 : 0) +
     (progress.tradeProof ? 3 : 0) +
     (progress.routeInviteProof ? 2 : 0) +
     Math.min(careStreak, 2) +
@@ -5694,7 +5771,7 @@ export function resolveSpiritProvisionSatchel(
     missing,
     rewardItemId: satchel.rewardItemId,
     message: stocked
-      ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market proof, trade proof, and quest supplies. No-real-value item preparation only.`
+      ? `${satchel.name} stocked: ${activeName} carries original Mochirii lures, care provisions, market listing, receipt proof, trade proof, and quest supplies. No-real-value item preparation only.`
       : `${satchel.name} needs ${missing.join(', ')} before the first-court provision bag can be stocked.`,
     source: 'item-provision-satchel'
   };
@@ -6358,6 +6435,66 @@ export function resolveSpiritCraftWrit(
       ? `${writ.name} complete: ${activeSpirit.name} binds ${recipeSummary} with ${stockSummary}, route ecology, care rhythm, temperament notes, and market/trade handoff. No real value.`
       : `${writ.name} needs ${missing.join(', ')} before the first-court craft ledger can be recorded.`,
     source: 'spirit-craft-writ'
+  };
+}
+
+export function resolveMarketGuildReceipt(
+  progress: MarketGuildReceiptProgress,
+  receiptId: string = MARKET_GUILD_RECEIPTS[0].id
+): MarketGuildReceiptResult {
+  const receipt = MARKET_GUILD_RECEIPTS.find((entry) => entry.id === receiptId) || MARKET_GUILD_RECEIPTS[0];
+  const listingItemIds = new Set(receipt.listingItemIds);
+  const itemId = String(progress.itemId || '').trim();
+  const quantity = Math.max(0, Math.floor(progress.quantity || 0));
+  const price = Math.max(0, Math.floor(progress.price || 0));
+  const currency = String(progress.currency || '').trim();
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  if (!listingItemIds.has(itemId)) missing.push(`item:${itemId || 'missing'}`);
+  if (quantity < receipt.requiredQuantity) missing.push(`quantity:${quantity}/${receipt.requiredQuantity}`);
+  if (currency !== receipt.requiredCurrency) missing.push(`currency:${currency || 'missing'}`);
+  if (price !== receipt.requiredPrice) missing.push(`price:${price}/${receipt.requiredPrice}`);
+  if (!progress.marketProof) missing.push('market-listing');
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < receipt.requiredChatLines) missing.push(`chat:${chatLines.length}/${receipt.requiredChatLines}`);
+  if (!progress.noRealValue) missing.push('no-real-value');
+
+  const score =
+    (listingItemIds.has(itemId) ? 4 : 0) +
+    (quantity >= receipt.requiredQuantity ? 2 : 0) +
+    (currency === receipt.requiredCurrency ? 2 : 0) +
+    (price === receipt.requiredPrice ? 2 : 0) +
+    (progress.marketProof ? 2 : 0) +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(chatLines.length, receipt.requiredChatLines);
+  const purchased = missing.length === 0 && score >= receipt.requiredScore;
+
+  return {
+    ok: true,
+    purchased,
+    receiptId: receipt.id,
+    receiptName: receipt.name,
+    title: receipt.title,
+    habitat: receipt.habitat,
+    itemId,
+    quantity,
+    currency,
+    price,
+    score,
+    requiredScore: receipt.requiredScore,
+    missing,
+    rewardItemId: receipt.rewardItemId,
+    message: purchased
+      ? `${receipt.name} recorded: ${itemId} was bought through fixed-price Mochirii market practice for ${price} ${currency}. No real value.`
+      : `${receipt.name} needs ${missing.join(', ')} before the fixed-price market receipt can be recorded.`,
+    source: 'market-guild-receipt'
   };
 }
 
@@ -7594,6 +7731,7 @@ export function resolveGuildWayfarerChronicle(
   if (!progress.insigniaCaseProof) missing.push('insignia');
   if (!progress.battleRoundProof || !progress.battleRoundVictory) missing.push('battle-round');
   if (!progress.marketProof) missing.push('market');
+  if (!progress.marketReceiptProof) missing.push('market-receipt');
   if (!progress.tradeProof) missing.push('trade');
   if (!progress.canaryPreviewProof) missing.push('canary-preview');
   if (!progress.profileViewed) missing.push('profile');
@@ -7648,6 +7786,7 @@ export function resolveGuildWayfarerChronicle(
     (progress.insigniaCaseProof ? 3 : 0) +
     (progress.battleRoundProof && progress.battleRoundVictory ? 2 : 0) +
     (progress.marketProof ? 1 : 0) +
+    (progress.marketReceiptProof ? 2 : 0) +
     (progress.tradeProof ? 1 : 0) +
     (progress.canaryPreviewProof ? 1 : 0) +
     (progress.profileViewed ? 1 : 0) +
@@ -7673,7 +7812,7 @@ export function resolveGuildWayfarerChronicle(
     missing,
     rewardItemId: chronicle.rewardItemId,
     message: chronicled
-      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, routes, ecology, crafting, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
+      ? `${chronicle.name} complete: ${rosterNames} carry the first-court Mochirii alpha passport across the starter vow, capture rites, encounter atlas work, routes, ecology, crafting, market receipt, exchange accords, relic attunement, waystone travel, nurturing, kinship, nursery care, bloom ascendance, lineage records, technique codex study, affinity matrix planning, dojo ladder proof, sifu council proof, summit circuit proof, tournament battles, story vows, insignia, raising, quests, market, trade, social play, and Canary preview. No real value.`
       : `${chronicle.name} needs ${missing.join(', ')} before the first-court alpha chronicle can be recorded.`,
     source: 'guild-wayfarer-chronicle'
   };
@@ -7727,6 +7866,7 @@ export function resolveGuildAscensionTrial(
   if (!progress.growthRiteProof) missing.push('growth');
   if (!progress.questChainProof) missing.push('quest-chain');
   if (!progress.marketProof) missing.push('market');
+  if (!progress.marketReceiptProof) missing.push('market-receipt');
   if (!progress.tradeProof) missing.push('trade');
   if (!progress.canaryPreviewProof) missing.push('canary-preview');
   if (!progress.profileViewed) missing.push('profile');
@@ -7766,6 +7906,7 @@ export function resolveGuildAscensionTrial(
     (progress.growthRiteProof ? 2 : 0) +
     (progress.questChainProof ? 2 : 0) +
     (progress.marketProof ? 1 : 0) +
+    (progress.marketReceiptProof ? 2 : 0) +
     (progress.tradeProof ? 1 : 0) +
     (progress.canaryPreviewProof ? 1 : 0) +
     (progress.profileViewed ? 1 : 0) +
@@ -7790,7 +7931,7 @@ export function resolveGuildAscensionTrial(
     missing,
     rewardItemId: trial.rewardItemId,
     message: ascended
-      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
+      ? `${trial.name} complete: ${partyNames} clear the closed-alpha guild capstone with starter vow, chronicle, nursery grove, bloom ascendance, technique codex, market receipt, exchange accord, relic attunement, affinity matrix, route patrol, mentor, dojo ladder, sifu council, summit circuit, rival circle, no-injury battle, social, market, trade, and Canary preview proof. No real value.`
       : `${trial.name} needs ${missing.join(', ')} before the closed-alpha guild capstone can be recorded.`,
     source: 'guild-ascension-trial'
   };

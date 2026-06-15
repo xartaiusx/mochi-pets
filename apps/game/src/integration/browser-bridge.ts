@@ -6,6 +6,7 @@ import {
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
+  MARKET_GUILD_RECEIPTS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -83,6 +84,7 @@ import {
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
   resolveMochiStoryChapter,
+  resolveMarketGuildReceipt,
   resolveSpiritGrowthRite,
   resolveSpiritHabitatBond,
   resolveSpiritHarmonyForm,
@@ -555,6 +557,16 @@ interface AlphaHudState {
   questStepsById: Record<string, string[]>;
   questChainProof: boolean;
   charmListed: boolean;
+  marketReceiptProof: boolean;
+  marketReceiptId?: string;
+  marketReceiptName: string;
+  marketReceiptItemId?: string;
+  marketReceiptQuantity: number;
+  marketReceiptPrice: number;
+  marketReceiptCurrency: string;
+  marketReceiptScore: number;
+  marketReceiptRequiredScore: number;
+  marketReceiptClaimed: boolean;
   tradeProof: boolean;
   canaryRequested: boolean;
   canaryReturnRequested: boolean;
@@ -623,6 +635,20 @@ export interface AlphaWorldStatePatch {
   canaryRequested?: boolean;
   canaryReturnRequested?: boolean;
   charmListed?: boolean;
+  marketReceipt?: {
+    currency: string;
+    itemId: string;
+    message?: string;
+    price: number;
+    proof: boolean;
+    quantity: number;
+    receiptId: string;
+    receiptName: string;
+    requiredScore: number;
+    rewardItemId: string;
+    score: number;
+    title: string;
+  };
   capture?: {
     message?: string;
     roster: string[];
@@ -1347,6 +1373,14 @@ function defaultAlphaState(): AlphaHudState {
     questStepsById: {},
     questChainProof: false,
     charmListed: false,
+    marketReceiptProof: false,
+    marketReceiptName: 'No receipt',
+    marketReceiptQuantity: 0,
+    marketReceiptPrice: 0,
+    marketReceiptCurrency: 'guild-seals',
+    marketReceiptScore: 0,
+    marketReceiptRequiredScore: 0,
+    marketReceiptClaimed: false,
     tradeProof: false,
     canaryRequested: false,
     canaryReturnRequested: false,
@@ -1581,6 +1615,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.growth_rite" aria-label="Record a no-real-value Mochi Spirit growth rite">Bloom</button>
       <button type="button" data-alpha-action="emote.send" aria-label="Wave to nearby testers">Wave</button>
       <button type="button" data-alpha-action="market.fixed_list" aria-label="List a no-real-value market item">List</button>
+      <button type="button" data-alpha-action="market.guild_receipt" aria-label="Record the no-real-value Jade Court Market Receipt">Buy</button>
       <button type="button" data-alpha-action="trade.direct_offer" aria-label="Record a no-real-value direct trade proof">Trade</button>
       <button type="button" data-alpha-action="trade.exchange_accord" aria-label="Record the no-real-value Jade Exchange Accord">Accord</button>
       <button type="button" data-alpha-action="chain.withdraw_request" aria-label="Stage a no-real-value Enjin Canary preview request">Canary</button>
@@ -1976,6 +2011,7 @@ function createHud() {
     if (marketLabel) {
       let marketText = 'Market: ready - fixed price';
       if (state.charmListed) marketText = 'Market: listed - test soft currency';
+      if (state.marketReceiptProof) marketText = `Market: ${state.marketReceiptName} - test only`;
       if (state.tradeProof) marketText = state.provisionProof ? 'Bag: stocked - test only' : 'Trade: proofed - test only';
       if (state.canaryRequested) marketText = 'Canary: requested - preview stub';
       if (state.canaryReturnRequested) marketText = state.canaryRequested ? 'Canary: request + return staged - preview stub' : 'Canary: return staged - preview stub';
@@ -2612,6 +2648,20 @@ export function applyAlphaWorldState(patch: AlphaWorldStatePatch) {
     appendUniqueAlphaChat(state, 'Jade Thread Charm listed from the town board. Test soft currency only.');
   }
 
+  if (patch.marketReceipt) {
+    state.marketReceiptProof = patch.marketReceipt.proof || state.marketReceiptProof;
+    state.marketReceiptId = patch.marketReceipt.receiptId || state.marketReceiptId;
+    state.marketReceiptName = patch.marketReceipt.receiptName || state.marketReceiptName;
+    state.marketReceiptItemId = patch.marketReceipt.itemId || state.marketReceiptItemId;
+    state.marketReceiptQuantity = Number(patch.marketReceipt.quantity) || state.marketReceiptQuantity;
+    state.marketReceiptPrice = Number(patch.marketReceipt.price) || state.marketReceiptPrice;
+    state.marketReceiptCurrency = patch.marketReceipt.currency || state.marketReceiptCurrency;
+    state.marketReceiptScore = Math.max(state.marketReceiptScore, Number(patch.marketReceipt.score) || 0);
+    state.marketReceiptRequiredScore = Math.max(state.marketReceiptRequiredScore, Number(patch.marketReceipt.requiredScore) || 0);
+    state.marketReceiptClaimed = state.marketReceiptClaimed || patch.marketReceipt.rewardItemId === 'jade-market-receipt';
+    appendUniqueAlphaChat(state, patch.marketReceipt.message || `${state.marketReceiptName} recorded from the town board. No real value.`);
+  }
+
   if (patch.party) {
     state.activePartyId = patch.party.activeSpiritId || patch.party.partyIds[0];
     state.partyIds = patch.party.partyIds.map(String);
@@ -2950,6 +3000,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'market.guild_receipt') {
+    return {
+      receiptId: MARKET_GUILD_RECEIPTS[0].id,
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: state.charmListed,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat,
+      noRealValue: true
+    };
+  }
+
   if (type === 'item.provision_satchel') {
     return {
       satchelId: SPIRIT_PROVISION_SATCHELS[0].id,
@@ -2957,6 +3023,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       activeSpiritId: state.spiritId || state.attunedSpiritIds[0],
       journalDiscoveredCount: state.journalDiscoveredCount,
       marketProof: state.charmListed,
+      marketReceiptProof: state.marketReceiptProof,
       tradeProof: state.tradeProof,
       routeInviteProof: state.routeInviteProof,
       careStreak: state.raisingCareStreak,
@@ -3102,6 +3169,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       temperamentConcordProof: state.temperamentConcordProof,
       temperamentConcordId: state.temperamentConcordId,
       marketProof: state.charmListed,
+      marketReceiptProof: state.marketReceiptProof,
       tradeProof: state.tradeProof,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
@@ -3577,6 +3645,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       battleRoundVictory: state.battleRoundVictory,
       questChainProof: state.questChainProof,
       marketProof: state.charmListed,
+      marketReceiptProof: state.marketReceiptProof,
       tradeProof: state.tradeProof,
       canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
       profileViewed: state.profileViewed,
@@ -3624,6 +3693,7 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       growthRiteProof: state.growthRiteProof,
       questChainProof: state.questChainProof,
       marketProof: state.charmListed,
+      marketReceiptProof: state.marketReceiptProof,
       tradeProof: state.tradeProof,
       canaryPreviewProof: state.canaryRequested && state.canaryReturnRequested,
       profileViewed: state.profileViewed,
@@ -4563,6 +4633,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         activeSpiritId: String(payload.activeSpiritId || state.spiritId || state.attunedSpiritIds[0] || ''),
         journalDiscoveredCount: Number(payload.journalDiscoveredCount ?? state.journalDiscoveredCount ?? 0),
         marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         routeInviteProof: Boolean(payload.routeInviteProof ?? state.routeInviteProof),
         careStreak: Number(payload.careStreak ?? state.raisingCareStreak ?? 0),
@@ -5433,6 +5504,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         battleRoundVictory: Boolean(payload.battleRoundVictory ?? state.battleRoundVictory),
         questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
         marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
@@ -5495,6 +5567,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         growthRiteProof: Boolean(payload.growthRiteProof ?? state.growthRiteProof),
         questChainProof: Boolean(payload.questChainProof ?? state.questChainProof),
         marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        marketReceiptProof: Boolean(payload.marketReceiptProof ?? state.marketReceiptProof),
         tradeProof: Boolean(payload.tradeProof ?? state.tradeProof),
         canaryPreviewProof: Boolean(payload.canaryPreviewProof ?? (state.canaryRequested && state.canaryReturnRequested)),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
@@ -6589,6 +6662,37 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   if (type === 'market.fixed_list') {
     state.charmListed = true;
     state.chat.push('Jade Thread Charm listed for test soft currency. No real value.');
+  }
+
+  if (type === 'market.guild_receipt') {
+    const result = resolveMarketGuildReceipt(
+      {
+        itemId: String(payload.itemId || 'jade-thread-charm'),
+        quantity: Number(payload.quantity ?? 1),
+        currency: String(payload.currency || 'guild-seals'),
+        price: Number(payload.price ?? 5),
+        marketProof: Boolean(payload.marketProof ?? state.charmListed),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat,
+        noRealValue: Boolean(payload.noRealValue ?? true)
+      },
+      String(payload.receiptId || MARKET_GUILD_RECEIPTS[0].id)
+    );
+    if (result.purchased) {
+      state.marketReceiptProof = true;
+      state.marketReceiptId = result.receiptId;
+      state.marketReceiptName = result.receiptName;
+      state.marketReceiptItemId = result.itemId;
+      state.marketReceiptQuantity = result.quantity;
+      state.marketReceiptPrice = result.price;
+      state.marketReceiptCurrency = result.currency;
+      state.marketReceiptScore = result.score;
+      state.marketReceiptRequiredScore = result.requiredScore;
+      state.marketReceiptClaimed = result.rewardItemId === 'jade-market-receipt';
+    }
+    state.chat.push(result.message);
   }
 
   if (type === 'trade.direct_offer') {

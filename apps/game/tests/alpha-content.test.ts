@@ -4,6 +4,7 @@ import {
   GUILD_ASCENSION_TRIALS,
   GUILD_INSIGNIA_CASES,
   GUILD_WAYFARER_CHRONICLES,
+  MARKET_GUILD_RECEIPTS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRITS,
   MOCHI_SPIRIT_QUESTS,
@@ -47,6 +48,7 @@ import {
   resolveGuildRankTrial,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMarketGuildReceipt,
   resolveMochiStoryChapter,
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityMatrix,
@@ -671,11 +673,58 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(archive.message).toContain('No real value');
 
+    expect(MARKET_GUILD_RECEIPTS.map((receipt) => receipt.id)).toEqual(['jade-court-market-receipt']);
+    const blockedReceipt = resolveMarketGuildReceipt({
+      itemId: ALPHA_ITEMS.charm.id,
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: false,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Market receipt ready.'],
+      noRealValue: true
+    });
+    expect(blockedReceipt).toMatchObject({
+      purchased: false,
+      receiptId: 'jade-court-market-receipt',
+      missing: ['market-listing']
+    });
+
+    const receipt = resolveMarketGuildReceipt({
+      itemId: ALPHA_ITEMS.charm.id,
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Market receipt ready.'],
+      noRealValue: true
+    });
+    expect(receipt).toMatchObject({
+      purchased: true,
+      receiptId: 'jade-court-market-receipt',
+      receiptName: 'Jade Court Market Receipt',
+      itemId: ALPHA_ITEMS.charm.id,
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      score: 16,
+      requiredScore: 16,
+      rewardItemId: ALPHA_ITEMS.marketReceipt.id,
+      source: 'market-guild-receipt'
+    });
+    expect(receipt.message).toContain('No real value');
+
     const provision = resolveSpiritProvisionSatchel({
       roster: fullRoster,
       activeSpiritId: 'jintari',
       journalDiscoveredCount: 3,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       routeInviteProof: true,
       careStreak: 2,
@@ -685,7 +734,7 @@ describe('Mochi Spirits alpha content contract', () => {
       stocked: true,
       satchelId: 'jade-court-provision-satchel',
       stockItemIds: [ALPHA_ITEMS.charm.id, ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.mooncakeBox.id],
-      score: 31,
+      score: 34,
       rewardItemId: ALPHA_ITEMS.provisionSatchel.id
     });
 
@@ -1742,6 +1791,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleRoundVictory: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -1804,6 +1854,7 @@ describe('Mochi Spirits alpha content contract', () => {
       battleRoundVictory: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -1815,8 +1866,8 @@ describe('Mochi Spirits alpha content contract', () => {
       chronicled: true,
       chronicleId: 'jade-wayfarer-chronicle',
       chronicleName: 'Jade Wayfarer Chronicle',
-      score: 141,
-      requiredScore: 75,
+      score: 143,
+      requiredScore: 77,
       rewardItemId: ALPHA_ITEMS.wayfarerChronicleClasp.id,
       source: 'guild-wayfarer-chronicle'
     });
@@ -1858,6 +1909,7 @@ describe('Mochi Spirits alpha content contract', () => {
       growthRiteProof: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -1906,6 +1958,7 @@ describe('Mochi Spirits alpha content contract', () => {
       growthRiteProof: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -1917,8 +1970,8 @@ describe('Mochi Spirits alpha content contract', () => {
       ascended: true,
       trialId: 'jade-court-ascension-trial',
       trialName: 'Jade Court Ascension Trial',
-      score: 106,
-      requiredScore: 64,
+      score: 108,
+      requiredScore: 66,
       rewardItemId: ALPHA_ITEMS.ascensionRibbon.id,
       source: 'guild-ascension-trial'
     });

@@ -36,6 +36,7 @@ describe('game manifest', () => {
       },
       market: {
         fixedPrice: true,
+        guildReceipts: true,
         directTrade: true,
         auctions: false
       },

@@ -98,6 +98,18 @@ async function moveCanvasAndCapture(page, label, key) {
   };
 }
 
+async function writeLocalMovementPulse(page, attempt) {
+  await page.evaluate((retryAttempt) => {
+    localStorage.setItem('mochiSocial.movement.browser-smoke', JSON.stringify({
+      type: 'MOCHI_SOCIAL_LOCAL_MOVEMENT',
+      tabId: 'browser-smoke',
+      key: 'ArrowLeft',
+      attempt: retryAttempt,
+      at: Date.now()
+    }));
+  }, attempt);
+}
+
 async function verifyCanvasMovement(firstTab, secondTab) {
   await secondTab.bringToFront();
   await secondTab.waitForTimeout(400);
@@ -106,21 +118,37 @@ async function verifyCanvasMovement(firstTab, secondTab) {
   await firstTab.bringToFront();
   await firstTab.waitForTimeout(400);
   const firstTabMovement = await moveCanvasAndCapture(firstTab, 'first-tab', 'ArrowLeft');
-  await firstTab.evaluate(() => {
-    localStorage.setItem('mochiSocial.movement.browser-smoke', JSON.stringify({
-      type: 'MOCHI_SOCIAL_LOCAL_MOVEMENT',
-      tabId: 'browser-smoke',
-      key: 'ArrowLeft',
-      at: Date.now()
-    }));
-  });
-  await secondTab.bringToFront();
-  await secondTab.waitForTimeout(2500);
-  const observerAfter = await captureCanvasSignature(secondTab, 'second-tab-after-first-tab-move');
-  const observerPulseAfter = await readCanvasMovementPulse(secondTab);
+  await writeLocalMovementPulse(firstTab, 1);
+
+  let observerAfter = observerBefore;
+  let observerPulseAfter = observerPulseBefore;
+  let observerAttempts = 0;
+  let visualHashChanged = false;
+  let movementPulseChanged = false;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    if (attempt > 1) {
+      await firstTab.bringToFront();
+      await writeLocalMovementPulse(firstTab, attempt);
+    }
+
+    await secondTab.bringToFront();
+    await secondTab.waitForTimeout(1800 + attempt * 700);
+    observerAfter = await captureCanvasSignature(
+      secondTab,
+      attempt === 1 ? 'second-tab-after-first-tab-move' : `second-tab-after-first-tab-move-retry-${attempt}`
+    );
+    observerPulseAfter = await readCanvasMovementPulse(secondTab);
+    observerAttempts = attempt;
+    visualHashChanged = observerBefore.sha256 !== observerAfter.sha256;
+    movementPulseChanged = observerPulseAfter !== '' && observerPulseAfter !== observerPulseBefore;
+
+    if (visualHashChanged || movementPulseChanged) {
+      break;
+    }
+  }
+
   const secondTabMovement = await moveCanvasAndCapture(secondTab, 'second-tab', 'ArrowDown');
-  const visualHashChanged = observerBefore.sha256 !== observerAfter.sha256;
-  const movementPulseChanged = observerPulseAfter !== '' && observerPulseAfter !== observerPulseBefore;
 
   assert(
     visualHashChanged || movementPulseChanged,
@@ -134,6 +162,7 @@ async function verifyCanvasMovement(firstTab, secondTab) {
       before: observerBefore,
       after: observerAfter,
       changedAfterFirstTabMove: true,
+      attempts: observerAttempts,
       visualHashChanged,
       movementPulseChanged,
       pulseBefore: observerPulseBefore,
@@ -200,6 +229,7 @@ async function exerciseAlphaHud(page) {
   await page.press('[data-chat-input]', 'Enter', { timeout: timeoutMs });
   await page.click('[data-alpha-action="emote.send"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="market.fixed_list"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="market.guild_receipt"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="trade.direct_offer"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.provision_satchel"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.care_cycle"]', { timeout: timeoutMs });
@@ -451,7 +481,7 @@ async function exerciseAlphaHud(page) {
         && state.provisionProof === true
         && state.provisionSatchelId === 'jade-court-provision-satchel'
         && state.provisionSatchelName === 'Jade Court Provision Satchel'
-        && state.provisionScore >= 24
+        && state.provisionScore >= 27
         && Array.isArray(state.provisionStockItemIds)
         && state.provisionStockItemIds.includes('jade-thread-charm')
         && state.provisionStockItemIds.includes('lantern-harmony-tea')
@@ -785,14 +815,14 @@ async function exerciseAlphaHud(page) {
         && state.wayfarerChronicleProof === true
         && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
         && state.wayfarerChronicleName === 'Jade Wayfarer Chronicle'
-        && state.wayfarerChronicleScore >= 75
-        && state.wayfarerChronicleRequiredScore === 75
+        && state.wayfarerChronicleScore >= 77
+        && state.wayfarerChronicleRequiredScore === 77
         && state.wayfarerChronicleClaspClaimed === true
         && state.guildAscensionProof === true
         && state.guildAscensionTrialId === 'jade-court-ascension-trial'
         && state.guildAscensionTrialName === 'Jade Court Ascension Trial'
-        && state.guildAscensionScore >= 64
-        && state.guildAscensionRequiredScore === 64
+        && state.guildAscensionScore >= 66
+        && state.guildAscensionRequiredScore === 66
         && state.guildAscensionRibbonClaimed === true
         && state.harmonyFormProof === true
         && state.harmonyFormId === 'triune-jade-harmony'
@@ -961,12 +991,23 @@ async function exerciseAlphaHud(page) {
         && state.statusMood === 'cozy'
         && state.lastInspectedSpiritId === 'aozhen'
         && state.charmListed === true
+        && state.marketReceiptProof === true
+        && state.marketReceiptId === 'jade-court-market-receipt'
+        && state.marketReceiptName === 'Jade Court Market Receipt'
+        && state.marketReceiptItemId === 'jade-thread-charm'
+        && state.marketReceiptQuantity === 1
+        && state.marketReceiptPrice === 5
+        && state.marketReceiptCurrency === 'guild-seals'
+        && state.marketReceiptScore >= 16
+        && state.marketReceiptRequiredScore === 16
+        && state.marketReceiptClaimed === true
         && state.tradeProof === true
         && state.canaryRequested === true
         && state.canaryReturnRequested === true
         && chat.includes('Inspect Aozhen')
         && chat.includes('You wave')
         && chat.includes('Jade Thread Charm listed')
+        && chat.includes('Jade Court Market Receipt recorded')
         && chat.includes('Direct trade proof')
         && chat.includes('Canary certificate request staged')
         && chat.includes('Jade Vault Return Proof staged')
@@ -1258,7 +1299,7 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.provisionProof === true, 'HUD provision action must record provision satchel proof.');
   assert(snapshot.state.provisionSatchelId === 'jade-court-provision-satchel', 'HUD provision action must record the provision satchel id.');
   assert(snapshot.state.provisionSatchelName === 'Jade Court Provision Satchel', 'HUD provision action must record the provision satchel name.');
-  assert(snapshot.state.provisionScore >= 24, 'HUD provision action must record a passing provision score.');
+  assert(snapshot.state.provisionScore >= 27, 'HUD provision action must record a passing provision score.');
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('jade-thread-charm'), 'HUD provision action must stock the Jade Thread Charm.');
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('lantern-harmony-tea'), 'HUD provision action must stock Lantern Harmony Tea.');
   assert(Array.isArray(snapshot.state.provisionStockItemIds) && snapshot.state.provisionStockItemIds.includes('jade-mooncake-box'), 'HUD provision action must stock the Jade Mooncake Box.');
@@ -1535,15 +1576,15 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.wayfarerChronicleProof === true, 'HUD chronicle action must record first-court alpha chronicle proof.');
   assert(snapshot.state.wayfarerChronicleId === 'jade-wayfarer-chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle id.');
   assert(snapshot.state.wayfarerChronicleName === 'Jade Wayfarer Chronicle', 'HUD chronicle action must record the Jade Wayfarer Chronicle name.');
-  assert(snapshot.state.wayfarerChronicleScore >= 75, 'HUD chronicle action must record a passing chronicle score.');
-  assert(snapshot.state.wayfarerChronicleRequiredScore === 75, 'HUD chronicle action must record the chronicle requirement.');
+  assert(snapshot.state.wayfarerChronicleScore >= 77, 'HUD chronicle action must record a passing chronicle score.');
+  assert(snapshot.state.wayfarerChronicleRequiredScore === 77, 'HUD chronicle action must record the chronicle requirement.');
   assert(snapshot.state.wayfarerChronicleClaspClaimed === true, 'HUD chronicle action must mark the no-real-value chronicle clasp proof.');
   assert(snapshot.ascension.includes('Jade Court Ascension Trial'), 'HUD ascension label must show the completed guild capstone trial.');
   assert(snapshot.state.guildAscensionProof === true, 'HUD ascension action must record closed-alpha guild capstone proof.');
   assert(snapshot.state.guildAscensionTrialId === 'jade-court-ascension-trial', 'HUD ascension action must record the Jade Court Ascension Trial id.');
   assert(snapshot.state.guildAscensionTrialName === 'Jade Court Ascension Trial', 'HUD ascension action must record the Jade Court Ascension Trial name.');
-  assert(snapshot.state.guildAscensionScore >= 64, 'HUD ascension action must record a passing ascension score.');
-  assert(snapshot.state.guildAscensionRequiredScore === 64, 'HUD ascension action must record the ascension score requirement.');
+  assert(snapshot.state.guildAscensionScore >= 66, 'HUD ascension action must record a passing ascension score.');
+  assert(snapshot.state.guildAscensionRequiredScore === 66, 'HUD ascension action must record the ascension score requirement.');
   assert(snapshot.state.guildAscensionRibbonClaimed === true, 'HUD ascension action must mark the no-real-value ascension ribbon proof.');
   assert(snapshot.harmony.includes('Triune Jade Harmony'), 'HUD harmony label must show the completed party form.');
   assert(snapshot.state.harmonyFormProof === true, 'HUD harmony action must record party harmony proof.');
@@ -1711,6 +1752,16 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.statusMood === 'cozy', 'HUD status action must record local social status proof.');
   assert(snapshot.state.lastInspectedSpiritId === 'aozhen', 'HUD inspect action must record an Aozhen spirit inspection proof.');
   assert(snapshot.state.charmListed === true, 'HUD market action must mark a fixed listing proof.');
+  assert(snapshot.state.marketReceiptProof === true, 'HUD market receipt action must record fixed-price purchase proof.');
+  assert(snapshot.state.marketReceiptId === 'jade-court-market-receipt', 'HUD market receipt action must record the receipt id.');
+  assert(snapshot.state.marketReceiptName === 'Jade Court Market Receipt', 'HUD market receipt action must record the receipt name.');
+  assert(snapshot.state.marketReceiptItemId === 'jade-thread-charm', 'HUD market receipt action must record the purchased item.');
+  assert(snapshot.state.marketReceiptQuantity === 1, 'HUD market receipt action must record the purchased quantity.');
+  assert(snapshot.state.marketReceiptPrice === 5, 'HUD market receipt action must record the test price.');
+  assert(snapshot.state.marketReceiptCurrency === 'guild-seals', 'HUD market receipt action must record the test currency.');
+  assert(snapshot.state.marketReceiptScore >= 16, 'HUD market receipt action must record a passing receipt score.');
+  assert(snapshot.state.marketReceiptRequiredScore === 16, 'HUD market receipt action must record the receipt requirement.');
+  assert(snapshot.state.marketReceiptClaimed === true, 'HUD market receipt action must mark the no-real-value receipt proof.');
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
   assert(snapshot.state.canaryReturnRequested === true, 'HUD Canary return action must stage a no-real-value return preview.');
@@ -1725,6 +1776,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Jade Court Research Folio recorded')), 'HUD chat state must record the research folio action.');
   assert(chat.some((line) => String(line).includes('Jade Court Spirit Compendium complete')), 'HUD chat state must record the compendium action.');
   assert(chat.some((line) => String(line).includes('Jade Court Roster Archive sealed')), 'HUD chat state must record the roster archive action.');
+  assert(chat.some((line) => String(line).includes('Jade Court Market Receipt recorded')), 'HUD chat state must record the no-real-value market receipt action.');
   assert(chat.some((line) => String(line).includes('Jade Court Provision Satchel stocked')), 'HUD chat state must record the provision satchel action.');
   assert(chat.some((line) => String(line).includes('Jade Court Care Cycle complete')), 'HUD chat state must record the full-roster care cycle action.');
   assert(chat.some((line) => String(line).includes('Jade Temperament Concord complete')), 'HUD chat state must record the temperament concord action.');

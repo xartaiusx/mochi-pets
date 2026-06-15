@@ -6,6 +6,7 @@ import {
   GUILD_SOCIAL_RALLIES,
   GUILD_WAYFARER_CHRONICLES,
   GUILD_RANK_TRIALS,
+  MARKET_GUILD_RECEIPTS,
   MOCHI_STORY_CHAPTERS,
   MOCHI_SPIRIT_QUESTS,
   MOCHI_SPIRITS,
@@ -71,6 +72,7 @@ import {
   resolveGuildInsigniaCase,
   resolveGuildSocialRally,
   resolveGuildWayfarerChronicle,
+  resolveMarketGuildReceipt,
   resolveMochiStoryChapter,
   resolveSpiritJournal,
   resolveSpiritKinshipAlbum,
@@ -186,6 +188,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCaptureRites).toBe(true);
     expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
+    expect(ALPHA_FEATURES.market.guildReceipts).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
@@ -276,6 +279,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('quest.accept');
     expect(ALPHA_ACTION_TYPES).toContain('quest.progress');
     expect(ALPHA_ACTION_TYPES).toContain('market.fixed_list');
+    expect(ALPHA_ACTION_TYPES).toContain('market.guild_receipt');
     expect(ALPHA_ACTION_TYPES).toContain('trade.direct_offer');
     expect(ALPHA_ACTION_TYPES).toContain('trade.exchange_accord');
     expect(ALPHA_ACTION_TYPES).toContain('chain.withdraw_request');
@@ -735,12 +739,56 @@ describe('alpha contract', () => {
       guildBuddyProof: true
     }).archived).toBe(false);
 
+    expect(MARKET_GUILD_RECEIPTS.map((receipt) => receipt.id)).toEqual(['jade-court-market-receipt']);
+    const receipt = resolveMarketGuildReceipt({
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Receipt ready.'],
+      noRealValue: true
+    });
+    expect(receipt).toMatchObject({
+      ok: true,
+      purchased: true,
+      receiptId: 'jade-court-market-receipt',
+      receiptName: 'Jade Court Market Receipt',
+      title: 'First Fixed-Price Guild Purchase',
+      habitat: 'Jade Lantern Court',
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      score: 16,
+      requiredScore: 16,
+      rewardItemId: 'jade-market-receipt',
+      source: 'market-guild-receipt'
+    });
+    expect(receipt.message).toContain('No real value');
+    expect(resolveMarketGuildReceipt({
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Receipt ready.'],
+      noRealValue: false
+    }).purchased).toBe(false);
+
     expect(SPIRIT_PROVISION_SATCHELS.map((satchel) => satchel.id)).toEqual(['jade-court-provision-satchel']);
     const satchel = resolveSpiritProvisionSatchel({
       roster: ['lirabao', 'jintari', 'aozhen'],
       activeSpiritId: 'aozhen',
       journalDiscoveredCount: 3,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       routeInviteProof: true,
       careStreak: 1,
@@ -757,8 +805,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
       completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
-      score: 30,
-      requiredScore: 24,
+      score: 33,
+      requiredScore: 27,
       rewardItemId: 'jade-court-provision-satchel',
       source: 'item-provision-satchel'
     });
@@ -767,6 +815,7 @@ describe('alpha contract', () => {
       roster: ['lirabao'],
       journalDiscoveredCount: 1,
       marketProof: false,
+      marketReceiptProof: false,
       tradeProof: false,
       routeInviteProof: false,
       careStreak: 0,
@@ -1938,6 +1987,7 @@ describe('alpha contract', () => {
       battleRoundVictory: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -1955,8 +2005,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 141,
-      requiredScore: 75,
+      score: 143,
+      requiredScore: 77,
       rewardItemId: 'jade-wayfarer-chronicle-clasp',
       source: 'guild-wayfarer-chronicle'
     });
@@ -2010,6 +2060,7 @@ describe('alpha contract', () => {
       battleRoundVictory: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -2056,6 +2107,7 @@ describe('alpha contract', () => {
       growthRiteProof: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,
@@ -2073,8 +2125,8 @@ describe('alpha contract', () => {
       roster: ['lirabao', 'jintari', 'aozhen'],
       partyIds: ['lirabao', 'jintari', 'aozhen'],
       localPresenceCount: 2,
-      score: 106,
-      requiredScore: 64,
+      score: 108,
+      requiredScore: 66,
       rewardItemId: 'jade-court-ascension-ribbon',
       source: 'guild-ascension-trial'
     });
@@ -2114,6 +2166,7 @@ describe('alpha contract', () => {
       growthRiteProof: true,
       questChainProof: true,
       marketProof: true,
+      marketReceiptProof: true,
       tradeProof: true,
       canaryPreviewProof: true,
       profileViewed: true,

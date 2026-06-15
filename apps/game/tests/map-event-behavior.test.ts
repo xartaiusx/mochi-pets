@@ -1472,10 +1472,40 @@ describe('Mochi town event behavior', () => {
     player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
 
     await runAction(MarketBoard(), player);
+    expect(player.items.at(-1)?.item.id).toBe('jade-market-receipt');
+    expect(player.variables.get('mochiSocial.alpha.marketReceiptProof')).toBe(true);
+    expect(player.variables.get('mochiSocial.alpha.marketReceipt')).toBe('jade-court-market-receipt');
+    expect(player.variables.get('mochiSocial.alpha.marketReceiptName')).toBe('Jade Court Market Receipt');
+    expect(player.variables.get('mochiSocial.alpha.marketReceiptScore')).toBe(16);
+    expect(player.variables.get('mochiSocial.alpha.marketReceiptItemId')).toBe('jade-thread-charm');
+    expect(player.emitted.at(-1)).toMatchObject({
+      type: 'mochi-social-alpha-state',
+      value: {
+        marketReceipt: {
+          receiptId: 'jade-court-market-receipt',
+          receiptName: 'Jade Court Market Receipt',
+          title: 'First Fixed-Price Guild Purchase',
+          itemId: 'jade-thread-charm',
+          quantity: 1,
+          currency: 'guild-seals',
+          price: 5,
+          score: 16,
+          requiredScore: 16,
+          rewardItemId: 'jade-market-receipt',
+          proof: true,
+          message: expect.stringContaining('No real value')
+        }
+      }
+    });
+    expect(player.saves.at(-1)?.options.source).toBe('market-board');
+    expect(player.texts.at(-1)).toContain('Jade Court Market Receipt recorded');
+    expect(player.texts.at(-1)).toContain('no-real-value fixed-price purchase proof');
+
+    await runAction(MarketBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('jade-court-provision-satchel');
     expect(player.variables.get('mochiSocial.alpha.provisionSatchelProof')).toBe(true);
     expect(player.variables.get('mochiSocial.alpha.provisionSatchel')).toBe('jade-court-provision-satchel');
-    expect(player.variables.get('mochiSocial.alpha.provisionScore')).toBe(30);
+    expect(player.variables.get('mochiSocial.alpha.provisionScore')).toBe(33);
     expect(player.variables.get('mochiSocial.alpha.provisionStockItems')).toEqual([
       'jade-thread-charm',
       'lantern-harmony-tea',
@@ -1493,7 +1523,7 @@ describe('Mochi town event behavior', () => {
           roster: ['lirabao', 'jintari', 'aozhen'],
           stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
           completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
-          score: 30,
+          score: 33,
           rewardItemId: 'jade-court-provision-satchel',
           proof: true,
           message: expect.stringContaining('No-real-value item preparation')
