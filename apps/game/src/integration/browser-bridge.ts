@@ -54,10 +54,12 @@ import {
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
+  SPIRIT_WEATHER_VEILS,
   TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
   resolveMochiSpiritQuestProgress,
   resolveSpiritRouteMastery,
+  resolveSpiritWeatherVeil,
   techniqueMasteryLevelFromXp,
   selectMochiSpiritQuest,
   selectSpiritRaisingNeed,
@@ -285,6 +287,15 @@ interface AlphaHudState {
   routeEcologySpeciesIds: string[];
   routeEcologyInvitedSpiritIds: string[];
   routeEcologyMapClaimed: boolean;
+  weatherVeilProof: boolean;
+  weatherVeilId?: string;
+  weatherVeilName: string;
+  weatherVeilScore: number;
+  weatherVeilRequiredScore: number;
+  weatherVeilRouteIds: string[];
+  weatherVeilConditionIds: string[];
+  weatherVeilWindows: string[];
+  weatherVeilChartClaimed: boolean;
   encounterRotationProof: boolean;
   encounterRotationId?: string;
   encounterRotationName: string;
@@ -1174,6 +1185,14 @@ function defaultAlphaState(): AlphaHudState {
     routeEcologySpeciesIds: [],
     routeEcologyInvitedSpiritIds: [],
     routeEcologyMapClaimed: false,
+    weatherVeilProof: false,
+    weatherVeilName: 'Uncharted',
+    weatherVeilScore: 0,
+    weatherVeilRequiredScore: 0,
+    weatherVeilRouteIds: [],
+    weatherVeilConditionIds: [],
+    weatherVeilWindows: [],
+    weatherVeilChartClaimed: false,
     encounterRotationProof: false,
     encounterRotationName: 'Unplanned',
     encounterRotationScore: 0,
@@ -1640,6 +1659,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-temperament-label>Temperament: pending</span>
       <span class="mochi-hud__hint" data-field-almanac-label>Almanac: pending</span>
       <span class="mochi-hud__hint" data-route-ecology-label>Ecology: pending</span>
+      <span class="mochi-hud__hint" data-weather-veil-label>Weather Veil: pending</span>
       <span class="mochi-hud__hint" data-encounter-rotation-label>Rotation: pending</span>
       <span class="mochi-hud__hint" data-encounter-atlas-label>Atlas: pending</span>
       <span class="mochi-hud__hint" data-craft-writ-label>Craft: pending</span>
@@ -1711,6 +1731,7 @@ function createHud() {
       <button type="button" data-alpha-action="spirit.temperament_concord" aria-label="Record the no-real-value Jade Temperament Concord">Temper</button>
       <button type="button" data-alpha-action="spirit.field_almanac" aria-label="Record the no-real-value Jade Field Almanac">Almanac</button>
       <button type="button" data-alpha-action="world.route_ecology" aria-label="Record the no-real-value Jade Route Ecology Survey">Ecology</button>
+      <button type="button" data-alpha-action="world.weather_veil" aria-label="Record the no-real-value Jade Weather Veil">Veil</button>
       <button type="button" data-alpha-action="world.encounter_rotation" aria-label="Record the no-real-value Jade Encounter Rotation">Rotate</button>
       <button type="button" data-alpha-action="world.encounter_atlas" aria-label="Record the no-real-value Jade Encounter Atlas">Atlas</button>
       <button type="button" data-alpha-action="item.craft_writ" aria-label="Record the no-real-value Jade Court Craft Writ">Craft</button>
@@ -1795,6 +1816,7 @@ function createHud() {
   const temperamentLabel = hud.querySelector('[data-temperament-label]');
   const fieldAlmanacLabel = hud.querySelector('[data-field-almanac-label]');
   const routeEcologyLabel = hud.querySelector('[data-route-ecology-label]');
+  const weatherVeilLabel = hud.querySelector('[data-weather-veil-label]');
   const encounterRotationLabel = hud.querySelector('[data-encounter-rotation-label]');
   const encounterAtlasLabel = hud.querySelector('[data-encounter-atlas-label]');
   const craftWritLabel = hud.querySelector('[data-craft-writ-label]');
@@ -1970,6 +1992,11 @@ function createHud() {
       routeEcologyLabel.textContent = state.routeEcologyProof
         ? `Ecology: ${state.routeEcologyName}, ${state.routeEcologyRouteIds.length} routes, ${state.routeEcologyInvitedSpiritIds.length} invites`
         : 'Ecology: pending';
+    }
+    if (weatherVeilLabel) {
+      weatherVeilLabel.textContent = state.weatherVeilProof
+        ? `Weather Veil: ${state.weatherVeilName}, ${state.weatherVeilConditionIds.length} veils, score ${state.weatherVeilScore}/${state.weatherVeilRequiredScore}`
+        : 'Weather Veil: pending';
     }
     if (encounterRotationLabel) {
       encounterRotationLabel.textContent = state.encounterRotationProof
@@ -2401,6 +2428,9 @@ function readAlphaState(): AlphaHudState {
       routeEcologyRouteIds: Array.isArray(parsed?.routeEcologyRouteIds) ? parsed.routeEcologyRouteIds.map(String) : [],
       routeEcologySpeciesIds: Array.isArray(parsed?.routeEcologySpeciesIds) ? parsed.routeEcologySpeciesIds.map(String) : [],
       routeEcologyInvitedSpiritIds: Array.isArray(parsed?.routeEcologyInvitedSpiritIds) ? parsed.routeEcologyInvitedSpiritIds.map(String) : [],
+      weatherVeilRouteIds: Array.isArray(parsed?.weatherVeilRouteIds) ? parsed.weatherVeilRouteIds.map(String) : [],
+      weatherVeilConditionIds: Array.isArray(parsed?.weatherVeilConditionIds) ? parsed.weatherVeilConditionIds.map(String) : [],
+      weatherVeilWindows: Array.isArray(parsed?.weatherVeilWindows) ? parsed.weatherVeilWindows.map(String) : [],
       encounterRotationRouteIds: Array.isArray(parsed?.encounterRotationRouteIds) ? parsed.encounterRotationRouteIds.map(String) : [],
       encounterRotationSpiritIds: Array.isArray(parsed?.encounterRotationSpiritIds) ? parsed.encounterRotationSpiritIds.map(String) : [],
       encounterRotationLureItemIds: Array.isArray(parsed?.encounterRotationLureItemIds) ? parsed.encounterRotationLureItemIds.map(String) : [],
@@ -3432,6 +3462,28 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
     };
   }
 
+  if (type === 'world.weather_veil') {
+    const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
+    return {
+      weatherVeilId: SPIRIT_WEATHER_VEILS[0].id,
+      discoveredRoutes: state.discoveredRouteIds,
+      weatherConditionIds: SPIRIT_WEATHER_VEILS[0].requiredWeatherConditionIds,
+      routeEcologyProof: state.routeEcologyProof,
+      routeEcologyId: state.routeEcologyId,
+      fieldAlmanacProof: state.fieldAlmanacProof,
+      fieldAlmanacId: state.fieldAlmanacId,
+      fieldAccordProof: state.fieldAccordProof,
+      fieldAccordId: state.fieldAccordId,
+      routePatrolProof: state.routePatrolProof,
+      routePatrolId: state.routePatrolId,
+      localPresenceCount: presenceCount,
+      profileViewed: state.profileViewed,
+      guildBuddyProof: state.guildBuddyProof,
+      statusMood: state.statusMood,
+      chatLines: state.chat
+    };
+  }
+
   if (type === 'world.encounter_rotation') {
     const roster = state.attunedSpiritIds.length ? state.attunedSpiritIds : MOCHI_SPIRITS.map((spirit) => spirit.id);
     const presenceCount = Number(document.querySelector<HTMLElement>('[data-presence-label]')?.dataset.presenceCount || state.rallyPresenceCount || 1);
@@ -3450,6 +3502,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       fieldAccordId: state.fieldAccordId,
       captureRiteProof: state.captureRiteProof,
       captureRiteId: state.captureRiteId,
+      weatherVeilProof: state.weatherVeilProof,
+      weatherVeilId: state.weatherVeilId,
       localPresenceCount: presenceCount,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
@@ -3476,6 +3530,8 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       fieldAlmanacId: state.fieldAlmanacId,
       encounterRotationProof: state.encounterRotationProof,
       encounterRotationId: state.encounterRotationId,
+      weatherVeilProof: state.weatherVeilProof,
+      weatherVeilId: state.weatherVeilId,
       localPresenceCount: presenceCount,
       profileViewed: state.profileViewed,
       guildBuddyProof: state.guildBuddyProof,
@@ -5170,6 +5226,45 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     state.chat.push(result.message);
   }
 
+  if (type === 'world.weather_veil') {
+    const result = resolveSpiritWeatherVeil(
+      {
+        discoveredRoutes: Array.isArray(payload.discoveredRoutes) ? payload.discoveredRoutes.map(String) : state.discoveredRouteIds,
+        weatherConditionIds: Array.isArray(payload.weatherConditionIds)
+          ? payload.weatherConditionIds.map(String)
+          : SPIRIT_WEATHER_VEILS[0].requiredWeatherConditionIds,
+        routeEcologyProof: Boolean(payload.routeEcologyProof ?? state.routeEcologyProof),
+        routeEcologyId: String(payload.routeEcologyId || state.routeEcologyId || ''),
+        fieldAlmanacProof: Boolean(payload.fieldAlmanacProof ?? state.fieldAlmanacProof),
+        fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
+        fieldAccordProof: Boolean(payload.fieldAccordProof ?? state.fieldAccordProof),
+        fieldAccordId: String(payload.fieldAccordId || state.fieldAccordId || ''),
+        routePatrolProof: Boolean(payload.routePatrolProof ?? state.routePatrolProof),
+        routePatrolId: String(payload.routePatrolId || state.routePatrolId || ''),
+        localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
+        profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
+        guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
+        statusMood: String(payload.statusMood || state.statusMood || ''),
+        chatLines: Array.isArray(payload.chatLines) ? payload.chatLines.map(String) : state.chat
+      },
+      String(payload.weatherVeilId || SPIRIT_WEATHER_VEILS[0].id)
+    );
+    if (result.recorded) {
+      state.weatherVeilProof = true;
+      state.weatherVeilId = result.weatherVeilId;
+      state.weatherVeilName = result.weatherVeilName;
+      state.weatherVeilScore = result.score;
+      state.weatherVeilRequiredScore = result.requiredScore;
+      state.weatherVeilRouteIds = result.routeIds;
+      state.weatherVeilConditionIds = result.weatherConditionIds;
+      state.weatherVeilWindows = result.routeConditionWindows;
+      state.weatherVeilChartClaimed = result.rewardItemId === 'jade-weather-veil-chart';
+      state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
+      state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
+    }
+    state.chat.push(result.message);
+  }
+
   if (type === 'world.encounter_rotation') {
     const result = resolveSpiritEncounterRotation(
       {
@@ -5184,6 +5279,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         fieldAccordId: String(payload.fieldAccordId || state.fieldAccordId || ''),
         captureRiteProof: Boolean(payload.captureRiteProof ?? state.captureRiteProof),
         captureRiteId: String(payload.captureRiteId || state.captureRiteId || ''),
+        weatherVeilProof: Boolean(payload.weatherVeilProof ?? state.weatherVeilProof),
+        weatherVeilId: String(payload.weatherVeilId || state.weatherVeilId || ''),
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
         guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
@@ -5203,6 +5300,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.encounterRotationLureItemIds = result.lureItemIds;
       state.encounterRotationWindows = result.rotationWindows;
       state.encounterRotationScrollClaimed = result.rewardItemId === 'jade-encounter-rotation-scroll';
+      state.weatherVeilId = result.weatherVeilId || state.weatherVeilId;
       state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
       state.attunedSpiritIds = Array.from(new Set([...state.attunedSpiritIds, ...result.encounterSpiritIds]));
       state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);
@@ -5226,6 +5324,8 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
         fieldAlmanacId: String(payload.fieldAlmanacId || state.fieldAlmanacId || ''),
         encounterRotationProof: Boolean(payload.encounterRotationProof ?? state.encounterRotationProof),
         encounterRotationId: String(payload.encounterRotationId || state.encounterRotationId || ''),
+        weatherVeilProof: Boolean(payload.weatherVeilProof ?? state.weatherVeilProof),
+        weatherVeilId: String(payload.weatherVeilId || state.weatherVeilId || ''),
         localPresenceCount: Number(payload.localPresenceCount ?? state.rallyPresenceCount ?? 1),
         profileViewed: Boolean(payload.profileViewed ?? state.profileViewed),
         guildBuddyProof: Boolean(payload.guildBuddyProof ?? state.guildBuddyProof),
@@ -5246,6 +5346,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       state.encounterAtlasRarityTiers = result.rarityTiers;
       state.encounterAtlasClaimed = result.rewardItemId === 'jade-encounter-atlas';
       state.encounterRotationId = result.encounterRotationId || state.encounterRotationId;
+      state.weatherVeilId = result.weatherVeilId || state.weatherVeilId;
       state.discoveredRouteIds = Array.from(new Set([...state.discoveredRouteIds, ...result.routeIds]));
       state.attunedSpiritIds = Array.from(new Set([...state.attunedSpiritIds, ...result.encounteredSpiritIds]));
       state.rallyPresenceCount = Math.max(state.rallyPresenceCount, result.localPresenceCount);

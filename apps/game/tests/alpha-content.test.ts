@@ -41,6 +41,7 @@ import {
   SPIRIT_TEMPERAMENT_CONCORDS,
   SPIRIT_TECHNIQUE_CODEXES,
   SPIRIT_TOURNAMENT_BRACKETS,
+  SPIRIT_WEATHER_VEILS,
   TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
   resolveGuildCommission,
@@ -90,6 +91,7 @@ import {
   resolveSpiritRouteWaystone,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
+  resolveSpiritWeatherVeil,
   resolveSpiritRosterArchive,
   resolveSpiritSanctuaryRite,
   resolveSpiritSifuCouncil,
@@ -971,6 +973,65 @@ describe('Mochi Spirits alpha content contract', () => {
     });
     expect(routeEcology.message).toContain('No real value');
 
+    expect(SPIRIT_WEATHER_VEILS.map((veil) => veil.id)).toEqual(['jade-weather-veil']);
+    const blockedWeatherVeil = resolveSpiritWeatherVeil({
+      discoveredRoutes: firstRouteIds,
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain'],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: false,
+      routePatrolId: 'jade-cloudbell-patrol',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Weather veil needs witness.']
+    });
+    expect(blockedWeatherVeil).toMatchObject({
+      recorded: false,
+      weatherVeilId: 'jade-weather-veil',
+      missing: expect.arrayContaining([
+        'weather:skybell-crosswind',
+        'route-patrol:jade-cloudbell-patrol',
+        'presence:1/2'
+      ])
+    });
+
+    const weatherVeil = resolveSpiritWeatherVeil({
+      discoveredRoutes: firstRouteIds,
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Weather veil ready.']
+    });
+    expect(weatherVeil).toMatchObject({
+      recorded: true,
+      weatherVeilId: 'jade-weather-veil',
+      weatherVeilName: 'Jade Weather Veil',
+      routeIds: [...firstRouteIds],
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+      score: 43,
+      requiredScore: 36,
+      rewardItemId: ALPHA_ITEMS.weatherVeilChart.id,
+      source: 'spirit-weather-veil'
+    });
+    expect(weatherVeil.routeConditionWindows).toHaveLength(firstRouteIds.length);
+    expect(weatherVeil.message).toContain('No real value');
+
     expect(SPIRIT_ENCOUNTER_ROTATIONS.map((rotation) => rotation.id)).toEqual(['jade-encounter-rotation']);
     const blockedEncounterRotation = resolveSpiritEncounterRotation({
       discoveredRoutes: firstRouteIds,
@@ -984,6 +1045,8 @@ describe('Mochi Spirits alpha content contract', () => {
       fieldAccordId: 'cloudbell-skyvow-accord',
       captureRiteProof: false,
       captureRiteId: 'jade-court-capture-rite',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 1,
       profileViewed: true,
       guildBuddyProof: true,
@@ -996,6 +1059,7 @@ describe('Mochi Spirits alpha content contract', () => {
       missing: expect.arrayContaining([
         `lure:${ALPHA_ITEMS.charm.id}`,
         'capture-rite:jade-court-capture-rite',
+        'weather-veil:jade-weather-veil',
         'presence:1/2'
       ])
     });
@@ -1012,6 +1076,8 @@ describe('Mochi Spirits alpha content contract', () => {
       fieldAccordId: 'cloudbell-skyvow-accord',
       captureRiteProof: true,
       captureRiteId: 'jade-court-capture-rite',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 2,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1025,8 +1091,9 @@ describe('Mochi Spirits alpha content contract', () => {
       routeIds: [...firstRouteIds],
       encounterSpiritIds: [...fullRoster],
       lureItemIds: [ALPHA_ITEMS.harmonyTea.id, ALPHA_ITEMS.charm.id],
-      score: 48,
-      requiredScore: 40,
+      weatherVeilId: 'jade-weather-veil',
+      score: 53,
+      requiredScore: 45,
       rewardItemId: ALPHA_ITEMS.encounterRotationScroll.id,
       source: 'spirit-encounter-rotation'
     });
@@ -1048,6 +1115,8 @@ describe('Mochi Spirits alpha content contract', () => {
       fieldAlmanacId: 'jade-field-almanac',
       encounterRotationProof: false,
       encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 1,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1062,6 +1131,7 @@ describe('Mochi Spirits alpha content contract', () => {
       'rarity:rare',
       'capture-rite:jade-court-capture-rite',
       'encounter-rotation:jade-encounter-rotation',
+      'weather-veil:jade-weather-veil',
       'presence:1/2'
     ]));
 
@@ -1079,6 +1149,8 @@ describe('Mochi Spirits alpha content contract', () => {
       fieldAlmanacId: 'jade-field-almanac',
       encounterRotationProof: true,
       encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 2,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1094,8 +1166,9 @@ describe('Mochi Spirits alpha content contract', () => {
       capturedSpiritIds: [...fullRoster],
       rarityTiers: ['common', 'uncommon', 'rare'],
       encounterRotationId: 'jade-encounter-rotation',
-      score: 59,
-      requiredScore: 48,
+      weatherVeilId: 'jade-weather-veil',
+      score: 64,
+      requiredScore: 53,
       rewardItemId: ALPHA_ITEMS.encounterAtlas.id,
       source: 'spirit-encounter-atlas'
     });

@@ -61,6 +61,7 @@ import {
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
+  SPIRIT_WEATHER_VEILS,
   TRADE_EXCHANGE_ACCORDS
 } from '../alpha/content';
 
@@ -140,6 +141,7 @@ export const PLAYABLE_CONTENT_CATALOG = {
     rosterArchiveIds: idsFrom(SPIRIT_ROSTER_ARCHIVES),
     fieldAlmanacIds: idsFrom(SPIRIT_FIELD_ALMANACS),
     routeEcologySurveyIds: idsFrom(SPIRIT_ROUTE_ECOLOGY_SURVEYS),
+    weatherVeilIds: idsFrom(SPIRIT_WEATHER_VEILS),
     encounterRotationIds: idsFrom(SPIRIT_ENCOUNTER_ROTATIONS),
     encounterAtlasIds: idsFrom(SPIRIT_ENCOUNTER_ATLASES),
     routeWaystoneIds: idsFrom(SPIRIT_ROUTE_WAYSTONES)

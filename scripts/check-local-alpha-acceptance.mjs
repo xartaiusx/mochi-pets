@@ -71,6 +71,7 @@ async function run() {
   assert(manifest.body.gameplay?.spiritTemperamentConcords === true, 'Manifest must expose Mochi Spirit temperament concords.');
   assert(manifest.body.gameplay?.spiritFieldAlmanacs === true, 'Manifest must expose Mochi Spirit field almanacs.');
   assert(manifest.body.gameplay?.routeEcologySurveys === true, 'Manifest must expose Mochi Spirit route ecology surveys.');
+  assert(manifest.body.gameplay?.spiritWeatherVeils === true, 'Manifest must expose Mochi Spirit weather veils.');
   assert(manifest.body.gameplay?.spiritEncounterRotations === true, 'Manifest must expose Mochi Spirit encounter rotations.');
   assert(manifest.body.gameplay?.spiritEncounterAtlases === true, 'Manifest must expose Mochi Spirit encounter atlases.');
   assert(manifest.body.gameplay?.spiritCraftWrits === true, 'Manifest must expose Mochi Spirit craft writs.');
@@ -179,6 +180,7 @@ async function run() {
   assert(alphaStatus.body.gameplay?.spiritTemperamentConcords === true, 'Alpha status must expose Mochi Spirit temperament concords.');
   assert(alphaStatus.body.gameplay?.spiritFieldAlmanacs === true, 'Alpha status must expose Mochi Spirit field almanacs.');
   assert(alphaStatus.body.gameplay?.routeEcologySurveys === true, 'Alpha status must expose Mochi Spirit route ecology surveys.');
+  assert(alphaStatus.body.gameplay?.spiritWeatherVeils === true, 'Alpha status must expose Mochi Spirit weather veils.');
   assert(alphaStatus.body.gameplay?.spiritEncounterRotations === true, 'Alpha status must expose Mochi Spirit encounter rotations.');
   assert(alphaStatus.body.gameplay?.spiritEncounterAtlases === true, 'Alpha status must expose Mochi Spirit encounter atlases.');
   assert(alphaStatus.body.gameplay?.spiritCraftWrits === true, 'Alpha status must expose Mochi Spirit craft writs.');
@@ -966,6 +968,30 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-weather-veil`,
+      type: 'world.weather_veil',
+      payload: {
+        weatherVeilId: 'jade-weather-veil',
+        discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+        weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+        routeEcologyProof: true,
+        routeEcologyId: 'jade-route-ecology-survey',
+        fieldAlmanacProof: true,
+        fieldAlmanacId: 'jade-field-almanac',
+        fieldAccordProof: true,
+        fieldAccordId: 'cloudbell-skyvow-accord',
+        routePatrolProof: true,
+        routePatrolId: 'jade-cloudbell-patrol',
+        localPresenceCount: 2,
+        profileViewed: true,
+        guildBuddyProof: true,
+        statusMood: 'cozy',
+        rewardItemId: 'jade-weather-veil-chart',
+        chatLines: ['Local acceptance weather veil proof.'],
+        noRealValue: true
+      }
+    },
+    {
       requestId: `${runId}-encounter-rotation`,
       type: 'world.encounter_rotation',
       payload: {
@@ -981,6 +1007,8 @@ async function run() {
         fieldAccordId: 'cloudbell-skyvow-accord',
         captureRiteProof: true,
         captureRiteId: 'jade-court-capture-rite',
+        weatherVeilProof: true,
+        weatherVeilId: 'jade-weather-veil',
         localPresenceCount: 2,
         profileViewed: true,
         guildBuddyProof: true,
@@ -1008,6 +1036,8 @@ async function run() {
         fieldAlmanacId: 'jade-field-almanac',
         encounterRotationProof: true,
         encounterRotationId: 'jade-encounter-rotation',
+        weatherVeilProof: true,
+        weatherVeilId: 'jade-weather-veil',
         localPresenceCount: 2,
         profileViewed: true,
         guildBuddyProof: true,
@@ -1843,6 +1873,17 @@ async function run() {
   assert(routeEcology?.payload?.conditionWeaveProof === true, 'Route ecology ledger entry must preserve condition weave proof.');
   assert(routeEcology?.payload?.rewardItemId === 'jade-route-ecology-map', 'Route ecology ledger entry must preserve the no-real-value ecology map proof.');
   assert(routeEcology?.payload?.noRealValue === true, 'Route ecology ledger entry must remain no-real-value.');
+  const weatherVeil = entriesById.get(`${runId}-weather-veil`);
+  assert(weatherVeil?.payload?.weatherVeilId === 'jade-weather-veil', 'Weather veil ledger entry must preserve the Jade Weather Veil id.');
+  assert(Array.isArray(weatherVeil?.payload?.discoveredRoutes) && weatherVeil.payload.discoveredRoutes.length === 2, 'Weather veil ledger entry must preserve Moonbridge and Cloudbell route proof.');
+  assert(Array.isArray(weatherVeil?.payload?.weatherConditionIds) && weatherVeil.payload.weatherConditionIds.includes('moonlit-mist') && weatherVeil.payload.weatherConditionIds.includes('goldleaf-rain') && weatherVeil.payload.weatherConditionIds.includes('skybell-crosswind'), 'Weather veil ledger entry must preserve first-court route condition proof.');
+  assert(weatherVeil?.payload?.routeEcologyProof === true, 'Weather veil ledger entry must preserve route ecology proof.');
+  assert(weatherVeil?.payload?.fieldAlmanacProof === true, 'Weather veil ledger entry must preserve field almanac proof.');
+  assert(weatherVeil?.payload?.fieldAccordProof === true, 'Weather veil ledger entry must preserve field accord proof.');
+  assert(weatherVeil?.payload?.routePatrolProof === true, 'Weather veil ledger entry must preserve route patrol proof.');
+  assert(weatherVeil?.payload?.localPresenceCount === 2, 'Weather veil ledger entry must preserve two-tester witness proof.');
+  assert(weatherVeil?.payload?.rewardItemId === 'jade-weather-veil-chart', 'Weather veil ledger entry must preserve the no-real-value weather veil chart proof.');
+  assert(weatherVeil?.payload?.noRealValue === true, 'Weather veil ledger entry must remain no-real-value.');
   const encounterRotation = entriesById.get(`${runId}-encounter-rotation`);
   assert(encounterRotation?.payload?.rotationId === 'jade-encounter-rotation', 'Encounter rotation ledger entry must preserve the Jade Encounter Rotation id.');
   assert(Array.isArray(encounterRotation?.payload?.discoveredRoutes) && encounterRotation.payload.discoveredRoutes.length === 2, 'Encounter rotation ledger entry must preserve Moonbridge and Cloudbell route proof.');
@@ -1852,6 +1893,8 @@ async function run() {
   assert(encounterRotation?.payload?.fieldAlmanacProof === true, 'Encounter rotation ledger entry must preserve field almanac proof.');
   assert(encounterRotation?.payload?.fieldAccordProof === true, 'Encounter rotation ledger entry must preserve field accord proof.');
   assert(encounterRotation?.payload?.captureRiteProof === true, 'Encounter rotation ledger entry must preserve capture rite proof.');
+  assert(encounterRotation?.payload?.weatherVeilProof === true, 'Encounter rotation ledger entry must preserve weather veil proof.');
+  assert(encounterRotation?.payload?.weatherVeilId === 'jade-weather-veil', 'Encounter rotation ledger entry must preserve the Jade Weather Veil id.');
   assert(encounterRotation?.payload?.localPresenceCount === 2, 'Encounter rotation ledger entry must preserve two-tester witness proof.');
   assert(encounterRotation?.payload?.rewardItemId === 'jade-encounter-rotation-scroll', 'Encounter rotation ledger entry must preserve the no-real-value encounter rotation proof.');
   assert(encounterRotation?.payload?.noRealValue === true, 'Encounter rotation ledger entry must remain no-real-value.');
@@ -1866,6 +1909,8 @@ async function run() {
   assert(encounterAtlas?.payload?.fieldAlmanacProof === true, 'Encounter atlas ledger entry must preserve field almanac proof.');
   assert(encounterAtlas?.payload?.encounterRotationProof === true, 'Encounter atlas ledger entry must preserve encounter rotation proof.');
   assert(encounterAtlas?.payload?.encounterRotationId === 'jade-encounter-rotation', 'Encounter atlas ledger entry must preserve the Jade Encounter Rotation id.');
+  assert(encounterAtlas?.payload?.weatherVeilProof === true, 'Encounter atlas ledger entry must preserve weather veil proof.');
+  assert(encounterAtlas?.payload?.weatherVeilId === 'jade-weather-veil', 'Encounter atlas ledger entry must preserve the Jade Weather Veil id.');
   assert(encounterAtlas?.payload?.localPresenceCount === 2, 'Encounter atlas ledger entry must preserve two-tester witness proof.');
   assert(encounterAtlas?.payload?.rewardItemId === 'jade-encounter-atlas', 'Encounter atlas ledger entry must preserve the no-real-value encounter atlas proof.');
   assert(encounterAtlas?.payload?.noRealValue === true, 'Encounter atlas ledger entry must remain no-real-value.');

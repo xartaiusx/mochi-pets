@@ -54,6 +54,7 @@ import {
   SPIRIT_TECHNIQUE_LOADOUTS,
   SPIRIT_TOURNAMENT_BRACKETS,
   SPIRIT_TRAIT_ATTUNEMENTS,
+  SPIRIT_WEATHER_VEILS,
   TRADE_EXCHANGE_ACCORDS,
   growthStageFromBond,
   resolveSpiritAttunement,
@@ -92,6 +93,7 @@ import {
   resolveSpiritRouteWaystone,
   resolveSpiritRouteMastery,
   resolveSpiritRoutePatrol,
+  resolveSpiritWeatherVeil,
   resolveMochiSpiritQuestProgress,
   resolveSpiritAffinityMatrix,
   resolveSpiritAffinityTrial,
@@ -153,6 +155,7 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
     expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritWeatherVeils).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritEncounterRotations).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
@@ -238,6 +241,7 @@ describe('alpha contract', () => {
     expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
     expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
+    expect(ALPHA_ACTION_TYPES).toContain('world.weather_veil');
     expect(ALPHA_ACTION_TYPES).toContain('world.encounter_rotation');
     expect(ALPHA_ACTION_TYPES).toContain('world.encounter_atlas');
     expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
@@ -1050,6 +1054,39 @@ describe('alpha contract', () => {
       chatLines: ['Route ecology ready.']
     }).surveyed).toBe(false);
 
+    expect(SPIRIT_WEATHER_VEILS.map((veil) => veil.id)).toEqual(['jade-weather-veil']);
+    const weatherVeil = resolveSpiritWeatherVeil({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Weather veil ready.']
+    });
+    expect(weatherVeil).toMatchObject({
+      ok: true,
+      recorded: true,
+      weatherVeilId: 'jade-weather-veil',
+      weatherVeilName: 'Jade Weather Veil',
+      title: 'First-Court Route Condition Chart',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+      score: 43,
+      requiredScore: 36,
+      rewardItemId: 'jade-weather-veil-chart',
+      source: 'spirit-weather-veil'
+    });
+    expect(weatherVeil.message).toContain('No real value');
+
     expect(SPIRIT_ENCOUNTER_ROTATIONS.map((rotation) => rotation.id)).toEqual(['jade-encounter-rotation']);
     const encounterRotation = resolveSpiritEncounterRotation({
       discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
@@ -1063,6 +1100,8 @@ describe('alpha contract', () => {
       fieldAccordId: 'cloudbell-skyvow-accord',
       captureRiteProof: true,
       captureRiteId: 'jade-court-capture-rite',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 2,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1078,8 +1117,9 @@ describe('alpha contract', () => {
       routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
       encounterSpiritIds: ['lirabao', 'jintari', 'aozhen'],
       lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
-      score: 48,
-      requiredScore: 40,
+      weatherVeilId: 'jade-weather-veil',
+      score: 53,
+      requiredScore: 45,
       rewardItemId: 'jade-encounter-rotation-scroll',
       source: 'spirit-encounter-rotation'
     });
@@ -1100,6 +1140,8 @@ describe('alpha contract', () => {
       fieldAlmanacId: 'jade-field-almanac',
       encounterRotationProof: true,
       encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 2,
       profileViewed: true,
       guildBuddyProof: true,
@@ -1117,8 +1159,9 @@ describe('alpha contract', () => {
       capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
       rarityTiers: ['common', 'uncommon', 'rare'],
       encounterRotationId: 'jade-encounter-rotation',
-      score: 59,
-      requiredScore: 48,
+      weatherVeilId: 'jade-weather-veil',
+      score: 64,
+      requiredScore: 53,
       rewardItemId: 'jade-encounter-atlas',
       source: 'spirit-encounter-atlas'
     });
@@ -1137,6 +1180,8 @@ describe('alpha contract', () => {
       fieldAlmanacId: 'jade-field-almanac',
       encounterRotationProof: false,
       encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
       localPresenceCount: 1,
       profileViewed: true,
       guildBuddyProof: true,

@@ -57,6 +57,7 @@ describe('game manifest', () => {
         spiritTemperamentConcords: true,
         spiritFieldAlmanacs: true,
         routeEcologySurveys: true,
+        spiritWeatherVeils: true,
         spiritEncounterRotations: true,
         spiritEncounterAtlases: true,
         spiritCraftWrits: true,
@@ -261,6 +262,7 @@ describe('game manifest', () => {
           rosterArchiveIds: ['jade-court-roster-archive'],
           fieldAlmanacIds: ['jade-field-almanac'],
           routeEcologySurveyIds: ['jade-route-ecology-survey'],
+          weatherVeilIds: ['jade-weather-veil'],
           encounterRotationIds: ['jade-encounter-rotation'],
           encounterAtlasIds: ['jade-encounter-atlas'],
           routeWaystoneIds: ['jade-cloudbell-waystone']

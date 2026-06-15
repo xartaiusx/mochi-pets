@@ -236,6 +236,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="spirit.temperament_concord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.field_almanac"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="world.route_ecology"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="world.weather_veil"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="item.craft_writ"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="trade.exchange_accord"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="spirit.relic_attune"]', { timeout: timeoutMs });
@@ -293,6 +294,7 @@ async function exerciseAlphaHud(page) {
       const temperament = document.querySelector('[data-temperament-label]')?.textContent || '';
       const fieldAlmanac = document.querySelector('[data-field-almanac-label]')?.textContent || '';
       const routeEcology = document.querySelector('[data-route-ecology-label]')?.textContent || '';
+      const weatherVeil = document.querySelector('[data-weather-veil-label]')?.textContent || '';
       const encounterRotation = document.querySelector('[data-encounter-rotation-label]')?.textContent || '';
       const encounterAtlas = document.querySelector('[data-encounter-atlas-label]')?.textContent || '';
       const craftWrit = document.querySelector('[data-craft-writ-label]')?.textContent || '';
@@ -364,6 +366,7 @@ async function exerciseAlphaHud(page) {
         && temperament.includes('Jade Temperament Concord')
         && fieldAlmanac.includes('Jade Field Almanac')
         && routeEcology.includes('Jade Route Ecology Survey')
+        && weatherVeil.includes('Jade Weather Veil')
         && encounterRotation.includes('Jade Encounter Rotation')
         && encounterAtlas.includes('Jade Encounter Atlas')
         && craftWrit.includes('Jade Court Craft Writ')
@@ -564,11 +567,26 @@ async function exerciseAlphaHud(page) {
         && state.routeEcologyInvitedSpiritIds.includes('jintari')
         && state.routeEcologyInvitedSpiritIds.includes('aozhen')
         && state.routeEcologyMapClaimed === true
+        && state.weatherVeilProof === true
+        && state.weatherVeilId === 'jade-weather-veil'
+        && state.weatherVeilName === 'Jade Weather Veil'
+        && state.weatherVeilScore >= 36
+        && state.weatherVeilRequiredScore === 36
+        && Array.isArray(state.weatherVeilRouteIds)
+        && state.weatherVeilRouteIds.includes('moonbridge-bamboo-trail')
+        && state.weatherVeilRouteIds.includes('cloudbell-reed-bank')
+        && Array.isArray(state.weatherVeilConditionIds)
+        && state.weatherVeilConditionIds.includes('moonlit-mist')
+        && state.weatherVeilConditionIds.includes('goldleaf-rain')
+        && state.weatherVeilConditionIds.includes('skybell-crosswind')
+        && Array.isArray(state.weatherVeilWindows)
+        && state.weatherVeilWindows.length >= 2
+        && state.weatherVeilChartClaimed === true
         && state.encounterRotationProof === true
         && state.encounterRotationId === 'jade-encounter-rotation'
         && state.encounterRotationName === 'Jade Encounter Rotation'
-        && state.encounterRotationScore >= 40
-        && state.encounterRotationRequiredScore === 40
+        && state.encounterRotationScore >= 45
+        && state.encounterRotationRequiredScore === 45
         && Array.isArray(state.encounterRotationRouteIds)
         && state.encounterRotationRouteIds.includes('moonbridge-bamboo-trail')
         && state.encounterRotationRouteIds.includes('cloudbell-reed-bank')
@@ -840,8 +858,8 @@ async function exerciseAlphaHud(page) {
         && state.encounterAtlasProof === true
         && state.encounterAtlasId === 'jade-encounter-atlas'
         && state.encounterAtlasName === 'Jade Encounter Atlas'
-        && state.encounterAtlasScore >= 48
-        && state.encounterAtlasRequiredScore === 48
+        && state.encounterAtlasScore >= 53
+        && state.encounterAtlasRequiredScore === 53
         && Array.isArray(state.encounterAtlasRouteIds)
         && state.encounterAtlasRouteIds.includes('moonbridge-bamboo-trail')
         && state.encounterAtlasRouteIds.includes('cloudbell-reed-bank')
@@ -858,6 +876,7 @@ async function exerciseAlphaHud(page) {
         && state.encounterAtlasRarityTiers.includes('uncommon')
         && state.encounterAtlasRarityTiers.includes('rare')
         && state.encounterRotationId === 'jade-encounter-rotation'
+        && state.weatherVeilId === 'jade-weather-veil'
         && state.encounterAtlasClaimed === true
         && state.wayfarerChronicleProof === true
         && state.wayfarerChronicleId === 'jade-wayfarer-chronicle'
@@ -1076,6 +1095,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Jade Kinship Album recorded')
         && chat.includes('Jade Bloom Ascendance complete')
         && chat.includes('Jade Lineage Register recorded')
+        && chat.includes('Jade Weather Veil recorded')
         && chat.includes('Jade Encounter Rotation recorded')
         && chat.includes('Jade Encounter Atlas recorded')
         && chat.includes('Jade Banner Tournament cleared')
@@ -1119,6 +1139,7 @@ async function exerciseAlphaHud(page) {
       temperament: document.querySelector('[data-temperament-label]')?.textContent || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent || '',
       routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent || '',
+      weatherVeil: document.querySelector('[data-weather-veil-label]')?.textContent || '',
       encounterRotation: document.querySelector('[data-encounter-rotation-label]')?.textContent || '',
       encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent || '',
       craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent || '',
@@ -1188,6 +1209,7 @@ async function exerciseAlphaHud(page) {
       temperament: document.querySelector('[data-temperament-label]')?.textContent?.trim() || '',
       fieldAlmanac: document.querySelector('[data-field-almanac-label]')?.textContent?.trim() || '',
     routeEcology: document.querySelector('[data-route-ecology-label]')?.textContent?.trim() || '',
+    weatherVeil: document.querySelector('[data-weather-veil-label]')?.textContent?.trim() || '',
     encounterRotation: document.querySelector('[data-encounter-rotation-label]')?.textContent?.trim() || '',
     encounterAtlas: document.querySelector('[data-encounter-atlas-label]')?.textContent?.trim() || '',
     craftWrit: document.querySelector('[data-craft-writ-label]')?.textContent?.trim() || '',
@@ -1294,8 +1316,8 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.encounterRotationProof === true, 'HUD encounter rotation action must record encounter rotation proof.');
   assert(snapshot.state.encounterRotationId === 'jade-encounter-rotation', 'HUD encounter rotation action must record the rotation id.');
   assert(snapshot.state.encounterRotationName === 'Jade Encounter Rotation', 'HUD encounter rotation action must record the rotation name.');
-  assert(snapshot.state.encounterRotationScore >= 40, 'HUD encounter rotation action must record a passing rotation score.');
-  assert(snapshot.state.encounterRotationRequiredScore === 40, 'HUD encounter rotation action must record the rotation requirement.');
+  assert(snapshot.state.encounterRotationScore >= 45, 'HUD encounter rotation action must record a passing rotation score.');
+  assert(snapshot.state.encounterRotationRequiredScore === 45, 'HUD encounter rotation action must record the rotation requirement.');
   assert(Array.isArray(snapshot.state.encounterRotationRouteIds) && snapshot.state.encounterRotationRouteIds.includes('moonbridge-bamboo-trail'), 'HUD encounter rotation action must preserve the Moonbridge route.');
   assert(Array.isArray(snapshot.state.encounterRotationRouteIds) && snapshot.state.encounterRotationRouteIds.includes('cloudbell-reed-bank'), 'HUD encounter rotation action must preserve the Cloudbell route.');
   assert(Array.isArray(snapshot.state.encounterRotationSpiritIds) && snapshot.state.encounterRotationSpiritIds.includes('lirabao'), 'HUD encounter rotation action must preserve Lirabao encounter proof.');
@@ -1304,13 +1326,14 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.encounterRotationLureItemIds) && snapshot.state.encounterRotationLureItemIds.includes('lantern-harmony-tea'), 'HUD encounter rotation action must preserve Lantern Harmony Tea lure proof.');
   assert(Array.isArray(snapshot.state.encounterRotationLureItemIds) && snapshot.state.encounterRotationLureItemIds.includes('jade-thread-charm'), 'HUD encounter rotation action must preserve Jade Thread Charm lure proof.');
   assert(Array.isArray(snapshot.state.encounterRotationWindows) && snapshot.state.encounterRotationWindows.length >= 2, 'HUD encounter rotation action must preserve route window proof.');
+  assert(snapshot.state.weatherVeilId === 'jade-weather-veil', 'HUD encounter rotation action must preserve weather veil proof.');
   assert(snapshot.state.encounterRotationScrollClaimed === true, 'HUD encounter rotation action must mark the no-real-value rotation scroll proof.');
   assert(snapshot.encounterAtlas.includes('Jade Encounter Atlas'), 'HUD encounter atlas label must show the completed encounter atlas.');
   assert(snapshot.state.encounterAtlasProof === true, 'HUD encounter atlas action must record encounter atlas proof.');
   assert(snapshot.state.encounterAtlasId === 'jade-encounter-atlas', 'HUD encounter atlas action must record the atlas id.');
   assert(snapshot.state.encounterAtlasName === 'Jade Encounter Atlas', 'HUD encounter atlas action must record the atlas name.');
-  assert(snapshot.state.encounterAtlasScore >= 48, 'HUD encounter atlas action must record a passing atlas score.');
-  assert(snapshot.state.encounterAtlasRequiredScore === 48, 'HUD encounter atlas action must record the atlas requirement.');
+  assert(snapshot.state.encounterAtlasScore >= 53, 'HUD encounter atlas action must record a passing atlas score.');
+  assert(snapshot.state.encounterAtlasRequiredScore === 53, 'HUD encounter atlas action must record the atlas requirement.');
   assert(Array.isArray(snapshot.state.encounterAtlasRouteIds) && snapshot.state.encounterAtlasRouteIds.includes('moonbridge-bamboo-trail'), 'HUD encounter atlas action must preserve the Moonbridge route.');
   assert(Array.isArray(snapshot.state.encounterAtlasRouteIds) && snapshot.state.encounterAtlasRouteIds.includes('cloudbell-reed-bank'), 'HUD encounter atlas action must preserve the Cloudbell route.');
   assert(Array.isArray(snapshot.state.encounterAtlasSpiritIds) && snapshot.state.encounterAtlasSpiritIds.includes('lirabao'), 'HUD encounter atlas action must preserve Lirabao encounter proof.');
@@ -1323,6 +1346,7 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.encounterAtlasRarityTiers) && snapshot.state.encounterAtlasRarityTiers.includes('uncommon'), 'HUD encounter atlas action must preserve uncommon rarity proof.');
   assert(Array.isArray(snapshot.state.encounterAtlasRarityTiers) && snapshot.state.encounterAtlasRarityTiers.includes('rare'), 'HUD encounter atlas action must preserve rare rarity proof.');
   assert(snapshot.state.encounterRotationId === 'jade-encounter-rotation', 'HUD encounter atlas action must preserve encounter rotation proof.');
+  assert(snapshot.state.weatherVeilId === 'jade-weather-veil', 'HUD encounter atlas action must preserve weather veil proof.');
   assert(snapshot.state.encounterAtlasClaimed === true, 'HUD encounter atlas action must mark the no-real-value atlas proof.');
   assert(snapshot.fieldAccord.includes('Cloudbell Skyvow Accord'), 'HUD field accord label must show the cleared Cloudbell accord.');
   assert(snapshot.state.fieldAccordProof === true, 'HUD field accord action must record field accord proof.');
@@ -1435,6 +1459,19 @@ async function exerciseAlphaHud(page) {
   assert(Array.isArray(snapshot.state.routeEcologyInvitedSpiritIds) && snapshot.state.routeEcologyInvitedSpiritIds.includes('jintari'), 'HUD ecology action must record Jintari route invitation proof.');
   assert(Array.isArray(snapshot.state.routeEcologyInvitedSpiritIds) && snapshot.state.routeEcologyInvitedSpiritIds.includes('aozhen'), 'HUD ecology action must record Aozhen route invitation proof.');
   assert(snapshot.state.routeEcologyMapClaimed === true, 'HUD ecology action must mark the no-real-value ecology map proof.');
+  assert(snapshot.weatherVeil.includes('Jade Weather Veil'), 'HUD weather veil label must show the completed weather veil.');
+  assert(snapshot.state.weatherVeilProof === true, 'HUD weather veil action must record weather veil proof.');
+  assert(snapshot.state.weatherVeilId === 'jade-weather-veil', 'HUD weather veil action must record the weather veil id.');
+  assert(snapshot.state.weatherVeilName === 'Jade Weather Veil', 'HUD weather veil action must record the weather veil name.');
+  assert(snapshot.state.weatherVeilScore >= 36, 'HUD weather veil action must record a passing weather veil score.');
+  assert(snapshot.state.weatherVeilRequiredScore === 36, 'HUD weather veil action must record the weather veil requirement.');
+  assert(Array.isArray(snapshot.state.weatherVeilRouteIds) && snapshot.state.weatherVeilRouteIds.includes('moonbridge-bamboo-trail'), 'HUD weather veil action must preserve the Moonbridge route.');
+  assert(Array.isArray(snapshot.state.weatherVeilRouteIds) && snapshot.state.weatherVeilRouteIds.includes('cloudbell-reed-bank'), 'HUD weather veil action must preserve the Cloudbell route.');
+  assert(Array.isArray(snapshot.state.weatherVeilConditionIds) && snapshot.state.weatherVeilConditionIds.includes('moonlit-mist'), 'HUD weather veil action must preserve moonlit mist proof.');
+  assert(Array.isArray(snapshot.state.weatherVeilConditionIds) && snapshot.state.weatherVeilConditionIds.includes('goldleaf-rain'), 'HUD weather veil action must preserve goldleaf rain proof.');
+  assert(Array.isArray(snapshot.state.weatherVeilConditionIds) && snapshot.state.weatherVeilConditionIds.includes('skybell-crosswind'), 'HUD weather veil action must preserve skybell crosswind proof.');
+  assert(Array.isArray(snapshot.state.weatherVeilWindows) && snapshot.state.weatherVeilWindows.length >= 2, 'HUD weather veil action must preserve route condition window proof.');
+  assert(snapshot.state.weatherVeilChartClaimed === true, 'HUD weather veil action must mark the no-real-value weather veil chart proof.');
   assert(snapshot.craftWrit.includes('Jade Court Craft Writ'), 'HUD craft label must show the completed no-real-value craft writ.');
   assert(snapshot.state.craftWritProof === true, 'HUD craft action must record craft writ proof.');
   assert(snapshot.state.craftWritId === 'jade-court-craft-writ', 'HUD craft action must record the craft writ id.');

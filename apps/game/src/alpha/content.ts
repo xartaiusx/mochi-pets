@@ -873,6 +873,61 @@ export interface SpiritRouteEcologyResult {
   source: string;
 }
 
+export interface SpiritWeatherVeil {
+  id: string;
+  name: string;
+  title: string;
+  habitat: SpiritHabitat;
+  requiredRouteIds: readonly string[];
+  requiredWeatherConditionIds: readonly string[];
+  requiredRouteEcologyId: string;
+  requiredFieldAlmanacId: string;
+  requiredFieldAccordId: string;
+  requiredRoutePatrolId: string;
+  requiredPresenceCount: number;
+  requiredChatLines: number;
+  requiredScore: number;
+  rewardItemId: string;
+  summary: string;
+}
+
+export interface SpiritWeatherVeilProgress {
+  discoveredRoutes: readonly string[];
+  weatherConditionIds: readonly string[];
+  routeEcologyProof: boolean;
+  routeEcologyId?: string;
+  fieldAlmanacProof: boolean;
+  fieldAlmanacId?: string;
+  fieldAccordProof: boolean;
+  fieldAccordId?: string;
+  routePatrolProof: boolean;
+  routePatrolId?: string;
+  localPresenceCount: number;
+  profileViewed: boolean;
+  guildBuddyProof: boolean;
+  statusMood?: string;
+  chatLines?: readonly string[];
+}
+
+export interface SpiritWeatherVeilResult {
+  ok: boolean;
+  recorded: boolean;
+  weatherVeilId: string;
+  weatherVeilName: string;
+  title: string;
+  habitat: SpiritHabitat;
+  routeIds: string[];
+  weatherConditionIds: string[];
+  routeConditionWindows: string[];
+  localPresenceCount: number;
+  score: number;
+  requiredScore: number;
+  missing: string[];
+  rewardItemId: string;
+  message: string;
+  source: string;
+}
+
 export interface SpiritEncounterRotation {
   id: string;
   name: string;
@@ -885,6 +940,7 @@ export interface SpiritEncounterRotation {
   requiredFieldAlmanacId: string;
   requiredFieldAccordId: string;
   requiredCaptureRiteId: string;
+  requiredWeatherVeilId: string;
   requiredPresenceCount: number;
   requiredChatLines: number;
   requiredScore: number;
@@ -904,6 +960,8 @@ export interface SpiritEncounterRotationProgress {
   fieldAccordId?: string;
   captureRiteProof: boolean;
   captureRiteId?: string;
+  weatherVeilProof: boolean;
+  weatherVeilId?: string;
   localPresenceCount: number;
   profileViewed: boolean;
   guildBuddyProof: boolean;
@@ -922,6 +980,7 @@ export interface SpiritEncounterRotationResult {
   encounterSpiritIds: string[];
   lureItemIds: string[];
   rotationWindows: string[];
+  weatherVeilId: string;
   localPresenceCount: number;
   score: number;
   requiredScore: number;
@@ -944,6 +1003,7 @@ export interface SpiritEncounterAtlas {
   requiredCaptureRiteId: string;
   requiredFieldAlmanacId: string;
   requiredEncounterRotationId: string;
+  requiredWeatherVeilId: string;
   requiredPresenceCount: number;
   requiredChatLines: number;
   requiredScore: number;
@@ -965,6 +1025,8 @@ export interface SpiritEncounterAtlasProgress {
   fieldAlmanacId?: string;
   encounterRotationProof: boolean;
   encounterRotationId?: string;
+  weatherVeilProof: boolean;
+  weatherVeilId?: string;
   localPresenceCount: number;
   profileViewed: boolean;
   guildBuddyProof: boolean;
@@ -985,6 +1047,7 @@ export interface SpiritEncounterAtlasResult {
   rarityTiers: SpiritEncounterRarity[];
   journalDiscoveredCount: number;
   encounterRotationId: string;
+  weatherVeilId: string;
   localPresenceCount: number;
   score: number;
   requiredScore: number;
@@ -3536,6 +3599,11 @@ export const ALPHA_ITEMS = {
     name: 'Jade Route Ecology Map',
     description: 'A no-real-value route ecology proof for closed-alpha Mochirii encounter signs, patrol notes, and habitat study.'
   },
+  weatherVeilChart: {
+    id: 'jade-weather-veil-chart',
+    name: 'Jade Weather Veil Chart',
+    description: 'A no-real-value route condition proof for closed-alpha Mochirii mist, rain, and wind encounter planning.'
+  },
   encounterRotationScroll: {
     id: 'jade-encounter-rotation-scroll',
     name: 'Jade Encounter Rotation Scroll',
@@ -4189,6 +4257,26 @@ export const SPIRIT_ROUTE_ECOLOGY_SURVEYS: readonly SpiritRouteEcologySurvey[] =
   }
 ];
 
+export const SPIRIT_WEATHER_VEILS: readonly SpiritWeatherVeil[] = [
+  {
+    id: 'jade-weather-veil',
+    name: 'Jade Weather Veil',
+    title: 'First-Court Route Condition Chart',
+    habitat: SPIRIT_HABITATS.jadeLanternCourt,
+    requiredRouteIds: SPIRIT_EXPEDITION_ROUTES.map((route) => route.id),
+    requiredWeatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+    requiredRouteEcologyId: SPIRIT_ROUTE_ECOLOGY_SURVEYS[0].id,
+    requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
+    requiredFieldAccordId: 'cloudbell-skyvow-accord',
+    requiredRoutePatrolId: SPIRIT_ROUTE_PATROLS[0].id,
+    requiredPresenceCount: 2,
+    requiredChatLines: 1,
+    requiredScore: 36,
+    rewardItemId: ALPHA_ITEMS.weatherVeilChart.id,
+    summary: 'A no-real-value route condition proof for testers who chart original Mochirii mist, rain, and wind veils before encounter rotations and atlas records.'
+  }
+];
+
 export const SPIRIT_ENCOUNTER_ROTATIONS: readonly SpiritEncounterRotation[] = [
   {
     id: 'jade-encounter-rotation',
@@ -4202,11 +4290,12 @@ export const SPIRIT_ENCOUNTER_ROTATIONS: readonly SpiritEncounterRotation[] = [
     requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
     requiredFieldAccordId: 'cloudbell-skyvow-accord',
     requiredCaptureRiteId: SPIRIT_CAPTURE_RITES[0].id,
+    requiredWeatherVeilId: SPIRIT_WEATHER_VEILS[0].id,
     requiredPresenceCount: 2,
     requiredChatLines: 1,
-    requiredScore: 40,
+    requiredScore: 45,
     rewardItemId: ALPHA_ITEMS.encounterRotationScroll.id,
-    summary: 'A no-real-value encounter rotation proof for testers who plan original Mochirii route windows, consent lures, ecology notes, field accord trust, capture rite proof, and social witness before sealing the encounter atlas.'
+    summary: 'A no-real-value encounter rotation proof for testers who plan original Mochirii route windows, consent lures, ecology notes, weather veils, field accord trust, capture rite proof, and social witness before sealing the encounter atlas.'
   }
 ];
 
@@ -4224,11 +4313,12 @@ export const SPIRIT_ENCOUNTER_ATLASES: readonly SpiritEncounterAtlas[] = [
     requiredCaptureRiteId: SPIRIT_CAPTURE_RITES[0].id,
     requiredFieldAlmanacId: SPIRIT_FIELD_ALMANACS[0].id,
     requiredEncounterRotationId: SPIRIT_ENCOUNTER_ROTATIONS[0].id,
+    requiredWeatherVeilId: SPIRIT_WEATHER_VEILS[0].id,
     requiredPresenceCount: 2,
     requiredChatLines: 1,
-    requiredScore: 48,
+    requiredScore: 53,
     rewardItemId: ALPHA_ITEMS.encounterAtlas.id,
-    summary: 'A no-real-value encounter index for testers who prove every first-court route sign, rarity tier, journal entry, capture rite, route ecology note, encounter rotation, and nearby social witness.'
+    summary: 'A no-real-value encounter index for testers who prove every first-court route sign, rarity tier, journal entry, capture rite, route ecology note, weather veil, encounter rotation, and nearby social witness.'
   }
 ];
 
@@ -6308,6 +6398,92 @@ export function resolveSpiritRouteEcologySurvey(
   };
 }
 
+export function resolveSpiritWeatherVeil(
+  progress: SpiritWeatherVeilProgress,
+  veilId: string = SPIRIT_WEATHER_VEILS[0].id
+): SpiritWeatherVeilResult {
+  const veil = SPIRIT_WEATHER_VEILS.find((entry) => entry.id === veilId) || SPIRIT_WEATHER_VEILS[0];
+  const requiredRouteIds = new Set(veil.requiredRouteIds);
+  const requiredWeatherConditionIds = new Set(veil.requiredWeatherConditionIds);
+  const routeIds = Array.from(new Set(progress.discoveredRoutes.filter(Boolean))).filter((routeId) => requiredRouteIds.has(routeId));
+  const weatherConditionIds = Array.from(new Set(progress.weatherConditionIds.filter(Boolean))).filter((conditionId) => {
+    return requiredWeatherConditionIds.has(conditionId);
+  });
+  const localPresenceCount = Math.max(0, Math.floor(progress.localPresenceCount || 0));
+  const statusMood = String(progress.statusMood || '').trim();
+  const statusReady = Boolean(statusMood) && statusMood !== 'exploring';
+  const chatLines = Array.isArray(progress.chatLines) ? progress.chatLines.filter((line) => String(line).trim().length > 0) : [];
+  const missing: string[] = [];
+
+  for (const routeId of veil.requiredRouteIds) {
+    if (!routeIds.includes(routeId)) missing.push(`route:${routeId}`);
+  }
+
+  for (const conditionId of veil.requiredWeatherConditionIds) {
+    if (!weatherConditionIds.includes(conditionId)) missing.push(`weather:${conditionId}`);
+  }
+
+  const routeEcologyReady = progress.routeEcologyProof && progress.routeEcologyId === veil.requiredRouteEcologyId;
+  if (!routeEcologyReady) missing.push(`route-ecology:${veil.requiredRouteEcologyId}`);
+
+  const fieldAlmanacReady = progress.fieldAlmanacProof && progress.fieldAlmanacId === veil.requiredFieldAlmanacId;
+  if (!fieldAlmanacReady) missing.push(`field-almanac:${veil.requiredFieldAlmanacId}`);
+
+  const fieldAccordReady = progress.fieldAccordProof && progress.fieldAccordId === veil.requiredFieldAccordId;
+  if (!fieldAccordReady) missing.push(`field-accord:${veil.requiredFieldAccordId}`);
+
+  const routePatrolReady = progress.routePatrolProof && progress.routePatrolId === veil.requiredRoutePatrolId;
+  if (!routePatrolReady) missing.push(`route-patrol:${veil.requiredRoutePatrolId}`);
+
+  if (localPresenceCount < veil.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${veil.requiredPresenceCount}`);
+  if (!progress.profileViewed) missing.push('profile');
+  if (!progress.guildBuddyProof) missing.push('guild-buddy');
+  if (!statusReady) missing.push('status');
+  if (chatLines.length < veil.requiredChatLines) missing.push(`chat:${chatLines.length}/${veil.requiredChatLines}`);
+
+  const score =
+    Math.min(routeIds.length, veil.requiredRouteIds.length) * 4 +
+    Math.min(weatherConditionIds.length, veil.requiredWeatherConditionIds.length) * 3 +
+    (routeEcologyReady ? 6 : 0) +
+    (fieldAlmanacReady ? 4 : 0) +
+    (fieldAccordReady ? 4 : 0) +
+    (routePatrolReady ? 4 : 0) +
+    Math.min(localPresenceCount, veil.requiredPresenceCount) * 2 +
+    (progress.profileViewed ? 1 : 0) +
+    (progress.guildBuddyProof ? 1 : 0) +
+    (statusReady ? 1 : 0) +
+    Math.min(2, chatLines.length);
+  const recorded = missing.length === 0 && score >= veil.requiredScore;
+  const routeConditionWindows = routeIds.map((routeId, index) => {
+    const route = SPIRIT_EXPEDITION_ROUTES.find((entry) => entry.id === routeId);
+    const conditionId = weatherConditionIds[index % Math.max(1, weatherConditionIds.length)] || weatherConditionIds[0] || 'calm-veiling';
+    return `${route?.name || routeId}:${conditionId}`;
+  });
+  const routeSummary = routeIds.length ? routeIds.join(', ') : 'unscouted routes';
+  const conditionSummary = weatherConditionIds.length ? weatherConditionIds.join(', ') : 'uncharted veils';
+
+  return {
+    ok: true,
+    recorded,
+    weatherVeilId: veil.id,
+    weatherVeilName: veil.name,
+    title: veil.title,
+    habitat: veil.habitat,
+    routeIds,
+    weatherConditionIds,
+    routeConditionWindows,
+    localPresenceCount,
+    score,
+    requiredScore: veil.requiredScore,
+    missing,
+    rewardItemId: veil.rewardItemId,
+    message: recorded
+      ? `${veil.name} recorded: ${conditionSummary} are charted across ${routeSummary} with ecology, almanac, field accord, patrol, and nearby social witness proof. No real value.`
+      : `${veil.name} needs ${missing.join(', ')} before route conditions can be charted.`,
+    source: 'spirit-weather-veil'
+  };
+}
+
 export function resolveSpiritEncounterRotation(
   progress: SpiritEncounterRotationProgress,
   rotationId: string = SPIRIT_ENCOUNTER_ROTATIONS[0].id
@@ -6351,6 +6527,9 @@ export function resolveSpiritEncounterRotation(
   const captureRiteReady = progress.captureRiteProof && progress.captureRiteId === rotation.requiredCaptureRiteId;
   if (!captureRiteReady) missing.push(`capture-rite:${rotation.requiredCaptureRiteId}`);
 
+  const weatherVeilReady = progress.weatherVeilProof && progress.weatherVeilId === rotation.requiredWeatherVeilId;
+  if (!weatherVeilReady) missing.push(`weather-veil:${rotation.requiredWeatherVeilId}`);
+
   if (localPresenceCount < rotation.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${rotation.requiredPresenceCount}`);
   if (!progress.profileViewed) missing.push('profile');
   if (!progress.guildBuddyProof) missing.push('guild-buddy');
@@ -6365,6 +6544,7 @@ export function resolveSpiritEncounterRotation(
     (fieldAlmanacReady ? 4 : 0) +
     (fieldAccordReady ? 4 : 0) +
     (captureRiteReady ? 5 : 0) +
+    (weatherVeilReady ? 5 : 0) +
     Math.min(localPresenceCount, rotation.requiredPresenceCount) * 2 +
     (progress.profileViewed ? 1 : 0) +
     (progress.guildBuddyProof ? 1 : 0) +
@@ -6394,13 +6574,14 @@ export function resolveSpiritEncounterRotation(
     encounterSpiritIds,
     lureItemIds,
     rotationWindows,
+    weatherVeilId: rotation.requiredWeatherVeilId,
     localPresenceCount,
     score,
     requiredScore: rotation.requiredScore,
     missing,
     rewardItemId: rotation.rewardItemId,
     message: recorded
-      ? `${rotation.name} recorded: ${spiritSummary} are scheduled across ${routeSummary} with consent lures, ecology notes, field accord trust, capture rite proof, and nearby social witnesses. No real value.`
+      ? `${rotation.name} recorded: ${spiritSummary} are scheduled across ${routeSummary} with consent lures, ecology notes, weather veil timing, field accord trust, capture rite proof, and nearby social witnesses. No real value.`
       : `${rotation.name} needs ${missing.join(', ')} before encounter windows can be recorded.`,
     source: 'spirit-encounter-rotation'
   };
@@ -6458,6 +6639,9 @@ export function resolveSpiritEncounterAtlas(
   const encounterRotationReady = progress.encounterRotationProof && progress.encounterRotationId === atlas.requiredEncounterRotationId;
   if (!encounterRotationReady) missing.push(`encounter-rotation:${atlas.requiredEncounterRotationId}`);
 
+  const weatherVeilReady = progress.weatherVeilProof && progress.weatherVeilId === atlas.requiredWeatherVeilId;
+  if (!weatherVeilReady) missing.push(`weather-veil:${atlas.requiredWeatherVeilId}`);
+
   if (localPresenceCount < atlas.requiredPresenceCount) missing.push(`presence:${localPresenceCount}/${atlas.requiredPresenceCount}`);
   if (!progress.profileViewed) missing.push('profile');
   if (!progress.guildBuddyProof) missing.push('guild-buddy');
@@ -6474,6 +6658,7 @@ export function resolveSpiritEncounterAtlas(
     (captureRiteReady ? 5 : 0) +
     (fieldAlmanacReady ? 3 : 0) +
     (encounterRotationReady ? 5 : 0) +
+    (weatherVeilReady ? 5 : 0) +
     Math.min(localPresenceCount, atlas.requiredPresenceCount) * 2 +
     (progress.profileViewed ? 1 : 0) +
     (progress.guildBuddyProof ? 1 : 0) +
@@ -6498,13 +6683,14 @@ export function resolveSpiritEncounterAtlas(
     rarityTiers,
     journalDiscoveredCount: journalCount,
     encounterRotationId: atlas.requiredEncounterRotationId,
+    weatherVeilId: atlas.requiredWeatherVeilId,
     localPresenceCount,
     score,
     requiredScore: atlas.requiredScore,
     missing,
     rewardItemId: atlas.rewardItemId,
     message: recorded
-      ? `${atlas.name} recorded: ${spiritSummary} are indexed across ${routeSummary} with rarity tiers, capture rite, route ecology, field almanac, encounter rotation, and nearby social witness proof. No real value.`
+      ? `${atlas.name} recorded: ${spiritSummary} are indexed across ${routeSummary} with rarity tiers, capture rite, route ecology, field almanac, weather veil, encounter rotation, and nearby social witness proof. No real value.`
       : `${atlas.name} needs ${missing.join(', ')} before the first-court encounter index can be recorded.`,
     source: 'spirit-encounter-atlas'
   };
