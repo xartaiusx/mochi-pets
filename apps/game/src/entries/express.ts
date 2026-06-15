@@ -28,7 +28,9 @@ const ALPHA_FEATURES = {
     provider: 'enjin',
     network: 'CANARY',
     custody: 'managed-hot-cold',
-    finalityRequired: true
+    finalityRequired: true,
+    operationUpdates: true,
+    previewFinalityReviews: true
   },
   market: {
     fixedPrice: true,

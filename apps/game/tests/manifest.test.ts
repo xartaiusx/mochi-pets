@@ -32,7 +32,9 @@ describe('game manifest', () => {
       chain: {
         provider: 'enjin',
         network: 'CANARY',
-        finalityRequired: true
+        finalityRequired: true,
+        operationUpdates: true,
+        previewFinalityReviews: true
       },
       market: {
         fixedPrice: true,

@@ -1874,6 +1874,23 @@ async function run() {
       }
     },
     {
+      requestId: `${runId}-canary-finality-review`,
+      type: 'chain.operation_update',
+      payload: {
+        chainRequestId: `${runId}-canary`,
+        transactionState: 'PENDING',
+        itemId: 'lirabao-canary-certificate',
+        tokenId: '1',
+        amount: 1,
+        chainNetwork: 'CANARY',
+        noRealValue: true,
+        previewStub: true,
+        priorRequestStaged: true,
+        priorReturnStaged: true,
+        confirmNoCreditUntilFinalized: true
+      }
+    },
+    {
       requestId: `${runId}-insignia-case`,
       type: 'guild.insignia_case',
       payload: {
@@ -2078,6 +2095,16 @@ async function run() {
   assert(routePatrol?.payload?.fieldAccordProof === true, 'Route patrol ledger entry must preserve field accord proof.');
   assert(routePatrol?.payload?.battleRoundProof === true, 'Route patrol ledger entry must preserve battle round proof.');
   assert(routePatrol?.payload?.noRealValue === true, 'Route patrol ledger entry must remain no-real-value.');
+  const canaryFinality = entriesById.get(`${runId}-canary-finality-review`);
+  assert(canaryFinality?.payload?.chainRequestId === `${runId}-canary`, 'Canary finality review ledger entry must point at the staged certificate request.');
+  assert(canaryFinality?.payload?.transactionState === 'PENDING', 'Canary finality review ledger entry must preserve the pending preview state.');
+  assert(canaryFinality?.payload?.itemId === 'lirabao-canary-certificate', 'Canary finality review ledger entry must preserve the Lirabao certificate item.');
+  assert(canaryFinality?.payload?.chainNetwork === 'CANARY', 'Canary finality review ledger entry must stay on Canary.');
+  assert(canaryFinality?.payload?.previewStub === true, 'Canary finality review ledger entry must remain a configured preview stub.');
+  assert(canaryFinality?.payload?.priorRequestStaged === true, 'Canary finality review ledger entry must preserve the request-stage proof.');
+  assert(canaryFinality?.payload?.priorReturnStaged === true, 'Canary finality review ledger entry must preserve the return-stage proof.');
+  assert(canaryFinality?.payload?.confirmNoCreditUntilFinalized === true, 'Canary finality review ledger entry must confirm no inventory credit before FINALIZED.');
+  assert(canaryFinality?.payload?.noRealValue === true, 'Canary finality review ledger entry must remain no-real-value.');
   const sanctuary = entriesById.get(`${runId}-sanctuary-rite`);
   assert(sanctuary?.payload?.riteId === 'jade-court-sanctuary-rite', 'Sanctuary rite ledger entry must preserve the Jade Court Sanctuary Rite id.');
   assert(Array.isArray(sanctuary?.payload?.partyIds) && sanctuary.payload.partyIds.length === 3, 'Sanctuary rite ledger entry must preserve full-party proof.');

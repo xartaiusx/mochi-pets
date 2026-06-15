@@ -269,6 +269,7 @@ async function exerciseAlphaHud(page) {
   await page.click('[data-alpha-action="guild.insignia_case"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.withdraw_request"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="chain.deposit_request"]', { timeout: timeoutMs });
+  await page.click('[data-alpha-action="chain.operation_update"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.wayfarer_chronicle"]', { timeout: timeoutMs });
   await page.click('[data-alpha-action="guild.ascension_trial"]', { timeout: timeoutMs });
   await page.click('[data-roster-focus="lirabao"]', { timeout: timeoutMs });
@@ -353,6 +354,7 @@ async function exerciseAlphaHud(page) {
       const battleRound = document.querySelector('[data-battle-round-label]')?.textContent || '';
       const growth = document.querySelector('[data-growth-label]')?.textContent || '';
       const quest = document.querySelector('[data-quest-label]')?.textContent || '';
+      const canaryFinality = document.querySelector('[data-canary-finality-label]')?.textContent || '';
       const market = document.querySelector('[data-market-label]')?.textContent || '';
       const rosterPanel = document.querySelector('[data-roster-panel]')?.textContent || '';
       const feed = document.querySelector('[data-alpha-feed]')?.textContent || '';
@@ -443,7 +445,9 @@ async function exerciseAlphaHud(page) {
         && !battleRound.includes('pending')
         && growth.includes('Moonwell Bloom Form')
         && quest.includes('Quest Chain')
-        && market.includes('Canary: request + return staged')
+        && canaryFinality.includes('PENDING')
+        && canaryFinality.includes('no inventory credit')
+        && market.includes('Canary: finality PENDING - no credit')
         && rosterPanel.includes('Lirabao')
         && rosterPanel.includes('Jintari')
         && rosterPanel.includes('Aozhen')
@@ -1215,6 +1219,11 @@ async function exerciseAlphaHud(page) {
         && state.tradeProof === true
         && state.canaryRequested === true
         && state.canaryReturnRequested === true
+        && state.canaryOperationReviewProof === true
+        && state.canaryOperationState === 'PENDING'
+        && state.canaryOperationFinalized === false
+        && state.canaryInventoryCredited === false
+        && state.canaryOperationItemId === 'lirabao-canary-certificate'
         && chat.includes('Inspect Aozhen')
         && chat.includes('You wave')
         && chat.includes('Jade Thread Charm listed')
@@ -1222,6 +1231,7 @@ async function exerciseAlphaHud(page) {
         && chat.includes('Direct trade proof')
         && chat.includes('Canary certificate request staged')
         && chat.includes('Jade Vault Return Proof staged')
+        && chat.includes('Canary finality review recorded PENDING preview-stub status')
         && chat.includes('Cloudbell Reed Bank')
         && chat.includes('Cloudbell Skyvow Accord cleared')
         && (chat.includes('Skybell Vow Invitation') || chat.includes('already trusts your Mochirii roster'))
@@ -1345,6 +1355,7 @@ async function exerciseAlphaHud(page) {
       battleRound: document.querySelector('[data-battle-round-label]')?.textContent?.trim() || '',
       growth: document.querySelector('[data-growth-label]')?.textContent?.trim() || '',
       quest: document.querySelector('[data-quest-label]')?.textContent?.trim() || '',
+      canaryFinality: document.querySelector('[data-canary-finality-label]')?.textContent?.trim() || '',
       market: document.querySelector('[data-market-label]')?.textContent?.trim() || '',
       rosterPanel: document.querySelector('[data-roster-panel]')?.textContent?.trim() || '',
       feed: Array.from(document.querySelectorAll('[data-alpha-feed] li')).map((item) => item.textContent?.trim() || ''),
@@ -2042,6 +2053,14 @@ async function exerciseAlphaHud(page) {
   assert(snapshot.state.tradeProof === true, 'HUD trade action must mark a direct trade proof.');
   assert(snapshot.state.canaryRequested === true, 'HUD Canary action must stage a certificate request.');
   assert(snapshot.state.canaryReturnRequested === true, 'HUD Canary return action must stage a no-real-value return preview.');
+  assert(snapshot.canaryFinality.includes('PENDING'), 'HUD Canary finality label must show the pending preview review.');
+  assert(snapshot.canaryFinality.includes('no inventory credit'), 'HUD Canary finality label must show no inventory credit.');
+  assert(snapshot.market.includes('Canary: finality PENDING - no credit'), 'HUD market label must show the Canary no-credit finality review.');
+  assert(snapshot.state.canaryOperationReviewProof === true, 'HUD Canary finality action must record a review proof.');
+  assert(snapshot.state.canaryOperationState === 'PENDING', 'HUD Canary finality action must record the pending preview state.');
+  assert(snapshot.state.canaryOperationFinalized === false, 'HUD Canary finality action must not mark preview stubs finalized.');
+  assert(snapshot.state.canaryInventoryCredited === false, 'HUD Canary finality action must not credit inventory.');
+  assert(snapshot.state.canaryOperationItemId === 'lirabao-canary-certificate', 'HUD Canary finality action must record the Lirabao certificate item.');
   const chat = Array.isArray(snapshot.state.chat) ? snapshot.state.chat : [];
   assert(chat.some((line) => String(line).includes('Cloudbell Reed Bank')), 'HUD chat state must record the second field expedition action.');
   assert(chat.some((line) => String(line).includes('Cloudbell Skyvow Accord cleared')), 'HUD chat state must record the no-injury field accord action.');
@@ -2101,6 +2120,7 @@ async function exerciseAlphaHud(page) {
   assert(chat.some((line) => String(line).includes('Direct trade proof')), 'HUD chat state must record the trade action.');
   assert(chat.some((line) => String(line).includes('Canary certificate request staged')), 'HUD chat state must record the Canary action.');
   assert(chat.some((line) => String(line).includes('Jade Vault Return Proof staged')), 'HUD chat state must record the Canary return preview action.');
+  assert(chat.some((line) => String(line).includes('Canary finality review recorded PENDING preview-stub status')), 'HUD chat state must record the Canary finality review action.');
 
   return {
     chatMessage,

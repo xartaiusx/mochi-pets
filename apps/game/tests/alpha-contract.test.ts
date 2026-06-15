@@ -149,6 +149,9 @@ describe('alpha contract', () => {
     expect(ALPHA_FEATURES.alpha.noRealValue).toBe(true);
     expect(ALPHA_FEATURES.alpha.allowlistRequired).toBe(true);
     expect(ALPHA_FEATURES.chain.network).toBe('CANARY');
+    expect(ALPHA_FEATURES.chain.finalityRequired).toBe(true);
+    expect(ALPHA_FEATURES.chain.operationUpdates).toBe(true);
+    expect(ALPHA_FEATURES.chain.previewFinalityReviews).toBe(true);
     expect(ALPHA_FEATURES.gameplay.partyFormation).toBe(true);
     expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
     expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);

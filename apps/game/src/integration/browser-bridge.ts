@@ -696,6 +696,12 @@ interface AlphaHudState {
   tradeProof: boolean;
   canaryRequested: boolean;
   canaryReturnRequested: boolean;
+  canaryOperationReviewProof: boolean;
+  canaryOperationRequestId?: string;
+  canaryOperationState: string;
+  canaryOperationFinalized: boolean;
+  canaryInventoryCredited: boolean;
+  canaryOperationItemId?: string;
   chat: string[];
 }
 
@@ -1677,6 +1683,10 @@ function defaultAlphaState(): AlphaHudState {
     tradeProof: false,
     canaryRequested: false,
     canaryReturnRequested: false,
+    canaryOperationReviewProof: false,
+    canaryOperationState: 'UNSUBMITTED',
+    canaryOperationFinalized: false,
+    canaryInventoryCredited: false,
     chat: []
   };
 }
@@ -1936,6 +1946,7 @@ function createHud() {
       <span class="mochi-hud__hint" data-battle-round-label>Battle Round: pending</span>
       <span class="mochi-hud__hint" data-growth-label>Growth Rite: pending</span>
       <span class="mochi-hud__hint" data-quest-label>Quest: not started</span>
+      <span class="mochi-hud__hint" data-canary-finality-label>Canary Finality: not reviewed</span>
     </div>
     <div class="mochi-hud__actions" aria-label="Alpha quick actions">
       <button type="button" data-alpha-local-action="profile.view" aria-label="Open tester profile">Profile</button>
@@ -2020,6 +2031,7 @@ function createHud() {
       <button type="button" data-alpha-action="trade.exchange_accord" aria-label="Record the no-real-value Jade Exchange Accord">Accord</button>
       <button type="button" data-alpha-action="chain.withdraw_request" aria-label="Stage a no-real-value Enjin Canary preview request">Canary</button>
       <button type="button" data-alpha-action="chain.deposit_request" aria-label="Stage a no-real-value Enjin Canary return preview">Return</button>
+      <button type="button" data-alpha-action="chain.operation_update" aria-label="Review no-real-value Canary finality without inventory credit">Finality</button>
     </div>
     <section class="mochi-hud__feed-panel" aria-label="Local chat and action log">
       <form class="mochi-hud__chat" data-chat-form>
@@ -2109,6 +2121,7 @@ function createHud() {
   const battleRoundLabel = hud.querySelector('[data-battle-round-label]');
   const growthLabel = hud.querySelector('[data-growth-label]');
   const questLabel = hud.querySelector('[data-quest-label]');
+  const canaryFinalityLabel = hud.querySelector('[data-canary-finality-label]');
   const marketLabel = hud.querySelector('[data-market-label]');
   const feed = hud.querySelector<HTMLOListElement>('[data-alpha-feed]');
   const chatForm = hud.querySelector<HTMLFormElement>('[data-chat-form]');
@@ -2472,6 +2485,11 @@ function createHud() {
           ? `Quest: ${quest.title}, ${state.completedQuestSteps.length}/${quest.steps.length} steps`
           : 'Quest: not started';
     }
+    if (canaryFinalityLabel) {
+      canaryFinalityLabel.textContent = state.canaryOperationReviewProof
+        ? `Canary Finality: ${state.canaryOperationState}, ${state.canaryInventoryCredited ? 'inventory credited' : 'no inventory credit'}`
+        : 'Canary Finality: not reviewed';
+    }
     if (marketLabel) {
       let marketText = 'Market: ready - fixed price';
       if (state.charmListed) marketText = 'Market: listed - test soft currency';
@@ -2479,6 +2497,7 @@ function createHud() {
       if (state.tradeProof) marketText = state.provisionProof ? 'Bag: stocked - test only' : 'Trade: proofed - test only';
       if (state.canaryRequested) marketText = 'Canary: requested - preview stub';
       if (state.canaryReturnRequested) marketText = state.canaryRequested ? 'Canary: request + return staged - preview stub' : 'Canary: return staged - preview stub';
+      if (state.canaryOperationReviewProof) marketText = `Canary: finality ${state.canaryOperationState} - no credit`;
       marketLabel.textContent = marketText;
     }
     if (feed) {
@@ -2701,6 +2720,10 @@ function readAlphaState(): AlphaHudState {
       growthBySpiritId: normalizeGrowthMap(parsed?.growthBySpiritId),
       careStreakBySpiritId: normalizeBondMap(parsed?.careStreakBySpiritId, 0),
       focusedSpiritHistory: Array.isArray(parsed?.focusedSpiritHistory) ? parsed.focusedSpiritHistory.map(String) : [],
+      canaryOperationReviewProof: parsed?.canaryOperationReviewProof === true,
+      canaryOperationState: typeof parsed?.canaryOperationState === 'string' ? parsed.canaryOperationState : 'UNSUBMITTED',
+      canaryOperationFinalized: parsed?.canaryOperationFinalized === true,
+      canaryInventoryCredited: false,
       captureRiteSpiritIds: Array.isArray(parsed?.captureRiteSpiritIds) ? parsed.captureRiteSpiritIds.map(String) : [],
       captureRiteRouteInvitedSpiritIds: Array.isArray(parsed?.captureRiteRouteInvitedSpiritIds) ? parsed.captureRiteRouteInvitedSpiritIds.map(String) : [],
       captureRiteLureItemIds: Array.isArray(parsed?.captureRiteLureItemIds) ? parsed.captureRiteLureItemIds.map(String) : [],
@@ -5372,6 +5395,22 @@ function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
       entityType: 'chain_operation',
       entityId: 'jade-vault-return-proof',
       priorRequestStaged: state.canaryRequested,
+      confirmNoCreditUntilFinalized: true
+    };
+  }
+
+  if (type === 'chain.operation_update') {
+    return {
+      chainRequestId: 'lirabao-canary-certificate-preview',
+      transactionState: 'PENDING',
+      itemId: 'lirabao-canary-certificate',
+      tokenId: '1',
+      amount: 1,
+      chainNetwork: 'CANARY',
+      priorRequestStaged: state.canaryRequested,
+      priorReturnStaged: state.canaryReturnRequested,
+      previewStub: true,
+      noRealValue: true,
       confirmNoCreditUntilFinalized: true
     };
   }
@@ -8318,6 +8357,25 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
     } else {
       state.chat.push('Stage the Canary certificate request before the Jade Vault Return Proof. No real value.');
     }
+  }
+
+  if (type === 'chain.operation_update') {
+    const rawState = String(payload.transactionState || 'PENDING').trim().toUpperCase();
+    const operationState = ['PENDING', 'BROADCAST', 'FINALIZED', 'FAILED', 'ABANDONED', 'TIMEOUT'].includes(rawState)
+      ? rawState
+      : 'PENDING';
+    const authoritativeFinalized = operationState === 'FINALIZED' && payload.previewStub !== true && Boolean(payload.enjinTransactionUuid);
+    state.canaryOperationReviewProof = true;
+    state.canaryOperationRequestId = String(payload.chainRequestId || 'lirabao-canary-certificate-preview');
+    state.canaryOperationState = operationState;
+    state.canaryOperationFinalized = authoritativeFinalized;
+    state.canaryInventoryCredited = false;
+    state.canaryOperationItemId = String(payload.itemId || 'lirabao-canary-certificate');
+    state.chat.push(
+      authoritativeFinalized
+        ? 'Canary finality review recorded FINALIZED operator evidence, but this alpha HUD still records no inventory credit locally. No real value.'
+        : `Canary finality review recorded ${operationState} preview-stub status. No inventory credit before FINALIZED. No real value.`
+    );
   }
 
   if (type === 'chat.send') {
