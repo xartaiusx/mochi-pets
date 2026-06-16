@@ -173,6 +173,8 @@ function addStaticRequirements() {
     'parent-iframe input ownership',
     'Mochirii site iframe status',
     'responsive gameplay must cover the Mochirii site iframe across all viewports when configured',
+    'browser/visual sequence evidence',
+    'summarizeBrowserVisualSequence',
     'visual snapshot canvas PNG must be non-empty',
     'visual review must keep rendered prompt interaction as a manual pre-RC gate',
     'Wallet Daemon local check must stay no-cost and metadata-only',

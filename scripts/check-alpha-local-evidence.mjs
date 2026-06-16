@@ -65,6 +65,13 @@ if (Array.isArray(localSuite.data?.commands)) {
     if (command.status !== 0) failures.push(`local suite command failed: ${command.name}`);
   }
 }
+const browserVisualSequence = summarizeBrowserVisualSequence(localSuite.data?.commands, {
+  browserPresence: browserPresence.data,
+  responsiveGameplay: responsiveGameplay.data,
+  visualSnapshot: visualSnapshot.data,
+  visualReview: visualReview.data
+});
+assert(browserVisualSequence.ok, `browser/visual sequence evidence is incomplete: ${browserVisualSequence.failures.join('; ')}`);
 
 assert(localSuite.data?.server?.stopped === true, 'local suite server must stop after the run');
 assert(builtServer.data?.server?.stopped === true, 'built server smoke server must stop after the run');
@@ -145,6 +152,7 @@ const summary = {
     }),
     operatorSmoke: summarizeReport(operatorSmoke)
   },
+  browserVisualSequence,
   failures
 };
 
@@ -312,6 +320,58 @@ function summarizeResponsiveSiteIframe(data) {
       && results.length === 9
       && screenshots === 9
       && inputOwnership === 9
+  };
+}
+
+function summarizeBrowserVisualSequence(commands, reports) {
+  const failures = [];
+  const commandNames = Array.isArray(commands) ? commands.map((command) => command?.name).filter(Boolean) : [];
+  const requiredCommandOrder = [
+    'alpha:browser-presence',
+    'alpha:responsive-gameplay',
+    'alpha:visual-snapshot',
+    'alpha:visual-review'
+  ];
+  const commandPositions = Object.fromEntries(requiredCommandOrder.map((name) => [name, commandNames.indexOf(name)]));
+  for (const name of requiredCommandOrder) {
+    if (commandPositions[name] === -1) failures.push(`local suite command missing from browser/visual sequence: ${name}`);
+  }
+  for (let index = 1; index < requiredCommandOrder.length; index += 1) {
+    const previous = requiredCommandOrder[index - 1];
+    const current = requiredCommandOrder[index];
+    if (commandPositions[previous] !== -1 && commandPositions[current] !== -1 && commandPositions[previous] >= commandPositions[current]) {
+      failures.push(`local suite command ${previous} must run before ${current}`);
+    }
+  }
+
+  const reportOrder = [
+    ['browser presence', reports.browserPresence?.checkedAt],
+    ['responsive gameplay', reports.responsiveGameplay?.checkedAt],
+    ['visual snapshot', reports.visualSnapshot?.checkedAt],
+    ['visual review', reports.visualReview?.checkedAt]
+  ];
+  const parsedReports = reportOrder.map(([label, checkedAt]) => {
+    const timestamp = Date.parse(String(checkedAt || ''));
+    if (!Number.isFinite(timestamp)) failures.push(`${label} report checkedAt is missing or invalid`);
+    return { label, checkedAt, timestamp };
+  });
+  for (let index = 1; index < parsedReports.length; index += 1) {
+    const previous = parsedReports[index - 1];
+    const current = parsedReports[index];
+    if (Number.isFinite(previous.timestamp) && Number.isFinite(current.timestamp) && previous.timestamp > current.timestamp) {
+      failures.push(`${previous.label} report checkedAt must not be later than ${current.label} report checkedAt`);
+    }
+  }
+
+  return {
+    ok: failures.length === 0,
+    requiredCommandOrder,
+    commandPositions,
+    reportOrder: parsedReports.map((entry) => ({
+      label: entry.label,
+      checkedAt: entry.checkedAt || null
+    })),
+    failures
   };
 }
 
