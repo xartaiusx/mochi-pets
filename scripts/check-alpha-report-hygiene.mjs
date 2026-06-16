@@ -28,6 +28,8 @@ const files = [
   'reports/alpha-provider-preflight.json',
   'reports/alpha-sync-approval.json',
   'reports/alpha-external-gates.json',
+  'reports/alpha-branch-inventory.json',
+  'reports/alpha-branch-inventory.md',
   'reports/enjin-operator-smoke.json',
   resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'),
   resolve(credsDir, 'mochi-social-alpha-external-gates-status.md'),

@@ -44,6 +44,7 @@
     "alpha:provider-preflight": "node scripts/write-alpha-provider-preflight.mjs",
     "alpha:sync-approval": "node scripts/write-alpha-sync-approval.mjs",
     "alpha:sync-approval-self-test": "node scripts/check-alpha-sync-approval-self-test.mjs",
+    "alpha:branch-inventory": "node scripts/check-alpha-branch-inventory.mjs",
     "alpha:rc-audit": "node scripts/check-alpha-rc-audit.mjs",
     "typecheck": "npm --workspace @mochi-social/game run typecheck",
     "lint": "npm --workspace @mochi-social/game run lint",

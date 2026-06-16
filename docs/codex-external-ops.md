@@ -140,7 +140,7 @@ Supabase Edge Function secret ownership:
 | Privileged game writes | Mochirii Edge Functions |
 | Scoped server trust | `MOCHI_SOCIAL_GAME_SERVER_TOKEN` |
 | Allowlist and terms | Mochirii Supabase |
-| Pets, inventory, market, trades, chat, reports, feedback, ledger | Mochirii Supabase |
+| Mochi Spirits, inventory, market, trades, chat, reports, feedback, ledger | Mochirii Supabase |
 | Service-role key | Supabase Edge runtime only, never game/client |
 
 ## Enjin Canary State Machine
