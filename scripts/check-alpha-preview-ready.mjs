@@ -17,6 +17,7 @@ addCurrentOkReport('preview.local-evidence', 'Local alpha evidence is current an
 addCurrentOkReport('preview.local-site-iframe', 'Local Mochirii site iframe proof is current and green.', 'reports/alpha-local-site-iframe.json', root);
 addResponsiveSiteIframeRequirement();
 addCurrentOkReport('preview.report-hygiene', 'No-secret report hygiene is current and green.', 'reports/alpha-report-hygiene.json', root);
+addCurrentOkReport('preview.branch-inventory', 'Branch inventory is current, green, and no-destructive.', 'reports/alpha-branch-inventory.json', root);
 addManualPromptRequirement();
 addCurrentOkReport('preview.operator-checklist', 'Operator checklist is current and green.', 'reports/alpha-operator-checklist.json', root);
 addCurrentOkReport('preview.provider-preflight', 'Provider preflight is current and green.', 'reports/alpha-provider-preflight.json', root);

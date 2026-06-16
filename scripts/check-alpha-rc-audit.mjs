@@ -18,6 +18,7 @@ addSitePreviewReadyReportRequirements();
 addProviderGateRequirements();
 addLocalEvidenceRequirements();
 addReportHygieneRequirements();
+addBranchInventoryRequirements();
 addOperatorChecklistRequirements();
 addProviderPreflightRequirements();
 addSyncApprovalRequirements();
@@ -891,6 +892,59 @@ function addReportHygieneRequirements() {
       reportPath: hygieneReportPath,
       checkedAt: report.checkedAt,
       scanned: report.scanned,
+      failures
+    }
+  );
+}
+
+function addBranchInventoryRequirements() {
+  const inventoryReportPath = resolve(root, process.env.MOCHI_SOCIAL_BRANCH_INVENTORY_JSON || 'reports/alpha-branch-inventory.json');
+  const inventoryReport = readJson(inventoryReportPath);
+  if (!inventoryReport.ok) {
+    add('local.branch-inventory-current', 'fail', `Branch inventory report is missing or invalid: ${inventoryReport.message}. Run npm run alpha:branch-inventory.`, { path: inventoryReportPath });
+    return;
+  }
+
+  const report = inventoryReport.data;
+  const failures = Array.isArray(report.failures) ? [...report.failures] : ['failures array missing'];
+  failures.push(...currentGitStateFailures(report.git, 'branch inventory report'));
+  if (report.ok !== true) failures.push('branch inventory report is not ok');
+  if (report.deletionPerformed !== false) failures.push('branch inventory must remain no-destructive');
+
+  const repos = Array.isArray(report.repos) ? report.repos : [];
+  for (const id of ['game', 'site']) {
+    const repo = repos.find((entry) => entry?.id === id);
+    if (!repo) {
+      failures.push(`branch inventory missing ${id} repo entry`);
+      continue;
+    }
+    if (repo.exists !== true) failures.push(`branch inventory ${id} repo must exist`);
+    if (repo.ok !== true) failures.push(`branch inventory ${id} repo entry is not ok`);
+    if (!repo.openPrRepository) failures.push(`branch inventory ${id} repo must record origin GitHub repository`);
+    if (repo.openPrStatus !== 'checked') failures.push(`branch inventory ${id} repo open PR status is ${repo.openPrStatus || 'missing'}`);
+    if (!Array.isArray(repo.branches)) failures.push(`branch inventory ${id} repo branches list is missing`);
+    if (!Array.isArray(repo.cleanupCandidates)) failures.push(`branch inventory ${id} repo cleanupCandidates list is missing`);
+  }
+
+  const cleanupCandidateCount = repos.reduce((total, repo) => total + (Array.isArray(repo?.cleanupCandidates) ? repo.cleanupCandidates.length : 0), 0);
+  add(
+    'local.branch-inventory-current',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Branch inventory report is stale or incomplete: ${failures.join(', ')}.`
+      : 'Branch inventory report is current, origin-scoped, no-destructive, and records local-safe cleanup candidates.',
+    {
+      reportPath: inventoryReportPath,
+      checkedAt: report.checkedAt,
+      deletionPerformed: report.deletionPerformed,
+      cleanupCandidateCount,
+      repos: repos.map((repo) => ({
+        id: repo.id,
+        openPrRepository: repo.openPrRepository,
+        openPrStatus: repo.openPrStatus,
+        branchCount: repo.branchCount,
+        cleanupCandidates: Array.isArray(repo.cleanupCandidates) ? repo.cleanupCandidates.length : null
+      })),
       failures
     }
   );
