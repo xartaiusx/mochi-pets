@@ -118,8 +118,8 @@ npm run build
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:responsive-gameplay
-# With the Mochirii site running or preview-approved:
-# $env:MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL="<site-origin>"; $env:MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME="true"; npm run alpha:responsive-gameplay
+# Requires a private or local-only tester password env value:
+npm run alpha:local-site-iframe
 npm run alpha:enjin-operator-smoke
 npm run alpha:preview-ready
 ```
@@ -157,7 +157,7 @@ npm run alpha:external-gates
 npm run alpha:preview-ready
 ```
 
-`npm run alpha:preview-ready` writes ignored no-secret reports to `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It can pass with funded-chain gates red, but it cannot pass until the responsive gameplay report checked the unlocked Mochirii `/games/mochi-social` iframe across all nine viewports with `MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true`, `preview-live-gates` are green, hosted checks were explicitly approved, and both local branches are synced to their PR branches.
+`npm run alpha:preview-ready` writes ignored no-secret reports to `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It can pass with funded-chain gates red, but it cannot pass until `npm run alpha:local-site-iframe` has written current no-secret `reports/alpha-local-site-iframe.json` and `reports/alpha-site-iframe-responsive.json` evidence for the unlocked Mochirii `/games/mochi-social` iframe across all nine viewports with `MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true`, `preview-live-gates` are green, hosted checks were explicitly approved, and both local branches are synced to their PR branches.
 
 The Mochirii repo also has a site-side tester-entry audit:
 

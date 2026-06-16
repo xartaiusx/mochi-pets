@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
+    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
@@ -111,7 +111,7 @@ const checks = [
   },
   {
     file: 'docs/no-cost-operations.md',
-    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:local-site-iframe', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
     file: 'docs/codex-external-ops.md',
@@ -137,7 +137,7 @@ const checks = [
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
-    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
+    includes: ['Alpha RC Ready', 'Enjin Canary', 'static secret scans', 'Two browser tabs show player presence', 'npm run alpha:local-acceptance', 'npm run alpha:browser-presence', 'npm run alpha:local-site-iframe', 'movement/action keys do not scroll', 'Mochirii `/games/mochi-social` iframe', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md']
   },
   {
     file: 'docs/goals/mochi-social-alpha-rc.md',
@@ -2152,6 +2152,10 @@ const checks = [
     includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'unhandledKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyGameplayKeyOwnership', 'verifyUnhandledKeyOwnership', 'verifyEditableInputKeepsText', 'verifyInputSurfaceStyles', 'touchAction', 'overscrollBehaviorY', 'preventedKeyCount']
   },
   {
+    file: 'scripts/check-alpha-local-site-iframe.mjs',
+    includes: ['Local-only Mochirii site iframe proof', 'resolveMochiSocialSiteRepoPath', 'apps/web', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL', 'MOCHI_SOCIAL_ALPHA_ACCESS_MODE', 'tester-password', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD', 'alpha-site-iframe-responsive.json', 'reports/responsive-site-iframe', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'siteIframeResults', 'taskkill', 'delete env.SUPABASE_SERVICE_ROLE_KEY', 'delete env.ENJIN_PLATFORM_TOKEN', 'redacted-tester-password']
+  },
+  {
     file: 'scripts/check-enjin-operator-smoke.mjs',
     includes: ['/integration/alpha/enjin/submit', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE', 'MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID', 'MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID', 'enjin_canary_not_configured', 'invalid_game_server_token']
   },
@@ -2169,7 +2173,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',
-    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'alpha-operator-checklist.json', 'alpha-provider-preflight.json', 'alpha-external-gates.json', 'alpha-preview-ready.json', 'alpha-responsive-gameplay.json', 'alpha-visual-review.json', 'alpha-manual-prompt-review.json', 'wallet-daemon-local.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochi-social-alpha-preview-ready.md', 'Unredacted local suite token', 'Wallet daemon password assignment', 'Supabase service role assignment']
+    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'alpha-operator-checklist.json', 'alpha-provider-preflight.json', 'alpha-external-gates.json', 'alpha-preview-ready.json', 'alpha-responsive-gameplay.json', 'alpha-local-site-iframe.json', 'alpha-site-iframe-responsive.json', 'alpha-visual-review.json', 'alpha-manual-prompt-review.json', 'wallet-daemon-local.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochi-social-alpha-preview-ready.md', 'Unredacted local suite token', 'Unredacted local site iframe token', 'Wallet daemon password assignment', 'Supabase service role assignment']
   },
   {
     file: 'scripts/mochi-social-site-repo-path.mjs',
@@ -2357,7 +2361,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-preview-ready.mjs',
-    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.responsive-site-iframe', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true', 'siteIframeResults', '/games/mochi-social', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review']
+    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.local-site-iframe', 'preview.responsive-site-iframe', 'alpha-site-iframe-responsive.json', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true', 'siteIframeResults', '/games/mochi-social', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',

@@ -14,7 +14,7 @@ Stop at Alpha RC Ready for the full goal. Do not deploy production, do not use E
 Recommended slash goal:
 
 ```text
-/goal Execute docs/goals/mochi-social-alpha-rc.md. Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate: a 2D RPGJS Mochi Spirits social vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification. Stop at Alpha RC Ready, not production/mainnet.
+/goal Execute docs/goals/mochi-social-alpha-rc.md. Build Mochi Social into a fully playable closed Alpha Preview first, then Alpha RC: original Mochirii feature parity for the restricted upstream monster-RPG scope with no copied code, names, lore, maps, dialogue, filenames, assets, project names, character names, town names, item names, or visual derivatives; high-fidelity wuxia Mochi Spirits branding; multiplayer-social RPGJS/Tiled gameplay; Supabase/Discord/Vercel/Fly integration; Enjin Canary configured-preview-stub/no-real-value; tester-password Mochirii page embedding; local clean-room, responsive gameplay, local site-iframe, input-scroll, visual, build, and evidence verification before hosted/provider action. Stop before production/mainnet, funded Enjin, paid resources, or provider mutation unless explicitly approved for that exact action.
 ```
 
 ## Source Basis
@@ -25,6 +25,7 @@ Recommended slash goal:
 - Fly.io: long-running WebSocket game runtime and persistent volumes for runtime state.
 - Vercel/Next.js: website shell, public env var for the game URL, preview deployments, and no game WebSocket server in serverless functions.
 - GitHub: branch protection, PR checks, and required CI before merge.
+- WCAG/MDN/Playwright: responsive reflow, non-obstructive fixed UI, focused gameplay input ownership, touch/overscroll containment, and reproducible screenshot/runtime viewport checks.
 - Second Life and IMVU: social presence, identity, creator/economy inspiration; alpha stays curated and closed.
 - MDA and Self-Determination Theory: prioritize autonomy, competence, relatedness, fellowship, expression, discovery, and a small repeatable loop.
 
@@ -78,6 +79,7 @@ Recommended slash goal:
    - Run game install/typecheck/lint/test/build/smoke.
    - Run `npm run alpha:local-suite` for the local no-cost bundled RC pass.
    - Run `npm run alpha:responsive-gameplay` whenever HUD/gameplay layout or input handling changes, and treat failures as Alpha Preview blockers.
+   - Run `npm run alpha:local-site-iframe` before Alpha Preview Ready to prove the built game works inside the local Mochirii tester-password page, the unlocked `/games/mochi-social` iframe passes all nine responsive gameplay viewports, and movement/action keys do not scroll the browser or parent page.
    - Run `npm run alpha:local-evidence` to validate and summarize the ignored localhost evidence reports.
    - Run `npm run alpha:operator-checklist`, refresh `npm run alpha:external-gates`, stamp a current `npm run alpha:rc-audit` report, then run `npm run alpha:sync-approval` and `npm run alpha:report-hygiene` to summarize blocked approval steps and scan local evidence plus no-secret handoff artifacts for accidental secret leakage.
    - Run `npm run alpha:preview-ready` after approved hosted preview checks to prove the tester-entry stop point separately from later funded-chain Alpha RC gates.
@@ -85,6 +87,7 @@ Recommended slash goal:
    - Run 10-25 tester HTTP contract load smoke with `npm run alpha:load-smoke` locally by default. Hosted load smoke requires explicit user approval.
 - Run the two-tab browser presence smoke with `npm run alpha:browser-presence` to prove HUD presence, canvas movement signatures, observer-side canvas change, and HUD quick actions including Jade Starter Vow, Cloudbell Skyvow field accord proof, Jade Cloudbell route patrol proof, Jade Court Habitat Bond, Jade Court Sanctuary Rite, Jade Court Research Folio, Jade Court Spirit Compendium, Jade Court Roster Archive, Jade Roster Cabinet, Jade Blossom Cradle, Jade Court Provision Satchel, Jade Provision Catalog, Jade Battle Kit proof, Jade Remedy Pouch proof, Jade Court Care Cycle, Jade Temperament Concord, Jade Field Almanac, Jade Route Ecology Survey, Jade Weather Veil, Jade Encounter Atlas, Jade Habitat Census, Jade Court Craft Writ, Jade Exchange Accord, Jade Relic Attunement, Jade Cloudbell Waystone, Jade Route Charter, Jade Moonwell Nurture Rite, Jade Teahouse Recovery, Jade Kinship Album, Jade Nursery Grove, Jade Bloom Ascendance, Jade Lineage Register, Jade Capture Rite, Jade Dojo Ladder, Jade Banner Tournament, Jade Rival Circle, Jade Summit Circuit, Jade Court Commission Ledger, Jade Courtyard Rally, Jade Quest Ledger, Jade Scroll Story Chapter, Jade Insignia Case, Jade Wayfarer Chronicle, Jade Court Ascension Trial, Jade Step Loadout, Jade Technique Codex, Jade Heart Trait Attunement, Jade Mirror Condition Weave, Jade Echo Concord, Jade Mirror Team Match, and Silk Banner Mentor Drill; then complete the manual NPC/chest/habitat map-object prompt check.
 - Run the responsive gameplay smoke with `npm run alpha:responsive-gameplay` to prove `/play`, `/embed`, synthetic parent-iframe gameplay, and, when `MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL` is configured, the real Mochirii `/games/mochi-social` iframe stay usable across the alpha viewport matrix, with no horizontal overflow, incoherent HUD panel overlap, central gameplay safe-area obstruction, unreachable action controls, invisible focus, editable-chat key capture regressions, or movement/action keys scrolling the browser or parent page.
+- Run the local Mochirii tester-page iframe smoke with `npm run alpha:local-site-iframe` after major HUD, layout, input, embed, tester-password, or build-server changes. Use `MOCHI_SOCIAL_TESTER_PASSWORD` for the real local tester gate or `MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD` for a throwaway local-only password; the command writes no-secret `reports/alpha-local-site-iframe.json`, dedicated `reports/alpha-site-iframe-responsive.json`, and ignored screenshots under `reports/responsive-site-iframe/`.
    - The same browser presence proof must include `trade.exchange_accord`, the Exchange HUD label, Jade Exchange Accord Tally state, and preserved `exchangeAccordProof` for the later guild capstones.
    - The same browser presence proof must include `world.route_charter`, the Charter HUD label, Jade Route Charter Slip state, and preserved `routeCharterProof` for the later guild capstones.
    - The same browser presence proof must include `world.weather_veil`, the Weather Veil HUD label, Jade Weather Veil Chart state, and preserved `weatherVeilProof` before `world.encounter_rotation`, the Rotation HUD label, Jade Encounter Rotation Scroll state, and preserved `encounterRotationProof` for the Jade Encounter Atlas.
@@ -114,6 +117,7 @@ Recommended slash goal:
 For the next development pass, optimize for [`docs/alpha-preview-ready.md`](alpha-preview-ready.md):
 
 - `preview-live-gates` must pass before testers: Fly game URL, Mochirii Vercel Preview route, `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, Supabase allowlist/terms/feedback, iframe auth, no-real-value labels, and approved hosted contract checks.
+- Local tester-entry proof must include current `npm run alpha:local-site-iframe` evidence for the Mochirii `/games/mochi-social` iframe across the nine viewport matrix before any hosted preview deploy or tester entry is treated as ready.
 - `funded-chain-gates` may remain red: cENJ, collection ID, Fuel Tank ID, Wallet Daemon signing, and finalized Enjin proof.
 - Do not set dummy `ENJIN_COLLECTION_ID` or `ENJIN_FUEL_TANK_ID`.
 - Keep the Canary request, Jade Vault return preview, and Canary finality review UI visible and explain `configured-preview-stub`.
@@ -175,6 +179,7 @@ For the next development pass, optimize for [`docs/alpha-preview-ready.md`](alph
 - Alpha Preview Ready can be reached with Enjin still in `configured-preview-stub`; Alpha RC Ready cannot pass until funded-chain gates are green.
 - The manifest and smoke checks expose alpha flags and no-real-value chain state.
 - The Mochirii preview route requires signed-in allowlisted access and tester acknowledgement before embedding.
+- The Mochirii tester-page iframe passes the responsive gameplay matrix without horizontal overflow, incoherent HUD overlap, central gameplay obstruction, unreachable actions, invisible focus, editable-chat capture regressions, or movement/action key browser scrolling.
 - Admin tools can grant/revoke alpha access and view audit status.
 - Production/mainnet/cashout/open UGC remain disabled and documented as out of scope.
 
@@ -193,6 +198,7 @@ npm run build
 npm run alpha:built-server-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
+$env:MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD="<local-only-private-password>"; npm run alpha:local-site-iframe
 npm run alpha:operator-checklist
 npm run alpha:provider-preflight
 npm run alpha:sync-approval
@@ -203,7 +209,7 @@ $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/sa
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:responsive-gameplay
-$env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL="http://localhost:3000"; $env:MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME="true"; npm run alpha:responsive-gameplay
+$env:MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD="<local-only-private-password>"; npm run alpha:local-site-iframe
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-snapshot
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:visual-review
 npm run alpha:manual-prompt-review

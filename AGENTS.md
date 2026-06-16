@@ -17,6 +17,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Local 10-25 tester HTTP load smoke against a running server: `npm run alpha:load-smoke`
 - Local two-tab browser presence smoke against a running server: `npm run alpha:browser-presence`
 - Local responsive gameplay and input-scroll viewport smoke against a running server: `npm run alpha:responsive-gameplay`
+- Local Mochirii tester-page iframe smoke with built game + local site servers: `npm run alpha:local-site-iframe`
 - Local first-screen visual snapshot against a running server: `npm run alpha:visual-snapshot`
 - Local visual review bundle after browser/visual reports exist: `npm run alpha:visual-review`
 - Local manual prompt review gate: `npm run alpha:manual-prompt-review`
@@ -131,7 +132,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - The browser, local acceptance, visual review, and readiness checks cover `spirit.relic_attune`, `spiritRelicAttunements: true`, Jade Relic Attunement label/state, and no-real-value Jade Relic Silk Cord payload preservation.
 - The browser, local acceptance, visual review, and readiness checks cover `spirit.starter_vow`, `spiritStarterVows: true`, Jade Starter Vow label/state, and no-real-value Jade Starter Knot payload preservation.
 - `npm run alpha:operator-checklist` and `npm run alpha:sync-approval` may write no-secret handoff files under `C:\Users\xtyty\Desktop\Creds` plus ignored JSON reports under `reports/`; they must contain placeholders, status, commit subjects, branch freshness, and secret names only, never secret values.
-- `npm run alpha:preview-ready` is the tester-entry audit. It requires current local evidence, a responsive gameplay report that checked the unlocked Mochirii `/games/mochi-social` iframe across all nine viewports with `MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true`, manual prompt review, handoff packets, synced game/site branches, and green `preview-live-gates`; it records funded-chain gates as later Alpha RC work instead of treating them as Preview Ready blockers.
+- `npm run alpha:preview-ready` is the tester-entry audit. It requires current local evidence, current `npm run alpha:local-site-iframe` evidence in `reports/alpha-local-site-iframe.json` plus `reports/alpha-site-iframe-responsive.json` for the unlocked Mochirii `/games/mochi-social` iframe across all nine viewports with `MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true`, manual prompt review, handoff packets, synced game/site branches, and green `preview-live-gates`; it records funded-chain gates as later Alpha RC work instead of treating them as Preview Ready blockers.
 - `npm run alpha:sync-approval` should be generated after the current external-gates report and a current `npm run alpha:rc-audit` stamp, so its approval text points at fresh blockers.
 - `npm run alpha:rc-audit` must reject stale external gates, local evidence, operator checklist, sync approval, and report hygiene JSON when they do not match the current local HEAD, upstream, dirty state, or referenced external-gate snapshot.
 - `npm run alpha:rc-audit` must also reject missing or pending `reports/alpha-manual-prompt-review.json` until the rendered NPC/guild-seal-chest/habitat prompt review is explicitly completed.

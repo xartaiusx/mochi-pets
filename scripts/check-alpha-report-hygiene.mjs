@@ -38,6 +38,8 @@ const files = [
 const optionalFiles = [
   'reports/alpha-preview-ready.json',
   'reports/alpha-preview-ready.md',
+  'reports/alpha-local-site-iframe.json',
+  'reports/alpha-site-iframe-responsive.json',
   resolve(siteRepoPath, 'reports/mochi-social-preview-ready.json'),
   resolve(siteRepoPath, 'reports/mochi-social-preview-ready.md'),
   resolve(credsDir, 'mochi-social-alpha-preview-ready.md'),
@@ -55,6 +57,7 @@ const secretPatterns = [
   { label: 'Enjin token assignment', pattern: /\bENJIN_PLATFORM_TOKEN\s*=\s*["']?(?!\.\.\.|<|your-|YOUR_|REPLACE_|example\b)[^\s"']{8,}/i },
   { label: 'Supabase service role assignment', pattern: /\bSUPABASE_SERVICE_ROLE_KEY\s*=\s*["']?(?!\.\.\.|<|your-|YOUR_|REPLACE_|example\b)[^\s"']{8,}/i },
   { label: 'Unredacted local suite token', pattern: /\blocal-suite-token-[a-z0-9]+\b/i },
+  { label: 'Unredacted local site iframe token', pattern: /\blocal-site-iframe-token-[a-z0-9]+\b/i },
   { label: 'Wallet seed filename with contents marker', pattern: /\bwallet\.seed\s*[:=]\s*["']?(?!<|private|redacted|placeholder)[^\s"']+/i }
 ];
 

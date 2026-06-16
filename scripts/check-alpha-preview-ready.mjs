@@ -14,6 +14,7 @@ const handoffPath = resolve(credsDir, 'mochi-social-alpha-preview-ready.md');
 const requirements = [];
 
 addCurrentOkReport('preview.local-evidence', 'Local alpha evidence is current and green.', 'reports/alpha-local-evidence.json', root);
+addCurrentOkReport('preview.local-site-iframe', 'Local Mochirii site iframe proof is current and green.', 'reports/alpha-local-site-iframe.json', root);
 addResponsiveSiteIframeRequirement();
 addCurrentOkReport('preview.report-hygiene', 'No-secret report hygiene is current and green.', 'reports/alpha-report-hygiene.json', root);
 addManualPromptRequirement();
@@ -104,10 +105,11 @@ function addManualPromptRequirement() {
 }
 
 function addResponsiveSiteIframeRequirement() {
-  const responsive = readJson(resolve(root, 'reports/alpha-responsive-gameplay.json'));
+  const relativePath = process.env.MOCHI_SOCIAL_SITE_IFRAME_RESPONSIVE_JSON || 'reports/alpha-site-iframe-responsive.json';
+  const responsive = readJson(resolve(root, relativePath));
   if (!responsive.ok) {
     add('preview.responsive-site-iframe', 'fail', `Responsive gameplay report is missing or invalid: ${responsive.message}.`, {
-      path: 'reports/alpha-responsive-gameplay.json'
+      path: relativePath
     });
     return;
   }
@@ -130,7 +132,7 @@ function addResponsiveSiteIframeRequirement() {
   if (weakInputProof.length) failures.push(`${weakInputProof.length} Mochirii site iframe viewport(s) are missing full per-key gameplay input proof`);
 
   add('preview.responsive-site-iframe', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Responsive gameplay covered the unlocked Mochirii /games/mochi-social iframe across all nine viewports.', {
-    path: 'reports/alpha-responsive-gameplay.json',
+    path: relativePath,
     site,
     siteIframeResults: siteResults.length,
     expectedGameplayKeys
