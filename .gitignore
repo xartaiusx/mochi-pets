@@ -21,3 +21,7 @@ yarn-error.log*
 pnpm-debug.log*
 *.tsbuildinfo
 fly.toml.bak
+p2pool.cache
+p2pool.log
+p2pool_*_peers.txt
+p2pool_peers.txt
