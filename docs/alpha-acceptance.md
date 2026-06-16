@@ -187,7 +187,7 @@ For live Enjin completion, the operator must also provide non-public server env/
 
 `npm run alpha:operator-checklist` writes the current no-secret handoff to the local credentials folder and `reports/alpha-operator-checklist.json` for machine-readable freshness checks. `npm run alpha:provider-preflight` writes expected private input filenames and approval queue evidence without opening private files. Treat both as checklists only; they are not evidence that private provider gates are complete.
 
-`npm run alpha:branch-inventory` writes `reports/alpha-branch-inventory.json` and `.md` with a no-destructive inventory of local game and Mochirii site branches. It marks only branches that are merged into the current HEAD, have a gone upstream, are not the current branch, are not checked out in another worktree, are not protected names, and are not open PR branches as local-safe cleanup candidates. It never deletes branches; use the report as review evidence before any separate cleanup request.
+`npm run alpha:branch-inventory` writes `reports/alpha-branch-inventory.json` and `.md` with a no-destructive inventory of local game and Mochirii site branches. It resolves open PR branches from each repo's `origin` GitHub repository, not from any fetch-only upstream remote. It marks only branches that are merged into the current HEAD, have a gone upstream, are not the current branch, are not checked out in another worktree, are not protected names, and are not open PR branches as local-safe cleanup candidates. If open PR state cannot be proved, the report keeps branches review-only instead of calling them cleanup-safe. It never deletes branches; use the report as review evidence before any separate cleanup request.
 
 ## Alpha RC Audit
 

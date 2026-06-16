@@ -59,6 +59,7 @@ function inspectRepo(repo) {
       ok: !repo.required,
       message,
       git: null,
+      openPrRepository: null,
       openPrBranches: [],
       branches: [],
       cleanupCandidates: [],
@@ -69,7 +70,8 @@ function inspectRepo(repo) {
   const gitState = readGitState(repo.path);
   const mergedBranches = new Set(lines(git(['branch', '--format=%(refname:short)', '--merged', 'HEAD'], repo.path).stdout));
   const worktreeBranches = new Set(readWorktreeBranches(repo.path));
-  const openPr = readOpenPullRequestBranches(repo.path);
+  const originRepository = readOriginRepository(repo.path);
+  const openPr = readOpenPullRequestBranches(repo.path, originRepository);
   const openPrBranches = new Set(openPr.branches.map((entry) => entry.branch));
   const branchResult = git([
     'for-each-ref',
@@ -84,6 +86,7 @@ function inspectRepo(repo) {
     mergedBranches,
     worktreeBranches,
     openPrBranches,
+    openPrCheckReliable: openPr.status === 'checked',
   }));
   const cleanupCandidates = branches.filter((branch) => branch.localSafeCleanupCandidate);
   const reviewOnly = branches.filter((branch) => branch.reviewOnlyReasons.length > 0);
@@ -95,6 +98,7 @@ function inspectRepo(repo) {
     exists: true,
     ok: branchResult.ok,
     git: gitState,
+    openPrRepository: openPr.repository,
     openPrStatus: openPr.status,
     openPrBranches: openPr.branches,
     worktreeBranches: [...worktreeBranches].sort(),
@@ -110,13 +114,14 @@ function parseBranch(line, context) {
   const isCurrent = name === context.currentBranch;
   const inWorktree = context.worktreeBranches.has(name);
   const hasOpenPr = context.openPrBranches.has(name);
+  const openPrCheckReliable = context.openPrCheckReliable;
   const protectedName = protectedBranchNames.has(name) || /^release[/-]/i.test(name);
   const mergedIntoHead = context.mergedBranches.has(name);
   const upstreamGone = /\[gone\]/i.test(upstreamTrack);
   const hasUpstream = Boolean(upstream);
   const reviewOnlyReasons = [];
 
-  if (!isCurrent && !inWorktree && !protectedName && !hasOpenPr && mergedIntoHead && upstreamGone) {
+  if (openPrCheckReliable && !isCurrent && !inWorktree && !protectedName && !hasOpenPr && mergedIntoHead && upstreamGone) {
     return {
       name,
       upstream,
@@ -143,6 +148,9 @@ function parseBranch(line, context) {
   if (!isCurrent && !inWorktree && !protectedName && upstreamGone && !mergedIntoHead) {
     reviewOnlyReasons.push('upstream is gone but branch is not merged into current HEAD');
   }
+  if (!openPrCheckReliable && !isCurrent && !inWorktree && !protectedName) {
+    reviewOnlyReasons.push('open pull request state unavailable');
+  }
   if (hasOpenPr) reviewOnlyReasons.push('open pull request branch');
   if (inWorktree) reviewOnlyReasons.push('branch is checked out in a worktree');
   if (protectedName) reviewOnlyReasons.push('protected branch name');
@@ -167,14 +175,24 @@ function parseBranch(line, context) {
   };
 }
 
-function readOpenPullRequestBranches(repoPath) {
-  const result = spawnSync(commandForPlatform('gh'), ['pr', 'list', '--state', 'open', '--json', 'number,url,headRefName,isDraft'], {
+function readOpenPullRequestBranches(repoPath, repository) {
+  if (!repository) {
+    return {
+      repository: null,
+      status: 'unavailable',
+      branches: [],
+      error: 'origin GitHub repository could not be resolved',
+    };
+  }
+
+  const result = spawnSync(commandForPlatform('gh'), ['pr', 'list', '--repo', repository, '--state', 'open', '--json', 'number,url,headRefName,isDraft'], {
     cwd: repoPath,
     encoding: 'utf8',
     shell: false,
   });
   if (result.status !== 0) {
     return {
+      repository,
       status: 'unavailable',
       branches: [],
       error: sanitize(result.stderr || result.error?.message || 'gh pr list failed'),
@@ -184,6 +202,7 @@ function readOpenPullRequestBranches(repoPath) {
   try {
     const entries = JSON.parse(result.stdout || '[]');
     return {
+      repository,
       status: 'checked',
       branches: entries.map((entry) => ({
         branch: String(entry.headRefName || ''),
@@ -194,11 +213,27 @@ function readOpenPullRequestBranches(repoPath) {
     };
   } catch (error) {
     return {
+      repository,
       status: 'parse-failed',
       branches: [],
       error: sanitize(error instanceof Error ? error.message : String(error)),
     };
   }
+}
+
+function readOriginRepository(repoPath) {
+  const result = git(['remote', 'get-url', 'origin'], repoPath);
+  if (!result.ok) return null;
+  return repositoryFromRemoteUrl(firstLine(result.stdout));
+}
+
+function repositoryFromRemoteUrl(value) {
+  const remote = String(value || '').trim();
+  const githubMatch = remote.match(/github\.com[/:]([^/\s:]+)\/([^/\s]+?)(?:\.git)?$/i);
+  if (!githubMatch) return null;
+  const owner = githubMatch[1];
+  const repo = githubMatch[2].replace(/\.git$/i, '');
+  return owner && repo ? `${owner}/${repo}` : null;
 }
 
 function readWorktreeBranches(repoPath) {
@@ -289,6 +324,7 @@ function renderMarkdown(data) {
     }
     linesOut.push(`- Path: ${repo.path}`);
     linesOut.push(`- Branch: ${repo.git?.branch || 'unknown'}`);
+    linesOut.push(`- Open PR repository: ${repo.openPrRepository || 'unresolved'}`);
     linesOut.push(`- Open PR check: ${repo.openPrStatus}`);
     linesOut.push(`- Branches: ${repo.branchCount}`);
     linesOut.push(`- Local-safe cleanup candidates: ${repo.cleanupCandidates.length}`);
