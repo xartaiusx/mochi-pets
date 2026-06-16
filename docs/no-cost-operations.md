@@ -34,7 +34,7 @@ Ask for fresh, explicit user approval before:
 - Creating, funding, or dispatching Enjin Fuel Tanks; minting, burning, listing, or transferring any Enjin asset; requesting faucets; or submitting live chain proofs.
 - Rerunning GitHub Actions, enabling branch protection checks, or creating workflows only when the account/repo settings indicate the action can create actual charges. Public-repo branch pushes are allowed without a separate prompt under the current user policy, along with their ordinary PR checks; verify the resulting checks afterward.
 - Running `npm run alpha:load-smoke` or browser presence checks against hosted URLs. Keep those local unless the user approves a hosted smoke.
-- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
+- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL=<hosted-site-origin>`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
 - Setting dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags just to clear funded-chain gates.
 - Sending Discord messages, installing bots, changing OAuth apps, or enabling paid/community features.
 

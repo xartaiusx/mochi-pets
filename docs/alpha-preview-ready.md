@@ -118,6 +118,8 @@ npm run build
 npm run alpha:local-suite
 npm run alpha:local-evidence
 npm run alpha:responsive-gameplay
+# With the Mochirii site running or preview-approved:
+# $env:MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL="<site-origin>"; $env:MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME="true"; npm run alpha:responsive-gameplay
 npm run alpha:enjin-operator-smoke
 npm run alpha:preview-ready
 ```

@@ -10,6 +10,11 @@ const timeoutMs = Number(process.env.MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS || 25000
 const headless = process.env.MOCHI_SOCIAL_RESPONSIVE_HEADFUL !== 'true';
 const hostedAllowed = process.env.MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE === 'true';
 const localBaseUrl = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(baseUrl);
+const siteBaseUrl = normalizeOptionalUrl(process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL || process.env.MOCHI_SOCIAL_SITE_BASE_URL);
+const siteEntryPath = process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_ENTRY_PATH || '/games/mochi-social';
+const sitePassword = process.env.MOCHI_SOCIAL_TESTER_PASSWORD || process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_PASSWORD || '';
+const requireSiteIframe = process.env.MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME === 'true';
+const localSiteBaseUrl = !siteBaseUrl || /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(siteBaseUrl);
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_REPORT || 'reports/alpha-responsive-gameplay.json');
 const screenshotDir = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_SCREENSHOT_DIR || 'reports/responsive-gameplay');
 const gameplayKeys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', 'Space', 'Enter'];
@@ -30,8 +35,15 @@ const failures = [];
 const report = {
   ok: false,
   checkedAt: new Date().toISOString(),
-  scope: 'Local responsive gameplay and input-scroll guard. Verifies /play, /embed, and a parent iframe across the Alpha viewport matrix.',
+  scope: 'Local responsive gameplay and input-scroll guard. Verifies /play, /embed, synthetic parent iframe, and optional Mochirii /games/mochi-social iframe across the Alpha viewport matrix.',
   baseUrl,
+  site: {
+    configured: Boolean(siteBaseUrl),
+    required: requireSiteIframe,
+    baseUrl: siteBaseUrl ? redactUrl(siteBaseUrl) : null,
+    entryPath: siteEntryPath,
+    passwordProvided: Boolean(sitePassword)
+  },
   localOnlyDefault: true,
   hostedAllowed,
   git: readGitState(),
@@ -40,6 +52,7 @@ const report = {
   gameplayKeys,
   results: [],
   iframeResults: [],
+  siteIframeResults: [],
   failures
 };
 
@@ -78,6 +91,7 @@ async function run() {
       }
       report.iframeResults.push(await inspectParentIframe(browser, viewport));
     }
+    await inspectMochiriiSiteIframeIfConfigured(browser);
   } finally {
     await browser.close();
   }
@@ -153,6 +167,90 @@ async function inspectParentIframe(browser, viewport) {
   } finally {
     await context.close();
   }
+}
+
+async function inspectMochiriiSiteIframeIfConfigured(browser) {
+  if (!siteBaseUrl) {
+    report.site.status = requireSiteIframe ? 'missing-site-url' : 'skipped';
+    if (requireSiteIframe) {
+      failures.push('Mochirii site iframe smoke requires MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL or MOCHI_SOCIAL_SITE_BASE_URL.');
+    }
+    return;
+  }
+
+  report.site.status = 'checked';
+  for (const viewport of viewports) {
+    report.siteIframeResults.push(await inspectMochiriiSiteIframe(browser, viewport));
+  }
+}
+
+async function inspectMochiriiSiteIframe(browser, viewport) {
+  const context = await newContext(browser, viewport);
+  const page = await context.newPage();
+  const label = `mochirii-site-iframe-${viewport.width}x${viewport.height}`;
+  try {
+    await page.goto(siteUrl(), { waitUntil: 'domcontentloaded', timeout: timeoutMs });
+    const unlock = await unlockTesterGateIfPresent(page, label);
+    const frame = await findGameFrame(page, label);
+    await waitForGame(frame);
+    await frame.locator('canvas').first().click({ timeout: timeoutMs });
+    const parentBefore = await parentScrollSnapshot(page);
+    const frameBefore = await frameScrollSnapshot(frame);
+    for (const key of gameplayKeys) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(60);
+    }
+    const parentAfter = await parentScrollSnapshot(page);
+    const frameAfter = await frameScrollSnapshot(frame);
+    assertScrollUnchanged(parentBefore, parentAfter, `${label} parent page`);
+    assertScrollUnchanged(frameBefore, frameAfter, `${label} iframe`);
+    const screenshot = await captureScreenshot(page, label);
+    const frameLayout = await inspectLayout(frame, `${label} iframe`);
+    return { viewport, unlock, screenshot, frameLayout, parentBefore, parentAfter, frameBefore, frameAfter };
+  } finally {
+    await context.close();
+  }
+}
+
+async function unlockTesterGateIfPresent(page, label) {
+  const passwordInput = page.locator('input[type="password"], input[name*="password" i], input[autocomplete="current-password"]').first();
+  const visible = await passwordInput.isVisible({ timeout: 1500 }).catch(() => false);
+  if (!visible) return { gateDetected: false, passwordProvided: Boolean(sitePassword), submitted: false };
+  if (!sitePassword) {
+    failures.push(`${label}: tester password gate is visible but MOCHI_SOCIAL_TESTER_PASSWORD was not provided.`);
+    return { gateDetected: true, passwordProvided: false, submitted: false };
+  }
+  await passwordInput.fill(sitePassword);
+  await passwordInput.press('Enter');
+  await page.waitForTimeout(1000);
+  const stillVisible = await passwordInput.isVisible({ timeout: 1000 }).catch(() => false);
+  if (stillVisible) {
+    const submit = page.locator('button[type="submit"], button:has-text("Enter"), button:has-text("Unlock"), button:has-text("Play")').first();
+    if (await submit.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await submit.click();
+      await page.waitForTimeout(1000);
+    }
+  }
+  return { gateDetected: true, passwordProvided: true, submitted: true };
+}
+
+async function findGameFrame(page, label) {
+  await page.waitForSelector('iframe', { timeout: timeoutMs });
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    for (const frame of page.frames()) {
+      if (frame === page.mainFrame()) continue;
+      const url = frame.url();
+      if (url.includes('/embed') || url.includes('/play') || url.startsWith(baseUrl)) {
+        return frame;
+      }
+      if (await frame.locator('#mochi-social-hud').count().catch(() => 0)) {
+        return frame;
+      }
+    }
+    await page.waitForTimeout(250);
+  }
+  throw new Error(`${label}: Mochi Social iframe was not found on ${siteEntryPath}.`);
 }
 
 async function waitForGame(pageOrFrame) {
@@ -446,10 +544,32 @@ function assertScrollUnchanged(before, after, label) {
 }
 
 function assertNoHostedSmokeWithoutApproval() {
-  if (localBaseUrl || hostedAllowed) return;
+  if ((localBaseUrl && localSiteBaseUrl) || hostedAllowed) return;
   throw new Error(
     'Responsive gameplay smoke is local-only by default. Set MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE=true only after explicit hosted-preview approval.'
   );
+}
+
+function siteUrl() {
+  return `${siteBaseUrl}${siteEntryPath.startsWith('/') ? siteEntryPath : `/${siteEntryPath}`}`;
+}
+
+function normalizeOptionalUrl(value) {
+  if (!value) return '';
+  return String(value).replace(/\/+$/, '');
+}
+
+function redactUrl(value) {
+  try {
+    const url = new URL(value);
+    url.username = '';
+    url.password = '';
+    url.search = '';
+    url.hash = '';
+    return url.toString().replace(/\/+$/, '');
+  } catch {
+    return String(value).replace(/[?#].*$/, '').replace(/\/+$/, '');
+  }
 }
 
 async function newContext(browser, viewport) {

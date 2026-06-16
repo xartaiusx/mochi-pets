@@ -461,6 +461,7 @@ npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke # Hosted load smoke requires explicit approval.
 npm run alpha:browser-presence
 npm run alpha:responsive-gameplay
+$env:MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL="https://<vercel-preview-host>"; $env:MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME="true"; npm run alpha:responsive-gameplay # Hosted site smoke requires explicit approval.
 npm run alpha:visual-snapshot
 npm run alpha:external-gates
 \`\`\`

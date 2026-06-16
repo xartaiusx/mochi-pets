@@ -76,6 +76,11 @@ assert(responsiveGameplay.data?.viewports?.length === 9, 'responsive gameplay mu
 assert(responsiveGameplay.data?.routes?.includes('/play') && responsiveGameplay.data?.routes?.includes('/embed'), 'responsive gameplay must cover /play and /embed');
 assert(responsiveGameplay.data?.results?.length === 18, 'responsive gameplay must cover both routes across all viewports');
 assert(responsiveGameplay.data?.iframeResults?.length === 9, 'responsive gameplay must cover parent-iframe input ownership across all viewports');
+assert(['skipped', 'checked'].includes(String(responsiveGameplay.data?.site?.status || '')), 'responsive gameplay must record Mochirii site iframe status');
+if (responsiveGameplay.data?.site?.configured === true) {
+  assert(responsiveGameplay.data?.site?.entryPath === '/games/mochi-social', 'responsive gameplay site iframe must target /games/mochi-social by default');
+  assert(responsiveGameplay.data?.siteIframeResults?.length === 9, 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured');
+}
 assert(responsiveGameplay.data?.gameplayKeys?.includes('ArrowDown') && responsiveGameplay.data?.gameplayKeys?.includes('Space'), 'responsive gameplay must test movement and action keys');
 assert(responsiveGameplay.data?.results?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay route screenshots must be non-empty');
 assert(responsiveGameplay.data?.iframeResults?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay iframe screenshots must be non-empty');
@@ -113,7 +118,9 @@ const summary = {
     responsiveGameplay: summarizeReport(responsiveGameplay, {
       viewports: responsiveGameplay.data?.viewports?.length,
       routeResults: responsiveGameplay.data?.results?.length,
-      iframeResults: responsiveGameplay.data?.iframeResults?.length
+      iframeResults: responsiveGameplay.data?.iframeResults?.length,
+      siteStatus: responsiveGameplay.data?.site?.status,
+      siteIframeResults: responsiveGameplay.data?.siteIframeResults?.length
     }),
     visualSnapshot: summarizeReport(visualSnapshot, {
       pageBytes: visualSnapshot.data?.screenshots?.page?.bytes,

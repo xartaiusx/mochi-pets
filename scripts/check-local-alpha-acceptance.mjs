@@ -23,7 +23,7 @@ const report = {
   reportPath,
   manualGates: [
     'Run npm run alpha:browser-presence and verify reports/alpha-browser-presence.json contains canvasMovement.changedAfterFirstTabMove=true.',
-    'Run npm run alpha:responsive-gameplay and verify reports/alpha-responsive-gameplay.json covers /play, /embed, parent iframe, and the alpha viewport matrix without scroll or overlap failures.',
+    'Run npm run alpha:responsive-gameplay and verify reports/alpha-responsive-gameplay.json covers /play, /embed, parent iframe, optional /games/mochi-social site iframe, and the alpha viewport matrix without scroll or overlap failures.',
     'Use the in-game NPC/chest/habitat interactions once before marking Alpha RC Ready.'
   ]
 };
