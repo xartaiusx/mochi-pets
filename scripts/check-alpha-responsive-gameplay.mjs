@@ -17,7 +17,10 @@ const requireSiteIframe = process.env.MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAM
 const localSiteBaseUrl = !siteBaseUrl || /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(siteBaseUrl);
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_REPORT || 'reports/alpha-responsive-gameplay.json');
 const screenshotDir = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_SCREENSHOT_DIR || 'reports/responsive-gameplay');
-const gameplayKeys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', 'Space', 'Enter'];
+const movementKeys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd'];
+const interactionKeys = ['Space', 'Enter'];
+const legacyInteractionKeys = ['Spacebar'];
+const gameplayKeys = [...movementKeys, ...interactionKeys];
 const unhandledKeys = ['Escape', 'q'];
 const viewports = [
   { width: 1920, height: 1080 },
@@ -50,6 +53,9 @@ const report = {
   git: readGitState(),
   viewports,
   routes,
+  movementKeys,
+  interactionKeys,
+  legacyInteractionKeys,
   gameplayKeys,
   unhandledKeys,
   results: [],
@@ -468,9 +474,10 @@ async function verifyInputScrollGuard(page, label) {
   });
   await page.locator('canvas').first().click({ timeout: timeoutMs });
   const gameplay = await verifyGameplayKeyOwnership(page, page, label);
+  const legacyInteraction = await verifyLegacyInteractionKeyOwnership(page, label);
   const unhandled = await verifyUnhandledKeyOwnership(page, page, label);
   const editable = await verifyEditableInputKeepsText(page, page, label);
-  return { gameplay, unhandled, editable };
+  return { gameplay, legacyInteraction, unhandled, editable };
 }
 
 async function verifyFrameInputOwnership(parentPage, frame, label) {
@@ -478,11 +485,12 @@ async function verifyFrameInputOwnership(parentPage, frame, label) {
   await frame.locator('canvas').first().click({ timeout: timeoutMs });
   const parentBefore = await parentScrollSnapshot(parentPage);
   const gameplay = await verifyGameplayKeyOwnership(frame, parentPage, `${label} iframe`, { parentPage });
+  const legacyInteraction = await verifyLegacyInteractionKeyOwnership(frame, `${label} iframe`, { parentPage });
   const unhandled = await verifyUnhandledKeyOwnership(frame, parentPage, `${label} iframe`);
   const editable = await verifyEditableInputKeepsText(frame, parentPage, `${label} iframe`);
   const parentAfter = await parentScrollSnapshot(parentPage);
   assertScrollUnchanged(parentBefore, parentAfter, `${label} parent page`);
-  return { parentBefore, parentAfter, gameplay, unhandled, editable };
+  return { parentBefore, parentAfter, gameplay, legacyInteraction, unhandled, editable };
 }
 
 async function verifyGameplayKeyOwnership(auditTarget, keyboardPage, label, options = {}) {
@@ -508,6 +516,54 @@ async function verifyGameplayKeyOwnership(auditTarget, keyboardPage, label, opti
       if (keydown.cancelable && !keydown.defaultPrevented) failures.push(`${label}: ${key} was not prevented while gameplay canvas was focused.`);
     }
     checks.push({ key, before, after, parentBefore, parentAfter, keydown });
+  }
+  return { focus, checks };
+}
+
+async function verifyLegacyInteractionKeyOwnership(auditTarget, label, options = {}) {
+  await installKeyAudit(auditTarget);
+  const focus = await focusGameplayCanvas(auditTarget, label);
+  const checks = [];
+  const parentPage = options.parentPage || null;
+  for (const key of legacyInteractionKeys) {
+    const before = await frameScrollSnapshot(auditTarget);
+    const parentBefore = parentPage ? await parentScrollSnapshot(parentPage) : null;
+    await resetKeyAudit(auditTarget);
+    const synthetic = await auditTarget.evaluate((legacyKey) => {
+      const canvas = document.querySelector('canvas');
+      const target = canvas || document.body;
+      const event = new KeyboardEvent('keydown', {
+        key: legacyKey,
+        code: legacyKey === 'Spacebar' ? 'Space' : legacyKey,
+        bubbles: true,
+        cancelable: true
+      });
+      const dispatched = target.dispatchEvent(event);
+      return {
+        key: legacyKey,
+        code: event.code,
+        cancelable: event.cancelable,
+        defaultPrevented: event.defaultPrevented,
+        dispatched,
+        targetTag: target.tagName
+      };
+    }, key);
+    await auditTarget.waitForTimeout(60);
+    const audit = await readKeyAudit(auditTarget);
+    const after = await frameScrollSnapshot(auditTarget);
+    const parentAfter = parentPage ? await parentScrollSnapshot(parentPage) : null;
+    assertScrollUnchanged(before, after, `${label} ${key}`);
+    if (parentBefore && parentAfter) {
+      assertScrollUnchanged(parentBefore, parentAfter, `${label} ${key} parent page`);
+    }
+    const keydown = firstKeydown(audit);
+    if (!keydown) {
+      failures.push(`${label}: legacy interaction key ${key} did not produce a keydown audit event.`);
+    }
+    if (!synthetic.defaultPrevented) {
+      failures.push(`${label}: legacy interaction key ${key} was not prevented while gameplay canvas was focused.`);
+    }
+    checks.push({ key, before, after, parentBefore, parentAfter, synthetic, keydown });
   }
   return { focus, checks };
 }

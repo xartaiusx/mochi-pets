@@ -81,7 +81,10 @@ if (responsiveGameplay.data?.site?.configured === true) {
   assert(responsiveGameplay.data?.site?.entryPath === '/games/mochi-social', 'responsive gameplay site iframe must target /games/mochi-social by default');
   assert(responsiveGameplay.data?.siteIframeResults?.length === 9, 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured');
 }
-assert(responsiveGameplay.data?.gameplayKeys?.includes('ArrowDown') && responsiveGameplay.data?.gameplayKeys?.includes('Space'), 'responsive gameplay must test movement and action keys');
+assert(responsiveGameplay.data?.movementKeys?.includes('ArrowDown') && responsiveGameplay.data?.movementKeys?.includes('d'), 'responsive gameplay must test arrow and WASD movement keys');
+assert(responsiveGameplay.data?.interactionKeys?.includes('Space') && responsiveGameplay.data?.interactionKeys?.includes('Enter'), 'responsive gameplay must test Space and Enter interaction keys');
+assert(responsiveGameplay.data?.legacyInteractionKeys?.includes('Spacebar'), 'responsive gameplay must test legacy Spacebar interaction-key prevention');
+assert(responsiveGameplay.data?.gameplayKeys?.includes('ArrowDown') && responsiveGameplay.data?.gameplayKeys?.includes('Space'), 'responsive gameplay must keep the combined gameplay key list');
 const responsiveInputOwnership = summarizeResponsiveInputOwnership(responsiveGameplay.data);
 assert(responsiveInputOwnership.ok, `responsive gameplay input ownership evidence is incomplete: ${responsiveInputOwnership.failures.join('; ')}`);
 const responsiveSiteIframe = summarizeResponsiveSiteIframe(responsiveGameplay.data);
@@ -192,6 +195,7 @@ function assert(condition, message) {
 function summarizeResponsiveInputOwnership(data) {
   const failures = [];
   const expectedGameplayKeys = Array.isArray(data?.gameplayKeys) ? data.gameplayKeys.length : 0;
+  const expectedLegacyInteractionKeys = Array.isArray(data?.legacyInteractionKeys) ? data.legacyInteractionKeys.length : 0;
   const expectedUnhandledKeys = Array.isArray(data?.unhandledKeys) ? data.unhandledKeys.length : 0;
   let contexts = 0;
 
@@ -217,6 +221,7 @@ function summarizeResponsiveInputOwnership(data) {
     ok: failures.length === 0,
     contexts,
     expectedGameplayKeys,
+    expectedLegacyInteractionKeys,
     expectedUnhandledKeys,
     failures
   };
@@ -228,9 +233,13 @@ function summarizeResponsiveInputOwnership(data) {
     }
 
     const gameplayChecks = Array.isArray(ownership.gameplay?.checks) ? ownership.gameplay.checks : [];
+    const legacyInteractionChecks = Array.isArray(ownership.legacyInteraction?.checks) ? ownership.legacyInteraction.checks : [];
     const unhandledChecks = Array.isArray(ownership.unhandled?.checks) ? ownership.unhandled.checks : [];
     if (gameplayChecks.length !== expectedGameplayKeys) {
       failures.push(`${label} expected ${expectedGameplayKeys} gameplay key checks, found ${gameplayChecks.length}`);
+    }
+    if (legacyInteractionChecks.length !== expectedLegacyInteractionKeys) {
+      failures.push(`${label} expected ${expectedLegacyInteractionKeys} legacy interaction key checks, found ${legacyInteractionChecks.length}`);
     }
     if (unhandledChecks.length !== expectedUnhandledKeys) {
       failures.push(`${label} expected ${expectedUnhandledKeys} unhandled key checks, found ${unhandledChecks.length}`);
@@ -250,6 +259,18 @@ function summarizeResponsiveInputOwnership(data) {
           failures.push(`${label} missing parent scroll snapshots for gameplay key ${check.key}`);
         } else if (scrollChanged(check.parentBefore, check.parentAfter)) {
           failures.push(`${label} changed parent scroll while pressing gameplay key ${check.key}`);
+        }
+      }
+    }
+    for (const check of legacyInteractionChecks) {
+      if (check.synthetic?.defaultPrevented !== true) failures.push(`${label} did not prevent legacy interaction key ${check.key}`);
+      if (!check.before || !check.after) failures.push(`${label} missing iframe/page scroll snapshots for legacy interaction key ${check.key}`);
+      if (scrollChanged(check.before, check.after)) failures.push(`${label} changed iframe/page scroll while pressing legacy interaction key ${check.key}`);
+      if (options.expectParentScroll) {
+        if (!check.parentBefore || !check.parentAfter) {
+          failures.push(`${label} missing parent scroll snapshots for legacy interaction key ${check.key}`);
+        } else if (scrollChanged(check.parentBefore, check.parentAfter)) {
+          failures.push(`${label} changed parent scroll while pressing legacy interaction key ${check.key}`);
         }
       }
     }

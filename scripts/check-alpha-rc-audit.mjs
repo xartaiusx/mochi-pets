@@ -372,10 +372,14 @@ function addStaticRequirements() {
     '/embed',
     'parent iframe',
     'siteIframeResults',
+    'movementKeys',
+    'interactionKeys',
+    'legacyInteractionKeys',
     'gameplayKeys',
     'ArrowDown',
     'Space',
     'Enter',
+    'Spacebar',
     'horizontalOverflow',
     'panelOverlaps',
     'safeRectObstructions',
@@ -385,6 +389,7 @@ function addStaticRequirements() {
     'parentAfter',
     'textOverflow',
     'assertScrollUnchanged',
+    'verifyLegacyInteractionKeyOwnership',
     'verifyEditableInputKeepsText'
   ]);
   requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab presence, HUD action proof, map-object coverage, and manual prompt limitations to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
