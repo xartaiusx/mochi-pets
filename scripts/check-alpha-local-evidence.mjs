@@ -13,6 +13,7 @@ const builtServer = readJson('reports/built-server-smoke.json');
 const acceptance = readJson('reports/alpha-local-acceptance.json');
 const loadSmoke = readJson('reports/alpha-load-smoke.json');
 const browserPresence = readJson('reports/alpha-browser-presence.json');
+const responsiveGameplay = readJson('reports/alpha-responsive-gameplay.json');
 const visualSnapshot = readJson('reports/alpha-visual-snapshot.json');
 const visualReview = readJson('reports/alpha-visual-review.json');
 const walletDaemon = readJson('reports/wallet-daemon-local.json');
@@ -24,6 +25,7 @@ assertReport('built server smoke', builtServer);
 assertReport('local acceptance', acceptance);
 assertReport('load smoke', loadSmoke);
 assertReport('browser presence', browserPresence);
+assertReport('responsive gameplay', responsiveGameplay);
 assertReport('visual snapshot', visualSnapshot);
 assertReport('visual review', visualReview);
 assertReport('Wallet Daemon local check', walletDaemon);
@@ -34,6 +36,7 @@ assertLocalUrl(builtServer.data?.baseUrl, 'built server baseUrl');
 assertLocalUrl(acceptance.data?.baseUrl, 'local acceptance baseUrl');
 assertLocalUrl(loadSmoke.data?.baseUrl, 'load smoke baseUrl');
 assertLocalUrl(browserPresence.data?.baseUrl, 'browser presence baseUrl');
+assertLocalUrl(responsiveGameplay.data?.baseUrl, 'responsive gameplay baseUrl');
 assertLocalUrl(visualSnapshot.data?.baseUrl, 'visual snapshot baseUrl');
 assertLocalUrl(visualReview.data?.baseUrl, 'visual review baseUrl');
 assertLocalUrl(operatorSmoke.data?.baseUrl, 'operator smoke baseUrl');
@@ -42,6 +45,7 @@ const suiteBaseUrl = normalizeUrl(localSuite.data?.baseUrl);
 assertSameBaseUrl(acceptance.data?.baseUrl, suiteBaseUrl, 'local acceptance baseUrl');
 assertSameBaseUrl(loadSmoke.data?.baseUrl, suiteBaseUrl, 'load smoke baseUrl');
 assertSameBaseUrl(browserPresence.data?.baseUrl, suiteBaseUrl, 'browser presence baseUrl');
+assertSameBaseUrl(responsiveGameplay.data?.baseUrl, suiteBaseUrl, 'responsive gameplay baseUrl');
 assertSameBaseUrl(visualSnapshot.data?.baseUrl, suiteBaseUrl, 'visual snapshot baseUrl');
 assertSameBaseUrl(visualReview.data?.baseUrl, suiteBaseUrl, 'visual review baseUrl');
 assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke baseUrl');
@@ -53,7 +57,7 @@ assertCurrentGitState(walletDaemon.data?.git, 'Wallet Daemon local report');
 const commandNames = Array.isArray(localSuite.data?.commands)
   ? localSuite.data.commands.map((command) => command.name)
   : [];
-for (const command of ['build', 'alpha:wallet-daemon-check', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
+for (const command of ['build', 'alpha:wallet-daemon-check', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
   if (!commandNames.includes(command)) failures.push(`local suite missing command: ${command}`);
 }
 if (Array.isArray(localSuite.data?.commands)) {
@@ -67,6 +71,14 @@ assert(builtServer.data?.server?.stopped === true, 'built server smoke server mu
 assert(loadSmoke.data?.playerCount >= 10 && loadSmoke.data?.playerCount <= 25, 'load smoke player count must stay 10-25');
 assert(browserPresence.data?.localOnlyDefault === true && browserPresence.data?.hostedAllowed === false, 'browser presence must be local-only by default');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
+assert(responsiveGameplay.data?.localOnlyDefault === true && responsiveGameplay.data?.hostedAllowed === false, 'responsive gameplay must be local-only by default');
+assert(responsiveGameplay.data?.viewports?.length === 9, 'responsive gameplay must cover the required nine-viewport matrix');
+assert(responsiveGameplay.data?.routes?.includes('/play') && responsiveGameplay.data?.routes?.includes('/embed'), 'responsive gameplay must cover /play and /embed');
+assert(responsiveGameplay.data?.results?.length === 18, 'responsive gameplay must cover both routes across all viewports');
+assert(responsiveGameplay.data?.iframeResults?.length === 9, 'responsive gameplay must cover parent-iframe input ownership across all viewports');
+assert(responsiveGameplay.data?.gameplayKeys?.includes('ArrowDown') && responsiveGameplay.data?.gameplayKeys?.includes('Space'), 'responsive gameplay must test movement and action keys');
+assert(responsiveGameplay.data?.results?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay route screenshots must be non-empty');
+assert(responsiveGameplay.data?.iframeResults?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay iframe screenshots must be non-empty');
 assert(visualSnapshot.data?.localOnlyDefault === true && visualSnapshot.data?.hostedAllowed === false, 'visual snapshot must be local-only by default');
 assert(visualSnapshot.data?.screenshots?.page?.bytes > 1000, 'visual snapshot page PNG must be non-empty');
 assert(visualSnapshot.data?.screenshots?.canvas?.bytes > 1000, 'visual snapshot canvas PNG must be non-empty');
@@ -98,6 +110,11 @@ const summary = {
     acceptance: summarizeReport(acceptance),
     loadSmoke: summarizeReport(loadSmoke, { playerCount: loadSmoke.data?.playerCount, actions: loadSmoke.data?.actions?.length }),
     browserPresence: summarizeReport(browserPresence, { observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove }),
+    responsiveGameplay: summarizeReport(responsiveGameplay, {
+      viewports: responsiveGameplay.data?.viewports?.length,
+      routeResults: responsiveGameplay.data?.results?.length,
+      iframeResults: responsiveGameplay.data?.iframeResults?.length
+    }),
     visualSnapshot: summarizeReport(visualSnapshot, {
       pageBytes: visualSnapshot.data?.screenshots?.page?.bytes,
       canvasBytes: visualSnapshot.data?.screenshots?.canvas?.bytes
@@ -268,11 +285,12 @@ ${rows}
 ## Key Proofs
 
 - Built Express runtime starts locally and stops after smoke.
-- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
+- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, responsive gameplay viewport/input smoke, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
 - Wallet Daemon local evidence is metadata-only: file hash and \`--help\` output when the binary is present; no wallet import, seed print, signer process, Enjin API call, Fuel Tank action, or chain transaction occurs.
 - Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
 - The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.
+- Responsive gameplay proves /play, /embed, and parent-iframe input ownership across the required viewport matrix with screenshots and DOM rectangles.
 - Rendered NPC/chest/habitat prompt interaction remains an explicit manual gate before Alpha RC Ready.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 

@@ -146,10 +146,12 @@ function addStaticRequirements() {
     'alpha:local-acceptance',
     'alpha:load-smoke',
     'alpha:browser-presence',
+    'alpha:responsive-gameplay',
     'alpha:visual-snapshot',
     'alpha:visual-review',
     'alpha:enjin-operator-smoke',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
+    'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE',
     'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN',
     'delete env.ENJIN_PLATFORM_TOKEN',
     'reports/alpha-local-suite.json'
@@ -165,6 +167,9 @@ function addStaticRequirements() {
     'assertCurrentGitState',
     'current HEAD',
     'browser presence must prove observer-side movement',
+    'responsive gameplay must cover the required nine-viewport matrix',
+    'responsive gameplay must cover /play and /embed',
+    'parent-iframe input ownership',
     'visual snapshot canvas PNG must be non-empty',
     'visual review must keep rendered prompt interaction as a manual pre-RC gate',
     'Wallet Daemon local check must stay no-cost and metadata-only',
@@ -176,6 +181,7 @@ function addStaticRequirements() {
     'alpha-report-hygiene.json',
     'alpha-operator-checklist.json',
     'alpha-provider-preflight.json',
+    'alpha-responsive-gameplay.json',
     'wallet-daemon-local.json',
     'mochi-social-alpha-operator-next-steps.md',
     'mochi-social-alpha-provider-preflight.md',
@@ -216,6 +222,7 @@ function addStaticRequirements() {
     'noCostFallback',
     'readGitState',
     'localHead',
+    'alpha:responsive-gameplay',
     'No-cost rule',
     'noCostRule'
   ]);
@@ -345,6 +352,29 @@ function addStaticRequirements() {
     'createHash',
     'canvas'
   ]);
+  requireFileIncludes('game.responsive-gameplay', 'Responsive gameplay smoke verifies /play, /embed, and parent-iframe input ownership across the alpha viewport matrix.', 'scripts/check-alpha-responsive-gameplay.mjs', [
+    'playwright-core',
+    'alpha-responsive-gameplay.json',
+    'reports/responsive-gameplay',
+    'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE',
+    'local-only by default',
+    'viewports',
+    '1920',
+    '390',
+    '/play',
+    '/embed',
+    'parent iframe',
+    'gameplayKeys',
+    'ArrowDown',
+    'Space',
+    'Enter',
+    'horizontalOverflow',
+    'panelOverlaps',
+    'safeRectObstructions',
+    'textOverflow',
+    'assertScrollUnchanged',
+    'verifyEditableInputKeepsText'
+  ]);
   requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab presence, HUD action proof, map-object coverage, and manual prompt limitations to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
     'alpha-visual-review.json',
     'alpha-visual-review.md',
@@ -472,6 +502,7 @@ function addStaticRequirements() {
     'alpha:local-acceptance',
     'alpha:load-smoke',
     'alpha:browser-presence',
+    'alpha:responsive-gameplay',
     'alpha:enjin-operator-smoke',
     'alpha:external-gates',
     'alpha:operator-checklist',

@@ -117,6 +117,7 @@ npm test
 npm run build
 npm run alpha:local-suite
 npm run alpha:local-evidence
+npm run alpha:responsive-gameplay
 npm run alpha:enjin-operator-smoke
 npm run alpha:preview-ready
 ```

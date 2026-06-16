@@ -5,8 +5,14 @@ body,
   height: 100vh;
   margin: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background:
     linear-gradient(180deg, #18363a 0%, #10252a 56%, #172017 100%);
+}
+
+#rpg,
+#rpg canvas {
+  touch-action: none;
 }
 
 body {
@@ -366,6 +372,23 @@ body::before {
   }
 }
 
+@media (min-width: 921px) and (max-width: 1460px) {
+  .mochi-hud__actions {
+    right: 12px;
+    left: auto;
+    grid-template-columns: repeat(3, minmax(72px, 1fr));
+    width: min(360px, calc(100vw - 344px));
+    max-height: min(240px, calc(100vh - 480px));
+    transform: none;
+  }
+}
+
+@media (min-width: 921px) and (max-height: 900px) {
+  .mochi-hud__spirit-card {
+    max-height: max(220px, calc(100vh - 468px));
+  }
+}
+
 @media (max-width: 560px) {
   #mochi-social-hud {
     font-size: 12px;
@@ -399,5 +422,31 @@ body::before {
     bottom: 8px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     max-height: clamp(160px, calc(100vh - 360px), 220px);
+  }
+}
+
+@media (max-height: 520px) {
+  .mochi-hud__spirit-card,
+  .mochi-hud__feed-panel {
+    display: none;
+  }
+
+  .mochi-hud__social-card {
+    max-height: 96px;
+    overflow: auto;
+  }
+
+  .mochi-hud__actions {
+    max-height: min(156px, calc(100vh - 250px));
+  }
+}
+
+@media (max-width: 920px) and (max-height: 520px) {
+  .mochi-hud__social-card {
+    display: none;
+  }
+
+  .mochi-hud__actions {
+    max-height: 104px;
   }
 }

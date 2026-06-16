@@ -372,7 +372,7 @@ npm run alpha:local-evidence
 npm run alpha:report-hygiene
 \`\`\`
 
-The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`. The evidence command reads ignored localhost reports and writes no-secret \`reports/alpha-local-evidence.json\` and \`reports/alpha-local-evidence.md\`. The hygiene command scans ignored local reports and the generated no-secret checklist for accidental secret patterns.
+The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, responsive gameplay, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`. The evidence command reads ignored localhost reports and writes no-secret \`reports/alpha-local-evidence.json\` and \`reports/alpha-local-evidence.md\`. The hygiene command scans ignored local reports and the generated no-secret checklist for accidental secret patterns.
 
 ## Fly Gate
 
@@ -460,6 +460,7 @@ npm run smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke # Hosted load smoke requires explicit approval.
 npm run alpha:browser-presence
+npm run alpha:responsive-gameplay
 npm run alpha:visual-snapshot
 npm run alpha:external-gates
 \`\`\`

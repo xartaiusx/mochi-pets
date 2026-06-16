@@ -68,6 +68,7 @@ async function run() {
     MOCHI_SOCIAL_LOAD_PLAYERS: loadPlayers
   });
   await runCommand('alpha:browser-presence', npmCommand(), ['run', 'alpha:browser-presence'], env);
+  await runCommand('alpha:responsive-gameplay', npmCommand(), ['run', 'alpha:responsive-gameplay'], env);
   await runCommand('alpha:visual-snapshot', npmCommand(), ['run', 'alpha:visual-snapshot'], env);
   await runCommand('alpha:visual-review', npmCommand(), ['run', 'alpha:visual-review'], env);
   await runCommand('alpha:enjin-operator-smoke', npmCommand(), ['run', 'alpha:enjin-operator-smoke'], {
@@ -106,7 +107,8 @@ function localCheckEnv() {
     RPG_SAVE_DIR: saveDir,
     MOCHI_SOCIAL_ALPHA_LEDGER_PATH: resolve(saveDir, 'alpha-ledger.jsonl'),
     SUPABASE_AUTH_REQUIRED: 'false',
-    MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE: 'false'
+    MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE: 'false',
+    MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE: 'false'
   };
 
   delete env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL;

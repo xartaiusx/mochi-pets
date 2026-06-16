@@ -393,7 +393,7 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       action: 'Run the approved hosted Fly game contract check for Alpha Preview Ready.',
       exactAction: `$env:MOCHI_SOCIAL_GAME_URL="${gameUrl}"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="${sitePreviewUrl}"; $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; npm run alpha:external-gates`,
       costRisk: 'Hosted contract checks fetch the Fly runtime and can create Fly request/bandwidth/log usage. They do not deploy, scale, or run load tests.',
-      noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, and localhost smoke checks only.',
+      noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, npm run alpha:responsive-gameplay, and localhost smoke checks only.',
       approvalText: `I approve the hosted Fly game contract check for ${flyApp} using MOCHI_SOCIAL_GAME_URL=${gameUrl} with MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true. I understand it may hit Fly resources and add usage.`
     },
     {

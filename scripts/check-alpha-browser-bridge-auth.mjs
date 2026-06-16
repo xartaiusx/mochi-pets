@@ -10,10 +10,10 @@ requireSnippet(protocol, 'accessToken: string;', 'AuthPayload must expose only t
 requireSnippet(protocol, 'expiresAt?: number;', 'AuthPayload may carry optional expiry metadata only.');
 requireSnippet(bridge, "const TOKEN_KEY = 'mochiSocial.accessToken';", 'Bridge must store the access token under the expected alpha key.');
 requireSnippet(bridge, "const EXPIRES_KEY = 'mochiSocial.accessTokenExpiresAt';", 'Bridge must store only optional access-token expiry metadata.');
-requireSnippet(bridge, 'localStorage.setItem(TOKEN_KEY, payload.accessToken);', 'setAuth must persist only payload.accessToken as the token value.');
+requireSnippet(bridge, 'writeLocalStore(TOKEN_KEY, payload.accessToken);', 'setAuth must persist only payload.accessToken as the token value.');
 requireSnippet(bridge, "postToParent(BRIDGE_EVENTS.authState, { state: 'linked' });", 'Linked auth response must report state only, not token values.');
-requireSnippet(bridge, 'localStorage.removeItem(TOKEN_KEY);', 'sign-out must clear stored access token.');
-requireSnippet(bridge, 'localStorage.removeItem(EXPIRES_KEY);', 'sign-out must clear stored access-token expiry metadata.');
+requireSnippet(bridge, 'removeLocalStore(TOKEN_KEY);', 'sign-out must clear stored access token.');
+requireSnippet(bridge, 'removeLocalStore(EXPIRES_KEY);', 'sign-out must clear stored access-token expiry metadata.');
 requireSnippet(bridge, "postToParent(BRIDGE_EVENTS.authState, { state: 'guest' });", 'Guest auth response must report state only, not token values.');
 requireSnippet(bridge, "postToParent(BRIDGE_EVENTS.error, { message: 'Missing Supabase access token.' });", 'Missing auth must report an error message without token data.');
 requireSnippet(bridge, 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'MOCHI_SOCIAL_AUTH handler must pass only accessToken and expiresAt into auth state.');

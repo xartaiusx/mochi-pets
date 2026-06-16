@@ -7,18 +7,52 @@ import '@rpgjs/ui-css/index.css';
 import '@rpgjs/ui-css/theme-default.css';
 import './ui/styles.css';
 
+const ACCESS_TOKEN_KEY = 'mochiSocial.accessToken';
+const CONNECTION_ID_KEY = 'mochiSocial.connectionId';
+let fallbackConnectionId: string | undefined;
+
 installMochiSocialBridge();
 
 startGame(
   mergeConfig(configClient, {
     providers: [
       provideMmorpg({
-        connectionIdScope: 'session',
+        connectionId: resolveMochiSocialConnectionId(),
         query: () => {
-          const accessToken = localStorage.getItem('mochiSocial.accessToken');
+          const accessToken = readLocalStorage(ACCESS_TOKEN_KEY);
           return accessToken ? { accessToken } : undefined;
         }
       })
     ]
   })
 );
+
+function resolveMochiSocialConnectionId() {
+  const existing = readLocalStorage(CONNECTION_ID_KEY);
+  if (existing) return existing;
+
+  const connectionId = fallbackConnectionId || createConnectionId();
+  fallbackConnectionId = connectionId;
+  writeLocalStorage(CONNECTION_ID_KEY, connectionId);
+  return connectionId;
+}
+
+function createConnectionId() {
+  return globalThis.crypto?.randomUUID?.() || `mochi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function readLocalStorage(key: string) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorage(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage can be denied in embedded preview contexts. The in-memory ID still lets the game boot.
+  }
+}

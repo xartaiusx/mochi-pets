@@ -118,9 +118,12 @@ describe('runtime asset paths', () => {
     expect(clientConfig).not.toMatch(/scale:\s*0\.5\b/);
   });
 
-  it('uses tab-scoped multiplayer guest connection ids', () => {
+  it('uses storage-safe multiplayer guest connection ids for embeds', () => {
     const clientEntry = readFileSync('src/client.ts', 'utf8');
 
-    expect(clientEntry).toContain("connectionIdScope: 'session'");
+    expect(clientEntry).toContain("const CONNECTION_ID_KEY = 'mochiSocial.connectionId';");
+    expect(clientEntry).toContain('connectionId: resolveMochiSocialConnectionId()');
+    expect(clientEntry).toContain('fallbackConnectionId');
+    expect(clientEntry).not.toContain("connectionIdScope: 'session'");
   });
 });

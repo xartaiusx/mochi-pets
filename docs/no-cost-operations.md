@@ -15,7 +15,7 @@ Mochi Social development is no-cost by default. Agents may inspect local files, 
 Allowed without extra approval:
 
 - Read local files and edit repo docs/code.
-- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:visual-snapshot`, `npm run alpha:visual-review`, `npm run alpha:manual-prompt-review`, `npm run alpha:wallet-daemon-check`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:provider-preflight`, `npm run alpha:sync-approval`, `npm run alpha:preview-ready`, and `npm run alpha:report-hygiene`.
+- Run local-only commands such as `npm run secret-scan`, `npm run alpha:readiness`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run alpha:responsive-gameplay`, `npm run alpha:visual-snapshot`, `npm run alpha:visual-review`, `npm run alpha:manual-prompt-review`, `npm run alpha:wallet-daemon-check`, `npm run alpha:local-suite`, `npm run alpha:local-evidence`, `npm run alpha:provider-preflight`, `npm run alpha:sync-approval`, `npm run alpha:preview-ready`, and `npm run alpha:report-hygiene`.
 - Read existing provider state with safe commands, such as `fly status`, `fly secrets list`, `gh pr view`, and dashboard status pages.
 - Run smoke checks against `localhost`.
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
@@ -34,7 +34,7 @@ Ask for fresh, explicit user approval before:
 - Creating, funding, or dispatching Enjin Fuel Tanks; minting, burning, listing, or transferring any Enjin asset; requesting faucets; or submitting live chain proofs.
 - Rerunning GitHub Actions, enabling branch protection checks, or creating workflows only when the account/repo settings indicate the action can create actual charges. Public-repo branch pushes are allowed without a separate prompt under the current user policy, along with their ordinary PR checks; verify the resulting checks afterward.
 - Running `npm run alpha:load-smoke` or browser presence checks against hosted URLs. Keep those local unless the user approves a hosted smoke.
-- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
+- Setting `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE=true`, `MOCHI_SOCIAL_LOAD_ALLOW_EDGE=true`, `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true`, or `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` against hosted previews without explicit approval.
 - Setting dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags just to clear funded-chain gates.
 - Sending Discord messages, installing bots, changing OAuth apps, or enabling paid/community features.
 

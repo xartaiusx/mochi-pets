@@ -166,6 +166,10 @@ const PRESENCE_STORAGE_PREFIX = 'mochiSocial.presence.';
 const MOVEMENT_STORAGE_PREFIX = 'mochiSocial.movement.';
 const PRESENCE_TTL_MS = 4000;
 const ALPHA_CHAT_HISTORY_LIMIT = 140;
+const GAMEPLAY_INPUT_KEYS = new Set(['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', ' ', 'Spacebar', 'Enter']);
+let gameplayInputActive = false;
+let fallbackPresenceTabId: string | undefined;
+const memoryStorage = new Map<string, string>();
 
 interface AlphaHudState {
   spiritId?: string;
@@ -1811,10 +1815,10 @@ function postToParent(type: BridgeMessage['type'], payload?: unknown) {
 }
 
 function clearAlphaStateForSignedOutAccount() {
-  localStorage.removeItem(ALPHA_STATE_KEY);
-  localStorage.removeItem(ALPHA_STATE_REVISION_KEY);
-  localStorage.removeItem(ALPHA_STATE_UPDATED_AT_KEY);
-  localStorage.removeItem(ALPHA_STATE_AUTHORITY_KEY);
+  removeLocalStore(ALPHA_STATE_KEY);
+  removeLocalStore(ALPHA_STATE_REVISION_KEY);
+  removeLocalStore(ALPHA_STATE_UPDATED_AT_KEY);
+  removeLocalStore(ALPHA_STATE_AUTHORITY_KEY);
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
 
@@ -1829,12 +1833,12 @@ function alphaProgressUpdatedAt(progress: AlphaProgressSnapshot) {
 
 function isRemoteAlphaProgressNewer(progress: AlphaProgressSnapshot) {
   const remoteRevision = Number(progress.revision || 0);
-  const localRevision = Number(localStorage.getItem(ALPHA_STATE_REVISION_KEY) || '0');
+  const localRevision = Number(readLocalStore(ALPHA_STATE_REVISION_KEY) || '0');
   if (remoteRevision > localRevision) return true;
   if (remoteRevision < localRevision) return false;
 
   const remoteUpdatedAt = alphaProgressUpdatedAt(progress);
-  const localUpdatedAt = Date.parse(localStorage.getItem(ALPHA_STATE_UPDATED_AT_KEY) || '') || 0;
+  const localUpdatedAt = Date.parse(readLocalStore(ALPHA_STATE_UPDATED_AT_KEY) || '') || 0;
   return remoteUpdatedAt > localUpdatedAt;
 }
 
@@ -1846,10 +1850,10 @@ function applyAuthoritativeAlphaProgress(progress: AlphaProgressSnapshot | null)
     ...progress.state,
     chat: Array.isArray(progress.state.chat) ? progress.state.chat.slice(-ALPHA_CHAT_HISTORY_LIMIT).map(String) : []
   };
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify(state));
-  localStorage.setItem(ALPHA_STATE_REVISION_KEY, String(Math.max(0, Math.floor(Number(progress.revision || 0)))));
-  localStorage.setItem(ALPHA_STATE_UPDATED_AT_KEY, progress.updatedAt || new Date().toISOString());
-  localStorage.setItem(ALPHA_STATE_AUTHORITY_KEY, progress.authority || 'mochirii-edge');
+  writeLocalStore(ALPHA_STATE_KEY, JSON.stringify(state));
+  writeLocalStore(ALPHA_STATE_REVISION_KEY, String(Math.max(0, Math.floor(Number(progress.revision || 0)))));
+  writeLocalStore(ALPHA_STATE_UPDATED_AT_KEY, progress.updatedAt || new Date().toISOString());
+  writeLocalStore(ALPHA_STATE_AUTHORITY_KEY, progress.authority || 'mochirii-edge');
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
   return true;
 }
@@ -1894,9 +1898,9 @@ function updateHudAuthState(state: AuthState) {
 }
 
 function setAuth(payload: AuthPayload) {
-  localStorage.setItem(TOKEN_KEY, payload.accessToken);
+  writeLocalStore(TOKEN_KEY, payload.accessToken);
   if (payload.expiresAt) {
-    localStorage.setItem(EXPIRES_KEY, String(payload.expiresAt));
+    writeLocalStore(EXPIRES_KEY, String(payload.expiresAt));
   }
   updateHudAuthState('linked');
   postToParent(BRIDGE_EVENTS.authState, { state: 'linked' });
@@ -1904,9 +1908,9 @@ function setAuth(payload: AuthPayload) {
 }
 
 function clearAuth() {
-  const hadLinkedToken = Boolean(localStorage.getItem(TOKEN_KEY));
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(EXPIRES_KEY);
+  const hadLinkedToken = Boolean(readLocalStore(TOKEN_KEY));
+  removeLocalStore(TOKEN_KEY);
+  removeLocalStore(EXPIRES_KEY);
   if (hadLinkedToken) {
     clearAlphaStateForSignedOutAccount();
   }
@@ -1923,6 +1927,7 @@ function isBridgeMessage(value: unknown): value is BridgeMessage {
 export function installMochiSocialBridge() {
   createHud();
   installLocalTabPresence();
+  installGameplayInputGuard();
   installLocalMovementPulse();
   void loadAlphaStatus();
 
@@ -1945,7 +1950,7 @@ export function installMochiSocialBridge() {
     }
   });
 
-  const existingToken = localStorage.getItem(TOKEN_KEY);
+  const existingToken = readLocalStore(TOKEN_KEY);
   updateHudAuthState(existingToken ? 'linked' : 'guest');
   if (existingToken) {
     void loadLinkedAlphaProgress(existingToken);
@@ -2722,12 +2727,11 @@ function installLocalTabPresence() {
 
   function readStoragePeers() {
     const cutoff = Date.now() - PRESENCE_TTL_MS;
-    for (let index = 0; index < localStorage.length; index += 1) {
-      const key = localStorage.key(index);
+    for (const key of localStoreKeys()) {
       if (!key?.startsWith(PRESENCE_STORAGE_PREFIX) || key === storageKey) continue;
 
       try {
-        const message = JSON.parse(localStorage.getItem(key) || 'null') as PresenceMessage | null;
+        const message = JSON.parse(readLocalStore(key) || 'null') as PresenceMessage | null;
         if (message?.type === 'MOCHI_SOCIAL_LOCAL_PRESENCE' && message.at >= cutoff) {
           remember(message);
         }
@@ -2745,7 +2749,7 @@ function installLocalTabPresence() {
     };
 
     channel?.postMessage(message);
-    localStorage.setItem(storageKey, JSON.stringify(message));
+    writeLocalStore(storageKey, JSON.stringify(message));
     readStoragePeers();
     render();
   }
@@ -2771,7 +2775,7 @@ function installLocalTabPresence() {
   window.addEventListener('pagehide', () => {
     window.clearInterval(timer);
     channel?.close();
-    localStorage.removeItem(storageKey);
+    removeLocalStore(storageKey);
   });
 
   publish();
@@ -2809,7 +2813,7 @@ function installLocalMovementPulse() {
       at: Date.now()
     };
     channel?.postMessage(message);
-    localStorage.setItem(storageKey, JSON.stringify(message));
+    writeLocalStore(storageKey, JSON.stringify(message));
   }
 
   channel?.addEventListener('message', (event: MessageEvent<MovementMessage>) => {
@@ -2826,7 +2830,8 @@ function installLocalMovementPulse() {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd'].includes(event.key)) {
+    if (isEditableInputTarget(event.target) || !isMovementKey(event)) return;
+    if (gameplayInputActive || document.activeElement?.matches('canvas')) {
       publish(event.key);
     }
   }, { capture: true });
@@ -2834,22 +2839,135 @@ function installLocalMovementPulse() {
   window.addEventListener('pagehide', () => {
     window.clearTimeout(pulseTimer);
     channel?.close();
-    localStorage.removeItem(storageKey);
+    removeLocalStore(storageKey);
   });
 }
 
-function getPresenceTabId() {
-  const existing = sessionStorage.getItem(PRESENCE_TAB_KEY);
-  if (existing) return existing;
+function installGameplayInputGuard() {
+  const prepareCanvas = (canvas: HTMLCanvasElement) => {
+    if (canvas.dataset.gameplayInputSurface === 'true') return;
+    canvas.dataset.gameplayInputSurface = 'true';
+    canvas.tabIndex = 0;
+    canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || 'Mochi Social gameplay canvas');
+    canvas.addEventListener('pointerdown', () => {
+      gameplayInputActive = true;
+      canvas.focus({ preventScroll: true });
+    });
+  };
 
-  const tabId = crypto.randomUUID();
-  sessionStorage.setItem(PRESENCE_TAB_KEY, tabId);
-  return tabId;
+  const prepareCanvases = () => {
+    document.querySelectorAll<HTMLCanvasElement>('canvas').forEach(prepareCanvas);
+  };
+
+  prepareCanvases();
+  const observer = new MutationObserver(prepareCanvases);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  document.addEventListener('pointerdown', (event) => {
+    const target = asElement(event.target);
+    if (!target) return;
+    if (isEditableInputTarget(target) || target.closest('#mochi-social-hud button, #mochi-social-hud input, #mochi-social-hud textarea, #mochi-social-hud select')) {
+      gameplayInputActive = false;
+      return;
+    }
+    if (target.closest('canvas') || target.closest('#rpg')) {
+      gameplayInputActive = true;
+    }
+  }, { capture: true });
+
+  window.addEventListener('keydown', (event) => {
+    if (!gameplayInputActive || isEditableInputTarget(event.target) || !isGameplayKey(event)) return;
+    if (event.cancelable) event.preventDefault();
+  }, { capture: true });
+
+  window.addEventListener('blur', () => {
+    gameplayInputActive = false;
+  });
+
+  window.addEventListener('pagehide', () => {
+    observer.disconnect();
+  });
+}
+
+function isMovementKey(event: KeyboardEvent) {
+  return ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd'].includes(event.key);
+}
+
+function isGameplayKey(event: KeyboardEvent) {
+  return GAMEPLAY_INPUT_KEYS.has(event.key);
+}
+
+function isEditableInputTarget(target: EventTarget | null) {
+  const element = asElement(target);
+  if (!element) return false;
+  if (element.closest('input, textarea, select')) return true;
+  return element.closest('[contenteditable=""], [contenteditable="true"]') !== null;
+}
+
+function asElement(target: EventTarget | null) {
+  return target instanceof Element ? target : null;
+}
+
+function getPresenceTabId() {
+  try {
+    const existing = sessionStorage.getItem(PRESENCE_TAB_KEY);
+    if (existing) return existing;
+
+    const tabId = createBrowserId();
+    sessionStorage.setItem(PRESENCE_TAB_KEY, tabId);
+    return tabId;
+  } catch {
+    fallbackPresenceTabId ||= createBrowserId();
+    return fallbackPresenceTabId;
+  }
+}
+
+function createBrowserId() {
+  return crypto.randomUUID?.() || `mochi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function readLocalStore(key: string) {
+  try {
+    return localStorage.getItem(key) ?? memoryStorage.get(key) ?? null;
+  } catch {
+    return memoryStorage.get(key) ?? null;
+  }
+}
+
+function writeLocalStore(key: string, value: string) {
+  memoryStorage.set(key, value);
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Embedded browser contexts can deny storage access; in-memory state keeps the alpha runtime playable.
+  }
+}
+
+function removeLocalStore(key: string) {
+  memoryStorage.delete(key);
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Storage can be unavailable in embedded previews.
+  }
+}
+
+function localStoreKeys() {
+  const keys = new Set(memoryStorage.keys());
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (key) keys.add(key);
+    }
+  } catch {
+    // Use the in-memory keys gathered above.
+  }
+  return Array.from(keys);
 }
 
 function readAlphaState(): AlphaHudState {
   try {
-    const parsed = JSON.parse(localStorage.getItem(ALPHA_STATE_KEY) || 'null') as Partial<AlphaHudState> | null;
+    const parsed = JSON.parse(readLocalStore(ALPHA_STATE_KEY) || 'null') as Partial<AlphaHudState> | null;
     return {
       ...defaultAlphaState(),
       ...(parsed || {}),
@@ -2971,9 +3089,9 @@ function readAlphaState(): AlphaHudState {
 }
 
 function writeAlphaState(state: AlphaHudState, options: { preserveSyncMetadata?: boolean } = {}) {
-  localStorage.setItem(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-ALPHA_CHAT_HISTORY_LIMIT) }));
+  writeLocalStore(ALPHA_STATE_KEY, JSON.stringify({ ...state, chat: state.chat.slice(-ALPHA_CHAT_HISTORY_LIMIT) }));
   if (!options.preserveSyncMetadata) {
-    localStorage.setItem(ALPHA_STATE_UPDATED_AT_KEY, new Date().toISOString());
+    writeLocalStore(ALPHA_STATE_UPDATED_AT_KEY, new Date().toISOString());
   }
   window.dispatchEvent(new CustomEvent('mochi-social-alpha-state'));
 }
@@ -8890,7 +9008,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
   writeAlphaState(state);
 
   try {
-    const accessToken = localStorage.getItem(TOKEN_KEY);
+    const accessToken = readLocalStore(TOKEN_KEY);
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
@@ -8928,7 +9046,7 @@ async function performAlphaAction(type: AlphaActionType, payload: Record<string,
       postToParent(BRIDGE_EVENTS.error, { message: 'Mochi Social account progress could not sync.' });
     }
   } catch {
-    if (localStorage.getItem(TOKEN_KEY)) {
+    if (readLocalStore(TOKEN_KEY)) {
       const nextState = readAlphaState();
       appendUniqueAlphaChat(nextState, 'Account progress sync failed. The local HUD update remains preview-only until the next successful save.');
       writeAlphaState(nextState, {

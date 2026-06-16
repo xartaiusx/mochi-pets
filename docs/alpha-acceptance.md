@@ -39,6 +39,7 @@ npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
 npm run alpha:browser-presence
+npm run alpha:responsive-gameplay
 npm run alpha:visual-snapshot
 npm run alpha:visual-review
 npm run alpha:manual-prompt-review
@@ -107,7 +108,7 @@ The built server smoke and local suite use file-backed saves, so they are also t
 
 ## Local Alpha Suite
 
-`npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, runs the local Wallet Daemon binary metadata check, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, visual snapshot, visual review, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
+`npm run alpha:local-suite` is the local no-cost release-candidate pass. It builds once, runs the local Wallet Daemon binary metadata check, starts the built Express runtime on a disposable localhost port with a throwaway game-server token, uses an isolated `.local/alpha-suite/<run>/saves` directory, clears live Supabase Edge and Enjin env from child processes, and then runs endpoint smoke, local alpha acceptance, HTTP load smoke, browser presence, responsive gameplay, visual snapshot, visual review, and private Enjin operator smoke. It writes `reports/alpha-local-suite.json` with sanitized command/server output plus stopped status, and shuts the server down at the end.
 
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
 
@@ -208,6 +209,12 @@ The browser HUD loop also clicks `spirit.lineage_register` after the Jade Captur
 The browser HUD loop also clicks `spirit.roster_cabinet` and `spirit.blossom_cradle` after the Jade Lineage Register and verifies the Jade Roster Cabinet label, `rosterCabinetProof`, cabinet score, full roster, three party IDs, three storage labels, Jade Roster Cabinet Tag no-real-value state, Jade Blossom Cradle label, `blossomCradleProof`, cradle score, full roster, three party IDs, three care IDs, three raising milestone labels, total bond 15, and Jade Blossom Cradle Ribbon no-real-value state.
 
 The browser smoke is local-only by default to avoid hosted preview usage. Set `MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE=true` only after explicit hosted-preview approval. It prefers installed Chrome. If Chrome is installed outside the default Playwright channel, set `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to the browser executable path. Set `MOCHI_SOCIAL_BROWSER_HEADFUL=true` when you want to watch the check run.
+
+## Responsive Gameplay Gate
+
+`npm run alpha:responsive-gameplay` opens `/play`, `/embed`, and a synthetic parent page embedding `/embed` across the alpha viewport matrix: 1920x1080, 1440x900, 1366x768, 1280x720, 1024x768, 932x430, 844x390, 430x932, and 390x844. It verifies the canvas and HUD render, captures ignored screenshots under `reports/responsive-gameplay/`, and writes `reports/alpha-responsive-gameplay.json`.
+
+The gate checks for no horizontal overflow, no incoherent HUD panel overlap, central gameplay safe-area preservation, reachable first and last action buttons, focus visibility, and editable chat behavior while movement keys are typed. It also focuses the game canvas and sends Arrow keys, WASD, Space, and Enter to prove gameplay controls do not scroll the browser page, HUD scroll regions, or parent iframe page. It is local-only by default; set `MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE=true` only after explicit hosted-preview approval.
 
 ## Visual Snapshot Gate
 

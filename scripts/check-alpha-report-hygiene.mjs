@@ -14,6 +14,7 @@ const files = [
   'reports/alpha-local-acceptance.json',
   'reports/alpha-load-smoke.json',
   'reports/alpha-browser-presence.json',
+  'reports/alpha-responsive-gameplay.json',
   'reports/alpha-visual-snapshot.json',
   'reports/alpha-visual-review.json',
   'reports/alpha-visual-review.md',
