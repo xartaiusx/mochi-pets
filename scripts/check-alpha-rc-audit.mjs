@@ -379,6 +379,10 @@ function addStaticRequirements() {
     'horizontalOverflow',
     'panelOverlaps',
     'safeRectObstructions',
+    'criticalRects',
+    'actionButtonRects',
+    'parentBefore',
+    'parentAfter',
     'textOverflow',
     'assertScrollUnchanged',
     'verifyEditableInputKeepsText'

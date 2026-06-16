@@ -204,11 +204,11 @@ function summarizeResponsiveInputOwnership(data) {
   }
   for (const result of Array.isArray(data?.iframeResults) ? data.iframeResults : []) {
     contexts += 1;
-    checkOwnership(result.inputOwnership, `parent iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`);
+    checkOwnership(result.inputOwnership, `parent iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`, { expectParentScroll: true });
   }
   for (const result of Array.isArray(data?.siteIframeResults) ? data.siteIframeResults : []) {
     contexts += 1;
-    checkOwnership(result.inputOwnership, `Mochirii site iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`);
+    checkOwnership(result.inputOwnership, `Mochirii site iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`, { expectParentScroll: true });
   }
 
   if (contexts < 27) failures.push(`expected at least 27 route/iframe input ownership contexts, found ${contexts}`);
@@ -221,7 +221,7 @@ function summarizeResponsiveInputOwnership(data) {
     failures
   };
 
-  function checkOwnership(ownership, label) {
+  function checkOwnership(ownership, label, options = {}) {
     if (!ownership) {
       failures.push(`${label} missing input ownership object`);
       return;
@@ -243,6 +243,15 @@ function summarizeResponsiveInputOwnership(data) {
       if (check.keydown?.editableTarget === true || check.keydown?.editableActive === true) {
         failures.push(`${label} sent gameplay key ${check.key} to an editable element`);
       }
+      if (!check.before || !check.after) failures.push(`${label} missing iframe/page scroll snapshots for gameplay key ${check.key}`);
+      if (scrollChanged(check.before, check.after)) failures.push(`${label} changed iframe/page scroll while pressing gameplay key ${check.key}`);
+      if (options.expectParentScroll) {
+        if (!check.parentBefore || !check.parentAfter) {
+          failures.push(`${label} missing parent scroll snapshots for gameplay key ${check.key}`);
+        } else if (scrollChanged(check.parentBefore, check.parentAfter)) {
+          failures.push(`${label} changed parent scroll while pressing gameplay key ${check.key}`);
+        }
+      }
     }
     for (const check of unhandledChecks) {
       if (check.keydown?.defaultPrevented === true) failures.push(`${label} unexpectedly prevented unhandled key ${check.key}`);
@@ -254,6 +263,15 @@ function summarizeResponsiveInputOwnership(data) {
       failures.push(`${label} editable input did not preserve movement/action text`);
     }
   }
+}
+
+function scrollChanged(before, after) {
+  if (!before || !after) return true;
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  for (const key of keys) {
+    if (Math.abs(Number(before[key] || 0) - Number(after[key] || 0)) > 1) return true;
+  }
+  return false;
 }
 
 function summarizeResponsiveSiteIframe(data) {

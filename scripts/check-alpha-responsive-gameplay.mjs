@@ -275,6 +275,17 @@ async function inspectLayout(page, label) {
       '.mochi-hud__feed-panel',
       '.mochi-hud__actions'
     ];
+    const criticalSelectors = [
+      { name: 'hud', selector: '#mochi-social-hud', requiredVisible: true },
+      { name: 'canvas', selector: 'canvas', requiredVisible: true },
+      { name: 'presence', selector: '[data-presence-label]', requiredVisible: true },
+      { name: 'status-strip', selector: '.mochi-hud__status-strip', requiredVisible: true },
+      { name: 'action-rail', selector: '.mochi-hud__actions', requiredVisible: true },
+      { name: 'social-card', selector: '.mochi-hud__social-card', requiredVisible: false },
+      { name: 'spirit-card', selector: '.mochi-hud__spirit-card', requiredVisible: false },
+      { name: 'feed-panel', selector: '.mochi-hud__feed-panel', requiredVisible: false },
+      { name: 'chat-input', selector: '.mochi-hud__chat input', requiredVisible: false }
+    ];
     const rectFor = (element) => {
       const rect = element.getBoundingClientRect();
       const styles = window.getComputedStyle(element);
@@ -328,6 +339,29 @@ async function inspectLayout(page, label) {
       }))
       .filter((item) => item.scrollWidth - item.clientWidth > 8);
     const canvasRect = canvas ? rectFor(canvas) : null;
+    const criticalRects = criticalSelectors.map(({ name, selector, requiredVisible }) => {
+      const element = document.querySelector(selector);
+      return {
+        name,
+        selector,
+        present: Boolean(element),
+        visible: Boolean(element && visible(element)),
+        rect: element ? rectFor(element) : null,
+        requiredVisible
+      };
+    });
+    const actionButtonRects = Array.from(document.querySelectorAll('.mochi-hud__actions button')).map((button, index) => {
+      const rect = rectFor(button);
+      return {
+        index,
+        selector: rect.selector,
+        action: button.getAttribute('data-alpha-action') || button.getAttribute('data-alpha-local-action') || null,
+        ariaLabel: button.getAttribute('aria-label') || '',
+        text: (button.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80),
+        rect,
+        visible: visible(button)
+      };
+    });
     const panelOverlaps = [];
     for (let leftIndex = 0; leftIndex < panels.length; leftIndex += 1) {
       for (let rightIndex = leftIndex + 1; rightIndex < panels.length; rightIndex += 1) {
@@ -354,6 +388,8 @@ async function inspectLayout(page, label) {
       textOverflow: hudText,
       panelOverlaps,
       safeRectObstructions,
+      criticalRects,
+      actionButtonRects,
       actionButtonCount: document.querySelectorAll('.mochi-hud__actions button').length,
       inputSurface: {
         rpg: stylesFor(document.querySelector('#rpg')),
@@ -409,6 +445,14 @@ async function inspectLayout(page, label) {
   if (data.actionButtonCount < 50) {
     failures.push(`${label}: action rail has too few gameplay buttons (${data.actionButtonCount}).`);
   }
+  for (const item of data.criticalRects || []) {
+    if (!item.requiredVisible) continue;
+    if (!item.present) {
+      failures.push(`${label}: critical gameplay UI element is missing (${item.name}).`);
+    } else if (!item.visible) {
+      failures.push(`${label}: critical gameplay UI element is hidden (${item.name}).`);
+    }
+  }
   verifyInputSurfaceStyles(data.inputSurface, label);
   return data;
 }
@@ -433,7 +477,7 @@ async function verifyFrameInputOwnership(parentPage, frame, label) {
   await parentPage.evaluate(() => window.scrollTo(0, 240));
   await frame.locator('canvas').first().click({ timeout: timeoutMs });
   const parentBefore = await parentScrollSnapshot(parentPage);
-  const gameplay = await verifyGameplayKeyOwnership(frame, parentPage, `${label} iframe`);
+  const gameplay = await verifyGameplayKeyOwnership(frame, parentPage, `${label} iframe`, { parentPage });
   const unhandled = await verifyUnhandledKeyOwnership(frame, parentPage, `${label} iframe`);
   const editable = await verifyEditableInputKeepsText(frame, parentPage, `${label} iframe`);
   const parentAfter = await parentScrollSnapshot(parentPage);
@@ -441,15 +485,21 @@ async function verifyFrameInputOwnership(parentPage, frame, label) {
   return { parentBefore, parentAfter, gameplay, unhandled, editable };
 }
 
-async function verifyGameplayKeyOwnership(auditTarget, keyboardPage, label) {
+async function verifyGameplayKeyOwnership(auditTarget, keyboardPage, label, options = {}) {
   await installKeyAudit(auditTarget);
   const focus = await focusGameplayCanvas(auditTarget, label);
   const checks = [];
+  const parentPage = options.parentPage || null;
   for (const key of gameplayKeys) {
     const before = await frameScrollSnapshot(auditTarget);
+    const parentBefore = parentPage ? await parentScrollSnapshot(parentPage) : null;
     const audit = await pressKeyAndReadAudit(auditTarget, keyboardPage, key);
     const after = await frameScrollSnapshot(auditTarget);
+    const parentAfter = parentPage ? await parentScrollSnapshot(parentPage) : null;
     assertScrollUnchanged(before, after, `${label} ${key}`);
+    if (parentBefore && parentAfter) {
+      assertScrollUnchanged(parentBefore, parentAfter, `${label} ${key} parent page`);
+    }
     const keydown = firstKeydown(audit);
     if (!keydown) {
       failures.push(`${label}: ${key} did not produce a keydown event in the gameplay frame.`);
@@ -457,7 +507,7 @@ async function verifyGameplayKeyOwnership(auditTarget, keyboardPage, label) {
       if (keydown.editableTarget) failures.push(`${label}: ${key} targeted an editable element while gameplay canvas was focused.`);
       if (keydown.cancelable && !keydown.defaultPrevented) failures.push(`${label}: ${key} was not prevented while gameplay canvas was focused.`);
     }
-    checks.push({ key, before, after, keydown });
+    checks.push({ key, before, after, parentBefore, parentAfter, keydown });
   }
   return { focus, checks };
 }
