@@ -157,7 +157,7 @@ npm run alpha:external-gates
 npm run alpha:preview-ready
 ```
 
-`npm run alpha:preview-ready` writes ignored no-secret reports to `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It can pass with funded-chain gates red, but it cannot pass until `preview-live-gates` are green, hosted checks were explicitly approved, and both local branches are synced to their PR branches.
+`npm run alpha:preview-ready` writes ignored no-secret reports to `reports/alpha-preview-ready.json`, `reports/alpha-preview-ready.md`, and `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-preview-ready.md`. It can pass with funded-chain gates red, but it cannot pass until the responsive gameplay report checked the unlocked Mochirii `/games/mochi-social` iframe across all nine viewports with `MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true`, `preview-live-gates` are green, hosted checks were explicitly approved, and both local branches are synced to their PR branches.
 
 The Mochirii repo also has a site-side tester-entry audit:
 

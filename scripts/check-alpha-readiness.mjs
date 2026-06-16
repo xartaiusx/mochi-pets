@@ -2165,7 +2165,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-local-evidence.mjs',
-    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'readGitState', 'localHead', 'same-suite evidence', 'built server smoke report', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'responsive gameplay must cover the required nine-viewport matrix', 'responsive gameplay must cover /play and /embed', 'parent-iframe input ownership', 'Mochirii site iframe status', 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured', 'visual snapshot canvas PNG must be non-empty', 'visual review must keep rendered prompt interaction as a manual pre-RC gate', 'Wallet Daemon local check must stay no-cost and metadata-only', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'readGitState', 'localHead', 'same-suite evidence', 'built server smoke report', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'responsive gameplay must cover the required nine-viewport matrix', 'responsive gameplay must cover /play and /embed', 'parent-iframe input ownership', 'Mochirii site iframe status', 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured', 'summarizeResponsiveInputOwnership', 'summarizeResponsiveSiteIframe', 'previewReadyEvidence', 'editable-input preservation', 'unhandled-key freedom', 'visual snapshot canvas PNG must be non-empty', 'visual review must keep rendered prompt interaction as a manual pre-RC gate', 'Wallet Daemon local check must stay no-cost and metadata-only', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',
@@ -2357,7 +2357,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-preview-ready.mjs',
-    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review']
+    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.responsive-site-iframe', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true', 'siteIframeResults', '/games/mochi-social', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',

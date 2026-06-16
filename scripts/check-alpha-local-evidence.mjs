@@ -82,6 +82,9 @@ if (responsiveGameplay.data?.site?.configured === true) {
   assert(responsiveGameplay.data?.siteIframeResults?.length === 9, 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured');
 }
 assert(responsiveGameplay.data?.gameplayKeys?.includes('ArrowDown') && responsiveGameplay.data?.gameplayKeys?.includes('Space'), 'responsive gameplay must test movement and action keys');
+const responsiveInputOwnership = summarizeResponsiveInputOwnership(responsiveGameplay.data);
+assert(responsiveInputOwnership.ok, `responsive gameplay input ownership evidence is incomplete: ${responsiveInputOwnership.failures.join('; ')}`);
+const responsiveSiteIframe = summarizeResponsiveSiteIframe(responsiveGameplay.data);
 assert(responsiveGameplay.data?.results?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay route screenshots must be non-empty');
 assert(responsiveGameplay.data?.iframeResults?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay iframe screenshots must be non-empty');
 assert(visualSnapshot.data?.localOnlyDefault === true && visualSnapshot.data?.hostedAllowed === false, 'visual snapshot must be local-only by default');
@@ -120,7 +123,9 @@ const summary = {
       routeResults: responsiveGameplay.data?.results?.length,
       iframeResults: responsiveGameplay.data?.iframeResults?.length,
       siteStatus: responsiveGameplay.data?.site?.status,
-      siteIframeResults: responsiveGameplay.data?.siteIframeResults?.length
+      siteIframeResults: responsiveGameplay.data?.siteIframeResults?.length,
+      inputOwnership: responsiveInputOwnership,
+      siteIframe: responsiveSiteIframe
     }),
     visualSnapshot: summarizeReport(visualSnapshot, {
       pageBytes: visualSnapshot.data?.screenshots?.page?.bytes,
@@ -182,6 +187,93 @@ function assertLocalUrl(value, label) {
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
+}
+
+function summarizeResponsiveInputOwnership(data) {
+  const failures = [];
+  const expectedGameplayKeys = Array.isArray(data?.gameplayKeys) ? data.gameplayKeys.length : 0;
+  const expectedUnhandledKeys = Array.isArray(data?.unhandledKeys) ? data.unhandledKeys.length : 0;
+  let contexts = 0;
+
+  for (const result of Array.isArray(data?.results) ? data.results : []) {
+    contexts += 1;
+    checkOwnership(result.inputScroll, `${result.route || 'route'} ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`);
+    if (result.focus?.tabKeydown?.defaultPrevented === true) {
+      failures.push(`${result.route || 'route'} ${result.viewport?.width || '?'}x${result.viewport?.height || '?'} prevented Tab focus movement`);
+    }
+  }
+  for (const result of Array.isArray(data?.iframeResults) ? data.iframeResults : []) {
+    contexts += 1;
+    checkOwnership(result.inputOwnership, `parent iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`);
+  }
+  for (const result of Array.isArray(data?.siteIframeResults) ? data.siteIframeResults : []) {
+    contexts += 1;
+    checkOwnership(result.inputOwnership, `Mochirii site iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`);
+  }
+
+  if (contexts < 27) failures.push(`expected at least 27 route/iframe input ownership contexts, found ${contexts}`);
+
+  return {
+    ok: failures.length === 0,
+    contexts,
+    expectedGameplayKeys,
+    expectedUnhandledKeys,
+    failures
+  };
+
+  function checkOwnership(ownership, label) {
+    if (!ownership) {
+      failures.push(`${label} missing input ownership object`);
+      return;
+    }
+
+    const gameplayChecks = Array.isArray(ownership.gameplay?.checks) ? ownership.gameplay.checks : [];
+    const unhandledChecks = Array.isArray(ownership.unhandled?.checks) ? ownership.unhandled.checks : [];
+    if (gameplayChecks.length !== expectedGameplayKeys) {
+      failures.push(`${label} expected ${expectedGameplayKeys} gameplay key checks, found ${gameplayChecks.length}`);
+    }
+    if (unhandledChecks.length !== expectedUnhandledKeys) {
+      failures.push(`${label} expected ${expectedUnhandledKeys} unhandled key checks, found ${unhandledChecks.length}`);
+    }
+    if (ownership.gameplay?.focus?.activeIsCanvas !== true) {
+      failures.push(`${label} did not focus the gameplay canvas before gameplay key checks`);
+    }
+    for (const check of gameplayChecks) {
+      if (check.keydown?.defaultPrevented !== true) failures.push(`${label} did not prevent gameplay key ${check.key}`);
+      if (check.keydown?.editableTarget === true || check.keydown?.editableActive === true) {
+        failures.push(`${label} sent gameplay key ${check.key} to an editable element`);
+      }
+    }
+    for (const check of unhandledChecks) {
+      if (check.keydown?.defaultPrevented === true) failures.push(`${label} unexpectedly prevented unhandled key ${check.key}`);
+    }
+    if (ownership.editable?.preventedKeyCount !== 0) {
+      failures.push(`${label} prevented ${ownership.editable?.preventedKeyCount} editable input keydown event(s)`);
+    }
+    if (ownership.editable?.containsMovementLetters !== true || ownership.editable?.containsSpace !== true) {
+      failures.push(`${label} editable input did not preserve movement/action text`);
+    }
+  }
+}
+
+function summarizeResponsiveSiteIframe(data) {
+  const results = Array.isArray(data?.siteIframeResults) ? data.siteIframeResults : [];
+  const screenshots = results.filter((result) => result.screenshot?.bytes > 1000).length;
+  const inputOwnership = results.filter((result) => result.inputOwnership?.gameplay?.checks?.length === data?.gameplayKeys?.length).length;
+  return {
+    configured: data?.site?.configured === true,
+    required: data?.site?.required === true,
+    status: String(data?.site?.status || ''),
+    entryPath: data?.site?.entryPath || '',
+    results: results.length,
+    screenshots,
+    inputOwnership,
+    previewReadyEvidence: data?.site?.status === 'checked'
+      && data?.site?.entryPath === '/games/mochi-social'
+      && results.length === 9
+      && screenshots === 9
+      && inputOwnership === 9
+  };
 }
 
 function summarizeReport(report, extra = {}) {
@@ -298,6 +390,7 @@ ${rows}
 - The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.
 - Responsive gameplay proves /play, /embed, and parent-iframe input ownership across the required viewport matrix with screenshots and DOM rectangles.
+- Responsive input evidence records per-key gameplay prevention, unhandled-key freedom, editable-input preservation, Tab focus behavior, and parent/iframe scroll stability. The real Mochirii site iframe leg must be checked, not skipped, before Alpha Preview Ready.
 - Rendered NPC/chest/habitat prompt interaction remains an explicit manual gate before Alpha RC Ready.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 

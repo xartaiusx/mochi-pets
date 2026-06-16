@@ -14,6 +14,7 @@ const handoffPath = resolve(credsDir, 'mochi-social-alpha-preview-ready.md');
 const requirements = [];
 
 addCurrentOkReport('preview.local-evidence', 'Local alpha evidence is current and green.', 'reports/alpha-local-evidence.json', root);
+addResponsiveSiteIframeRequirement();
 addCurrentOkReport('preview.report-hygiene', 'No-secret report hygiene is current and green.', 'reports/alpha-report-hygiene.json', root);
 addManualPromptRequirement();
 addCurrentOkReport('preview.operator-checklist', 'Operator checklist is current and green.', 'reports/alpha-operator-checklist.json', root);
@@ -99,6 +100,40 @@ function addManualPromptRequirement() {
     status: prompt.data?.review?.status,
     completedChecks: completed,
     sourceEvidence
+  });
+}
+
+function addResponsiveSiteIframeRequirement() {
+  const responsive = readJson(resolve(root, 'reports/alpha-responsive-gameplay.json'));
+  if (!responsive.ok) {
+    add('preview.responsive-site-iframe', 'fail', `Responsive gameplay report is missing or invalid: ${responsive.message}.`, {
+      path: 'reports/alpha-responsive-gameplay.json'
+    });
+    return;
+  }
+
+  const failures = currentGitStateFailures(responsive.data?.git, root, 'responsive gameplay report');
+  const site = responsive.data?.site || {};
+  const siteResults = Array.isArray(responsive.data?.siteIframeResults) ? responsive.data.siteIframeResults : [];
+  if (responsive.data?.ok !== true) failures.push('responsive gameplay report is not ok');
+  if (site.required !== true) failures.push('Mochirii site iframe smoke must run with MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true for Preview Ready');
+  if (site.configured !== true) failures.push('Mochirii site iframe base URL was not configured');
+  if (site.status !== 'checked') failures.push(`Mochirii site iframe status is ${site.status || 'missing'}, expected checked`);
+  if (site.entryPath !== '/games/mochi-social') failures.push(`Mochirii site iframe entry path is ${site.entryPath || 'missing'}, expected /games/mochi-social`);
+  if (siteResults.length !== 9) failures.push(`Mochirii site iframe must cover all nine viewports, found ${siteResults.length}`);
+
+  const missingScreenshots = siteResults.filter((result) => !(result.screenshot?.bytes > 1000));
+  if (missingScreenshots.length) failures.push(`${missingScreenshots.length} Mochirii site iframe viewport screenshot(s) were empty or missing`);
+
+  const expectedGameplayKeys = Array.isArray(responsive.data?.gameplayKeys) ? responsive.data.gameplayKeys.length : 0;
+  const weakInputProof = siteResults.filter((result) => result.inputOwnership?.gameplay?.checks?.length !== expectedGameplayKeys);
+  if (weakInputProof.length) failures.push(`${weakInputProof.length} Mochirii site iframe viewport(s) are missing full per-key gameplay input proof`);
+
+  add('preview.responsive-site-iframe', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Responsive gameplay covered the unlocked Mochirii /games/mochi-social iframe across all nine viewports.', {
+    path: 'reports/alpha-responsive-gameplay.json',
+    site,
+    siteIframeResults: siteResults.length,
+    expectedGameplayKeys
   });
 }
 
