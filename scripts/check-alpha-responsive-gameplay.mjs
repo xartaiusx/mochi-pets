@@ -18,6 +18,7 @@ const localSiteBaseUrl = !siteBaseUrl || /^https?:\/\/(?:localhost|127\.0\.0\.1|
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_REPORT || 'reports/alpha-responsive-gameplay.json');
 const screenshotDir = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_SCREENSHOT_DIR || 'reports/responsive-gameplay');
 const gameplayKeys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', 'Space', 'Enter'];
+const unhandledKeys = ['Escape', 'q'];
 const viewports = [
   { width: 1920, height: 1080 },
   { width: 1440, height: 900 },
@@ -50,6 +51,7 @@ const report = {
   viewports,
   routes,
   gameplayKeys,
+  unhandledKeys,
   results: [],
   iframeResults: [],
   siteIframeResults: [],
@@ -150,20 +152,9 @@ async function inspectParentIframe(browser, viewport) {
     const frame = await frameHandle.contentFrame();
     if (!frame) throw new Error(`${label}: iframe content frame was not available.`);
     await waitForGame(frame);
-    await page.evaluate(() => window.scrollTo(0, 240));
-    await frame.locator('canvas').first().click({ timeout: timeoutMs });
-    const parentBefore = await parentScrollSnapshot(page);
-    const frameBefore = await frameScrollSnapshot(frame);
-    for (const key of gameplayKeys) {
-      await page.keyboard.press(key);
-      await page.waitForTimeout(60);
-    }
-    const parentAfter = await parentScrollSnapshot(page);
-    const frameAfter = await frameScrollSnapshot(frame);
-    assertScrollUnchanged(parentBefore, parentAfter, `${label} parent page`);
-    assertScrollUnchanged(frameBefore, frameAfter, `${label} iframe`);
+    const inputOwnership = await verifyFrameInputOwnership(page, frame, label);
     const screenshot = await captureScreenshot(page, label);
-    return { viewport, screenshot, parentBefore, parentAfter, frameBefore, frameAfter };
+    return { viewport, screenshot, inputOwnership };
   } finally {
     await context.close();
   }
@@ -193,20 +184,10 @@ async function inspectMochiriiSiteIframe(browser, viewport) {
     const unlock = await unlockTesterGateIfPresent(page, label);
     const frame = await findGameFrame(page, label);
     await waitForGame(frame);
-    await frame.locator('canvas').first().click({ timeout: timeoutMs });
-    const parentBefore = await parentScrollSnapshot(page);
-    const frameBefore = await frameScrollSnapshot(frame);
-    for (const key of gameplayKeys) {
-      await page.keyboard.press(key);
-      await page.waitForTimeout(60);
-    }
-    const parentAfter = await parentScrollSnapshot(page);
-    const frameAfter = await frameScrollSnapshot(frame);
-    assertScrollUnchanged(parentBefore, parentAfter, `${label} parent page`);
-    assertScrollUnchanged(frameBefore, frameAfter, `${label} iframe`);
+    const inputOwnership = await verifyFrameInputOwnership(page, frame, label);
     const screenshot = await captureScreenshot(page, label);
     const frameLayout = await inspectLayout(frame, `${label} iframe`);
-    return { viewport, unlock, screenshot, frameLayout, parentBefore, parentAfter, frameBefore, frameAfter };
+    return { viewport, unlock, screenshot, frameLayout, inputOwnership };
   } finally {
     await context.close();
   }
@@ -318,10 +299,21 @@ async function inspectLayout(page, label) {
       return styles.display !== 'none' && styles.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
     };
     const canvas = document.querySelector('canvas');
+    const actions = document.querySelector('.mochi-hud__actions');
     const panels = panelSelectors
       .map((selector) => document.querySelector(selector))
       .filter((element) => element && visible(element))
       .map(rectFor);
+    const stylesFor = (element) => {
+      if (!element) return null;
+      const styles = window.getComputedStyle(element);
+      return {
+        selector: selectorFor(element),
+        touchAction: styles.touchAction,
+        overscrollBehaviorX: styles.overscrollBehaviorX,
+        overscrollBehaviorY: styles.overscrollBehaviorY
+      };
+    };
     const hudText = Array.from(document.querySelectorAll('#mochi-social-hud button, #mochi-social-hud span, #mochi-social-hud strong, #mochi-social-hud input'))
       .filter((element) => visible(element))
       .map((element) => ({
@@ -362,7 +354,13 @@ async function inspectLayout(page, label) {
       textOverflow: hudText,
       panelOverlaps,
       safeRectObstructions,
-      actionButtonCount: document.querySelectorAll('.mochi-hud__actions button').length
+      actionButtonCount: document.querySelectorAll('.mochi-hud__actions button').length,
+      inputSurface: {
+        rpg: stylesFor(document.querySelector('#rpg')),
+        body: stylesFor(document.body),
+        canvas: stylesFor(canvas),
+        actions: stylesFor(actions)
+      }
     };
 
     function round(value) {
@@ -411,6 +409,7 @@ async function inspectLayout(page, label) {
   if (data.actionButtonCount < 50) {
     failures.push(`${label}: action rail has too few gameplay buttons (${data.actionButtonCount}).`);
   }
+  verifyInputSurfaceStyles(data.inputSurface, label);
   return data;
 }
 
@@ -424,37 +423,91 @@ async function verifyInputScrollGuard(page, label) {
     });
   });
   await page.locator('canvas').first().click({ timeout: timeoutMs });
-  const before = await frameScrollSnapshot(page);
-  for (const key of gameplayKeys) {
-    await page.keyboard.press(key);
-    await page.waitForTimeout(60);
-  }
-  const after = await frameScrollSnapshot(page);
-  assertScrollUnchanged(before, after, label);
-
-  const editable = await verifyEditableInputKeepsText(page, label);
-  return { before, after, editable };
+  const gameplay = await verifyGameplayKeyOwnership(page, page, label);
+  const unhandled = await verifyUnhandledKeyOwnership(page, page, label);
+  const editable = await verifyEditableInputKeepsText(page, page, label);
+  return { gameplay, unhandled, editable };
 }
 
-async function verifyEditableInputKeepsText(page, label) {
-  const input = page.locator('.mochi-hud__chat input').first();
-  const visible = await input.isVisible({ timeout: 1000 }).catch(() => false);
-  if (!visible) return { visible: false, compactMode: true };
-  await input.fill('');
-  await input.focus();
-  await page.keyboard.type('wasd test');
-  await page.keyboard.press('ArrowLeft');
-  await page.keyboard.press('Space');
-  const value = await input.inputValue();
+async function verifyFrameInputOwnership(parentPage, frame, label) {
+  await parentPage.evaluate(() => window.scrollTo(0, 240));
+  await frame.locator('canvas').first().click({ timeout: timeoutMs });
+  const parentBefore = await parentScrollSnapshot(parentPage);
+  const gameplay = await verifyGameplayKeyOwnership(frame, parentPage, `${label} iframe`);
+  const unhandled = await verifyUnhandledKeyOwnership(frame, parentPage, `${label} iframe`);
+  const editable = await verifyEditableInputKeepsText(frame, parentPage, `${label} iframe`);
+  const parentAfter = await parentScrollSnapshot(parentPage);
+  assertScrollUnchanged(parentBefore, parentAfter, `${label} parent page`);
+  return { parentBefore, parentAfter, gameplay, unhandled, editable };
+}
+
+async function verifyGameplayKeyOwnership(auditTarget, keyboardPage, label) {
+  await installKeyAudit(auditTarget);
+  const focus = await focusGameplayCanvas(auditTarget, label);
+  const checks = [];
+  for (const key of gameplayKeys) {
+    const before = await frameScrollSnapshot(auditTarget);
+    const audit = await pressKeyAndReadAudit(auditTarget, keyboardPage, key);
+    const after = await frameScrollSnapshot(auditTarget);
+    assertScrollUnchanged(before, after, `${label} ${key}`);
+    const keydown = firstKeydown(audit);
+    if (!keydown) {
+      failures.push(`${label}: ${key} did not produce a keydown event in the gameplay frame.`);
+    } else {
+      if (keydown.editableTarget) failures.push(`${label}: ${key} targeted an editable element while gameplay canvas was focused.`);
+      if (keydown.cancelable && !keydown.defaultPrevented) failures.push(`${label}: ${key} was not prevented while gameplay canvas was focused.`);
+    }
+    checks.push({ key, before, after, keydown });
+  }
+  return { focus, checks };
+}
+
+async function verifyUnhandledKeyOwnership(auditTarget, keyboardPage, label) {
+  await installKeyAudit(auditTarget);
+  await focusGameplayCanvas(auditTarget, label);
+  const checks = [];
+  for (const key of unhandledKeys) {
+    const audit = await pressKeyAndReadAudit(auditTarget, keyboardPage, key);
+    const keydown = firstKeydown(audit);
+    if (keydown?.defaultPrevented) failures.push(`${label}: unhandled key ${key} was unexpectedly prevented.`);
+    checks.push({ key, keydown });
+  }
+  return { checks };
+}
+
+async function verifyEditableInputKeepsText(auditTarget, keyboardPage, label) {
+  await installKeyAudit(auditTarget);
+  const target = await focusEditableInput(auditTarget);
+  await resetKeyAudit(auditTarget);
+  await keyboardPage.keyboard.type('wasd test');
+  await keyboardPage.keyboard.press('ArrowLeft');
+  await keyboardPage.keyboard.press('Space');
+  await keyboardPage.waitForTimeout(60);
+  const audit = await readKeyAudit(auditTarget);
+  const value = await readEditableInputValue(auditTarget);
   if (!value.includes('wasd')) failures.push(`${label}: chat input did not preserve typed movement letters.`);
   if (!value.includes(' ')) failures.push(`${label}: chat input did not preserve a space while focused.`);
-  return { visible: true, valueLength: value.length, containsMovementLetters: value.includes('wasd'), containsSpace: value.includes(' ') };
+  const prevented = audit.filter((event) => event.type === 'keydown' && event.defaultPrevented);
+  if (prevented.length > 0) {
+    failures.push(`${label}: editable input keydown events were unexpectedly prevented (${prevented.map((event) => event.key || event.code).join(', ')}).`);
+  }
+  return {
+    target,
+    valueLength: value.length,
+    containsMovementLetters: value.includes('wasd'),
+    containsSpace: value.includes(' '),
+    preventedKeyCount: prevented.length,
+    auditedKeyCount: audit.filter((event) => event.type === 'keydown').length
+  };
 }
 
 async function verifyTabFocus(page, label) {
+  await installKeyAudit(page);
   await page.locator('canvas').first().click({ timeout: timeoutMs });
+  await resetKeyAudit(page);
   await page.keyboard.press('Tab');
   await page.waitForTimeout(100);
+  const audit = await readKeyAudit(page);
   const focus = await page.evaluate(() => {
     const element = document.activeElement;
     if (!element) return null;
@@ -479,7 +532,9 @@ async function verifyTabFocus(page, label) {
   if (focus && (focus.outlineStyle === 'none' || Number.parseFloat(focus.outlineWidth) <= 0)) {
     failures.push(`${label}: focused control does not expose a visible outline.`);
   }
-  return focus;
+  const keydown = firstKeydown(audit);
+  if (keydown?.defaultPrevented) failures.push(`${label}: Tab was unexpectedly prevented while moving focus.`);
+  return { focus, tabKeydown: keydown };
 }
 
 async function verifyActionsReachable(page, label) {
@@ -512,6 +567,162 @@ async function verifyActionsReachable(page, label) {
   });
   if (!result.ok) failures.push(`${label}: first and last action buttons are not reachable in the action rail.`);
   return result;
+}
+
+function verifyInputSurfaceStyles(inputSurface, label) {
+  if (!inputSurface?.canvas) {
+    failures.push(`${label}: gameplay canvas input-surface styles were not inspectable.`);
+    return;
+  }
+  if (inputSurface.canvas.touchAction !== 'none') {
+    failures.push(`${label}: gameplay canvas touch-action is ${inputSurface.canvas.touchAction}, expected none.`);
+  }
+  if (inputSurface.rpg && inputSurface.rpg.overscrollBehaviorY !== 'none') {
+    failures.push(`${label}: #rpg overscroll-behavior-y is ${inputSurface.rpg.overscrollBehaviorY}, expected none.`);
+  }
+  if (inputSurface.body && inputSurface.body.overscrollBehaviorY !== 'none') {
+    failures.push(`${label}: body overscroll-behavior-y is ${inputSurface.body.overscrollBehaviorY}, expected none.`);
+  }
+  if (inputSurface.actions && !['contain', 'none'].includes(inputSurface.actions.overscrollBehaviorY)) {
+    failures.push(`${label}: action rail overscroll-behavior-y is ${inputSurface.actions.overscrollBehaviorY}, expected contain or none.`);
+  }
+}
+
+async function installKeyAudit(pageOrFrame) {
+  await pageOrFrame.evaluate(() => {
+    const key = '__mochiResponsiveKeyAudit';
+    const installKey = '__mochiResponsiveKeyAuditInstalled';
+    window[key] = Array.isArray(window[key]) ? window[key] : [];
+    if (window[installKey]) return;
+    window[installKey] = true;
+
+    const selectorFor = (element) => {
+      if (!element) return null;
+      if (element.id) return `#${element.id}`;
+      const dataAction = element.getAttribute('data-alpha-action') || element.getAttribute('data-alpha-local-action');
+      if (dataAction) return `${element.tagName.toLowerCase()}[data-alpha-action="${dataAction}"]`;
+      const className = Array.from(element.classList || []).join('.');
+      return className ? `${element.tagName.toLowerCase()}.${className}` : element.tagName.toLowerCase();
+    };
+    const isEditable = (element) => {
+      if (!element) return false;
+      return Boolean(element.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]'));
+    };
+
+    window.addEventListener('keydown', (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const active = document.activeElement instanceof Element ? document.activeElement : null;
+      window[key].push({
+        type: 'keydown',
+        key: event.key,
+        code: event.code,
+        cancelable: event.cancelable,
+        defaultPrevented: event.defaultPrevented,
+        target: selectorFor(target),
+        targetTag: target?.tagName || null,
+        active: selectorFor(active),
+        activeTag: active?.tagName || null,
+        editableTarget: isEditable(target),
+        editableActive: isEditable(active),
+        at: Date.now()
+      });
+    }, { capture: true });
+  });
+}
+
+async function resetKeyAudit(pageOrFrame) {
+  await pageOrFrame.evaluate(() => {
+    window.__mochiResponsiveKeyAudit = [];
+  });
+}
+
+async function readKeyAudit(pageOrFrame) {
+  return pageOrFrame.evaluate(() => Array.isArray(window.__mochiResponsiveKeyAudit) ? window.__mochiResponsiveKeyAudit.slice() : []);
+}
+
+async function focusGameplayCanvas(pageOrFrame, label) {
+  await pageOrFrame.locator('canvas').first().click({ timeout: timeoutMs });
+  const focus = await pageOrFrame.evaluate(() => {
+    const canvas = document.querySelector('canvas');
+    const active = document.activeElement;
+    const rect = canvas?.getBoundingClientRect();
+    return {
+      activeTag: active?.tagName || null,
+      activeIsCanvas: active === canvas,
+      canvasTabIndex: canvas?.getAttribute('tabindex') || null,
+      canvasAriaLabel: canvas?.getAttribute('aria-label') || null,
+      canvasRect: rect ? {
+        left: Math.round(rect.left * 100) / 100,
+        top: Math.round(rect.top * 100) / 100,
+        width: Math.round(rect.width * 100) / 100,
+        height: Math.round(rect.height * 100) / 100
+      } : null
+    };
+  });
+  if (!focus.activeIsCanvas) failures.push(`${label}: gameplay canvas did not receive focus before key ownership checks.`);
+  return focus;
+}
+
+async function pressKeyAndReadAudit(auditTarget, keyboardPage, key) {
+  await resetKeyAudit(auditTarget);
+  await keyboardPage.keyboard.press(key);
+  await keyboardPage.waitForTimeout(60);
+  return readKeyAudit(auditTarget);
+}
+
+function firstKeydown(audit) {
+  return Array.isArray(audit) ? audit.find((event) => event.type === 'keydown') || null : null;
+}
+
+async function focusEditableInput(pageOrFrame) {
+  return pageOrFrame.evaluate(() => {
+    const visible = (element) => {
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      const styles = window.getComputedStyle(element);
+      return styles.display !== 'none' && styles.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    };
+
+    let input = document.querySelector('.mochi-hud__chat input');
+    let source = 'chat';
+    if (!input || !visible(input)) {
+      input = document.querySelector('[data-responsive-input-sentinel]');
+      if (!input) {
+        input = document.createElement('input');
+        input.type = 'text';
+        input.setAttribute('data-responsive-input-sentinel', 'true');
+        input.setAttribute('aria-hidden', 'true');
+        input.style.position = 'fixed';
+        input.style.left = '0';
+        input.style.top = '0';
+        input.style.width = '1px';
+        input.style.height = '1px';
+        input.style.opacity = '0';
+        input.style.pointerEvents = 'none';
+        input.style.zIndex = '-1';
+        document.body.appendChild(input);
+      }
+      source = 'sentinel';
+    }
+
+    input.value = '';
+    input.focus({ preventScroll: true });
+    return {
+      source,
+      chatVisible: source === 'chat',
+      activeTag: document.activeElement?.tagName || null,
+      focused: document.activeElement === input
+    };
+  });
+}
+
+async function readEditableInputValue(pageOrFrame) {
+  return pageOrFrame.evaluate(() => {
+    const active = document.activeElement;
+    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) return active.value;
+    const input = document.querySelector('.mochi-hud__chat input, [data-responsive-input-sentinel]');
+    return input instanceof HTMLInputElement ? input.value : '';
+  });
 }
 
 async function parentScrollSnapshot(page) {

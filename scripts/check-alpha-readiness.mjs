@@ -2149,7 +2149,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-responsive-gameplay.mjs',
-    includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyEditableInputKeepsText']
+    includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'unhandledKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyGameplayKeyOwnership', 'verifyUnhandledKeyOwnership', 'verifyEditableInputKeepsText', 'verifyInputSurfaceStyles', 'touchAction', 'overscrollBehaviorY', 'preventedKeyCount']
   },
   {
     file: 'scripts/check-enjin-operator-smoke.mjs',
