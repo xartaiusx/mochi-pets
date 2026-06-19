@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
@@ -9,7 +10,7 @@ const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST
 const externalStatusPath = resolve(credsDir, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_STATUS_MD || 'mochi-social-alpha-external-gates-status.md');
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
 const flyRegion = process.env.MOCHI_SOCIAL_FLY_REGION || 'sjc';
 const flyVolume = process.env.MOCHI_SOCIAL_FLY_VOLUME || 'mochi_social_data';
@@ -135,7 +136,7 @@ function readManualPromptSummary() {
       present: false,
       ok: false,
       status: 'missing-report',
-      pendingChecks: ['welcome-npc', 'token-chest', 'care-shrine'],
+      pendingChecks: ['welcome-npc', 'guild-seal-chest', 'care-shrine'],
       message: 'Run npm run alpha:manual-prompt-review to generate the prompt review gate report.'
     };
   }
@@ -161,7 +162,7 @@ function readManualPromptSummary() {
       present: true,
       ok: false,
       status: 'parse-failed',
-      pendingChecks: ['welcome-npc', 'token-chest', 'care-shrine'],
+      pendingChecks: ['welcome-npc', 'guild-seal-chest', 'care-shrine'],
       message: 'Manual prompt review report exists but could not be parsed.'
     };
   }
@@ -357,7 +358,7 @@ Pending prompt checks:
 
 ${manualPromptPending}
 
-Complete this gate only after a local browser review confirms the welcome NPC dialog, token chest prompt/save feedback, and habitat care-loop prompt are rendered coherently. Focus the game canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+Complete this gate only after a local browser review confirms the welcome NPC dialog, guild seal chest prompt/save feedback, and habitat care-loop prompt are rendered coherently. Focus the game canvas, stand adjacent to the object, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
 
 ## Local No-Cost Gate
 
@@ -371,7 +372,7 @@ npm run alpha:local-evidence
 npm run alpha:report-hygiene
 \`\`\`
 
-The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`. The evidence command reads ignored localhost reports and writes no-secret \`reports/alpha-local-evidence.json\` and \`reports/alpha-local-evidence.md\`. The hygiene command scans ignored local reports and the generated no-secret checklist for accidental secret patterns.
+The suite builds once, starts the built game server on localhost with throwaway env, clears live Supabase/Enjin settings from child processes, runs endpoint smoke, local acceptance, load smoke, browser presence, responsive gameplay, visual snapshot, and the private Enjin fail-closed check, then writes \`reports/alpha-local-suite.json\`. The evidence command reads ignored localhost reports and writes no-secret \`reports/alpha-local-evidence.json\` and \`reports/alpha-local-evidence.md\`. The hygiene command scans ignored local reports and the generated no-secret checklist for accidental secret patterns.
 
 ## Fly Gate
 
@@ -459,6 +460,8 @@ npm run smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke # Hosted load smoke requires explicit approval.
 npm run alpha:browser-presence
+npm run alpha:responsive-gameplay
+$env:MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL="https://<vercel-preview-host>"; $env:MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME="true"; npm run alpha:responsive-gameplay # Hosted site smoke requires explicit approval.
 npm run alpha:visual-snapshot
 npm run alpha:external-gates
 \`\`\`
@@ -514,7 +517,7 @@ function buildProviderActionQueue() {
   const queue = [];
   const failures = new Set(externalGateSummary.failures || []);
   const hasExternalFailure = (needle) => [...failures].some((failure) => failure.includes(needle));
-  const branch = gitState.branch || 'codex/mochi-social-alpha-rc';
+  const branch = gitState.branch || 'codex/mochi-social-fullscale-alpha-preview';
   const upstream = gitState.upstream || `origin/${branch}`;
 
   if ((gitState.ahead || 0) > 0 || gitState.dirty.length > 0) {
@@ -523,7 +526,7 @@ function buildProviderActionQueue() {
       provider: 'GitHub',
       title: 'Sync the local game branch and verify PR checks.',
       blocker: `${gitState.ahead || 0} local commit(s) ahead of ${upstream}; remote PR checks cannot prove this HEAD.`,
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
+      approvalText: `Proceed with public-repo sync: push ${root} branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
       noCostFallback: 'Keep the branch local only if intentionally avoiding a sync; github.local-branch-sync remains red until pushed.'
     });
   }
@@ -536,10 +539,28 @@ function buildProviderActionQueue() {
       provider: 'GitHub',
       title: 'Sync the local Mochirii site branch and verify PR checks.',
       blocker: `${siteGitState.ahead || 0} local site commit(s) ahead of ${siteUpstream}; remote PR checks cannot prove this HEAD.`,
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
+      approvalText: `Proceed with public-repo sync: push ${siteRepoPath} branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
       noCostFallback: 'Keep the site branch local only if intentionally avoiding a sync; github.site-local-branch-sync remains red until pushed.'
     });
   }
+
+  queue.push({
+    id: 'fly-verified-milestone-deploy',
+    provider: 'Fly.io',
+    title: 'Deploy the verified Mochi Social game milestone to Fly after approval.',
+    blocker: 'The active goal requests deploys after verified milestones, but Fly deploys mutate hosted resources and can add usage. Local proof, push, and PR/CI verification may proceed first.',
+    approvalText: `I approve deploying the verified Mochi Social game milestone to Fly app ${flyApp} with fly deploy after local checks, push, and PR/CI verification. I understand this may restart hosted resources or add usage.`,
+    noCostFallback: 'Keep the milestone committed, pushed, and locally verified; leave the Fly runtime unchanged until deploy approval is granted.'
+  });
+
+  queue.push({
+    id: 'vercel-verified-milestone-deploy',
+    provider: 'Vercel',
+    title: 'Deploy the verified Mochirii web milestone or preview embed after approval.',
+    blocker: 'The active goal requests live-site deploys after verified milestones, but the Mochirii site is a separate repo and Vercel deploys or preview traffic can add usage.',
+    approvalText: `I approve deploying the verified Mochirii web milestone that embeds ${externalGateSummary.gameUrl || `https://${flyApp}.fly.dev`} to the approved Vercel target after local checks, push, and PR/CI verification. I understand this may trigger builds, hosted traffic, logs, or usage.`,
+    noCostFallback: 'Keep the game/site branches pushed and PR checks verified; leave the Mochirii live/preview deployment unchanged until deploy approval is granted.'
+  });
 
   if (hasExternalFailure('Fly preview secret names')) {
     queue.push({

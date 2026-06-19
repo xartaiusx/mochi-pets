@@ -23,6 +23,8 @@ try {
       MOCHI_SOCIAL_SYNC_APPROVAL: markdownPath,
       MOCHI_SOCIAL_SYNC_APPROVAL_JSON: reportPath,
       MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE: prFixturePath,
+      MOCHI_SOCIAL_GAME_PR_NUMBER: '1',
+      MOCHI_SOCIAL_SITE_PR_NUMBER: '258',
     },
   });
 
@@ -41,6 +43,9 @@ try {
   assert(report.previewEnv?.gameUrl === 'https://mochi-social-game.fly.dev', 'preview game URL fixture was not extracted.');
   assert(markdown.includes('## PR State'), 'markdown packet should include PR State section.');
   assert(markdown.includes('## Local Preview URL File'), 'markdown packet should include local preview URL source section.');
+  assert(markdown.includes('## Verified Milestone Deploy Queue'), 'markdown packet should include verified milestone deploy queue section.');
+  assert(markdown.includes('fly-verified-milestone-deploy'), 'markdown packet should include the Fly verified milestone deploy action.');
+  assert(markdown.includes('vercel-verified-milestone-deploy'), 'markdown packet should include the Vercel verified milestone deploy action.');
   assert(markdown.includes('https://preview.example.test'), 'markdown packet should include sanitized preview URL.');
   assert(markdown.includes('local HEAD does not match PR head'), 'markdown packet should explain PR head drift.');
 
@@ -65,7 +70,10 @@ function writePreviewEnvFixture() {
 function writePrFixture() {
   writeFileSync(prFixturePath, `${JSON.stringify({
     'xartaiusx/mochi-social#1': {
+      number: 1,
       url: 'https://github.com/xartaiusx/mochi-social/pull/1',
+      state: 'OPEN',
+      headRefName: 'codex/mochi-social-alpha-rc',
       headRefOid: '1111111111111111111111111111111111111111',
       mergeStateStatus: 'CLEAN',
       isDraft: true,
@@ -74,8 +82,11 @@ function writePrFixture() {
         { name: `Verify ${fakeToken} Mochi Social`, conclusion: 'SUCCESS', status: 'COMPLETED' },
       ],
     },
-    'Mochirii-Wushu/Mochirii#259': {
-      url: 'https://github.com/Mochirii-Wushu/Mochirii/pull/259',
+    'Mochirii-Wushu/Mochirii#258': {
+      number: 258,
+      url: 'https://github.com/Mochirii-Wushu/Mochirii/pull/258',
+      state: 'OPEN',
+      headRefName: 'codex/mochi-social-alpha-rc',
       headRefOid: '2222222222222222222222222222222222222222',
       mergeStateStatus: 'CLEAN',
       isDraft: true,

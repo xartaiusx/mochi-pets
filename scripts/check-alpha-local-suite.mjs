@@ -13,6 +13,7 @@ const baseUrl = `http://localhost:${port}`;
 const saveDir = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_SUITE_SAVE_DIR || `.local/alpha-suite/${runId}/saves`);
 const serverToken = `local-suite-token-${Date.now().toString(36)}`;
 const timeoutMs = Number(process.env.MOCHI_SOCIAL_LOCAL_SUITE_TIMEOUT_MS || 30000);
+const commandTimeoutMs = Number(process.env.MOCHI_SOCIAL_LOCAL_SUITE_COMMAND_TIMEOUT_MS || 180000);
 const loadPlayers = String(process.env.MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS || process.env.MOCHI_SOCIAL_LOAD_PLAYERS || '10');
 
 const report = {
@@ -67,6 +68,7 @@ async function run() {
     MOCHI_SOCIAL_LOAD_PLAYERS: loadPlayers
   });
   await runCommand('alpha:browser-presence', npmCommand(), ['run', 'alpha:browser-presence'], env);
+  await runCommand('alpha:responsive-gameplay', npmCommand(), ['run', 'alpha:responsive-gameplay'], env);
   await runCommand('alpha:visual-snapshot', npmCommand(), ['run', 'alpha:visual-snapshot'], env);
   await runCommand('alpha:visual-review', npmCommand(), ['run', 'alpha:visual-review'], env);
   await runCommand('alpha:enjin-operator-smoke', npmCommand(), ['run', 'alpha:enjin-operator-smoke'], {
@@ -105,7 +107,8 @@ function localCheckEnv() {
     RPG_SAVE_DIR: saveDir,
     MOCHI_SOCIAL_ALPHA_LEDGER_PATH: resolve(saveDir, 'alpha-ledger.jsonl'),
     SUPABASE_AUTH_REQUIRED: 'false',
-    MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE: 'false'
+    MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE: 'false',
+    MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE: 'false'
   };
 
   delete env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL;
@@ -165,6 +168,21 @@ function exec(command, args, env) {
     });
     let stdout = '';
     let stderr = '';
+    let settled = false;
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      stderr += `\nCommand exceeded ${commandTimeoutMs}ms timeout.`;
+      processHandle.kill();
+    }, commandTimeoutMs);
+
+    const resolveOnce = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolvePromise(result);
+    };
+
     processHandle.stdout?.on('data', (chunk) => {
       stdout += String(chunk);
     });
@@ -172,10 +190,10 @@ function exec(command, args, env) {
       stderr += String(chunk);
     });
     processHandle.on('error', (error) => {
-      resolvePromise({ status: 1, stdout, stderr: `${stderr}\n${error.message}` });
+      resolveOnce({ status: 1, stdout, stderr: `${stderr}\n${error.message}` });
     });
     processHandle.on('close', (status) => {
-      resolvePromise({ status: status ?? 1, stdout, stderr });
+      resolveOnce({ status: timedOut ? 124 : status ?? 1, stdout, stderr });
     });
   });
 }
@@ -211,9 +229,15 @@ async function writeReport() {
 }
 
 function recordServerOutput() {
+  const sanitizedStderr = sanitize(serverStderr);
+  if (/PayloadTooLargeError|request entity too large/i.test(sanitizedStderr)) {
+    report.ok = false;
+    report.error = [report.error, 'Built Express server emitted payload-too-large errors during the local alpha suite.'].filter(Boolean).join(' ');
+    exitCode = 1;
+  }
   report.server = {
     stdout: sanitize(serverStdout),
-    stderr: sanitize(serverStderr),
+    stderr: sanitizedStderr,
     exitCode: child?.exitCode ?? null,
     exitSignal: child?.signalCode ?? null,
     stopped: child ? child.exitCode !== null || child.signalCode !== null : true

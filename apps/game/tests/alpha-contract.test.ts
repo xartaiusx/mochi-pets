@@ -1,21 +1,254 @@
 import { describe, expect, it } from 'vitest';
-import { MOCHI_SPIRITS, growthStageFromBond } from '../src/alpha/content';
-import { ALPHA_ACTION_TYPES, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
+import {
+  GUILD_ASCENSION_TRIALS,
+  GUILD_COMMISSIONS,
+  GUILD_INSIGNIA_CASES,
+  GUILD_SOCIAL_RALLIES,
+  GUILD_WAYFARER_CHRONICLES,
+  GUILD_RANK_TRIALS,
+  MARKET_GUILD_RECEIPTS,
+  MOCHI_DIALOGUE_SCROLLS,
+  MOCHI_QUEST_LEDGERS,
+  MOCHI_STORY_CHAPTERS,
+  MOCHI_SPIRIT_QUESTS,
+  MOCHI_SPIRITS,
+  SPIRIT_AFFINITY_MATRICES,
+  SPIRIT_BATTLE_CHRONICLES,
+  SPIRIT_BATTLE_KITS,
+  SPIRIT_BLOOM_ASCENDANCES,
+  SPIRIT_BLOSSOM_CRADLES,
+  SPIRIT_BOND_GIFT_RITES,
+  SPIRIT_BOND_MILESTONES,
+  SPIRIT_BATTLE_TACTICS,
+  SPIRIT_BATTLE_CONDITIONS,
+  SPIRIT_CARE_CYCLES,
+  SPIRIT_CAPTURE_RITES,
+  SPIRIT_COMPENDIUMS,
+  SPIRIT_CONDITION_WEAVES,
+  SPIRIT_CRAFT_WRITS,
+  SPIRIT_DOJO_LADDERS,
+  SPIRIT_ENCOUNTER_ATLASES,
+  SPIRIT_ENCOUNTER_ROTATIONS,
+  SPIRIT_GROWTH_RITES,
+  SPIRIT_FIELD_ACCORDS,
+  SPIRIT_FIELD_ALMANACS,
+  SPIRIT_HABITAT_BONDS,
+  SPIRIT_HABITAT_CENSUSES,
+  SPIRIT_HARMONY_FORMS,
+  SPIRIT_HARMONY_TRIALS,
+  SPIRIT_KINSHIP_ALBUMS,
+  SPIRIT_LINEAGE_REGISTERS,
+  SPIRIT_MENTOR_CHALLENGES,
+  SPIRIT_NAME_BANNER_RITES,
+  SPIRIT_NURTURE_RITES,
+  SPIRIT_NURSERY_GROVES,
+  SPIRIT_PROVISION_CATALOGS,
+  SPIRIT_PROVISION_SATCHELS,
+  SPIRIT_RECOVERY_TEAS,
+  SPIRIT_REMEDY_POUCHES,
+  SPIRIT_RELIC_ATTUNEMENTS,
+  SPIRIT_RESEARCH_FOLIOS,
+  SPIRIT_RIVAL_CIRCLES,
+  SPIRIT_ROUTE_CHARTERS,
+  SPIRIT_ROUTE_ECOLOGY_SURVEYS,
+  SPIRIT_ROUTE_MASTERIES,
+  SPIRIT_ROUTE_PATROLS,
+  SPIRIT_ROUTE_WAYSTONES,
+  SPIRIT_ROSTER_ARCHIVES,
+  SPIRIT_ROSTER_CABINETS,
+  SPIRIT_SANCTUARY_RITES,
+  SPIRIT_SIFU_COUNCILS,
+  SPIRIT_STARTER_VOWS,
+  SPIRIT_SUMMIT_CIRCUITS,
+  SPIRIT_TEAM_SPAR_MATCHES,
+  SPIRIT_TEMPERAMENT_CONCORDS,
+  SPIRIT_TECHNIQUE_CODEXES,
+  SPIRIT_TECHNIQUE_LOADOUTS,
+  SPIRIT_TOURNAMENT_BRACKETS,
+  SPIRIT_TRAIT_ATTUNEMENTS,
+  SPIRIT_WEATHER_VEILS,
+  TRADE_EXCHANGE_ACCORDS,
+  growthStageFromBond,
+  resolveSpiritAttunement,
+  resolveSpiritCapture,
+  resolveSpiritCaptureRite,
+  resolveSpiritCareCycle,
+  resolveSpiritCompendiumCompletion,
+  resolveSpiritConditionWeave,
+  resolveSpiritCraftWrit,
+  resolveSpiritDojoLadder,
+  resolveSpiritEncounterAtlas,
+  resolveSpiritEncounterRotation,
+  resolveSpiritExpedition,
+  resolveSpiritFieldAccord,
+  resolveSpiritFieldAlmanac,
+  resolveGuildCommission,
+  resolveGuildAscensionTrial,
+  resolveGuildInsigniaCase,
+  resolveGuildSocialRally,
+  resolveGuildWayfarerChronicle,
+  resolveMarketGuildReceipt,
+  resolveMochiDialogueScroll,
+  resolveMochiQuestLedger,
+  resolveMochiStoryChapter,
+  resolveSpiritJournal,
+  resolveSpiritKinshipAlbum,
+  resolveSpiritLineageRegister,
+  resolveSpiritMentorChallenge,
+  resolveSpiritNameBannerRite,
+  resolveSpiritNurtureRite,
+  resolveSpiritNurseryGrove,
+  resolveSpiritParty,
+  resolveSpiritRaisingAction,
+  resolveSpiritBattleKit,
+  resolveSpiritBattleRound,
+  resolveSpiritBlossomCradle,
+  resolveSpiritBloomAscendance,
+  resolveSpiritBondGiftRite,
+  resolveSpiritBondMilestone,
+  resolveSpiritProvisionCatalog,
+  resolveSpiritRouteInvitation,
+  resolveSpiritRouteCharter,
+  resolveSpiritRouteEcologySurvey,
+  resolveSpiritRouteWaystone,
+  resolveSpiritRouteMastery,
+  resolveSpiritRoutePatrol,
+  resolveSpiritWeatherVeil,
+  resolveMochiSpiritQuestProgress,
+  resolveSpiritAffinityMatrix,
+  resolveSpiritAffinityTrial,
+  resolveSpiritBattleChronicle,
+  resolveSpiritBattleTactic,
+  resolveGuildRankTrial,
+  resolveSpiritGrowthRite,
+  resolveSpiritHabitatBond,
+  resolveSpiritHabitatCensus,
+  resolveSpiritHarmonyForm,
+  resolveSpiritHarmonyTrial,
+  resolveSpiritProvisionSatchel,
+  resolveSpiritRecoveryTea,
+  resolveSpiritRemedyPouch,
+  resolveSpiritRelicAttunement,
+  resolveSpiritResearchFolio,
+  resolveSpiritRivalCircle,
+  resolveSpiritRosterArchive,
+  resolveSpiritRosterCabinet,
+  resolveSpiritSanctuaryRite,
+  resolveSpiritSifuCouncil,
+  resolveSpiritStarterVow,
+  resolveSpiritSummitCircuit,
+  resolveSpiritTeamSparMatch,
+  resolveSpiritTemperamentConcord,
+  resolveSpiritTechniqueCodex,
+  resolveSpiritTechniqueLoadout,
+  resolveSpiritTournamentBracket,
+  resolveSpiritTraitAttunement,
+  selectSpiritRaisingNeed,
+  selectMochiSpiritQuest,
+  resolveSpiritSparLadder,
+  resolveSpiritTechniqueMastery,
+  resolveSpiritTrainingBattle,
+  resolveTradeExchangeAccord
+} from '../src/alpha/content';
+import { ALPHA_ACTION_TYPES, ALPHA_EDGE_FUNCTIONS, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
 
 describe('alpha contract', () => {
   it('keeps the closed alpha no-real-value and Canary scoped', () => {
     expect(ALPHA_FEATURES.alpha.noRealValue).toBe(true);
     expect(ALPHA_FEATURES.alpha.allowlistRequired).toBe(true);
     expect(ALPHA_FEATURES.chain.network).toBe('CANARY');
+    expect(ALPHA_FEATURES.chain.finalityRequired).toBe(true);
+    expect(ALPHA_FEATURES.chain.operationUpdates).toBe(true);
+    expect(ALPHA_FEATURES.chain.previewFinalityReviews).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.partyFormation).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.techniqueLoadouts).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.techniqueCodexes).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritTraits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRelicAttunements).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritStarterVows).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routePatrols).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritSanctuaryRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRosterArchives).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRosterCabinets).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCareCycles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritWeatherVeils).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritEncounterRotations).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritHabitatCensuses).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.tradeExchangeAccords).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.routeCharters).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRecoveryTeas).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritKinshipAlbums).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritNurseryGroves).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritBloomAscendances).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritLineageRegisters).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritBlossomCradles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritBondGiftRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritNameBannerRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.remedyPouches).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.questLedgers).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.storyDialogueScrolls).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildInsigniaCases).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildAscensionTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.affinityMatrices).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.bondMilestones).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.dojoLadders).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.sifuCouncils).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.summitCircuits).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleChronicles).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.spiritCaptureRites).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
+    expect(ALPHA_FEATURES.market.guildReceipts).toBe(true);
     expect(ALPHA_FEATURES.market.auctions).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
 
   it('defines exactly three original alpha companion species', () => {
     expect(MOCHI_SPIRITS).toHaveLength(3);
-    expect(MOCHI_SPIRITS.map((spirit) => spirit.id)).toEqual(['momo', 'yuzu', 'sora']);
+    expect(MOCHI_SPIRITS.map((spirit) => spirit.id)).toEqual(['lirabao', 'jintari', 'aozhen']);
     expect(MOCHI_SPIRITS.filter((spirit) => spirit.certificateEligible)).toHaveLength(1);
-    expect(MOCHI_SPIRITS.filter((spirit) => spirit.certificateEligible).map((spirit) => spirit.id)).toEqual(['momo']);
+    expect(MOCHI_SPIRITS.filter((spirit) => spirit.certificateEligible).map((spirit) => spirit.id)).toEqual(['lirabao']);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.attunement.label.length > 4)).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.capture.invitationLabel.length > 4)).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.battle.moves.length >= 2)).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.raisingNeeds.length >= 1)).toBe(true);
+    expect(MOCHI_SPIRITS.every((spirit) => spirit.bondMilestones.length === 3)).toBe(true);
+    expect(new Set(Object.values(SPIRIT_BOND_MILESTONES).map((milestone) => milestone.label)).size).toBe(9);
   });
 
   it('uses stable bond thresholds for visible growth', () => {
@@ -27,12 +260,3944 @@ describe('alpha contract', () => {
   it('documents server-only environment names without service-role keys', () => {
     expect(SERVER_ENV_CONTRACT).toContain('MOCHI_SOCIAL_GAME_SERVER_TOKEN');
     expect(SERVER_ENV_CONTRACT.some((name) => name.includes('SERVICE_ROLE'))).toBe(false);
+    expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-social-alpha-progress');
   });
 
   it('validates alpha action envelopes', () => {
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
-    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'pet.care', payload: {} })).toBe(true);
-    expect(isAlphaActionEnvelope({ requestId: 'short', type: 'pet.care', payload: {} })).toBe(false);
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.starter_vow');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.capture_rite');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_patrol');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.sanctuary_rite');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_archive');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.care_cycle');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
+    expect(ALPHA_ACTION_TYPES).toContain('world.weather_veil');
+    expect(ALPHA_ACTION_TYPES).toContain('world.encounter_rotation');
+    expect(ALPHA_ACTION_TYPES).toContain('world.encounter_atlas');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_census');
+    expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
+    expect(ALPHA_ACTION_TYPES).toContain('world.route_charter');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.recovery_tea');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.kinship_album');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.nursery_grove');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.bloom_ascendance');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.lineage_register');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_cabinet');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.blossom_cradle');
+    expect(ALPHA_ACTION_TYPES).toContain('item.bond_gift');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.name_banner');
+    expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
+    expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
+    expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
+    expect(ALPHA_ACTION_TYPES).toContain('item.remedy_pouch');
+    expect(ALPHA_ACTION_TYPES).toContain('quest.ledger_record');
+    expect(ALPHA_ACTION_TYPES).toContain('story.dialogue_scroll');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
+    expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.insignia_case');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.wayfarer_chronicle');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.ascension_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
+    expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.technique_loadout');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.technique_codex');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.trait_attune');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
+    expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
+    expect(ALPHA_ACTION_TYPES).toContain('party.set');
+    expect(ALPHA_ACTION_TYPES).toContain('party.harmony_form');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.dojo_ladder');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.sifu_council');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.summit_circuit');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.battle_chronicle');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_matrix');
+    expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
+    expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
+    expect(ALPHA_ACTION_TYPES).toContain('quest.accept');
+    expect(ALPHA_ACTION_TYPES).toContain('quest.progress');
+    expect(ALPHA_ACTION_TYPES).toContain('market.fixed_list');
+    expect(ALPHA_ACTION_TYPES).toContain('market.guild_receipt');
+    expect(ALPHA_ACTION_TYPES).toContain('trade.direct_offer');
+    expect(ALPHA_ACTION_TYPES).toContain('trade.exchange_accord');
+    expect(ALPHA_ACTION_TYPES).toContain('chain.withdraw_request');
+    expect(ALPHA_ACTION_TYPES).toContain('chain.deposit_request');
+    expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
+    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'spirit.care', payload: {} })).toBe(true);
+    expect(isAlphaActionEnvelope({ requestId: 'short', type: 'spirit.care', payload: {} })).toBe(false);
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);
+  });
+
+  it('resolves original Mochirii capture, attunement, journal, technique, party, spar, training, raising, and quest content', () => {
+    const capture = resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, []);
+    expect(capture).toMatchObject({
+      ok: true,
+      alreadyRostered: false,
+      spiritId: 'lirabao',
+      bond: 1,
+      growth: 'seed',
+      source: 'spirit-capture'
+    });
+    expect(capture.message).toContain('Lantern Harmony Invitation');
+    expect(resolveSpiritCapture('aozhen', 'lantern-harmony-tea', 1, []).ok).toBe(false);
+    expect(resolveSpiritCapture('lirabao', 'lantern-harmony-tea', 2, ['lirabao']).alreadyRostered).toBe(true);
+    expect(SPIRIT_STARTER_VOWS[0].id).toBe('jade-starter-vow');
+    const starterVow = resolveSpiritStarterVow({
+      selectedSpiritId: 'lirabao',
+      itemIds: ['mochirii-guild-seal'],
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Contract starter vow proof.']
+    });
+    expect(starterVow).toMatchObject({
+      vowed: true,
+      vowId: 'jade-starter-vow',
+      selectedSpiritId: 'lirabao',
+      vowLabel: 'Lanternheart First Vow',
+      score: 20,
+      requiredScore: 18,
+      rewardItemId: 'jade-starter-knot',
+      source: 'spirit-starter-vow'
+    });
+    expect(SPIRIT_CAPTURE_RITES[0].id).toBe('jade-court-capture-rite');
+    const captureRite = resolveSpiritCaptureRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      captureProof: true,
+      routeInviteProof: true,
+      fieldAccordProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Contract capture rite proof.']
+    });
+    expect(captureRite).toMatchObject({
+      recorded: true,
+      riteId: 'jade-court-capture-rite',
+      score: 51,
+      requiredScore: 38,
+      rewardItemId: 'jade-capture-rite-tally',
+      source: 'spirit-capture-rite'
+    });
+
+    const attunement = resolveSpiritAttunement('lirabao', 'mochirii-guild-seal');
+    expect(attunement).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      bond: 1,
+      growth: 'seed',
+      source: 'spirit-attune'
+    });
+    expect(resolveSpiritAttunement('jintari', 'mochirii-guild-seal').ok).toBe(false);
+
+    const journal = resolveSpiritJournal(['lirabao', 'jintari'], 'jintari', { lirabao: 3, jintari: 2 }, { lirabao: 'sprout', jintari: 'seed' });
+    expect(journal).toMatchObject({
+      ok: true,
+      activeSpiritId: 'jintari',
+      discoveredCount: 2,
+      totalCount: 3,
+      source: 'spirit-journal'
+    });
+    expect(journal.records.filter((record) => record.discovered).map((record) => record.spiritId)).toEqual(['lirabao', 'jintari']);
+    expect(journal.records.find((record) => record.spiritId === 'aozhen')?.discovered).toBe(false);
+    expect(journal.message).toContain('Mochirii spirit journal');
+    expect(resolveSpiritJournal([]).ok).toBe(false);
+
+    const expedition = resolveSpiritExpedition('moonbridge-bamboo-trail', ['lirabao'], 'lirabao', 2, []);
+    expect(expedition).toMatchObject({
+      ok: true,
+      routeId: 'moonbridge-bamboo-trail',
+      routeName: 'Moonbridge Bamboo Trail',
+      encounterSpiritId: 'jintari',
+      recommendedItemId: 'jade-thread-charm',
+      rewardItemId: 'moonbridge-field-ribbon',
+      harmonyScore: 2,
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      source: 'world-expedition'
+    });
+    expect(expedition.message).toContain('Jintari signs');
+    expect(resolveSpiritExpedition('moonbridge-bamboo-trail', [], undefined, 2, []).ok).toBe(false);
+    expect(resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao'], 'lirabao', 2, []).ok).toBe(false);
+
+    expect(SPIRIT_FIELD_ACCORDS.map((accord) => accord.id)).toEqual([
+      'moonbridge-goldleaf-accord',
+      'cloudbell-skyvow-accord'
+    ]);
+    const moonbridgeAccord = resolveSpiritFieldAccord({
+      routeId: 'moonbridge-bamboo-trail',
+      roster: ['lirabao'],
+      activeSpiritId: 'lirabao',
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      harmonyScore: 3,
+      bondBySpiritId: { lirabao: 2 },
+      journalDiscoveredCount: 1
+    });
+    expect(moonbridgeAccord).toMatchObject({
+      cleared: true,
+      accordId: 'moonbridge-goldleaf-accord',
+      targetSpiritId: 'jintari',
+      rewardItemId: 'jade-field-accord-talisman',
+      source: 'spirit-field-accord'
+    });
+
+    const routeInvitation = resolveSpiritRouteInvitation(
+      'moonbridge-bamboo-trail',
+      'jade-thread-charm',
+      3,
+      ['lirabao'],
+      ['moonbridge-bamboo-trail'],
+      true
+    );
+    expect(routeInvitation).toMatchObject({
+      ok: true,
+      alreadyRostered: false,
+      routeId: 'moonbridge-bamboo-trail',
+      routeName: 'Moonbridge Bamboo Trail',
+      spiritId: 'jintari',
+      requiredItemId: 'jade-thread-charm',
+      harmonyRequired: 3,
+      harmonyScore: 3,
+      roster: ['lirabao', 'jintari'],
+      bond: 1,
+      growth: 'seed',
+      source: 'spirit-route-invite'
+    });
+    expect(routeInvitation.message).toContain('joins your Mochirii roster by consent');
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 3, ['lirabao'], []).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 3, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'lantern-harmony-tea', 3, ['lirabao'], ['moonbridge-bamboo-trail']).ok).toBe(false);
+    expect(resolveSpiritRouteInvitation('moonbridge-bamboo-trail', 'jade-thread-charm', 2, ['lirabao'], ['moonbridge-bamboo-trail'], true).ok).toBe(false);
+
+    const cloudbell = resolveSpiritExpedition('cloudbell-reed-bank', ['lirabao', 'jintari'], 'jintari', 4, ['moonbridge-bamboo-trail']);
+    expect(cloudbell).toMatchObject({
+      ok: true,
+      routeId: 'cloudbell-reed-bank',
+      routeName: 'Cloudbell Reed Bank',
+      encounterSpiritId: 'aozhen',
+      recommendedItemId: 'lantern-harmony-tea',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      source: 'world-expedition'
+    });
+    const cloudbellInvitation = resolveSpiritRouteInvitation(
+      'cloudbell-reed-bank',
+      'lantern-harmony-tea',
+      4,
+      ['lirabao', 'jintari'],
+      ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      true
+    );
+    expect(cloudbellInvitation).toMatchObject({
+      ok: true,
+      routeId: 'cloudbell-reed-bank',
+      routeName: 'Cloudbell Reed Bank',
+      spiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      source: 'spirit-route-invite'
+    });
+
+    expect(SPIRIT_ROUTE_MASTERIES.map((mastery) => mastery.id)).toEqual(['jade-cloudbell-circuit']);
+    const routeMastery = resolveSpiritRouteMastery({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      guildRankProof: true,
+      rankTrialId: 'jade-court-initiate'
+    });
+    expect(routeMastery).toMatchObject({
+      ok: true,
+      mastered: true,
+      masteryId: 'jade-cloudbell-circuit',
+      title: 'Jade Cloudbell Circuit',
+      score: 21,
+      requiredScore: 21,
+      rewardItemId: 'cloudbell-route-knot',
+      source: 'world-route-mastery'
+    });
+    expect(routeMastery.message).toContain('first-circuit Mochirii routes');
+    expect(resolveSpiritRouteMastery({
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      roster: ['lirabao', 'jintari'],
+      journalDiscoveredCount: 2,
+      completedQuestIds: ['first-lantern-vow'],
+      guildRankProof: false
+    }).mastered).toBe(false);
+
+    expect(SPIRIT_ROUTE_PATROLS.map((patrol) => patrol.id)).toEqual(['jade-cloudbell-patrol']);
+    const routePatrol = resolveSpiritRoutePatrol({
+      routeId: 'cloudbell-reed-bank',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      harmonyFormProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      chatLines: ['Local route patrol proof.']
+    });
+    expect(routePatrol).toMatchObject({
+      ok: true,
+      patrolled: true,
+      patrolId: 'jade-cloudbell-patrol',
+      patrolName: 'Jade Cloudbell Patrol',
+      routeId: 'cloudbell-reed-bank',
+      score: 33,
+      requiredScore: 24,
+      rewardItemId: 'jade-route-patrol-pennant',
+      source: 'world-route-patrol'
+    });
+    expect(resolveSpiritRoutePatrol({
+      routeId: 'cloudbell-reed-bank',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      routeMasteryProof: false,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      chatLines: ['Local route patrol proof.']
+    }).patrolled).toBe(false);
+
+    expect(SPIRIT_HABITAT_BONDS.map((bond) => bond.id)).toEqual(['jade-court-habitat-bond']);
+    const habitatBond = resolveSpiritHabitatBond({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      careProof: true,
+      bond: 3,
+      growth: 'sprout',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy'
+    });
+    expect(habitatBond).toMatchObject({
+      ok: true,
+      bonded: true,
+      bondId: 'jade-court-habitat-bond',
+      bondName: 'Jade Court Habitat Bond',
+      title: 'First Shared Habitat Bond',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      score: 18,
+      requiredScore: 15,
+      rewardItemId: 'jade-court-habitat-tassel',
+      source: 'spirit-habitat-bond'
+    });
+    expect(habitatBond.message).toContain('journal, care, guild, status, and profile proof');
+    expect(resolveSpiritHabitatBond({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      careProof: false,
+      bond: 3,
+      growth: 'sprout',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy'
+    }).bonded).toBe(false);
+
+    expect(SPIRIT_SANCTUARY_RITES.map((rite) => rite.id)).toEqual(['jade-court-sanctuary-rite']);
+    const sanctuary = resolveSpiritSanctuaryRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      habitatBondProof: true,
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true
+    });
+    expect(sanctuary).toMatchObject({
+      ok: true,
+      restored: true,
+      riteId: 'jade-court-sanctuary-rite',
+      riteName: 'Jade Court Sanctuary Rite',
+      title: 'First Care Shrine Restore',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 12,
+      careStreak: 1,
+      trainingXp: 3,
+      score: 33,
+      requiredScore: 24,
+      rewardItemId: 'jade-sanctuary-bell',
+      source: 'spirit-sanctuary-rite'
+    });
+    expect(sanctuary.message).toContain('No real value');
+    expect(resolveSpiritSanctuaryRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      habitatBondProof: false,
+      conditionWeaveProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true
+    }).restored).toBe(false);
+
+    expect(SPIRIT_RESEARCH_FOLIOS.map((folio) => folio.id)).toEqual(['jade-court-research-folio']);
+    const research = resolveSpiritResearchFolio({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      techniqueProof: true,
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 3
+    });
+    expect(research).toMatchObject({
+      ok: true,
+      recorded: true,
+      folioId: 'jade-court-research-folio',
+      folioName: 'Jade Court Research Folio',
+      title: 'First Mochirii Field Guide',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      score: 20,
+      requiredScore: 18,
+      rewardItemId: 'jade-court-research-folio',
+      source: 'spirit-research-folio'
+    });
+    expect(research.message).toContain('roster, routes, journal, habitat, technique, tactic, affinity, and training proof');
+    expect(resolveSpiritResearchFolio({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      habitatBondProof: false,
+      techniqueProof: true,
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 3
+    }).recorded).toBe(false);
+
+    expect(SPIRIT_COMPENDIUMS.map((compendium) => compendium.id)).toEqual(['jade-court-spirit-compendium']);
+    const compendium = resolveSpiritCompendiumCompletion({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      researchProof: true,
+      researchFolioId: 'jade-court-research-folio',
+      routeMasteryProof: true
+    });
+    expect(compendium).toMatchObject({
+      ok: true,
+      completed: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      compendiumName: 'Jade Court Spirit Compendium',
+      title: 'First-Court Spirit Collection Proof',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      score: 29,
+      requiredScore: 25,
+      rewardItemId: 'jade-court-compendium-seal',
+      source: 'spirit-compendium'
+    });
+    expect(compendium.message).toContain('No-real-value collection progress');
+    expect(resolveSpiritCompendiumCompletion({
+      roster: ['lirabao'],
+      discoveredRoutes: [],
+      journalDiscoveredCount: 1,
+      habitatBondProof: false,
+      researchProof: false,
+      routeMasteryProof: false
+    }).completed).toBe(false);
+
+    expect(SPIRIT_ROSTER_ARCHIVES.map((archive) => archive.id)).toEqual(['jade-court-roster-archive']);
+    const rosterArchive = resolveSpiritRosterArchive({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['aozhen', 'lirabao'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(rosterArchive).toMatchObject({
+      ok: true,
+      archived: true,
+      archiveId: 'jade-court-roster-archive',
+      archiveName: 'Jade Court Roster Archive',
+      title: 'First Spirit Roster Archive',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['aozhen', 'lirabao'],
+      reserveSpiritIds: ['jintari'],
+      score: 29,
+      requiredScore: 22,
+      rewardItemId: 'jade-roster-archive-seal',
+      source: 'spirit-roster-archive'
+    });
+    expect(rosterArchive.message).toContain('No real value');
+    expect(resolveSpiritRosterArchive({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['aozhen', 'lirabao'],
+      journalDiscoveredCount: 3,
+      compendiumProof: false,
+      compendiumId: 'jade-court-spirit-compendium',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    }).archived).toBe(false);
+
+    expect(MARKET_GUILD_RECEIPTS.map((receipt) => receipt.id)).toEqual(['jade-court-market-receipt']);
+    const receipt = resolveMarketGuildReceipt({
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Receipt ready.'],
+      noRealValue: true
+    });
+    expect(receipt).toMatchObject({
+      ok: true,
+      purchased: true,
+      receiptId: 'jade-court-market-receipt',
+      receiptName: 'Jade Court Market Receipt',
+      title: 'First Fixed-Price Guild Purchase',
+      habitat: 'Jade Lantern Court',
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      score: 16,
+      requiredScore: 16,
+      rewardItemId: 'jade-market-receipt',
+      source: 'market-guild-receipt'
+    });
+    expect(receipt.message).toContain('No real value');
+    expect(resolveMarketGuildReceipt({
+      itemId: 'jade-thread-charm',
+      quantity: 1,
+      currency: 'guild-seals',
+      price: 5,
+      marketProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Receipt ready.'],
+      noRealValue: false
+    }).purchased).toBe(false);
+
+    expect(SPIRIT_PROVISION_SATCHELS.map((satchel) => satchel.id)).toEqual(['jade-court-provision-satchel']);
+    const satchel = resolveSpiritProvisionSatchel({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      marketProof: true,
+      marketReceiptProof: true,
+      tradeProof: true,
+      routeInviteProof: true,
+      careStreak: 1,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar']
+    });
+    expect(satchel).toMatchObject({
+      ok: true,
+      stocked: true,
+      satchelId: 'jade-court-provision-satchel',
+      satchelName: 'Jade Court Provision Satchel',
+      title: 'First-Court Provision Bag',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      score: 33,
+      requiredScore: 27,
+      rewardItemId: 'jade-court-provision-satchel',
+      source: 'item-provision-satchel'
+    });
+    expect(satchel.message).toContain('No-real-value item preparation');
+    expect(resolveSpiritProvisionSatchel({
+      roster: ['lirabao'],
+      journalDiscoveredCount: 1,
+      marketProof: false,
+      marketReceiptProof: false,
+      tradeProof: false,
+      routeInviteProof: false,
+      careStreak: 0,
+      completedQuestIds: []
+    }).stocked).toBe(false);
+
+    expect(SPIRIT_PROVISION_CATALOGS.map((catalog) => catalog.id)).toEqual(['jade-provision-catalog']);
+    const catalog = resolveSpiritProvisionCatalog({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      careItemIds: ['jade-mooncake-box', 'lantern-harmony-tea'],
+      routeItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      tradeProof: true,
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Catalog ready.']
+    });
+    expect(catalog).toMatchObject({
+      ok: true,
+      cataloged: true,
+      catalogId: 'jade-provision-catalog',
+      catalogName: 'Jade Provision Catalog',
+      title: 'First-Court Item Recipe Catalog',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      careItemIds: ['jade-mooncake-box', 'lantern-harmony-tea'],
+      routeItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      localPresenceCount: 2,
+      score: 53,
+      requiredScore: 50,
+      rewardItemId: 'jade-provision-catalog-seal',
+      source: 'item-provision-catalog'
+    });
+    expect(catalog.message).toContain('No real value');
+    expect(SPIRIT_BATTLE_KITS.map((kit) => kit.id)).toEqual(['jade-battle-kit']);
+    const battleKit = resolveSpiritBattleKit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      provisionCatalogProof: true,
+      provisionCatalogId: 'jade-provision-catalog',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 41,
+      battleRoundOpponentScore: 19,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle kit ready.']
+    });
+    expect(battleKit).toMatchObject({
+      ok: true,
+      prepared: true,
+      kitId: 'jade-battle-kit',
+      kitName: 'Jade Battle Kit',
+      title: 'First-Court Safe Battle Item Kit',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      localPresenceCount: 2,
+      score: 55,
+      requiredScore: 48,
+      rewardItemId: 'jade-battle-kit-tag',
+      source: 'item-battle-kit'
+    });
+    expect(battleKit.message).toContain('No real value');
+    expect(resolveSpiritBattleKit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      provisionCatalogProof: false,
+      provisionCatalogId: 'jade-provision-catalog',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 41,
+      battleRoundOpponentScore: 19,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Battle kit ready.']
+    })).toMatchObject({
+      prepared: false,
+      missing: ['provision-catalog:jade-provision-catalog']
+    });
+    expect(SPIRIT_REMEDY_POUCHES.map((pouch) => pouch.id)).toEqual(['jade-remedy-pouch']);
+    const remedyPouch = resolveSpiritRemedyPouch({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'lirabao',
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleKitProof: true,
+      battleKitId: 'jade-battle-kit',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Remedy pouch ready.']
+    });
+    expect(remedyPouch).toMatchObject({
+      ok: true,
+      prepared: true,
+      pouchId: 'jade-remedy-pouch',
+      pouchName: 'Jade Remedy Pouch',
+      title: 'First-Court Remedy And Status Care Pouch',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'lirabao',
+      activeSpiritName: 'Lirabao',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      localPresenceCount: 2,
+      score: 53,
+      requiredScore: 50,
+      rewardItemId: 'jade-remedy-pouch-tag',
+      source: 'item-remedy-pouch'
+    });
+    expect(remedyPouch.message).toContain('No real value');
+    expect(resolveSpiritRemedyPouch({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'lirabao',
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      itemIds: ['lantern-harmony-tea', 'jade-thread-charm', 'jade-mooncake-box'],
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      battleKitProof: false,
+      battleKitId: 'jade-battle-kit',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Remedy pouch ready.']
+    })).toMatchObject({
+      prepared: false,
+      missing: ['battle-kit:jade-battle-kit']
+    });
+    expect(resolveSpiritProvisionCatalog({
+      roster: ['lirabao'],
+      stockItemIds: ['jade-thread-charm'],
+      careItemIds: ['jade-mooncake-box'],
+      routeItemIds: [],
+      provisionProof: false,
+      marketReceiptProof: false,
+      tradeProof: false,
+      craftWritProof: false,
+      recoveryTeaProof: false,
+      careCycleProof: false,
+      habitatCensusProof: false,
+      localPresenceCount: 1,
+      profileViewed: false,
+      guildBuddyProof: false,
+      statusMood: 'exploring',
+      chatLines: []
+    }).cataloged).toBe(false);
+
+    expect(SPIRIT_CARE_CYCLES.map((cycle) => cycle.id)).toEqual(['jade-court-care-cycle']);
+    const careCycle = resolveSpiritCareCycle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      raisingProof: true,
+      raisingMilestoneLabel: 'Skybell Whisper Spark',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(careCycle).toMatchObject({
+      ok: true,
+      cycled: true,
+      cycleId: 'jade-court-care-cycle',
+      cycleName: 'Jade Court Care Cycle',
+      title: 'First Full-Roster Care Rotation',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 12,
+      careStreak: 1,
+      trainingXp: 3,
+      score: 48,
+      requiredScore: 32,
+      rewardItemId: 'jade-care-cycle-knot',
+      source: 'spirit-care-cycle'
+    });
+    expect(careCycle.message).toContain('No real value');
+    expect(resolveSpiritCareCycle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careStreak: 1,
+      trainingXp: 3,
+      raisingProof: true,
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      provisionProof: false,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      profileViewed: true,
+      guildBuddyProof: true
+    }).cycled).toBe(false);
+
+    expect(SPIRIT_BOND_GIFT_RITES.map((rite) => rite.id)).toEqual(['jade-bond-gift-rite']);
+    const bondGift = resolveSpiritBondGiftRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Gift rite ready.']
+    });
+    expect(bondGift).toMatchObject({
+      ok: true,
+      gifted: true,
+      riteId: 'jade-bond-gift-rite',
+      riteName: 'Jade Bond Gift Rite',
+      title: 'First-Court Care Gift',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      localPresenceCount: 2,
+      score: 38,
+      requiredScore: 36,
+      rewardItemId: 'jade-bond-gift-ribbon',
+      source: 'item-bond-gift'
+    });
+    expect(bondGift.message).toContain('No-real-value care gift proof');
+    expect(resolveSpiritBondGiftRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      giftItemIds: ['jade-mooncake-box', 'lantern-harmony-tea', 'jade-thread-charm'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      marketReceiptProof: false,
+      marketReceiptId: 'jade-court-market-receipt',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Gift rite ready.']
+    }).gifted).toBe(false);
+
+    expect(SPIRIT_NAME_BANNER_RITES.map((rite) => rite.id)).toEqual(['jade-name-banner-rite']);
+    const nameBanner = resolveSpiritNameBannerRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      nameRecords: [
+        { spiritId: 'lirabao', title: 'Lirabao Lanternheart' },
+        { spiritId: 'jintari', title: 'Jintari Goldleaf Step' },
+        { spiritId: 'aozhen', title: 'Aozhen Skybell Veil' }
+      ],
+      journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      rosterCabinetProof: true,
+      rosterCabinetId: 'jade-roster-cabinet',
+      bondGiftProof: true,
+      bondGiftRiteId: 'jade-bond-gift-rite',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Name banner ready.']
+    });
+    expect(nameBanner).toMatchObject({
+      ok: true,
+      named: true,
+      riteId: 'jade-name-banner-rite',
+      riteName: 'Jade Name Banner Rite',
+      title: 'First-Court Spirit Identity Banner',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      nameRecordTitles: ['Lirabao Lanternheart', 'Jintari Goldleaf Step', 'Aozhen Skybell Veil'],
+      journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 49,
+      requiredScore: 46,
+      rewardItemId: 'jade-name-banner-tag',
+      source: 'spirit-name-banner'
+    });
+    expect(nameBanner.message).toContain('No real value');
+    expect(resolveSpiritNameBannerRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      nameRecords: [
+        { spiritId: 'lirabao', title: 'Lirabao Lanternheart' },
+        { spiritId: 'jintari', title: 'Jintari Goldleaf Step' },
+        { spiritId: 'aozhen', title: 'Aozhen Skybell Veil' }
+      ],
+      journalSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      rosterCabinetProof: false,
+      rosterCabinetId: 'jade-roster-cabinet',
+      bondGiftProof: true,
+      bondGiftRiteId: 'jade-bond-gift-rite',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Name banner ready.']
+    }).named).toBe(false);
+
+    expect(SPIRIT_TEMPERAMENT_CONCORDS.map((concord) => concord.id)).toEqual(['jade-temperament-concord']);
+    const temperament = resolveSpiritTemperamentConcord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Temperament concord ready.']
+    });
+    expect(temperament).toMatchObject({
+      ok: true,
+      concorded: true,
+      concordId: 'jade-temperament-concord',
+      concordName: 'Jade Temperament Concord',
+      title: 'First Temperament Identity Concord',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      temperamentLabels: ['gentle', 'bright', 'curious'],
+      totalBond: 12,
+      score: 41,
+      requiredScore: 36,
+      rewardItemId: 'jade-temperament-charm',
+      source: 'spirit-temperament-concord'
+    });
+    expect(temperament.message).toContain('No real value');
+    expect(resolveSpiritTemperamentConcord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 4, aozhen: 3 },
+      careCycleProof: false,
+      careCycleId: 'jade-court-care-cycle',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Temperament concord ready.']
+    }).concorded).toBe(false);
+
+    expect(SPIRIT_FIELD_ALMANACS.map((almanac) => almanac.id)).toEqual(['jade-field-almanac']);
+    const almanac = resolveSpiritFieldAlmanac({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Field almanac ready.']
+    });
+    expect(almanac).toMatchObject({
+      ok: true,
+      recorded: true,
+      almanacId: 'jade-field-almanac',
+      almanacName: 'Jade Field Almanac',
+      title: 'First-Court Field Almanac',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      speciesIds: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      score: 44,
+      requiredScore: 38,
+      rewardItemId: 'jade-field-almanac-clasp',
+      source: 'spirit-field-almanac'
+    });
+    expect(almanac.message).toContain('No real value');
+    expect(resolveSpiritFieldAlmanac({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      journalDiscoveredCount: 3,
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Field almanac ready.']
+    }).recorded).toBe(false);
+
+    expect(SPIRIT_ROUTE_ECOLOGY_SURVEYS.map((survey) => survey.id)).toEqual(['jade-route-ecology-survey']);
+    const routeEcology = resolveSpiritRouteEcologySurvey({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Route ecology ready.']
+    });
+    expect(routeEcology).toMatchObject({
+      ok: true,
+      surveyed: true,
+      surveyId: 'jade-route-ecology-survey',
+      surveyName: 'Jade Route Ecology Survey',
+      title: 'First-Court Encounter Ecology Survey',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      speciesIds: ['lirabao', 'jintari', 'aozhen'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      score: 45,
+      requiredScore: 42,
+      rewardItemId: 'jade-route-ecology-map',
+      source: 'spirit-route-ecology'
+    });
+    expect(routeEcology.message).toContain('No real value');
+    expect(resolveSpiritRouteEcologySurvey({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      fieldAlmanacProof: false,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Route ecology ready.']
+    }).surveyed).toBe(false);
+
+    expect(SPIRIT_WEATHER_VEILS.map((veil) => veil.id)).toEqual(['jade-weather-veil']);
+    const weatherVeil = resolveSpiritWeatherVeil({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Weather veil ready.']
+    });
+    expect(weatherVeil).toMatchObject({
+      ok: true,
+      recorded: true,
+      weatherVeilId: 'jade-weather-veil',
+      weatherVeilName: 'Jade Weather Veil',
+      title: 'First-Court Route Condition Chart',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      weatherConditionIds: ['moonlit-mist', 'goldleaf-rain', 'skybell-crosswind'],
+      score: 43,
+      requiredScore: 36,
+      rewardItemId: 'jade-weather-veil-chart',
+      source: 'spirit-weather-veil'
+    });
+    expect(weatherVeil.message).toContain('No real value');
+
+    expect(SPIRIT_ENCOUNTER_ROTATIONS.map((rotation) => rotation.id)).toEqual(['jade-encounter-rotation']);
+    const encounterRotation = resolveSpiritEncounterRotation({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounterSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      fieldAccordProof: true,
+      fieldAccordId: 'cloudbell-skyvow-accord',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter rotation ready.']
+    });
+    expect(encounterRotation).toMatchObject({
+      ok: true,
+      recorded: true,
+      rotationId: 'jade-encounter-rotation',
+      rotationName: 'Jade Encounter Rotation',
+      title: 'First-Court Encounter Window Plan',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounterSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      lureItemIds: ['lantern-harmony-tea', 'jade-thread-charm'],
+      weatherVeilId: 'jade-weather-veil',
+      score: 53,
+      requiredScore: 45,
+      rewardItemId: 'jade-encounter-rotation-scroll',
+      source: 'spirit-encounter-rotation'
+    });
+    expect(encounterRotation.message).toContain('No real value');
+
+    expect(SPIRIT_ENCOUNTER_ATLASES.map((atlas) => atlas.id)).toEqual(['jade-encounter-atlas']);
+    const encounterAtlas = resolveSpiritEncounterAtlas({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounteredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      rarityTiers: ['common', 'uncommon', 'rare'],
+      journalDiscoveredCount: 3,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      encounterRotationProof: true,
+      encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter atlas ready.']
+    });
+    expect(encounterAtlas).toMatchObject({
+      ok: true,
+      recorded: true,
+      atlasId: 'jade-encounter-atlas',
+      atlasName: 'Jade Encounter Atlas',
+      title: 'First-Court Encounter Index',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      encounteredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      capturedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      rarityTiers: ['common', 'uncommon', 'rare'],
+      encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilId: 'jade-weather-veil',
+      score: 64,
+      requiredScore: 53,
+      rewardItemId: 'jade-encounter-atlas',
+      source: 'spirit-encounter-atlas'
+    });
+    expect(encounterAtlas.message).toContain('No real value');
+    expect(resolveSpiritEncounterAtlas({
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      encounteredSpiritIds: ['lirabao'],
+      capturedSpiritIds: ['lirabao'],
+      rarityTiers: ['common'],
+      journalDiscoveredCount: 1,
+      routeEcologyProof: false,
+      routeEcologyId: 'jade-route-ecology-survey',
+      captureRiteProof: false,
+      captureRiteId: 'jade-court-capture-rite',
+      fieldAlmanacProof: false,
+      fieldAlmanacId: 'jade-field-almanac',
+      encounterRotationProof: false,
+      encounterRotationId: 'jade-encounter-rotation',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Encounter atlas blocked.']
+    }).recorded).toBe(false);
+
+    expect(SPIRIT_HABITAT_CENSUSES.map((census) => census.id)).toEqual(['jade-habitat-census']);
+    const blockedHabitatCensus = resolveSpiritHabitatCensus({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail'],
+      observedSpiritIds: ['lirabao', 'jintari'],
+      careLoggedSpiritIds: ['lirabao'],
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: false,
+      weatherVeilId: 'jade-weather-veil',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      careCycleProof: false,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Habitat census blocked.']
+    });
+    expect(blockedHabitatCensus).toMatchObject({
+      recorded: false,
+      censusId: 'jade-habitat-census',
+      missing: expect.arrayContaining([
+        'observation:aozhen',
+        'care-log:jintari',
+        'care-log:aozhen',
+        'route:cloudbell-reed-bank',
+        'weather-veil:jade-weather-veil',
+        'care-cycle:jade-court-care-cycle',
+        'presence:1/2'
+      ])
+    });
+
+    const habitatCensus = resolveSpiritHabitatCensus({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      observedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careLoggedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Habitat census ready.']
+    });
+    expect(habitatCensus).toMatchObject({
+      ok: true,
+      recorded: true,
+      censusId: 'jade-habitat-census',
+      censusName: 'Jade Habitat Census',
+      title: 'First-Court Habitat Census',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      observedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careLoggedSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 57,
+      requiredScore: 49,
+      rewardItemId: 'jade-habitat-census-seal',
+      source: 'spirit-habitat-census'
+    });
+    expect(habitatCensus.message).toContain('No real value');
+
+    expect(SPIRIT_CRAFT_WRITS.map((writ) => writ.id)).toEqual(['jade-court-craft-writ']);
+    const craftWrit = resolveSpiritCraftWrit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'jintari',
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      marketProof: true,
+      tradeProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Craft writ ready.']
+    });
+    expect(craftWrit).toMatchObject({
+      ok: true,
+      crafted: true,
+      writId: 'jade-court-craft-writ',
+      writName: 'Jade Court Craft Writ',
+      title: 'First-Court Craft Ledger',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'jintari',
+      activeSpiritName: 'Jintari',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      score: 47,
+      requiredScore: 44,
+      rewardItemId: 'jade-court-craft-writ',
+      source: 'spirit-craft-writ'
+    });
+    expect(craftWrit.message).toContain('No real value');
+    expect(resolveSpiritCraftWrit({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      recipeIds: ['lantern-tea-threading', 'moonbridge-provision-wrap'],
+      stockItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      routeEcologyProof: false,
+      routeEcologyId: 'jade-route-ecology-survey',
+      fieldAlmanacProof: true,
+      fieldAlmanacId: 'jade-field-almanac',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      marketProof: true,
+      tradeProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Craft writ ready.']
+    }).crafted).toBe(false);
+
+    expect(TRADE_EXCHANGE_ACCORDS.map((accord) => accord.id)).toEqual(['jade-exchange-accord']);
+    const exchangeAccord = resolveTradeExchangeAccord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      listedItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      offeredItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      marketProof: true,
+      tradeProof: true,
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Exchange accord ready.']
+    });
+    expect(exchangeAccord).toMatchObject({
+      ok: true,
+      exchanged: true,
+      accordId: 'jade-exchange-accord',
+      accordName: 'Jade Exchange Accord',
+      title: 'First-Court Guild Exchange',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      localPresenceCount: 2,
+      score: 42,
+      requiredScore: 34,
+      rewardItemId: 'jade-exchange-accord-tally',
+      source: 'trade-exchange-accord'
+    });
+    expect(exchangeAccord.message).toContain('No real value');
+    const missingExchangeAccord = resolveTradeExchangeAccord({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      listedItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      offeredItemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-mooncake-box'],
+      marketProof: true,
+      tradeProof: false,
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Exchange accord ready.']
+    });
+    expect(missingExchangeAccord.exchanged).toBe(false);
+    expect(missingExchangeAccord.missing).toContain('direct-trade');
+
+    expect(SPIRIT_ROUTE_WAYSTONES.map((waystone) => waystone.id)).toEqual(['jade-cloudbell-waystone']);
+    const routeWaystone = resolveSpiritRouteWaystone({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Waystone ready.']
+    });
+    expect(routeWaystone).toMatchObject({
+      ok: true,
+      activated: true,
+      waystoneId: 'jade-cloudbell-waystone',
+      waystoneName: 'Jade Cloudbell Waystone',
+      title: 'First Route Travel Seal',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      score: 31,
+      requiredScore: 30,
+      rewardItemId: 'jade-waystone-travel-seal',
+      source: 'world-route-waystone'
+    });
+    expect(routeWaystone.message).toContain('No real value');
+    expect(resolveSpiritRouteWaystone({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      routeInvitedSpiritIds: ['jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      craftWritProof: false,
+      craftWritId: 'jade-court-craft-writ',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Waystone ready.']
+    }).activated).toBe(false);
+
+    expect(SPIRIT_ROUTE_CHARTERS.map((charter) => charter.id)).toEqual(['jade-route-charter']);
+    const routeCharter = resolveSpiritRouteCharter({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Charter ready.']
+    });
+    expect(routeCharter).toMatchObject({
+      ok: true,
+      charted: true,
+      charterId: 'jade-route-charter',
+      charterName: 'Jade Route Charter',
+      title: 'First-Court Travel Readiness',
+      habitat: 'Jade Lantern Court',
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 55,
+      requiredScore: 40,
+      rewardItemId: 'jade-route-charter-slip',
+      source: 'world-route-charter'
+    });
+    expect(routeCharter.proofIds).toContain('jade-cloudbell-waystone');
+    expect(routeCharter.message).toContain('No real value');
+    expect(resolveSpiritRouteCharter({
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      routeWaystoneProof: false,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      weatherVeilProof: true,
+      weatherVeilId: 'jade-weather-veil',
+      encounterAtlasProof: true,
+      encounterAtlasId: 'jade-encounter-atlas',
+      habitatCensusProof: true,
+      habitatCensusId: 'jade-habitat-census',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Charter ready.']
+    }).charted).toBe(false);
+
+    expect(SPIRIT_NURTURE_RITES.map((rite) => rite.id)).toEqual(['jade-moonwell-nurture-rite']);
+    const nurtureRite = resolveSpiritNurtureRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      bond: 5,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first nurture rite.']
+    });
+    expect(nurtureRite).toMatchObject({
+      ok: true,
+      nurtured: true,
+      riteId: 'jade-moonwell-nurture-rite',
+      riteName: 'Jade Moonwell Nurture Rite',
+      title: 'First-Court Raising Seal',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 43,
+      requiredScore: 40,
+      rewardItemId: 'jade-moonwell-nurture-ribbon',
+      source: 'spirit-nurture-rite'
+    });
+    expect(nurtureRite.message).toContain('No real value');
+
+    expect(SPIRIT_RECOVERY_TEAS.map((entry) => entry.id)).toEqual(['jade-teahouse-recovery']);
+    const recoveryTea = resolveSpiritRecoveryTea({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'lirabao',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: true,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for recovery tea.']
+    });
+    expect(recoveryTea).toMatchObject({
+      ok: true,
+      recovered: true,
+      teaId: 'jade-teahouse-recovery',
+      teaName: 'Jade Teahouse Recovery',
+      title: 'First-Court Party Recovery Table',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'lirabao',
+      activeSpiritName: 'Lirabao',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 43,
+      requiredScore: 36,
+      rewardItemId: 'jade-teahouse-recovery-cup',
+      source: 'spirit-recovery-tea'
+    });
+    expect(recoveryTea.message).toContain('No real value');
+    expect(resolveSpiritRecoveryTea({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      sanctuaryRiteProof: false,
+      sanctuaryRiteId: 'jade-court-sanctuary-rite',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for recovery tea.']
+    }).recovered).toBe(false);
+
+    expect(SPIRIT_KINSHIP_ALBUMS.map((entry) => entry.id)).toEqual(['jade-kinship-album']);
+    const kinshipAlbum = resolveSpiritKinshipAlbum({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Kinship album ready.']
+    });
+    expect(kinshipAlbum).toMatchObject({
+      ok: true,
+      recorded: true,
+      albumId: 'jade-kinship-album',
+      albumName: 'Jade Kinship Album',
+      title: 'First-Court Bond Album',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 15,
+      score: 53,
+      requiredScore: 38,
+      rewardItemId: 'jade-kinship-album',
+      source: 'spirit-kinship-album'
+    });
+    expect(kinshipAlbum.message).toContain('No real value');
+    const missingKinshipAlbum = resolveSpiritKinshipAlbum({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 1,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: false,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      habitatBondProof: true,
+      habitatBondId: 'jade-court-habitat-bond',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Kinship album ready.']
+    });
+    expect(missingKinshipAlbum.recorded).toBe(false);
+    expect(missingKinshipAlbum.missing).toContain('presence:1/2');
+    expect(missingKinshipAlbum.missing).toContain('nurture:jade-moonwell-nurture-rite');
+
+    expect(SPIRIT_NURSERY_GROVES.map((entry) => entry.id)).toEqual(['jade-nursery-grove']);
+    const nurseryGrove = resolveSpiritNurseryGrove({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for nursery grove.']
+    });
+    expect(nurseryGrove).toMatchObject({
+      ok: true,
+      cultivated: true,
+      nurseryId: 'jade-nursery-grove',
+      nurseryName: 'Jade Nursery Grove',
+      title: 'First-Court Companion Nursery',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 15,
+      localPresenceCount: 2,
+      score: 61,
+      requiredScore: 52,
+      rewardItemId: 'jade-nursery-sprout',
+      source: 'spirit-nursery-grove'
+    });
+    expect(nurseryGrove.message).toContain('No real value');
+    expect(SPIRIT_BLOOM_ASCENDANCES.map((entry) => entry.id)).toEqual(['jade-bloom-ascendance']);
+    const bloomAscendance = resolveSpiritBloomAscendance({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for bloom ascendance.']
+    });
+    expect(bloomAscendance).toMatchObject({
+      ok: true,
+      ascended: true,
+      ascendanceId: 'jade-bloom-ascendance',
+      ascendanceName: 'Jade Bloom Ascendance',
+      title: 'First-Court Form Ascendance',
+      formTitle: 'Jade Bloom Form',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 15,
+      localPresenceCount: 2,
+      score: 75,
+      requiredScore: 58,
+      rewardItemId: 'jade-bloom-ascendance-sigil',
+      source: 'spirit-bloom-ascendance'
+    });
+    expect(bloomAscendance.message).toContain('No real value');
+
+    expect(SPIRIT_LINEAGE_REGISTERS.map((entry) => entry.id)).toEqual(['jade-lineage-register']);
+    const lineageRegister = resolveSpiritLineageRegister({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      bloomAscendanceProof: true,
+      bloomAscendanceId: 'jade-bloom-ascendance',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for lineage register.']
+    });
+    expect(lineageRegister).toMatchObject({
+      ok: true,
+      registered: true,
+      registerId: 'jade-lineage-register',
+      registerName: 'Jade Lineage Register',
+      title: 'First-Court Lineage Record',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      totalBond: 15,
+      localPresenceCount: 2,
+      score: 75,
+      requiredScore: 60,
+      rewardItemId: 'jade-lineage-register-seal',
+      source: 'spirit-lineage-register'
+    });
+    expect(lineageRegister.milestoneLabels).toContain('Moonwell Bloom Form');
+    expect(lineageRegister.message).toContain('No real value');
+
+    expect(SPIRIT_ROSTER_CABINETS.map((entry) => entry.id)).toEqual(['jade-roster-cabinet']);
+    const rosterCabinet = resolveSpiritRosterCabinet({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      storageSlotLabels: ['1-lirabao-guild-slot', '2-jintari-guild-slot', '3-aozhen-guild-slot'],
+      activeSpiritId: 'aozhen',
+      rosterArchiveProof: true,
+      rosterArchiveId: 'jade-court-roster-archive',
+      compendiumProof: true,
+      compendiumId: 'jade-court-spirit-compendium',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      lineageRegisterProof: true,
+      lineageRegisterId: 'jade-lineage-register',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for roster cabinet.']
+    });
+    expect(rosterCabinet).toMatchObject({
+      ok: true,
+      organized: true,
+      cabinetId: 'jade-roster-cabinet',
+      cabinetName: 'Jade Roster Cabinet',
+      title: 'First-Court Spirit Cabinet',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      reserveSpiritIds: [],
+      storageSlotLabels: ['1-lirabao-guild-slot', '2-jintari-guild-slot', '3-aozhen-guild-slot'],
+      localPresenceCount: 2,
+      score: 36,
+      requiredScore: 30,
+      rewardItemId: 'jade-roster-cabinet-tag',
+      source: 'spirit-roster-cabinet'
+    });
+    expect(rosterCabinet.message).toContain('No real value');
+
+    expect(SPIRIT_BLOSSOM_CRADLES.map((entry) => entry.id)).toEqual(['jade-blossom-cradle']);
+    const blossomCradle = resolveSpiritBlossomCradle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      raisingMilestoneLabels: ['Lantern Spark', 'Goldleaf Step', 'Moonwell Bloom Form'],
+      activeSpiritId: 'lirabao',
+      totalBond: 15,
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      bloomAscendanceProof: true,
+      bloomAscendanceId: 'jade-bloom-ascendance',
+      lineageRegisterProof: true,
+      lineageRegisterId: 'jade-lineage-register',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for blossom cradle.']
+    });
+    expect(blossomCradle).toMatchObject({
+      ok: true,
+      cradled: true,
+      cradleId: 'jade-blossom-cradle',
+      cradleName: 'Jade Blossom Cradle',
+      title: 'First-Court Nursery Continuity',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'lirabao',
+      activeSpiritName: 'Lirabao',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      raisingMilestoneLabels: ['Lantern Spark', 'Goldleaf Step', 'Moonwell Bloom Form'],
+      totalBond: 15,
+      localPresenceCount: 2,
+      score: 66,
+      requiredScore: 48,
+      rewardItemId: 'jade-blossom-cradle-ribbon',
+      source: 'spirit-blossom-cradle'
+    });
+    expect(blossomCradle.message).toContain('No real value');
+
+    expect(resolveSpiritNurseryGrove({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      recoveryTeaProof: true,
+      recoveryTeaId: 'jade-teahouse-recovery',
+      kinshipAlbumProof: false,
+      kinshipAlbumId: 'jade-kinship-album',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for nursery grove.']
+    }).cultivated).toBe(false);
+    const missingBloomAscendance = resolveSpiritBloomAscendance({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      nurseryGroveProof: false,
+      nurseryGroveId: 'jade-nursery-grove',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for bloom ascendance.']
+    });
+    expect(missingBloomAscendance.ascended).toBe(false);
+    expect(missingBloomAscendance.missing).toContain('nursery:jade-nursery-grove');
+    const missingLineageRegister = resolveSpiritLineageRegister({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      bondBySpiritId: { lirabao: 5, jintari: 5, aozhen: 5 },
+      localPresenceCount: 2,
+      kinshipAlbumProof: true,
+      kinshipAlbumId: 'jade-kinship-album',
+      nurseryGroveProof: true,
+      nurseryGroveId: 'jade-nursery-grove',
+      bloomAscendanceProof: false,
+      bloomAscendanceId: 'jade-bloom-ascendance',
+      captureRiteProof: true,
+      captureRiteId: 'jade-court-capture-rite',
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Moonwell Bloom Form',
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for lineage register.']
+    });
+    expect(missingLineageRegister.registered).toBe(false);
+    expect(missingLineageRegister.missing).toContain('bloom:jade-bloom-ascendance');
+    expect(resolveSpiritNurtureRite({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      caredSpiritIds: ['lirabao', 'jintari', 'aozhen'],
+      careCycleProof: true,
+      careCycleId: 'jade-court-care-cycle',
+      growthRiteProof: false,
+      growthRiteId: 'moonwell-bloom-rite',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      temperamentConcordProof: true,
+      temperamentConcordId: 'jade-temperament-concord',
+      raisingProof: true,
+      raisingMilestoneLabel: 'Lacquer Luck Glow',
+      bond: 5,
+      trainingXp: 3,
+      sparLadderXp: 5,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first nurture rite.']
+    }).nurtured).toBe(false);
+
+    expect(GUILD_COMMISSIONS.map((commission) => commission.id)).toEqual(['jade-court-commission-ledger']);
+    const commission = resolveGuildCommission({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      journalDiscoveredCount: 3,
+      questChainProof: true,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      marketProof: true,
+      tradeProof: true,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first social commission.']
+    });
+    expect(commission).toMatchObject({
+      ok: true,
+      completed: true,
+      commissionId: 'jade-court-commission-ledger',
+      commissionName: 'Jade Court Commission Ledger',
+      title: 'First Social Commission Ledger',
+      habitat: 'Jade Lantern Court',
+      activeSpiritId: 'aozhen',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      score: 32,
+      requiredScore: 24,
+      rewardItemId: 'jade-court-commission-knot',
+      source: 'guild-commission-ledger'
+    });
+    expect(commission.message).toContain('No-real-value guild reputation');
+    expect(resolveGuildCommission({
+      roster: ['lirabao'],
+      journalDiscoveredCount: 1,
+      questChainProof: false,
+      completedQuestIds: [],
+      provisionProof: false,
+      marketProof: false,
+      tradeProof: false,
+      trainingXp: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).completed).toBe(false);
+
+    expect(GUILD_SOCIAL_RALLIES.map((rally) => rally.id)).toEqual(['jade-courtyard-rally']);
+    const socialRally = resolveGuildSocialRally({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first guild rally.'],
+      emoteProof: true,
+      commissionProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true
+    });
+    expect(socialRally).toMatchObject({
+      ok: true,
+      rallied: true,
+      rallyId: 'jade-courtyard-rally',
+      rallyName: 'Jade Courtyard Rally',
+      title: 'First Two-Tester Guild Rally',
+      habitat: 'Jade Lantern Court',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 30,
+      requiredScore: 22,
+      rewardItemId: 'jade-courtyard-rally-knot',
+      source: 'guild-social-rally'
+    });
+    expect(socialRally.message).toContain('no-injury party proof');
+    const missingRally = resolveGuildSocialRally({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first guild rally.'],
+      emoteProof: true,
+      commissionProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true
+    });
+    expect(missingRally.rallied).toBe(false);
+    expect(missingRally.missing).toContain('presence:1/2');
+
+    expect(MOCHI_QUEST_LEDGERS.map((ledger) => ledger.id)).toEqual(['jade-quest-ledger']);
+    const questLedger = resolveMochiQuestLedger({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      questChainProof: true,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first quest ledger.']
+    });
+    expect(questLedger).toMatchObject({
+      ok: true,
+      recorded: true,
+      ledgerId: 'jade-quest-ledger',
+      ledgerName: 'Jade Quest Ledger',
+      title: 'First-Court Quest Ledger',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      localPresenceCount: 2,
+      score: 49,
+      requiredScore: 40,
+      rewardItemId: 'jade-quest-ledger-seal',
+      source: 'quest-ledger'
+    });
+    expect(questLedger.message).toContain('No real value');
+    const missingQuestLedger = resolveMochiQuestLedger({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      acceptedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      questChainProof: true,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      marketReceiptProof: true,
+      marketReceiptId: 'jade-court-market-receipt',
+      provisionProof: true,
+      provisionSatchelId: 'jade-court-provision-satchel',
+      commissionProof: false,
+      commissionId: 'jade-court-commission-ledger',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first quest ledger.']
+    });
+    expect(missingQuestLedger.recorded).toBe(false);
+    expect(missingQuestLedger.missing).toContain('commission:jade-court-commission-ledger');
+
+    expect(MOCHI_DIALOGUE_SCROLLS.map((scroll) => scroll.id)).toEqual(['jade-dialogue-scroll']);
+    const dialogueScroll = resolveMochiDialogueScroll({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      recordedBeatIds: ['sifu-narao-lantern-name', 'warden-meilin-goldleaf-step', 'keeper-haoran-skybell-vow'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
+      nameBannerProof: true,
+      nameBannerRiteId: 'jade-name-banner-rite',
+      compendiumProof: true,
+      rosterArchiveProof: true,
+      rosterCabinetProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first dialogue scroll.']
+    });
+    expect(dialogueScroll).toMatchObject({
+      ok: true,
+      recorded: true,
+      scrollId: 'jade-dialogue-scroll',
+      scrollName: 'Jade Dialogue Scroll',
+      title: 'First-Court Original Dialogue Scroll',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      dialogueBeatIds: ['sifu-narao-lantern-name', 'warden-meilin-goldleaf-step', 'keeper-haoran-skybell-vow'],
+      dialogueSpeakers: ['Sifu Narao', 'Warden Meilin', 'Keeper Haoran'],
+      localPresenceCount: 2,
+      score: 44,
+      requiredScore: 40,
+      rewardItemId: 'jade-dialogue-scroll-seal',
+      source: 'story-dialogue-scroll'
+    });
+    expect(dialogueScroll.message).toContain('No real value');
+    const missingDialogueScroll = resolveMochiDialogueScroll({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      recordedBeatIds: ['sifu-narao-lantern-name'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 1,
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
+      nameBannerProof: false,
+      nameBannerRiteId: 'jade-name-banner-rite',
+      compendiumProof: true,
+      rosterArchiveProof: true,
+      rosterCabinetProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first dialogue scroll.']
+    });
+    expect(missingDialogueScroll.recorded).toBe(false);
+    expect(missingDialogueScroll.missing).toContain('beat:warden-meilin-goldleaf-step');
+    expect(missingDialogueScroll.missing).toContain('beat:keeper-haoran-skybell-vow');
+    expect(missingDialogueScroll.missing).toContain('presence:1/2');
+    expect(missingDialogueScroll.missing).toContain('name-banner:jade-name-banner-rite');
+
+    expect(MOCHI_STORY_CHAPTERS.map((chapter) => chapter.id)).toEqual(['jade-scroll-story-chapter']);
+    const storyChapter = resolveMochiStoryChapter({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 2,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
+      dialogueScrollProof: true,
+      dialogueScrollId: 'jade-dialogue-scroll',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      rallyProof: true,
+      rallyId: 'jade-courtyard-rally',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first story chapter.']
+    });
+    expect(storyChapter).toMatchObject({
+      ok: true,
+      recorded: true,
+      chapterId: 'jade-scroll-story-chapter',
+      chapterName: 'Jade Scroll Story Chapter',
+      title: 'First-Court Roleplay Chapter',
+      narratorName: 'Sifu Narao',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      routeIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      localPresenceCount: 2,
+      score: 62,
+      requiredScore: 42,
+      rewardItemId: 'jade-scroll-story-chapter',
+      source: 'story-chapter'
+    });
+    expect(storyChapter.message).toContain('No real value');
+    const missingStoryChapter = resolveMochiStoryChapter({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      discoveredRoutes: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+      journalDiscoveredCount: 3,
+      localPresenceCount: 1,
+      routeEcologyProof: true,
+      routeEcologyId: 'jade-route-ecology-survey',
+      routeWaystoneProof: true,
+      routeWaystoneId: 'jade-cloudbell-waystone',
+      questLedgerProof: true,
+      questLedgerId: 'jade-quest-ledger',
+      dialogueScrollProof: true,
+      dialogueScrollId: 'jade-dialogue-scroll',
+      nurtureRiteProof: true,
+      nurtureRiteId: 'jade-moonwell-nurture-rite',
+      tournamentProof: false,
+      tournamentId: 'jade-banner-tournament',
+      commissionProof: true,
+      commissionId: 'jade-court-commission-ledger',
+      rallyProof: true,
+      rallyId: 'jade-courtyard-rally',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first story chapter.']
+    });
+    expect(missingStoryChapter.recorded).toBe(false);
+    expect(missingStoryChapter.missing).toContain('presence:1/2');
+    expect(missingStoryChapter.missing).toContain('tournament:jade-banner-tournament');
+
+    expect(GUILD_INSIGNIA_CASES.map((entry) => entry.id)).toEqual(['jade-insignia-case']);
+    const insigniaCase = resolveGuildInsigniaCase({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      guildRankProof: true,
+      guildRankId: 'jade-court-initiate',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      storyChapterProof: true,
+      storyChapterId: 'jade-scroll-story-chapter',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first insignia case.']
+    });
+    expect(insigniaCase).toMatchObject({
+      ok: true,
+      completed: true,
+      caseId: 'jade-insignia-case',
+      caseName: 'Jade Insignia Case',
+      title: 'First-Court Progression Case',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 44,
+      requiredScore: 34,
+      rewardItemId: 'jade-insignia-case',
+      source: 'guild-insignia-case'
+    });
+    expect(insigniaCase.message).toContain('No real value');
+    const missingInsigniaCase = resolveGuildInsigniaCase({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 1,
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      routePatrolProof: true,
+      routePatrolId: 'jade-cloudbell-patrol',
+      guildRankProof: true,
+      guildRankId: 'jade-court-initiate',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      storyChapterProof: false,
+      storyChapterId: 'jade-scroll-story-chapter',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      profileViewed: true,
+      guildBuddyProof: true,
+      emoteProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first insignia case.']
+    });
+    expect(missingInsigniaCase.completed).toBe(false);
+    expect(missingInsigniaCase.missing).toContain('presence:1/2');
+    expect(missingInsigniaCase.missing).toContain('story:jade-scroll-story-chapter');
+
+    expect(GUILD_WAYFARER_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-wayfarer-chronicle']);
+    const chronicle = resolveGuildWayfarerChronicle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      localPresenceCount: 2,
+      starterVowProof: true,
+      captureProof: true,
+      captureRiteProof: true,
+      encounterAtlasProof: true,
+      habitatCensusProof: true,
+      routeMasteryProof: true,
+      routePatrolProof: true,
+      routeEcologyProof: true,
+      habitatBondProof: true,
+      researchProof: true,
+      compendiumProof: true,
+      provisionProof: true,
+      provisionCatalogProof: true,
+      battleKitProof: true,
+      remedyPouchProof: true,
+      questLedgerProof: true,
+      dialogueScrollProof: true,
+      craftWritProof: true,
+      routeWaystoneProof: true,
+      routeCharterProof: true,
+      nurtureRiteProof: true,
+      kinshipAlbumProof: true,
+      nurseryGroveProof: true,
+      bloomAscendanceProof: true,
+      lineageRegisterProof: true,
+      rosterCabinetProof: true,
+      blossomCradleProof: true,
+      exchangeAccordProof: true,
+      commissionProof: true,
+      rallyProof: true,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      conditionWeaveProof: true,
+      affinityMatrixProof: true,
+      techniqueCodexProof: true,
+      relicAttunementProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      dojoLadderProof: true,
+      tournamentProof: true,
+      sifuCouncilProof: true,
+      summitCircuitProof: true,
+      battleChronicleProof: true,
+      storyChapterProof: true,
+      insigniaCaseProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      questChainProof: true,
+      marketProof: true,
+      marketReceiptProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first wayfarer chronicle.']
+    });
+    expect(chronicle).toMatchObject({
+      ok: true,
+      chronicled: true,
+      chronicleId: 'jade-wayfarer-chronicle',
+      chronicleName: 'Jade Wayfarer Chronicle',
+      title: 'First-Court Alpha Chronicle',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 173,
+      requiredScore: 77,
+      rewardItemId: 'jade-wayfarer-chronicle-clasp',
+      source: 'guild-wayfarer-chronicle'
+    });
+    expect(chronicle.message).toContain('No real value');
+    const missingChronicle = resolveGuildWayfarerChronicle({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      journalDiscoveredCount: 3,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      localPresenceCount: 2,
+      starterVowProof: true,
+      captureProof: true,
+      captureRiteProof: true,
+      encounterAtlasProof: true,
+      habitatCensusProof: true,
+      routeMasteryProof: true,
+      routePatrolProof: true,
+      routeEcologyProof: true,
+      habitatBondProof: true,
+      researchProof: true,
+      compendiumProof: true,
+      provisionProof: true,
+      provisionCatalogProof: true,
+      battleKitProof: true,
+      remedyPouchProof: true,
+      questLedgerProof: true,
+      dialogueScrollProof: true,
+      craftWritProof: true,
+      routeWaystoneProof: true,
+      routeCharterProof: true,
+      nurtureRiteProof: true,
+      kinshipAlbumProof: true,
+      nurseryGroveProof: true,
+      bloomAscendanceProof: true,
+      lineageRegisterProof: true,
+      rosterCabinetProof: true,
+      blossomCradleProof: true,
+      exchangeAccordProof: true,
+      commissionProof: true,
+      rallyProof: false,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      conditionWeaveProof: true,
+      affinityMatrixProof: true,
+      techniqueCodexProof: true,
+      relicAttunementProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      mentorChallengeProof: true,
+      dojoLadderProof: true,
+      tournamentProof: true,
+      sifuCouncilProof: true,
+      summitCircuitProof: true,
+      battleChronicleProof: true,
+      storyChapterProof: true,
+      insigniaCaseProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      questChainProof: true,
+      marketProof: true,
+      marketReceiptProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first wayfarer chronicle.']
+    });
+    expect(missingChronicle.chronicled).toBe(false);
+    expect(missingChronicle.missing).toContain('rally');
+
+    expect(GUILD_ASCENSION_TRIALS.map((trial) => trial.id)).toEqual(['jade-court-ascension-trial']);
+    const ascension = resolveGuildAscensionTrial({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      starterVowProof: true,
+      wayfarerChronicleProof: true,
+      kinshipAlbumProof: true,
+      nurseryGroveProof: true,
+      bloomAscendanceProof: true,
+      lineageRegisterProof: true,
+      rosterCabinetProof: true,
+      blossomCradleProof: true,
+      routeCharterProof: true,
+      exchangeAccordProof: true,
+      provisionCatalogProof: true,
+      battleKitProof: true,
+      remedyPouchProof: true,
+      questLedgerProof: true,
+      dialogueScrollProof: true,
+      routePatrolProof: true,
+      mentorChallengeProof: true,
+      dojoLadderProof: true,
+      tournamentProof: true,
+      sifuCouncilProof: true,
+      summitCircuitProof: true,
+      battleChronicleProof: true,
+      storyChapterProof: true,
+      insigniaCaseProof: true,
+      rivalCircleProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      conditionWeaveProof: true,
+      affinityMatrixProof: true,
+      techniqueCodexProof: true,
+      relicAttunementProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      marketProof: true,
+      marketReceiptProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first ascension trial.']
+    });
+    expect(ascension).toMatchObject({
+      ok: true,
+      ascended: true,
+      trialId: 'jade-court-ascension-trial',
+      trialName: 'Jade Court Ascension Trial',
+      title: 'First Closed-Alpha Guild Capstone',
+      habitat: 'Jade Lantern Court',
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      score: 135,
+      requiredScore: 66,
+      rewardItemId: 'jade-court-ascension-ribbon',
+      source: 'guild-ascension-trial'
+    });
+    expect(ascension.message).toContain('No real value');
+    const missingAscension = resolveGuildAscensionTrial({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      localPresenceCount: 2,
+      starterVowProof: true,
+      wayfarerChronicleProof: false,
+      kinshipAlbumProof: true,
+      nurseryGroveProof: true,
+      bloomAscendanceProof: true,
+      lineageRegisterProof: true,
+      rosterCabinetProof: true,
+      blossomCradleProof: true,
+      routeCharterProof: true,
+      exchangeAccordProof: true,
+      provisionCatalogProof: true,
+      battleKitProof: true,
+      remedyPouchProof: true,
+      questLedgerProof: true,
+      dialogueScrollProof: true,
+      routePatrolProof: true,
+      mentorChallengeProof: true,
+      dojoLadderProof: true,
+      tournamentProof: true,
+      sifuCouncilProof: true,
+      summitCircuitProof: true,
+      battleChronicleProof: true,
+      storyChapterProof: true,
+      insigniaCaseProof: true,
+      rivalCircleProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 18,
+      battleRoundOpponentScore: 8,
+      conditionWeaveProof: true,
+      affinityMatrixProof: true,
+      techniqueCodexProof: true,
+      relicAttunementProof: true,
+      harmonyFormProof: true,
+      harmonyTrialProof: true,
+      teamSparMatchProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      marketProof: true,
+      marketReceiptProof: true,
+      tradeProof: true,
+      canaryPreviewProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the first ascension trial.']
+    });
+    expect(missingAscension.ascended).toBe(false);
+    expect(missingAscension.missing).toContain('chronicle');
+
+    expect(SPIRIT_HARMONY_FORMS.map((form) => form.id)).toEqual(['triune-jade-harmony']);
+    const harmonyForm = resolveSpiritHarmonyForm({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      growthRiteProof: true,
+      growthRiteId: 'moonwell-bloom-rite',
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 3,
+      sparLadderXp: 5
+    });
+    expect(harmonyForm).toMatchObject({
+      ok: true,
+      formed: true,
+      formId: 'triune-jade-harmony',
+      name: 'Triune Jade Harmony',
+      title: 'First Three-Spirit Harmony Form',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 27,
+      requiredScore: 27,
+      rewardItemId: 'triune-jade-sash',
+      source: 'party-harmony-form'
+    });
+    expect(harmonyForm.message).toContain('no-injury party form');
+    expect(resolveSpiritHarmonyForm({
+      partyIds: ['lirabao', 'jintari'],
+      routeMasteryProof: true,
+      routeMasteryId: 'jade-cloudbell-circuit',
+      growthRiteProof: false,
+      tacticProof: true,
+      affinityProof: true,
+      trainingXp: 1,
+      sparLadderXp: 0
+    }).formed).toBe(false);
+
+    expect(SPIRIT_HARMONY_TRIALS.map((trial) => trial.id)).toEqual(['jade-echo-concord']);
+    const concord = resolveSpiritHarmonyTrial({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      tacticProof: true,
+      affinityProof: true,
+      sparLadderWins: 1,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for concord.']
+    });
+    expect(concord).toMatchObject({
+      ok: true,
+      cleared: true,
+      trialId: 'jade-echo-concord',
+      trialName: 'Jade Echo Concord Trial',
+      title: 'First Social Harmony Battle Trial',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 24,
+      requiredScore: 24,
+      rewardItemId: 'jade-echo-concord-tally',
+      source: 'battle-harmony-trial'
+    });
+    expect(concord.message).toContain('no-injury team battle');
+    expect(resolveSpiritHarmonyTrial({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      tacticProof: true,
+      affinityProof: true,
+      sparLadderWins: 1,
+      profileViewed: false,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for concord.']
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_TEAM_SPAR_MATCHES.map((match) => match.id)).toEqual(['jade-mirror-team-match']);
+    const teamMatch = resolveSpiritTeamSparMatch({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      harmonyTrialScore: 24,
+      routeMasteryProof: true,
+      tacticProof: true,
+      growthRiteProof: true,
+      questChainProof: true,
+      trainingXp: 3,
+      sparLadderWins: 1,
+      chatLines: ['Ready for the team match.']
+    });
+    expect(teamMatch).toMatchObject({
+      ok: true,
+      cleared: true,
+      matchId: 'jade-mirror-team-match',
+      matchName: 'Jade Mirror Team Match',
+      title: 'First Full-Party Spar Match',
+      opponentName: 'Mirror Court Trio',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 32,
+      requiredScore: 30,
+      rewardItemId: 'jade-mirror-match-ribbon',
+      source: 'battle-team-spar-match'
+    });
+    expect(teamMatch.message).toContain('no-injury full-party spar match');
+    expect(resolveSpiritTeamSparMatch({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      harmonyTrialScore: 24,
+      routeMasteryProof: true,
+      tacticProof: true,
+      growthRiteProof: false,
+      questChainProof: true,
+      trainingXp: 3,
+      sparLadderWins: 1,
+      chatLines: ['Ready for the team match.']
+    }).cleared).toBe(false);
+
+    const technique = resolveSpiritTechniqueMastery('lirabao', 'lantern-pulse', 0, 3);
+    expect(technique).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      moveId: 'lantern-pulse',
+      masteryLevel: 'practiced',
+      masteryXp: 7,
+      awardedXp: 7,
+      focusScore: 11,
+      source: 'spirit-technique'
+    });
+    expect(technique.message).toContain('Mochirii Technique Dojo');
+    expect(resolveSpiritTechniqueMastery('lirabao', 'missing-technique').ok).toBe(false);
+
+    expect(SPIRIT_BATTLE_TACTICS.map((tactic) => tactic.id)).toEqual([
+      'lantern-anchor',
+      'goldleaf-opening',
+      'skybell-ward'
+    ]);
+    const tactic = resolveSpiritBattleTactic('jintari', 'goldleaf-feint', 'goldleaf-opening', 5, 1);
+    expect(tactic).toMatchObject({
+      ok: true,
+      spiritId: 'jintari',
+      moveId: 'goldleaf-feint',
+      tacticId: 'goldleaf-opening',
+      tacticName: 'Goldleaf Opening Form',
+      stance: 'feint',
+      focusScore: 15,
+      masteryXp: 14,
+      awardedXp: 9,
+      bondDelta: 1,
+      source: 'battle-tactic-scroll'
+    });
+    expect(tactic.message).toContain('No-injury Mochirii battle planning');
+    expect(resolveSpiritBattleTactic('jintari', 'missing-move').ok).toBe(false);
+
+    expect(GUILD_RANK_TRIALS.map((trial) => trial.id)).toEqual(['jade-court-initiate']);
+    const rank = resolveGuildRankTrial({
+      roster: ['lirabao', 'jintari'],
+      activeSpiritId: 'jintari',
+      bond: 3,
+      completedQuestSteps: ['attune-spirit'],
+      tacticProof: true,
+      affinityWins: 1,
+      sparWins: 0,
+      journalDiscoveredCount: 2,
+      guildBuddyProof: true
+    });
+    expect(rank).toMatchObject({
+      ok: true,
+      passed: true,
+      trialId: 'jade-court-initiate',
+      trialTitle: 'Jade Court Initiate Trial',
+      rankTitle: 'Jade Court Initiate',
+      score: 15,
+      requiredScore: 9,
+      rewardItemId: 'jade-court-rank-seal',
+      source: 'guild-rank-trial'
+    });
+    expect(rank.message).toContain('no-real-value Mochirii guild progress');
+    expect(resolveGuildRankTrial({
+      roster: ['lirabao'],
+      activeSpiritId: 'lirabao',
+      bond: 1,
+      completedQuestSteps: [],
+      tacticProof: false,
+      affinityWins: 0,
+      sparWins: 0,
+      journalDiscoveredCount: 1
+    }).passed).toBe(false);
+
+    expect(SPIRIT_GROWTH_RITES.map((rite) => rite.id)).toEqual(['moonwell-bloom-rite']);
+    const growthRite = resolveSpiritGrowthRite({
+      spiritId: 'jintari',
+      bond: 5,
+      growth: 'glow',
+      trainingXp: 3,
+      raisingProof: true,
+      rankTrialProof: true,
+      rankTrialId: 'jade-court-initiate'
+    });
+    expect(growthRite).toMatchObject({
+      ok: true,
+      passed: true,
+      riteId: 'moonwell-bloom-rite',
+      riteName: 'Moonwell Bloom Rite',
+      spiritId: 'jintari',
+      spiritName: 'Jintari',
+      formTitle: 'Moonwell Bloom Form',
+      bond: 5,
+      growth: 'glow',
+      trainingXp: 3,
+      rewardItemId: 'moonwell-bloom-sigil',
+      source: 'spirit-growth-rite'
+    });
+    expect(growthRite.message).toContain('no-real-value Mochirii growth proof');
+    expect(resolveSpiritGrowthRite({
+      spiritId: 'jintari',
+      bond: 4,
+      growth: 'sprout',
+      trainingXp: 2,
+      raisingProof: true,
+      rankTrialProof: true,
+      rankTrialId: 'jade-court-initiate'
+    }).passed).toBe(false);
+
+    const affinity = resolveSpiritAffinityTrial('lirabao', 'lantern-pulse', 'jade-mirror-trial', 3, 7);
+    expect(affinity).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      moveId: 'lantern-pulse',
+      trialId: 'jade-mirror-trial',
+      trialName: 'Jade Mirror Trial',
+      affinityAdvantage: true,
+      focusScore: 15,
+      trialScore: 14,
+      victory: true,
+      masteryXp: 11,
+      bondDelta: 1,
+      source: 'battle-affinity-trial'
+    });
+    expect(affinity.message).toContain('Jade Mirror Trial');
+    expect(resolveSpiritAffinityTrial('lirabao', 'missing-move').ok).toBe(false);
+
+    const party = resolveSpiritParty(['lirabao', 'jintari', 'aozhen'], 'jintari');
+    expect(party).toMatchObject({
+      ok: true,
+      activeSpiritId: 'jintari',
+      partyIds: ['jintari', 'lirabao', 'aozhen'],
+      supportIds: ['lirabao', 'aozhen'],
+      source: 'party-formation'
+    });
+    expect(resolveSpiritParty([]).ok).toBe(false);
+
+    const spar = resolveSpiritSparLadder(['lirabao', 'jintari', 'aozhen'], 'jade-echo-apprentice', {
+      lirabao: 3,
+      jintari: 2,
+      aozhen: 2
+    });
+    expect(spar.ok).toBe(true);
+    expect(spar.victory).toBe(true);
+    expect(spar.trainingXp).toBeGreaterThan(0);
+    expect(spar.message).toContain('spar ladder');
+
+    expect(SPIRIT_TECHNIQUE_LOADOUTS.map((loadout) => loadout.id)).toEqual(['jade-step-loadout']);
+    const loadout = resolveSpiritTechniqueLoadout({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      preferredMoveIdBySpiritId: {
+        lirabao: 'lantern-pulse',
+        jintari: 'goldleaf-feint',
+        aozhen: 'skybell-guard'
+      },
+      techniqueProof: true,
+      tacticProof: true,
+      tacticId: 'goldleaf-opening',
+      techniqueMasteryXp: 17,
+      routeMasteryProof: true,
+      journalProof: true,
+      journalDiscoveredCount: 3
+    });
+    expect(loadout).toMatchObject({
+      ok: true,
+      prepared: true,
+      loadoutId: 'jade-step-loadout',
+      loadoutName: 'Jade Step Loadout',
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      score: 25,
+      requiredScore: 22,
+      rewardItemId: 'jade-step-loadout-slip',
+      source: 'spirit-technique-loadout'
+    });
+    expect(loadout.moves.map((move) => [move.spiritId, move.moveId])).toEqual([
+      ['lirabao', 'lantern-pulse'],
+      ['jintari', 'goldleaf-feint'],
+      ['aozhen', 'skybell-guard']
+    ]);
+    expect(loadout.message).toContain('no-injury Mochirii party moves');
+    expect(resolveSpiritTechniqueLoadout({
+      partyIds: ['lirabao'],
+      techniqueProof: false,
+      tacticProof: false,
+      techniqueMasteryXp: 0,
+      routeMasteryProof: false,
+      journalProof: false,
+      journalDiscoveredCount: 0
+    }).prepared).toBe(false);
+
+    expect(SPIRIT_TECHNIQUE_CODEXES.map((codex) => codex.id)).toEqual(['jade-technique-codex']);
+    const techniqueCodex = resolveSpiritTechniqueCodex({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      masteredMoveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
+      tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+      techniqueProof: true,
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueMasteryXp: 18,
+      tacticProof: true,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Technique codex ready.']
+    });
+    expect(techniqueCodex).toMatchObject({
+      ok: true,
+      codified: true,
+      codexId: 'jade-technique-codex',
+      codexName: 'Jade Technique Codex',
+      score: 58,
+      requiredScore: 46,
+      rewardItemId: 'jade-technique-codex-seal',
+      source: 'spirit-technique-codex'
+    });
+    expect(techniqueCodex.message).toContain('No real value');
+    expect(resolveSpiritTechniqueCodex({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      masteredMoveIds: ['lantern-pulse'],
+      tacticIds: ['lantern-anchor'],
+      techniqueProof: true,
+      techniqueLoadoutProof: false,
+      techniqueMasteryXp: 18,
+      tacticProof: true,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Technique codex ready.']
+    }).codified).toBe(false);
+
+    const battleRound = resolveSpiritBattleRound({
+      partyIds: ['lirabao', 'jintari', 'aozhen'],
+      activeSpiritId: 'aozhen',
+      moveIdBySpiritId: { aozhen: 'skybell-guard' },
+      bondBySpiritId: { lirabao: 3, jintari: 2, aozhen: 2 },
+      opponentId: 'jade-echo-apprentice',
+      tacticProof: true,
+      harmonyFormProof: true,
+      priorWins: 1
+    });
+    expect(battleRound).toMatchObject({
+      ok: true,
+      roundId: 'jade-echo-apprentice-round-2',
+      opponentId: 'jade-echo-apprentice',
+      opponentName: 'Jade Echo Apprentice',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      focusScore: 45,
+      opponentScore: 20,
+      victory: true,
+      noInjury: true,
+      source: 'battle-round-transcript'
+    });
+    expect(battleRound.participants.map((participant) => [participant.spiritId, participant.moveId])).toEqual([
+      ['aozhen', 'skybell-guard'],
+      ['lirabao', 'lantern-pulse'],
+      ['jintari', 'goldleaf-feint']
+    ]);
+    expect(battleRound.message).toContain('No-injury victory recorded with no real value');
+    expect(resolveSpiritBattleRound({ partyIds: [] }).ok).toBe(false);
+
+    expect(SPIRIT_MENTOR_CHALLENGES.map((challenge) => challenge.id)).toEqual(['silk-banner-mentor-drill']);
+    const mentor = resolveSpiritMentorChallenge({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: 32,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      techniqueMasteryXp: 17,
+      tacticMasteryXp: 14,
+      raisingCareStreak: 1,
+      profileViewed: true,
+      guildBuddyProof: true
+    });
+    expect(mentor).toMatchObject({
+      ok: true,
+      cleared: true,
+      challengeId: 'silk-banner-mentor-drill',
+      challengeName: 'Silk Banner Mentor Drill',
+      mentorName: 'Sifu Narao',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      score: 28,
+      requiredScore: 28,
+      rewardItemId: 'silk-banner-mentor-seal',
+      source: 'battle-mentor-challenge'
+    });
+    expect(mentor.message).toContain('no-injury mentor-ready');
+    expect(resolveSpiritMentorChallenge({
+      partyIds: ['lirabao'],
+      teamSparMatchProof: false,
+      teamSparMatchScore: 0,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      techniqueMasteryXp: 0,
+      tacticMasteryXp: 0,
+      raisingCareStreak: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_DOJO_LADDERS.map((ladder) => ladder.id)).toEqual(['jade-dojo-ladder']);
+    const dojoLadder = resolveSpiritDojoLadder({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedOpponentIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+      sparLadderWins: 2,
+      sparLadderXp: 5,
+      trainingXp: 3,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the dojo ladder.']
+    });
+    expect(dojoLadder).toMatchObject({
+      ok: true,
+      cleared: true,
+      ladderId: 'jade-dojo-ladder',
+      ladderName: 'Jade Dojo Ladder',
+      title: 'First No-Injury Dojo Ladder',
+      mentorName: 'Sifu Narao',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedOpponentIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+      score: 56,
+      requiredScore: 44,
+      rewardItemId: 'jade-dojo-ladder-seal',
+      source: 'battle-dojo-ladder'
+    });
+    expect(dojoLadder.message).toContain('No real value');
+    expect(resolveSpiritDojoLadder({
+      partyIds: ['aozhen', 'lirabao'],
+      clearedOpponentIds: ['jade-echo-apprentice'],
+      sparLadderWins: 1,
+      sparLadderXp: 3,
+      trainingXp: 1,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      techniqueCodexProof: false,
+      conditionWeaveProof: false,
+      affinityMatrixProof: false,
+      mentorChallengeProof: false,
+      teamSparMatchProof: false,
+      profileViewed: false,
+      guildBuddyProof: false,
+      statusMood: 'exploring',
+      chatLines: []
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_TOURNAMENT_BRACKETS.map((bracket) => bracket.id)).toEqual(['jade-banner-tournament']);
+    const tournament = resolveSpiritTournamentBracket({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: 32,
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      conditionWeaveProof: true,
+      affinityMatrixProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      routePatrolProof: true,
+      nurtureRiteProof: true,
+      guildRankProof: true,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the bracket.']
+    });
+    expect(tournament).toMatchObject({
+      ok: true,
+      cleared: true,
+      bracketId: 'jade-banner-tournament',
+      bracketName: 'Jade Banner Tournament',
+      title: 'First Closed-Alpha Battle Circuit',
+      hostName: 'Jade Banner Marshal',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      localPresenceCount: 2,
+      score: 57,
+      requiredScore: 38,
+      rewardItemId: 'jade-banner-tournament-pennant',
+      source: 'battle-tournament-bracket'
+    });
+    expect(tournament.message).toContain('No real value');
+    expect(resolveSpiritTournamentBracket({
+      partyIds: ['aozhen'],
+      dojoLadderProof: false,
+      dojoLadderScore: 0,
+      mentorChallengeProof: false,
+      mentorChallengeScore: 0,
+      teamSparMatchProof: false,
+      teamSparMatchScore: 0,
+      harmonyTrialProof: false,
+      conditionWeaveProof: false,
+      affinityMatrixProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      localPresenceCount: 1,
+      routePatrolProof: false,
+      nurtureRiteProof: false,
+      guildRankProof: false,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_RIVAL_CIRCLES.map((circle) => circle.id)).toEqual(['jade-rival-circle']);
+    const rivalCircle = resolveSpiritRivalCircle({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      mentorChallengeScore: mentor.score,
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      teamSparMatchScore: 32,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      techniqueLoadoutProof: true,
+      traitAttunementProof: true,
+      guildRankProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the rival circle.']
+    });
+    expect(rivalCircle).toMatchObject({
+      ok: true,
+      cleared: true,
+      circleId: 'jade-rival-circle',
+      circleName: 'Jade Rival Circle',
+      title: 'First No-Injury Rival Bout',
+      rivalName: 'Qinghei Banner Circle',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      localPresenceCount: 2,
+      score: 63,
+      requiredScore: 46,
+      rewardItemId: 'jade-rival-circle-mark',
+      source: 'battle-rival-circle'
+    });
+    expect(rivalCircle.message).toContain('No real value');
+    expect(resolveSpiritRivalCircle({
+      partyIds: ['aozhen', 'lirabao'],
+      tournamentProof: false,
+      tournamentScore: 0,
+      dojoLadderProof: false,
+      dojoLadderScore: 0,
+      mentorChallengeProof: false,
+      mentorChallengeScore: 0,
+      teamSparMatchProof: false,
+      teamSparMatchScore: 0,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      conditionWeaveProof: false,
+      affinityMatrixProof: false,
+      techniqueLoadoutProof: false,
+      traitAttunementProof: false,
+      guildRankProof: false,
+      growthRiteProof: false,
+      localPresenceCount: 1,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_SIFU_COUNCILS.map((council) => council.id)).toEqual(['jade-sifu-council']);
+    const sifuCouncil = resolveSpiritSifuCouncil({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      guildRankProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the sifu council.']
+    });
+    expect(sifuCouncil).toMatchObject({
+      ok: true,
+      cleared: true,
+      councilId: 'jade-sifu-council',
+      councilName: 'Jade Sifu Council',
+      title: 'First Guild-Leader Council Trial',
+      hostName: 'Sifu Narao',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      clearedCouncilMemberIds: ['sifu-narao', 'warden-meilin', 'keeper-haoran'],
+      localPresenceCount: 2,
+      score: 74,
+      requiredScore: 62,
+      rewardItemId: 'jade-sifu-council-crest',
+      source: 'battle-sifu-council'
+    });
+    expect(sifuCouncil.message).toContain('No real value');
+    expect(resolveSpiritSifuCouncil({
+      partyIds: ['aozhen', 'lirabao'],
+      clearedCouncilMemberIds: ['sifu-narao'],
+      dojoLadderProof: false,
+      tournamentProof: false,
+      rivalCircleProof: false,
+      techniqueCodexProof: false,
+      conditionWeaveProof: false,
+      affinityMatrixProof: false,
+      mentorChallengeProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      battleRoundFocusScore: 0,
+      battleRoundOpponentScore: 1,
+      guildRankProof: false,
+      routePatrolProof: false,
+      localPresenceCount: 1,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).cleared).toBe(false);
+
+    expect(SPIRIT_SUMMIT_CIRCUITS.map((circuit) => circuit.id)).toEqual(['jade-summit-circuit']);
+    const missingSummitCircuit = resolveSpiritSummitCircuit({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: false,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      relicAttunementProof: true,
+      relicAttunementId: 'jade-relic-attunement',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      harmonyTrialProof: false,
+      harmonyTrialId: 'jade-echo-concord',
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      guildRankProof: true,
+      growthRiteProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the summit circuit.']
+    });
+    expect(missingSummitCircuit).toMatchObject({
+      ok: true,
+      cleared: false,
+      circuitId: 'jade-summit-circuit',
+      missing: ['summit-seal:sifu-council-seal', 'sifu-council:jade-sifu-council', 'concord:jade-echo-concord']
+    });
+    const summitCircuit = resolveSpiritSummitCircuit({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: true,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      relicAttunementProof: true,
+      relicAttunementId: 'jade-relic-attunement',
+      harmonyFormProof: true,
+      harmonyFormId: 'triune-jade-harmony',
+      harmonyTrialProof: true,
+      harmonyTrialId: 'jade-echo-concord',
+      teamSparMatchProof: true,
+      teamSparMatchId: 'jade-mirror-team-match',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      guildRankProof: true,
+      growthRiteProof: true,
+      routePatrolProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the summit circuit.']
+    });
+    expect(summitCircuit).toMatchObject({
+      ok: true,
+      cleared: true,
+      circuitId: 'jade-summit-circuit',
+      circuitName: 'Jade Summit Circuit',
+      title: 'First Summit Battle Circuit',
+      hostName: 'Circuit Marshal Yunxi',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      summitSealIds: ['jade-dojo-seal', 'banner-ring-seal', 'qinghei-rival-seal', 'sifu-council-seal'],
+      localPresenceCount: 2,
+      score: 96,
+      requiredScore: 80,
+      rewardItemId: 'jade-summit-circuit-laurel',
+      source: 'battle-summit-circuit'
+    });
+    expect(summitCircuit.message).toContain('No real value');
+
+    expect(SPIRIT_BATTLE_CHRONICLES.map((chronicle) => chronicle.id)).toEqual(['jade-battle-chronicle']);
+    const battleChronicle = resolveSpiritBattleChronicle({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council', 'jade-summit-circuit'],
+      dojoLadderProof: true,
+      dojoLadderId: 'jade-dojo-ladder',
+      dojoLadderScore: dojoLadder.score,
+      tournamentProof: true,
+      tournamentId: 'jade-banner-tournament',
+      tournamentScore: tournament.score,
+      rivalCircleProof: true,
+      rivalCircleId: 'jade-rival-circle',
+      rivalCircleScore: rivalCircle.score,
+      sifuCouncilProof: true,
+      sifuCouncilId: 'jade-sifu-council',
+      sifuCouncilScore: sifuCouncil.score,
+      summitCircuitProof: true,
+      summitCircuitId: 'jade-summit-circuit',
+      summitCircuitScore: summitCircuit.score,
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      remedyPouchProof: true,
+      remedyPouchId: 'jade-remedy-pouch',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Ready for the battle chronicle.']
+    });
+    expect(battleChronicle).toMatchObject({
+      ok: true,
+      chronicled: true,
+      chronicleId: 'jade-battle-chronicle',
+      chronicleName: 'Jade Battle Chronicle',
+      title: 'First No-Injury Battle Chronicle',
+      archivistName: 'Archivist Lianhua',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      battleProofIds: ['jade-dojo-ladder', 'jade-banner-tournament', 'jade-rival-circle', 'jade-sifu-council', 'jade-summit-circuit'],
+      localPresenceCount: 2,
+      score: 90,
+      requiredScore: 72,
+      rewardItemId: 'jade-battle-chronicle-seal',
+      source: 'battle-chronicle'
+    });
+    expect(battleChronicle.message).toContain('No real value');
+
+    expect(SPIRIT_TRAIT_ATTUNEMENTS.map((trait) => trait.id)).toEqual(['jade-heart-trait']);
+    const trait = resolveSpiritTraitAttunement({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      growthRiteProof: true,
+      careStreak: 2,
+      journalProof: true,
+      journalDiscoveredCount: 3,
+      bondBySpiritId: { aozhen: 5, lirabao: 4, jintari: 4 }
+    });
+    expect(trait).toMatchObject({
+      ok: true,
+      unlocked: true,
+      traitId: 'jade-heart-trait',
+      traitName: 'Jade Heart Trait Attunement',
+      title: 'First Mochirii Party Trait',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      traitLabel: 'Skybell Wayfinder',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      score: 36,
+      requiredScore: 31,
+      rewardItemId: 'jade-heart-trait-thread',
+      source: 'spirit-trait-attunement'
+    });
+    expect(trait.message).toContain('no-real-value Mochirii trait progress');
+    expect(resolveSpiritTraitAttunement({
+      partyIds: ['lirabao'],
+      mentorChallengeProof: false,
+      techniqueLoadoutProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      growthRiteProof: false,
+      careStreak: 0,
+      journalProof: false,
+      journalDiscoveredCount: 0
+    }).unlocked).toBe(false);
+
+    expect(SPIRIT_BATTLE_CONDITIONS.map((condition) => condition.id)).toEqual(['lantern-ward', 'goldleaf-tempo', 'skybell-guard']);
+    expect(SPIRIT_CONDITION_WEAVES.map((weave) => weave.id)).toEqual(['jade-mirror-condition-weave']);
+    const conditionWeave = resolveSpiritConditionWeave({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      tacticProof: true,
+      affinityProof: true,
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      mentorChallengeProof: true,
+      mentorChallengeId: 'silk-banner-mentor-drill',
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Condition weave ready.']
+    });
+    expect(conditionWeave).toMatchObject({
+      ok: true,
+      woven: true,
+      weaveId: 'jade-mirror-condition-weave',
+      weaveName: 'Jade Mirror Condition Weave',
+      title: 'First Non-Injury Condition Weave',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      score: 49,
+      requiredScore: 34,
+      rewardItemId: 'jade-mirror-condition-charm',
+      source: 'battle-condition-weave'
+    });
+    expect(conditionWeave.message).toContain('no-injury battle conditions');
+
+    expect(SPIRIT_AFFINITY_MATRICES.map((matrix) => matrix.id)).toEqual(['jade-affinity-matrix']);
+    const affinityMatrix = resolveSpiritAffinityMatrix({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      affinityLabels: ['sky-jade', 'blossom', 'citrus-gold'],
+      conditionIds: conditionWeave.conditionIds,
+      affinityProof: true,
+      affinityTrialId: 'silk-cinder-trial',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      tacticProof: true,
+      harmonyFormProof: true,
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Affinity matrix ready.']
+    });
+    expect(affinityMatrix).toMatchObject({
+      ok: true,
+      mapped: true,
+      matrixId: 'jade-affinity-matrix',
+      matrixName: 'Jade Affinity Matrix',
+      title: 'First Three-Spirit Matchup Matrix',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      affinityLabels: ['sky-jade', 'blossom', 'citrus-gold'],
+      conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+      score: 56,
+      requiredScore: 44,
+      rewardItemId: 'jade-affinity-matrix-seal',
+      source: 'battle-affinity-matrix'
+    });
+    expect(affinityMatrix.message).toContain('No real value');
+    expect(SPIRIT_RELIC_ATTUNEMENTS.map((relic) => relic.id)).toEqual(['jade-relic-attunement']);
+    const relicAttunement = resolveSpiritRelicAttunement({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-court-provision-satchel'],
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      techniqueCodexProof: true,
+      techniqueCodexId: 'jade-technique-codex',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      affinityMatrixProof: true,
+      affinityMatrixId: 'jade-affinity-matrix',
+      craftWritProof: true,
+      craftWritId: 'jade-court-craft-writ',
+      exchangeAccordProof: true,
+      exchangeAccordId: 'jade-exchange-accord',
+      careCycleProof: true,
+      temperamentConcordProof: true,
+      growthRiteProof: true,
+      localPresenceCount: 2,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Relic attunement ready.']
+    });
+    expect(relicAttunement).toMatchObject({
+      ok: true,
+      attuned: true,
+      relicAttunementId: 'jade-relic-attunement',
+      relicAttunementName: 'Jade Relic Attunement',
+      title: 'First Three-Spirit Held Charm',
+      activeSpiritId: 'aozhen',
+      activeSpiritName: 'Aozhen',
+      relicLabel: 'Skybell Thread Cord',
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      itemIds: ['jade-thread-charm', 'lantern-harmony-tea', 'jade-court-provision-satchel'],
+      score: 66,
+      requiredScore: 57,
+      rewardItemId: 'jade-relic-silk-cord',
+      source: 'spirit-relic-attunement'
+    });
+    expect(relicAttunement.message).toContain('No real value');
+    expect(resolveSpiritAffinityMatrix({
+      partyIds: ['aozhen', 'lirabao', 'jintari'],
+      activeSpiritId: 'aozhen',
+      affinityLabels: ['sky-jade', 'blossom', 'citrus-gold'],
+      conditionIds: conditionWeave.conditionIds,
+      affinityProof: false,
+      affinityTrialId: 'silk-cinder-trial',
+      techniqueLoadoutProof: true,
+      techniqueLoadoutId: 'jade-step-loadout',
+      traitAttunementProof: true,
+      traitAttunementId: 'jade-heart-trait',
+      conditionWeaveProof: true,
+      conditionWeaveId: 'jade-mirror-condition-weave',
+      battleRoundProof: true,
+      battleRoundVictory: true,
+      battleRoundFocusScore: 31,
+      battleRoundOpponentScore: 18,
+      tacticProof: true,
+      harmonyFormProof: true,
+      sparLadderWins: 1,
+      trainingXp: 3,
+      profileViewed: true,
+      guildBuddyProof: true,
+      statusMood: 'cozy',
+      chatLines: ['Affinity matrix ready.']
+    }).mapped).toBe(false);
+
+    expect(resolveSpiritConditionWeave({
+      partyIds: ['lirabao'],
+      tacticProof: false,
+      affinityProof: false,
+      battleRoundProof: false,
+      battleRoundVictory: false,
+      techniqueLoadoutProof: false,
+      traitAttunementProof: false,
+      mentorChallengeProof: false,
+      sparLadderWins: 0,
+      trainingXp: 0,
+      profileViewed: false,
+      guildBuddyProof: false
+    }).woven).toBe(false);
+
+    const battle = resolveSpiritTrainingBattle('lirabao', 'lantern-pulse', 5, 1);
+    expect(battle.ok).toBe(true);
+    expect(battle.victory).toBe(true);
+    expect(battle.trainingXp).toBeGreaterThan(0);
+    expect(battle.message).toContain('guild spar');
+
+    const raising = resolveSpiritRaisingAction('lirabao', 'jade-brush-groom', 2);
+    expect(raising).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      needId: 'jade-brush-groom',
+      growth: 'sprout',
+      careStreak: 1,
+      milestoneId: 'lirabao-ribbon-warmth',
+      milestoneLabel: 'Ribbon Guardian Warmth',
+      milestoneReached: true,
+      nextMilestoneId: 'lirabao-moonwell-glow',
+      nextNeedId: 'mooncake-share'
+    });
+    expect(resolveSpiritBondMilestone('lirabao', 5, 'glow')).toMatchObject({
+      ok: true,
+      milestone: expect.objectContaining({
+        id: 'lirabao-moonwell-glow',
+        label: 'Moonwell Companion Glow'
+      }),
+      nextMilestone: undefined
+    });
+    expect(selectSpiritRaisingNeed('lirabao', 0)?.id).toBe('jade-brush-groom');
+    expect(selectSpiritRaisingNeed('lirabao', 1)?.id).toBe('mooncake-share');
+    expect(resolveSpiritRaisingAction('lirabao', 'mooncake-share', raising.bond, raising.careStreak)).toMatchObject({
+      ok: true,
+      spiritId: 'lirabao',
+      needId: 'mooncake-share',
+      careStreak: 2,
+      milestoneReached: false,
+      nextNeedId: 'jade-brush-groom'
+    });
+
+    expect(MOCHI_SPIRIT_QUESTS.map((quest) => quest.id)).toEqual([
+      'first-lantern-vow',
+      'silk-market-kindness',
+      'skybell-spar'
+    ]);
+    expect(MOCHI_SPIRIT_QUESTS.every((quest) => quest.steps.length >= 3)).toBe(true);
+    expect(selectMochiSpiritQuest({
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow']
+    }).id).toBe('silk-market-kindness');
+
+    const firstQuest = resolveMochiSpiritQuestProgress('first-lantern-vow', 'open-journal', {
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: [],
+      questStepsById: { 'first-lantern-vow': ['attune-spirit', 'greet-sifu-narao'] }
+    });
+    expect(firstQuest).toMatchObject({
+      ok: true,
+      questId: 'first-lantern-vow',
+      completed: true,
+      completedQuestIds: ['first-lantern-vow'],
+      nextQuestId: 'silk-market-kindness',
+      rewardBond: 1,
+      source: 'quest-chain'
+    });
+
+    const finalQuest = resolveMochiSpiritQuestProgress('skybell-spar', 'complete-raising-care', {
+      roster: ['lirabao', 'jintari', 'aozhen'],
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness'],
+      questStepsById: { 'skybell-spar': ['choose-training-move', 'finish-training-bout'] }
+    });
+    expect(finalQuest).toMatchObject({
+      ok: true,
+      questId: 'skybell-spar',
+      completed: true,
+      chainComplete: true,
+      completedQuestIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+      rewardBond: 2
+    });
   });
 });

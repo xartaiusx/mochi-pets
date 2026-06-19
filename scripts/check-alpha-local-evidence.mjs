@@ -13,6 +13,7 @@ const builtServer = readJson('reports/built-server-smoke.json');
 const acceptance = readJson('reports/alpha-local-acceptance.json');
 const loadSmoke = readJson('reports/alpha-load-smoke.json');
 const browserPresence = readJson('reports/alpha-browser-presence.json');
+const responsiveGameplay = readJson('reports/alpha-responsive-gameplay.json');
 const visualSnapshot = readJson('reports/alpha-visual-snapshot.json');
 const visualReview = readJson('reports/alpha-visual-review.json');
 const walletDaemon = readJson('reports/wallet-daemon-local.json');
@@ -24,6 +25,7 @@ assertReport('built server smoke', builtServer);
 assertReport('local acceptance', acceptance);
 assertReport('load smoke', loadSmoke);
 assertReport('browser presence', browserPresence);
+assertReport('responsive gameplay', responsiveGameplay);
 assertReport('visual snapshot', visualSnapshot);
 assertReport('visual review', visualReview);
 assertReport('Wallet Daemon local check', walletDaemon);
@@ -34,6 +36,7 @@ assertLocalUrl(builtServer.data?.baseUrl, 'built server baseUrl');
 assertLocalUrl(acceptance.data?.baseUrl, 'local acceptance baseUrl');
 assertLocalUrl(loadSmoke.data?.baseUrl, 'load smoke baseUrl');
 assertLocalUrl(browserPresence.data?.baseUrl, 'browser presence baseUrl');
+assertLocalUrl(responsiveGameplay.data?.baseUrl, 'responsive gameplay baseUrl');
 assertLocalUrl(visualSnapshot.data?.baseUrl, 'visual snapshot baseUrl');
 assertLocalUrl(visualReview.data?.baseUrl, 'visual review baseUrl');
 assertLocalUrl(operatorSmoke.data?.baseUrl, 'operator smoke baseUrl');
@@ -42,6 +45,7 @@ const suiteBaseUrl = normalizeUrl(localSuite.data?.baseUrl);
 assertSameBaseUrl(acceptance.data?.baseUrl, suiteBaseUrl, 'local acceptance baseUrl');
 assertSameBaseUrl(loadSmoke.data?.baseUrl, suiteBaseUrl, 'load smoke baseUrl');
 assertSameBaseUrl(browserPresence.data?.baseUrl, suiteBaseUrl, 'browser presence baseUrl');
+assertSameBaseUrl(responsiveGameplay.data?.baseUrl, suiteBaseUrl, 'responsive gameplay baseUrl');
 assertSameBaseUrl(visualSnapshot.data?.baseUrl, suiteBaseUrl, 'visual snapshot baseUrl');
 assertSameBaseUrl(visualReview.data?.baseUrl, suiteBaseUrl, 'visual review baseUrl');
 assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke baseUrl');
@@ -53,7 +57,7 @@ assertCurrentGitState(walletDaemon.data?.git, 'Wallet Daemon local report');
 const commandNames = Array.isArray(localSuite.data?.commands)
   ? localSuite.data.commands.map((command) => command.name)
   : [];
-for (const command of ['build', 'alpha:wallet-daemon-check', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
+for (const command of ['build', 'alpha:wallet-daemon-check', 'smoke', 'alpha:local-acceptance', 'alpha:load-smoke', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:visual-snapshot', 'alpha:visual-review', 'alpha:enjin-operator-smoke']) {
   if (!commandNames.includes(command)) failures.push(`local suite missing command: ${command}`);
 }
 if (Array.isArray(localSuite.data?.commands)) {
@@ -61,12 +65,38 @@ if (Array.isArray(localSuite.data?.commands)) {
     if (command.status !== 0) failures.push(`local suite command failed: ${command.name}`);
   }
 }
+const browserVisualSequence = summarizeBrowserVisualSequence(localSuite.data?.commands, {
+  browserPresence: browserPresence.data,
+  responsiveGameplay: responsiveGameplay.data,
+  visualSnapshot: visualSnapshot.data,
+  visualReview: visualReview.data
+});
+assert(browserVisualSequence.ok, `browser/visual sequence evidence is incomplete: ${browserVisualSequence.failures.join('; ')}`);
 
 assert(localSuite.data?.server?.stopped === true, 'local suite server must stop after the run');
 assert(builtServer.data?.server?.stopped === true, 'built server smoke server must stop after the run');
 assert(loadSmoke.data?.playerCount >= 10 && loadSmoke.data?.playerCount <= 25, 'load smoke player count must stay 10-25');
 assert(browserPresence.data?.localOnlyDefault === true && browserPresence.data?.hostedAllowed === false, 'browser presence must be local-only by default');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
+assert(responsiveGameplay.data?.localOnlyDefault === true && responsiveGameplay.data?.hostedAllowed === false, 'responsive gameplay must be local-only by default');
+assert(responsiveGameplay.data?.viewports?.length === 9, 'responsive gameplay must cover the required nine-viewport matrix');
+assert(responsiveGameplay.data?.routes?.includes('/play') && responsiveGameplay.data?.routes?.includes('/embed'), 'responsive gameplay must cover /play and /embed');
+assert(responsiveGameplay.data?.results?.length === 18, 'responsive gameplay must cover both routes across all viewports');
+assert(responsiveGameplay.data?.iframeResults?.length === 9, 'responsive gameplay must cover parent-iframe input ownership across all viewports');
+assert(['skipped', 'checked'].includes(String(responsiveGameplay.data?.site?.status || '')), 'responsive gameplay must record Mochirii site iframe status');
+if (responsiveGameplay.data?.site?.configured === true) {
+  assert(responsiveGameplay.data?.site?.entryPath === '/games/mochi-social', 'responsive gameplay site iframe must target /games/mochi-social by default');
+  assert(responsiveGameplay.data?.siteIframeResults?.length === 9, 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured');
+}
+assert(responsiveGameplay.data?.movementKeys?.includes('ArrowDown') && responsiveGameplay.data?.movementKeys?.includes('d'), 'responsive gameplay must test arrow and WASD movement keys');
+assert(responsiveGameplay.data?.interactionKeys?.includes('Space') && responsiveGameplay.data?.interactionKeys?.includes('Enter'), 'responsive gameplay must test Space and Enter interaction keys');
+assert(responsiveGameplay.data?.legacyInteractionKeys?.includes('Spacebar'), 'responsive gameplay must test legacy Spacebar interaction-key prevention');
+assert(responsiveGameplay.data?.gameplayKeys?.includes('ArrowDown') && responsiveGameplay.data?.gameplayKeys?.includes('Space'), 'responsive gameplay must keep the combined gameplay key list');
+const responsiveInputOwnership = summarizeResponsiveInputOwnership(responsiveGameplay.data);
+assert(responsiveInputOwnership.ok, `responsive gameplay input ownership evidence is incomplete: ${responsiveInputOwnership.failures.join('; ')}`);
+const responsiveSiteIframe = summarizeResponsiveSiteIframe(responsiveGameplay.data);
+assert(responsiveGameplay.data?.results?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay route screenshots must be non-empty');
+assert(responsiveGameplay.data?.iframeResults?.every?.((result) => result.screenshot?.bytes > 1000), 'responsive gameplay iframe screenshots must be non-empty');
 assert(visualSnapshot.data?.localOnlyDefault === true && visualSnapshot.data?.hostedAllowed === false, 'visual snapshot must be local-only by default');
 assert(visualSnapshot.data?.screenshots?.page?.bytes > 1000, 'visual snapshot page PNG must be non-empty');
 assert(visualSnapshot.data?.screenshots?.canvas?.bytes > 1000, 'visual snapshot canvas PNG must be non-empty');
@@ -98,6 +128,15 @@ const summary = {
     acceptance: summarizeReport(acceptance),
     loadSmoke: summarizeReport(loadSmoke, { playerCount: loadSmoke.data?.playerCount, actions: loadSmoke.data?.actions?.length }),
     browserPresence: summarizeReport(browserPresence, { observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove }),
+    responsiveGameplay: summarizeReport(responsiveGameplay, {
+      viewports: responsiveGameplay.data?.viewports?.length,
+      routeResults: responsiveGameplay.data?.results?.length,
+      iframeResults: responsiveGameplay.data?.iframeResults?.length,
+      siteStatus: responsiveGameplay.data?.site?.status,
+      siteIframeResults: responsiveGameplay.data?.siteIframeResults?.length,
+      inputOwnership: responsiveInputOwnership,
+      siteIframe: responsiveSiteIframe
+    }),
     visualSnapshot: summarizeReport(visualSnapshot, {
       pageBytes: visualSnapshot.data?.screenshots?.page?.bytes,
       canvasBytes: visualSnapshot.data?.screenshots?.canvas?.bytes
@@ -113,6 +152,7 @@ const summary = {
     }),
     operatorSmoke: summarizeReport(operatorSmoke)
   },
+  browserVisualSequence,
   failures
 };
 
@@ -158,6 +198,181 @@ function assertLocalUrl(value, label) {
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
+}
+
+function summarizeResponsiveInputOwnership(data) {
+  const failures = [];
+  const expectedGameplayKeys = Array.isArray(data?.gameplayKeys) ? data.gameplayKeys.length : 0;
+  const expectedLegacyInteractionKeys = Array.isArray(data?.legacyInteractionKeys) ? data.legacyInteractionKeys.length : 0;
+  const expectedUnhandledKeys = Array.isArray(data?.unhandledKeys) ? data.unhandledKeys.length : 0;
+  let contexts = 0;
+
+  for (const result of Array.isArray(data?.results) ? data.results : []) {
+    contexts += 1;
+    checkOwnership(result.inputScroll, `${result.route || 'route'} ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`);
+    if (result.focus?.tabKeydown?.defaultPrevented === true) {
+      failures.push(`${result.route || 'route'} ${result.viewport?.width || '?'}x${result.viewport?.height || '?'} prevented Tab focus movement`);
+    }
+  }
+  for (const result of Array.isArray(data?.iframeResults) ? data.iframeResults : []) {
+    contexts += 1;
+    checkOwnership(result.inputOwnership, `parent iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`, { expectParentScroll: true });
+  }
+  for (const result of Array.isArray(data?.siteIframeResults) ? data.siteIframeResults : []) {
+    contexts += 1;
+    checkOwnership(result.inputOwnership, `Mochirii site iframe ${result.viewport?.width || '?'}x${result.viewport?.height || '?'}`, { expectParentScroll: true });
+  }
+
+  if (contexts < 27) failures.push(`expected at least 27 route/iframe input ownership contexts, found ${contexts}`);
+
+  return {
+    ok: failures.length === 0,
+    contexts,
+    expectedGameplayKeys,
+    expectedLegacyInteractionKeys,
+    expectedUnhandledKeys,
+    failures
+  };
+
+  function checkOwnership(ownership, label, options = {}) {
+    if (!ownership) {
+      failures.push(`${label} missing input ownership object`);
+      return;
+    }
+
+    const gameplayChecks = Array.isArray(ownership.gameplay?.checks) ? ownership.gameplay.checks : [];
+    const legacyInteractionChecks = Array.isArray(ownership.legacyInteraction?.checks) ? ownership.legacyInteraction.checks : [];
+    const unhandledChecks = Array.isArray(ownership.unhandled?.checks) ? ownership.unhandled.checks : [];
+    if (gameplayChecks.length !== expectedGameplayKeys) {
+      failures.push(`${label} expected ${expectedGameplayKeys} gameplay key checks, found ${gameplayChecks.length}`);
+    }
+    if (legacyInteractionChecks.length !== expectedLegacyInteractionKeys) {
+      failures.push(`${label} expected ${expectedLegacyInteractionKeys} legacy interaction key checks, found ${legacyInteractionChecks.length}`);
+    }
+    if (unhandledChecks.length !== expectedUnhandledKeys) {
+      failures.push(`${label} expected ${expectedUnhandledKeys} unhandled key checks, found ${unhandledChecks.length}`);
+    }
+    if (ownership.gameplay?.focus?.activeIsCanvas !== true) {
+      failures.push(`${label} did not focus the gameplay canvas before gameplay key checks`);
+    }
+    for (const check of gameplayChecks) {
+      if (check.keydown?.defaultPrevented !== true) failures.push(`${label} did not prevent gameplay key ${check.key}`);
+      if (check.keydown?.editableTarget === true || check.keydown?.editableActive === true) {
+        failures.push(`${label} sent gameplay key ${check.key} to an editable element`);
+      }
+      if (!check.before || !check.after) failures.push(`${label} missing iframe/page scroll snapshots for gameplay key ${check.key}`);
+      if (scrollChanged(check.before, check.after)) failures.push(`${label} changed iframe/page scroll while pressing gameplay key ${check.key}`);
+      if (options.expectParentScroll) {
+        if (!check.parentBefore || !check.parentAfter) {
+          failures.push(`${label} missing parent scroll snapshots for gameplay key ${check.key}`);
+        } else if (scrollChanged(check.parentBefore, check.parentAfter)) {
+          failures.push(`${label} changed parent scroll while pressing gameplay key ${check.key}`);
+        }
+      }
+    }
+    for (const check of legacyInteractionChecks) {
+      if (check.synthetic?.defaultPrevented !== true) failures.push(`${label} did not prevent legacy interaction key ${check.key}`);
+      if (!check.before || !check.after) failures.push(`${label} missing iframe/page scroll snapshots for legacy interaction key ${check.key}`);
+      if (scrollChanged(check.before, check.after)) failures.push(`${label} changed iframe/page scroll while pressing legacy interaction key ${check.key}`);
+      if (options.expectParentScroll) {
+        if (!check.parentBefore || !check.parentAfter) {
+          failures.push(`${label} missing parent scroll snapshots for legacy interaction key ${check.key}`);
+        } else if (scrollChanged(check.parentBefore, check.parentAfter)) {
+          failures.push(`${label} changed parent scroll while pressing legacy interaction key ${check.key}`);
+        }
+      }
+    }
+    for (const check of unhandledChecks) {
+      if (check.keydown?.defaultPrevented === true) failures.push(`${label} unexpectedly prevented unhandled key ${check.key}`);
+    }
+    if (ownership.editable?.preventedKeyCount !== 0) {
+      failures.push(`${label} prevented ${ownership.editable?.preventedKeyCount} editable input keydown event(s)`);
+    }
+    if (ownership.editable?.containsMovementLetters !== true || ownership.editable?.containsSpace !== true) {
+      failures.push(`${label} editable input did not preserve movement/action text`);
+    }
+  }
+}
+
+function scrollChanged(before, after) {
+  if (!before || !after) return true;
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  for (const key of keys) {
+    if (Math.abs(Number(before[key] || 0) - Number(after[key] || 0)) > 1) return true;
+  }
+  return false;
+}
+
+function summarizeResponsiveSiteIframe(data) {
+  const results = Array.isArray(data?.siteIframeResults) ? data.siteIframeResults : [];
+  const screenshots = results.filter((result) => result.screenshot?.bytes > 1000).length;
+  const inputOwnership = results.filter((result) => result.inputOwnership?.gameplay?.checks?.length === data?.gameplayKeys?.length).length;
+  return {
+    configured: data?.site?.configured === true,
+    required: data?.site?.required === true,
+    status: String(data?.site?.status || ''),
+    entryPath: data?.site?.entryPath || '',
+    results: results.length,
+    screenshots,
+    inputOwnership,
+    previewReadyEvidence: data?.site?.status === 'checked'
+      && data?.site?.entryPath === '/games/mochi-social'
+      && results.length === 9
+      && screenshots === 9
+      && inputOwnership === 9
+  };
+}
+
+function summarizeBrowserVisualSequence(commands, reports) {
+  const failures = [];
+  const commandNames = Array.isArray(commands) ? commands.map((command) => command?.name).filter(Boolean) : [];
+  const requiredCommandOrder = [
+    'alpha:browser-presence',
+    'alpha:responsive-gameplay',
+    'alpha:visual-snapshot',
+    'alpha:visual-review'
+  ];
+  const commandPositions = Object.fromEntries(requiredCommandOrder.map((name) => [name, commandNames.indexOf(name)]));
+  for (const name of requiredCommandOrder) {
+    if (commandPositions[name] === -1) failures.push(`local suite command missing from browser/visual sequence: ${name}`);
+  }
+  for (let index = 1; index < requiredCommandOrder.length; index += 1) {
+    const previous = requiredCommandOrder[index - 1];
+    const current = requiredCommandOrder[index];
+    if (commandPositions[previous] !== -1 && commandPositions[current] !== -1 && commandPositions[previous] >= commandPositions[current]) {
+      failures.push(`local suite command ${previous} must run before ${current}`);
+    }
+  }
+
+  const reportOrder = [
+    ['browser presence', reports.browserPresence?.checkedAt],
+    ['responsive gameplay', reports.responsiveGameplay?.checkedAt],
+    ['visual snapshot', reports.visualSnapshot?.checkedAt],
+    ['visual review', reports.visualReview?.checkedAt]
+  ];
+  const parsedReports = reportOrder.map(([label, checkedAt]) => {
+    const timestamp = Date.parse(String(checkedAt || ''));
+    if (!Number.isFinite(timestamp)) failures.push(`${label} report checkedAt is missing or invalid`);
+    return { label, checkedAt, timestamp };
+  });
+  for (let index = 1; index < parsedReports.length; index += 1) {
+    const previous = parsedReports[index - 1];
+    const current = parsedReports[index];
+    if (Number.isFinite(previous.timestamp) && Number.isFinite(current.timestamp) && previous.timestamp > current.timestamp) {
+      failures.push(`${previous.label} report checkedAt must not be later than ${current.label} report checkedAt`);
+    }
+  }
+
+  return {
+    ok: failures.length === 0,
+    requiredCommandOrder,
+    commandPositions,
+    reportOrder: parsedReports.map((entry) => ({
+      label: entry.label,
+      checkedAt: entry.checkedAt || null
+    })),
+    failures
+  };
 }
 
 function summarizeReport(report, extra = {}) {
@@ -268,11 +483,13 @@ ${rows}
 ## Key Proofs
 
 - Built Express runtime starts locally and stops after smoke.
-- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
+- Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, responsive gameplay viewport/input smoke, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
 - Wallet Daemon local evidence is metadata-only: file hash and \`--help\` output when the binary is present; no wallet import, seed print, signer process, Enjin API call, Fuel Tank action, or chain transaction occurs.
 - Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
 - The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.
+- Responsive gameplay proves /play, /embed, and parent-iframe input ownership across the required viewport matrix with screenshots and DOM rectangles.
+- Responsive input evidence records per-key gameplay prevention, unhandled-key freedom, editable-input preservation, Tab focus behavior, and parent/iframe scroll stability. The real Mochirii site iframe leg must be checked, not skipped, before Alpha Preview Ready.
 - Rendered NPC/chest/habitat prompt interaction remains an explicit manual gate before Alpha RC Ready.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 

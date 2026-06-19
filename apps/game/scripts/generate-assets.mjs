@@ -1,899 +1,849 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { deflateSync } from 'node:zlib';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const appRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const repoRoot = resolve(appRoot, '..', '..');
 
 const paths = {
-  sprites: join(root, 'public', 'spritesheets'),
-  tiled: join(root, 'src', 'tiled')
+  sprites: join(appRoot, 'public', 'spritesheets'),
+  tiled: join(appRoot, 'src', 'tiled'),
+  source: join(repoRoot, 'assets', 'source', 'game', 'hd')
 };
 
-const colors = {
-  ink: [34, 30, 27, 255],
-  softInk: [54, 45, 40, 255],
-  shadow: [10, 20, 18, 72],
-  deepShadow: [8, 14, 13, 110],
-  grassTop: [67, 144, 91, 255],
-  grassBottom: [42, 112, 77, 255],
-  grassLight: [124, 199, 121, 255],
-  grassDark: [34, 92, 66, 255],
-  pathTop: [226, 193, 119, 255],
-  pathBottom: [158, 112, 74, 255],
-  pathEdge: [103, 75, 57, 255],
-  waterTop: [75, 157, 197, 255],
-  waterBottom: [31, 91, 139, 255],
-  waterLight: [173, 229, 229, 255],
-  timber: [115, 69, 48, 255],
-  timberDark: [67, 43, 37, 255],
-  timberLight: [184, 111, 64, 255],
-  roof: [183, 61, 58, 255],
-  roofDark: [111, 45, 47, 255],
-  lantern: [255, 206, 103, 255],
-  lanternLight: [255, 239, 160, 255],
-  jade: [86, 144, 124, 255],
-  jadeDark: [44, 95, 82, 255],
-  jadeLight: [151, 207, 179, 255],
-  parchment: [245, 224, 164, 255],
-  gold: [239, 188, 78, 255],
-  canary: [245, 225, 116, 255],
-  violet: [119, 101, 177, 255],
-  violetLight: [183, 166, 226, 255],
-  blush: [241, 135, 169, 255],
-  yuzu: [244, 191, 76, 255],
-  sora: [112, 188, 224, 255],
-  stoneTop: [205, 196, 170, 255],
-  stoneBottom: [124, 119, 112, 255],
-  mist: [211, 229, 214, 150],
-  berry: [213, 74, 116, 255],
-  leaf: [46, 130, 77, 255],
-  paper: [255, 238, 186, 255],
-  cream: [255, 247, 211, 255],
-  nightBlue: [52, 83, 129, 255],
-  grassCalm: [57, 134, 84, 255],
-  pathStone: [215, 176, 106, 255],
-  pathStoneDark: [126, 91, 66, 255],
-  waterDeep: [26, 79, 128, 255],
-  readableEdge: [37, 31, 28, 185]
-};
+const sourceCardGeneratedAt = '2026-06-13T00:00:00.000Z';
 
-function main() {
-  mkdirSync(paths.sprites, { recursive: true });
-  mkdirSync(paths.tiled, { recursive: true });
+const spriteSpecs = [
+  {
+    id: 'wayfarer',
+    role: 'Player avatar',
+    prompt: 'Mochirii Wayfarer in layered silk travel robes, jade sash, lacquer trim, soft wuxia lighting, transparent background, smooth illustrated 2D sprite sheet, original project-authored alpha asset.',
+    kind: 'humanoid',
+    palette: { robe: '#d85f4d', trim: '#4d7fa3', accent: '#f3c05f', hair: '#2f2528', skin: '#f5cda6' }
+  },
+  {
+    id: 'sifu-narao',
+    role: 'Welcome NPC and care shrine mentor',
+    prompt: 'Sifu Narao, calm Mochirii guild mentor in jade and ivory robes with lacquered shoulder cords, warm lantern light, transparent background, smooth illustrated 2D sprite sheet.',
+    kind: 'humanoid',
+    palette: { robe: '#4f9b7c', trim: '#7a5a9e', accent: '#f6d47b', hair: '#273330', skin: '#ebc198' }
+  },
+  {
+    id: 'spirit-lirabao',
+    role: 'Mochi Spirit, certificate-eligible companion',
+    prompt: 'Mochirii Lirabao Mochi Spirit, blush cloud guardian with jade forehead mark, silk ribbon wisp, soft glow, gentle temperament, transparent background, smooth illustrated 2D sprite sheet.',
+    kind: 'spirit',
+    palette: { body: '#ee86aa', light: '#ffe6ef', accent: '#c64d79', trim: '#fff7f4' }
+  },
+  {
+    id: 'spirit-jintari',
+    role: 'Mochi Spirit, guild market affinity companion',
+    prompt: 'Mochirii Jintari Mochi Spirit, warm goldleaf guardian with lacquer ear-fins and lucky cord tail, bright temperament, transparent background, smooth illustrated 2D sprite sheet.',
+    kind: 'spirit',
+    palette: { body: '#eebd48', light: '#fff2ad', accent: '#b86f32', trim: '#fff7cc' }
+  },
+  {
+    id: 'spirit-aozhen',
+    role: 'Mochi Spirit, sky-jade scout companion',
+    prompt: 'Mochirii Aozhen Mochi Spirit, sky-jade guardian with mist crest and flowing tail, curious temperament, transparent background, smooth illustrated 2D sprite sheet.',
+    kind: 'spirit',
+    palette: { body: '#74bfde', light: '#d8f6ff', accent: '#4c83bb', trim: '#f3feff' }
+  },
+  {
+    id: 'chest',
+    role: 'Guild seal chest',
+    prompt: 'Lacquered Mochirii guild seal chest with jade clasp, gold cord, soft contact shadow, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'chest',
+    palette: { wood: '#8c4636', lid: '#c0653e', accent: '#f2c65f', jade: '#75b99e' }
+  },
+  {
+    id: 'habitat-grove',
+    role: 'Spirit invitation habitat grove',
+    prompt: 'Mochirii spirit invitation habitat grove with jade stepping stones, tea glow, silk lanterns, young bamboo, soft spirit motes, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'grove',
+    palette: { leaf: '#5fa46f', stone: '#b8c8af', tea: '#f2c65f', ribbon: '#d85f4d', bamboo: '#8fc36b', light: '#fff0b6' }
+  },
+  {
+    id: 'party-banner',
+    role: 'Mochi Spirit party formation banner',
+    prompt: 'Mochirii party formation banner with three jade spirit medallions, lacquer frame, silk tassels, warm lantern glow, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'party',
+    palette: { wood: '#6f4d3b', silk: '#4f9b7c', medallion: '#bfe3cf', accent: '#f2c65f', ribbon: '#d85f4d', light: '#fff0b6' }
+  },
+  {
+    id: 'journal-pavilion',
+    role: 'Mochi Spirit field journal pavilion',
+    prompt: 'Mochirii spirit journal pavilion with lacquer reading stand, open silk-paper field journal, jade page weights, small lanterns, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'journal',
+    palette: { wood: '#6c4a3a', paper: '#f4e7bd', jade: '#8ed0b1', accent: '#f2c65f', ribbon: '#5d9a88', light: '#fff0b6' }
+  },
+  {
+    id: 'expedition-gate',
+    role: 'Mochirii field expedition gate',
+    prompt: 'Mochirii Moonbridge field expedition gate with curved lacquer moon-arch, bamboo trail markers, jade route lanterns, silk scout ribbons, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'gate',
+    palette: { wood: '#5f4c45', moon: '#d6e7cf', bamboo: '#86b66f', jade: '#8ed0b1', ribbon: '#d85f4d', accent: '#f2c65f', light: '#fff0b6' }
+  },
+  {
+    id: 'route-invitation-altar',
+    role: 'Mochirii route spirit invitation altar',
+    prompt: 'Mochirii route spirit invitation altar with jade offering bowl, silk route ribbons, lacquer crescent stand, gold harmony seals, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'altar',
+    palette: { wood: '#62483e', bowl: '#8ed0b1', ribbon: '#d85f4d', seal: '#f2c65f', paper: '#f4e7bd', light: '#fff0b6', shadow: '#21352f' }
+  },
+  {
+    id: 'technique-dojo',
+    role: 'Mochi Spirit technique mastery dojo',
+    prompt: 'Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, warm lanterns, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'dojo',
+    palette: { wood: '#654338', floor: '#67a98d', scroll: '#f4e7bd', jade: '#8ed0b1', ribbon: '#d85f4d', accent: '#f2c65f', light: '#fff0b6' }
+  },
+  {
+    id: 'tactic-scroll-stand',
+    role: 'Mochi Spirit battle tactic scroll stand',
+    prompt: 'Mochirii battle tactic scroll stand with open silk-paper stance scrolls, jade focus weights, lacquered wuxia lesson frame, gold lantern light, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'tactic',
+    palette: { wood: '#5f463c', paper: '#f4e7bd', jade: '#8ed0b1', ribbon: '#d85f4d', ink: '#53423a', accent: '#f2c65f', light: '#fff0b6', shadow: '#263a35' }
+  },
+  {
+    id: 'affinity-dais',
+    role: 'Mochi Spirit affinity trial dais',
+    prompt: 'Mochirii affinity trial dais with jade mirror disc, silk affinity ribbons, lacquer base, warm lantern reflection, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'dais',
+    palette: { base: '#5f766d', mirror: '#cce8d8', jade: '#8ed0b1', ribbon: '#d85f4d', accent: '#f2c65f', light: '#fff0b6', shadow: '#263a35' }
+  },
+  {
+    id: 'market-board',
+    role: 'Fixed-price market board',
+    prompt: 'Mochirii guild market board with lacquer posts, parchment tags, jade pins, warm lantern accent, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'board',
+    palette: { wood: '#8d5639', roof: '#bf5148', cloth: '#f0dfb2', accent: '#f4c46f' }
+  },
+  {
+    id: 'trade-post',
+    role: 'Direct trade post',
+    prompt: 'Mochirii trade post with jade cloth canopy, paired exchange charms, lacquer wood, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'board',
+    palette: { wood: '#4f806f', roof: '#5d9a88', cloth: '#efe8b6', accent: '#9ed7b7' }
+  },
+  {
+    id: 'training-ring',
+    role: 'No-injury spirit training ring',
+    prompt: 'Mochirii no-injury spirit training ring with jade floor circle, silk sparring ribbons, lacquer posts, warm lantern accents, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'ring',
+    palette: { wood: '#5f4c45', floor: '#67a98d', ribbon: '#d85f4d', accent: '#f4c46f', light: '#fff0b6' }
+  },
+  {
+    id: 'quest-board',
+    role: 'Roleplay quest board',
+    prompt: 'Mochirii roleplay quest board with layered parchment slips, jade pins, guild ribbons, lacquer frame, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'board',
+    palette: { wood: '#78543f', roof: '#5c8f77', cloth: '#f4e7bd', accent: '#d85f4d' }
+  },
+  {
+    id: 'guild-rank-bell',
+    role: 'Mochirii guild rank trial bell',
+    prompt: 'Mochirii guild rank trial bell with jade bell, lacquer arch, silk rank tassels, gold no-real-value rank seal glow, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'rank',
+    palette: { wood: '#5f463c', bell: '#8ed0b1', ribbon: '#d85f4d', seal: '#f2c65f', paper: '#f4e7bd', light: '#fff0b6', shadow: '#263a35' }
+  },
+  {
+    id: 'growth-moonwell',
+    role: 'Mochi Spirit growth rite moonwell',
+    prompt: 'Mochirii Moonwell Bloom Rite shrine with jade moon basin, silk bloom tassels, gold growth sigil glow, lacquer base, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'moonwell',
+    palette: { base: '#4f766d', water: '#8ed0d1', moon: '#fff0b6', blossom: '#ee86aa', ribbon: '#d85f4d', jade: '#8ed0b1', seal: '#f2c65f', shadow: '#263a35' }
+  },
+  {
+    id: 'canary-shrine',
+    role: 'Enjin Canary preview-stub shrine',
+    prompt: 'Mochirii Enjin Canary preview shrine with violet lacquer base, gold crystal, no-real-value staging aura, transparent background, smooth illustrated 2D prop sprite sheet.',
+    kind: 'shrine',
+    palette: { base: '#665ba0', light: '#f6de66', accent: '#bca8e6', trim: '#fff4af' }
+  }
+];
 
-  writePng(join(paths.tiled, 'mochi-tiles.png'), drawTilesheet());
-  writePng(
-    join(paths.sprites, 'mochi.png'),
-    drawCharacterSheet({
-      robe: [228, 126, 89, 255],
-      trim: [78, 116, 176, 255],
-      accent: colors.gold,
-      hair: [48, 36, 34, 255],
-      skin: [255, 219, 183, 255]
-    })
-  );
-  writePng(
-    join(paths.sprites, 'friend.png'),
-    drawCharacterSheet({
-      robe: [93, 178, 139, 255],
-      trim: [102, 83, 163, 255],
-      accent: colors.lantern,
-      hair: [51, 59, 54, 255],
-      skin: [246, 212, 174, 255]
-    })
-  );
-  writePng(join(paths.sprites, 'chest.png'), drawChestSheet());
-  writePng(
-    join(paths.sprites, 'spirit-momo.png'),
-    drawSpiritSheet({
-      body: colors.blush,
-      light: [255, 222, 231, 255],
-      trim: [255, 245, 248, 255],
-      accent: [205, 78, 125, 255],
-      variant: 'momo'
-    })
-  );
-  writePng(
-    join(paths.sprites, 'spirit-yuzu.png'),
-    drawSpiritSheet({
-      body: colors.yuzu,
-      light: [255, 239, 157, 255],
-      trim: [255, 250, 202, 255],
-      accent: [187, 118, 44, 255],
-      variant: 'yuzu'
-    })
-  );
-  writePng(
-    join(paths.sprites, 'spirit-sora.png'),
-    drawSpiritSheet({
-      body: colors.sora,
-      light: [212, 245, 255, 255],
-      trim: [240, 252, 255, 255],
-      accent: [68, 126, 183, 255],
-      variant: 'sora'
-    })
-  );
-  writePng(
-    join(paths.sprites, 'market-board.png'),
-    drawBoardSheet({
-      wood: [134, 84, 55, 255],
-      roof: colors.roof,
-      cloth: colors.parchment,
-      accent: colors.gold,
-      mode: 'market'
-    })
-  );
-  writePng(
-    join(paths.sprites, 'trade-post.png'),
-    drawBoardSheet({
-      wood: [78, 125, 112, 255],
-      roof: [91, 139, 130, 255],
-      cloth: [236, 231, 183, 255],
-      accent: colors.jadeLight,
-      mode: 'trade'
-    })
-  );
-  writePng(join(paths.sprites, 'canary-shrine.png'), drawShrineSheet());
-}
+await main();
 
-function drawTilesheet() {
-  const image = makeImage(256, 96, [0, 0, 0, 0]);
-  tile(image, 0, 0, paintGrass);
-  tile(image, 1, 0, paintPath);
-  tile(image, 2, 0, paintWater);
-  tile(image, 3, 0, paintTimberWall);
-  tile(image, 4, 0, paintFlowerGarden);
-  tile(image, 5, 0, paintGuildSign);
-  tile(image, 6, 0, paintMarketWall);
-  tile(image, 7, 0, paintCanaryFloor);
-  tile(image, 0, 1, paintLantern);
-  tile(image, 1, 1, paintHabitatBed);
-  tile(image, 2, 1, paintBridge);
-  tile(image, 3, 1, paintRedAwning);
-  tile(image, 4, 1, paintCanaryMarker);
-  tile(image, 5, 1, paintSoftShadow);
-  tile(image, 6, 1, paintBamboo);
-  tile(image, 7, 1, paintTimberPlank);
-  tile(image, 0, 2, paintShrineStone);
-  tile(image, 1, 2, paintTradeCounter);
-  tile(image, 2, 2, paintBlossomPatch);
-  tile(image, 3, 2, paintWaterBank);
-  tile(image, 4, 2, paintChestMarker);
-  tile(image, 5, 2, paintCareShrine);
-  tile(image, 6, 2, paintCanaryShrineTile);
-  tile(image, 7, 2, paintTradePostTile);
-  addTilesheetPolish(image);
-  return image;
-}
+async function main() {
+  await mkdir(paths.sprites, { recursive: true });
+  await mkdir(paths.tiled, { recursive: true });
+  await mkdir(paths.source, { recursive: true });
 
-function paintGrass(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [71, 154, 94, 255], colors.grassCalm);
-  fill(image, ox, oy + 29, 32, 3, [42, 112, 74, 255]);
-  fill(image, ox + 1, oy + 1, 30, 1, [107, 183, 111, 100]);
-  scatterGrass(image, ox, oy);
-  fill(image, ox + 5, oy + 21, 8, 2, [37, 102, 68, 140]);
-  fill(image, ox + 20, oy + 10, 7, 2, [104, 188, 108, 170]);
-  fill(image, ox + 2, oy + 27, 5, 1, [103, 176, 101, 255]);
-  fill(image, ox + 22, oy + 25, 6, 1, [31, 88, 60, 160]);
-}
-
-function paintPath(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [232, 198, 125, 255], colors.pathStone);
-  fill(image, ox, oy, 32, 2, [250, 222, 151, 210]);
-  fill(image, ox, oy + 30, 32, 2, colors.pathStoneDark);
-  fill(image, ox, oy + 10, 32, 1, [181, 131, 82, 210]);
-  fill(image, ox, oy + 20, 32, 1, [160, 114, 76, 210]);
-  fill(image, ox + 10, oy + 1, 1, 9, [166, 121, 80, 185]);
-  fill(image, ox + 21, oy + 11, 1, 9, [139, 99, 71, 180]);
-  fill(image, ox + 6, oy + 21, 1, 9, [132, 94, 68, 175]);
-  fill(image, ox + 4, oy + 5, 7, 1, [255, 229, 156, 160]);
-  fill(image, ox + 14, oy + 15, 7, 1, [247, 208, 126, 145]);
-  fill(image, ox + 22, oy + 25, 6, 1, [112, 78, 61, 135]);
-  fill(image, ox, oy, 1, 32, [98, 72, 56, 120]);
-  fill(image, ox + 31, oy, 1, 32, [98, 72, 56, 120]);
-}
-
-function paintWater(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [68, 153, 194, 255], colors.waterDeep);
-  fill(image, ox, oy, 32, 2, [121, 196, 210, 120]);
-  fill(image, ox + 2, oy + 8, 28, 2, colors.waterLight);
-  fill(image, ox + 6, oy + 16, 21, 2, [55, 126, 174, 255]);
-  fill(image, ox + 2, oy + 25, 26, 2, [20, 74, 122, 255]);
-  fill(image, ox + 20, oy + 13, 8, 1, [228, 251, 247, 255]);
-  fill(image, ox + 4, oy + 12, 8, 1, [218, 250, 247, 150]);
-  fill(image, ox + 14, oy + 23, 12, 1, [16, 67, 114, 165]);
-}
-
-function paintTimberWall(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [128, 88, 62, 255], colors.timberDark);
-  fill(image, ox, oy, 32, 3, [190, 123, 72, 180]);
-  fill(image, ox, oy + 29, 32, 3, [45, 33, 31, 255]);
-  fill(image, ox + 5, oy, 4, 32, [49, 34, 32, 255]);
-  fill(image, ox + 22, oy, 4, 32, [49, 34, 32, 255]);
-  fill(image, ox + 1, oy + 10, 30, 2, [72, 47, 40, 255]);
-  fill(image, ox + 1, oy + 20, 30, 2, [49, 35, 33, 255]);
-  fill(image, ox + 10, oy + 5, 10, 2, [174, 110, 67, 180]);
-  fill(image, ox + 10, oy + 24, 10, 1, [149, 93, 62, 180]);
-}
-
-function paintFlowerGarden(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 15, oy + 23, 20, 7, [37, 105, 66, 230]);
-  fill(image, ox + 7, oy + 21, 18, 2, [28, 86, 58, 160]);
-  flower(image, ox + 9, oy + 14, colors.blush);
-  flower(image, ox + 17, oy + 12, colors.lantern);
-  flower(image, ox + 23, oy + 17, [212, 140, 196, 255]);
-  fill(image, ox + 13, oy + 18, 3, 8, [48, 120, 71, 255]);
-}
-
-function paintGuildSign(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 27, 17, 4, colors.shadow);
-  fill(image, ox + 14, oy + 8, 4, 19, colors.ink);
-  fill(image, ox + 15, oy + 8, 2, 18, [116, 71, 48, 255]);
-  fill(image, ox + 7, oy + 6, 18, 10, colors.ink);
-  fill(image, ox + 8, oy + 7, 16, 8, colors.parchment);
-  outline(image, ox + 8, oy + 7, 16, 8, colors.softInk);
-  fill(image, ox + 10, oy + 10, 12, 1, colors.roof);
-  fill(image, ox + 10, oy + 13, 9, 1, colors.gold);
-  fillEllipse(image, ox + 16, oy + 27, 14, 3, colors.shadow);
-}
-
-function paintMarketWall(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [138, 86, 55, 255], [58, 39, 35, 255]);
-  fill(image, ox + 2, oy + 3, 28, 8, colors.ink);
-  fillGradient(image, ox + 3, oy + 3, 26, 8, [205, 119, 65, 255], [134, 72, 49, 255]);
-  fill(image, ox + 5, oy + 13, 22, 14, [75, 49, 42, 255]);
-  fill(image, ox + 13, oy + 13, 6, 14, colors.gold);
-  fill(image, ox + 8, oy + 19, 16, 2, [45, 33, 31, 255]);
-  fill(image, ox + 8, oy + 8, 16, 2, [252, 178, 87, 210]);
-  fill(image, ox + 6, oy + 27, 20, 2, colors.deepShadow);
-}
-
-function paintCanaryFloor(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [97, 94, 158, 255], [69, 70, 122, 255]);
-  fill(image, ox + 3, oy + 3, 26, 26, [62, 52, 104, 255]);
-  fill(image, ox + 5, oy + 5, 22, 22, [151, 145, 203, 255]);
-  fill(image, ox + 9, oy + 9, 14, 14, colors.violetLight);
-  fill(image, ox + 14, oy + 3, 4, 26, colors.canary);
-  fill(image, ox + 3, oy + 14, 26, 4, [238, 215, 99, 220]);
-  fillDiamond(image, ox + 16, oy + 16, 7, 10, [255, 246, 168, 180]);
-  outline(image, ox + 4, oy + 4, 24, 24, [74, 62, 119, 255]);
-}
-
-function paintLantern(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 26, 19, 5, [255, 188, 65, 60]);
-  fill(image, ox + 14, oy + 5, 4, 22, [84, 55, 42, 255]);
-  fill(image, ox + 10, oy + 8, 12, 4, colors.ink);
-  fill(image, ox + 11, oy + 8, 10, 3, colors.roof);
-  fillEllipse(image, ox + 16, oy + 18, 11, 13, colors.ink);
-  fillEllipse(image, ox + 16, oy + 18, 9, 11, colors.lantern);
-  fill(image, ox + 12, oy + 15, 8, 10, colors.lanternLight);
-  fill(image, ox + 15, oy + 12, 2, 13, [255, 164, 67, 145]);
-  outline(image, ox + 12, oy + 13, 8, 12, [107, 56, 44, 255]);
-  fillEllipse(image, ox + 16, oy + 25, 16, 4, [255, 189, 76, 70]);
-}
-
-function paintHabitatBed(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 25, 25, 7, colors.shadow);
-  fillEllipse(image, ox + 16, oy + 22, 24, 10, [62, 125, 77, 255]);
-  fill(image, ox + 5, oy + 18, 22, 8, colors.ink);
-  fillGradient(image, ox + 6, oy + 18, 20, 8, [230, 190, 97, 255], [162, 110, 66, 255]);
-  fill(image, ox + 9, oy + 13, 14, 10, [249, 233, 170, 255]);
-  outline(image, ox + 8, oy + 13, 16, 11, [82, 66, 50, 255]);
-  fill(image, ox + 12, oy + 17, 8, 2, colors.blush);
-  fill(image, ox + 11, oy + 21, 10, 1, [255, 255, 216, 120]);
-}
-
-function paintBridge(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [181, 135, 80, 255], [126, 78, 54, 255]);
-  fill(image, ox, oy + 16, 32, 5, [95, 60, 47, 255]);
-  fill(image, ox + 1, oy + 4, 30, 4, colors.ink);
-  fill(image, ox + 2, oy + 4, 28, 3, [235, 190, 101, 255]);
-  fill(image, ox + 5, oy + 23, 23, 3, [92, 62, 50, 255]);
-  fill(image, ox + 4, oy + 8, 2, 16, [83, 54, 43, 255]);
-  fill(image, ox + 25, oy + 8, 2, 16, [83, 54, 43, 255]);
-  fill(image, ox + 9, oy + 9, 1, 14, [255, 224, 137, 90]);
-  fill(image, ox + 18, oy + 9, 1, 14, [70, 48, 41, 120]);
-}
-
-function paintRedAwning(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 26, 23, 5, colors.shadow);
-  fill(image, ox + 5, oy + 10, 22, 13, colors.ink);
-  fillGradient(image, ox + 6, oy + 11, 20, 12, colors.timber, mix(colors.timber, colors.ink, 0.25));
-  fill(image, ox + 3, oy + 7, 26, 6, colors.ink);
-  fillGradient(image, ox + 4, oy + 7, 24, 5, [223, 77, 68, 255], colors.roofDark);
-  fill(image, ox + 5, oy + 8, 22, 1, [251, 122, 94, 255]);
-  fill(image, ox + 8, oy + 15, 16, 5, colors.parchment);
-  fill(image, ox + 11, oy + 20, 10, 2, colors.gold);
-  fillEllipse(image, ox + 16, oy + 26, 20, 4, colors.shadow);
-}
-
-function paintCanaryMarker(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 25, 23, 5, colors.shadow);
-  fillEllipse(image, ox + 16, oy + 17, 23, 23, colors.ink);
-  fillEllipse(image, ox + 16, oy + 17, 20, 20, colors.violet);
-  fillEllipse(image, ox + 16, oy + 17, 14, 14, colors.violetLight);
-  fill(image, ox + 14, oy + 5, 4, 23, colors.canary);
-  fill(image, ox + 9, oy + 15, 14, 3, colors.lanternLight);
-  fillDiamond(image, ox + 16, oy + 16, 7, 9, colors.cream);
-  outline(image, ox + 8, oy + 8, 16, 16, [73, 58, 119, 255]);
-}
-
-function paintSoftShadow(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 17, 22, 19, [9, 19, 18, 96]);
-  fillEllipse(image, ox + 16, oy + 17, 13, 10, [18, 32, 28, 68]);
-}
-
-function paintBamboo(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [55, 123, 79, 255], [33, 88, 63, 255]);
-  fill(image, ox + 3, oy + 25, 26, 3, [24, 66, 50, 255]);
-  bambooStalk(image, ox + 7, oy + 8, 16, [73, 132, 81, 255]);
-  bambooStalk(image, ox + 14, oy + 5, 20, [91, 156, 86, 255]);
-  bambooStalk(image, ox + 22, oy + 10, 15, [62, 115, 74, 255]);
-  fill(image, ox + 5, oy + 12, 9, 2, [120, 183, 101, 255]);
-  fill(image, ox + 17, oy + 7, 10, 2, [111, 174, 99, 255]);
-  fill(image, ox + 10, oy + 18, 8, 2, [36, 101, 62, 220]);
-}
-
-function paintTimberPlank(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [128, 95, 68, 255], [72, 52, 46, 255]);
-  fill(image, ox + 1, oy + 6, 30, 5, [170, 119, 76, 255]);
-  fill(image, ox + 2, oy + 16, 28, 5, [118, 81, 60, 255]);
-  fill(image, ox + 4, oy + 26, 24, 3, [55, 40, 37, 255]);
-  fill(image, ox + 8, oy + 3, 1, 26, [45, 35, 34, 150]);
-  fill(image, ox + 22, oy + 4, 1, 25, [45, 35, 34, 150]);
-  fill(image, ox + 11, oy + 8, 7, 1, [232, 167, 94, 120]);
-}
-
-function paintShrineStone(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 25, 24, 6, colors.shadow);
-  fill(image, ox + 5, oy + 9, 22, 17, colors.ink);
-  fillGradient(image, ox + 6, oy + 10, 20, 15, [205, 196, 170, 255], [121, 113, 101, 255]);
-  fill(image, ox + 8, oy + 11, 16, 12, [222, 214, 188, 255]);
-  outline(image, ox + 5, oy + 9, 22, 17, [88, 78, 65, 255]);
-  fill(image, ox + 12, oy + 15, 8, 3, colors.jade);
-  fill(image, ox + 9, oy + 12, 12, 1, colors.cream);
-}
-
-function paintTradeCounter(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 25, 21, 5, colors.shadow);
-  fill(image, ox + 7, oy + 13, 18, 11, colors.ink);
-  fillGradient(image, ox + 8, oy + 13, 16, 11, colors.timber, mix(colors.timber, colors.ink, 0.28));
-  fill(image, ox + 10, oy + 8, 12, 6, colors.ink);
-  fill(image, ox + 10, oy + 9, 12, 5, colors.parchment);
-  fill(image, ox + 15, oy + 6, 2, 17, colors.softInk);
-  fill(image, ox + 9, oy + 16, 14, 3, colors.jadeLight);
-  fill(image, ox + 12, oy + 20, 3, 2, colors.gold);
-  fill(image, ox + 18, oy + 20, 3, 2, colors.canary);
-}
-
-function paintBlossomPatch(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [65, 133, 86, 255], [42, 103, 72, 255]);
-  fillEllipse(image, ox + 16, oy + 25, 24, 6, [31, 80, 58, 255]);
-  fill(image, ox + 5, oy + 15, 22, 8, colors.ink);
-  fill(image, ox + 6, oy + 15, 20, 8, [199, 86, 122, 255]);
-  fill(image, ox + 10, oy + 10, 12, 6, [255, 223, 145, 255]);
-  fill(image, ox + 8, oy + 19, 16, 1, [255, 177, 194, 180]);
-  flower(image, ox + 8, oy + 14, colors.blush);
-  flower(image, ox + 22, oy + 16, [236, 155, 190, 255]);
-}
-
-function paintWaterBank(image, ox, oy) {
-  fillGradient(image, ox, oy, 32, 32, [61, 139, 185, 255], colors.waterDeep);
-  fill(image, ox, oy, 32, 7, [50, 120, 79, 255]);
-  fill(image, ox, oy + 7, 32, 2, colors.ink);
-  fill(image, ox + 2, oy + 7, 28, 3, [219, 184, 109, 255]);
-  fill(image, ox + 5, oy + 18, 20, 2, colors.waterLight);
-  fill(image, ox + 1, oy + 28, 26, 2, [20, 70, 119, 255]);
-  fill(image, ox + 4, oy + 10, 8, 1, [255, 224, 149, 140]);
-}
-
-function paintChestMarker(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 26, 20, 5, colors.shadow);
-  fillEllipse(image, ox + 16, oy + 17, 23, 17, [255, 198, 82, 42]);
-  fill(image, ox + 6, oy + 13, 20, 11, colors.ink);
-  fillGradient(image, ox + 7, oy + 13, 18, 11, [132, 74, 47, 255], [79, 51, 41, 255]);
-  fill(image, ox + 7, oy + 9, 18, 7, colors.ink);
-  fillGradient(image, ox + 8, oy + 10, 16, 6, [222, 130, 62, 255], [151, 79, 49, 255]);
-  outline(image, ox + 7, oy + 13, 18, 11, colors.softInk);
-  fill(image, ox + 15, oy + 10, 3, 14, colors.gold);
-  fill(image, ox + 11, oy + 18, 10, 2, [69, 45, 39, 255]);
-  fill(image, ox + 10, oy + 12, 9, 1, [255, 219, 125, 135]);
-}
-
-function paintCareShrine(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 25, 20, 5, colors.shadow);
-  fill(image, ox + 8, oy + 7, 16, 17, colors.ink);
-  fillGradient(image, ox + 9, oy + 8, 14, 16, [210, 66, 61, 255], colors.roofDark);
-  fill(image, ox + 12, oy + 11, 8, 8, colors.lanternLight);
-  fillDiamond(image, ox + 16, oy + 15, 5, 6, colors.cream);
-  fill(image, ox + 10, oy + 19, 12, 4, colors.gold);
-  outline(image, ox + 9, oy + 8, 14, 16, [102, 46, 43, 255]);
-  fillEllipse(image, ox + 16, oy + 17, 18, 16, [255, 202, 86, 44]);
-}
-
-function paintCanaryShrineTile(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 25, 23, 5, colors.shadow);
-  fillEllipse(image, ox + 16, oy + 16, 25, 25, [255, 231, 105, 45]);
-  fill(image, ox + 4, oy + 8, 24, 18, colors.ink);
-  fillGradient(image, ox + 5, oy + 8, 22, 18, [105, 89, 164, 255], [61, 54, 108, 255]);
-  fill(image, ox + 9, oy + 11, 14, 10, colors.violetLight);
-  fill(image, ox + 13, oy + 4, 6, 23, colors.canary);
-  fillDiamond(image, ox + 16, oy + 13, 5, 10, colors.cream);
-  fill(image, ox + 8, oy + 18, 16, 3, colors.lanternLight);
-  outline(image, ox + 5, oy + 8, 22, 18, [64, 53, 103, 255]);
-}
-
-function paintTradePostTile(image, ox, oy) {
-  paintGrass(image, ox, oy);
-  fillEllipse(image, ox + 16, oy + 26, 21, 5, colors.shadow);
-  fill(image, ox + 5, oy + 20, 22, 6, colors.ink);
-  fill(image, ox + 6, oy + 20, 20, 5, [76, 52, 42, 255]);
-  fill(image, ox + 3, oy + 11, 26, 11, colors.ink);
-  fillGradient(image, ox + 4, oy + 12, 24, 10, [87, 150, 138, 255], [49, 103, 93, 255]);
-  fill(image, ox + 8, oy + 15, 16, 3, [244, 237, 184, 255]);
-  fill(image, ox + 11, oy + 20, 3, 2, colors.gold);
-  fill(image, ox + 19, oy + 20, 3, 2, colors.jadeLight);
-  fill(image, ox + 15, oy + 20, 2, 1, colors.cream);
-}
-
-function addTilesheetPolish(image) {
-  for (let row = 0; row < 3; row += 1) {
-    for (let col = 0; col < 8; col += 1) {
-      const ox = col * 32;
-      const oy = row * 32;
-      fill(image, ox, oy, 32, 1, [255, 255, 255, 16]);
-      fill(image, ox, oy + 31, 32, 1, [0, 0, 0, 22]);
-      fill(image, ox + 31, oy, 1, 32, [0, 0, 0, 18]);
+  const runtimeSpriteFiles = new Set(spriteSpecs.map((spec) => `${spec.id}.png`));
+  const existingSpriteFiles = await readdir(paths.sprites).catch(() => []);
+  for (const file of existingSpriteFiles) {
+    if (file.endsWith('.png') && !runtimeSpriteFiles.has(file)) {
+      await rm(join(paths.sprites, file), { force: true });
     }
   }
 
-  // Extra landmark cues: tiny but readable, following Kenney's icon-first clarity.
-  fillDiamond(image, 176, 80, 4, 5, colors.gold);
-  fillDiamond(image, 208, 80, 5, 7, colors.canary);
-  fill(image, 46, 58, 6, 1, colors.cream);
-  fill(image, 78, 82, 7, 1, colors.cream);
+  await exportTilesheet();
+  for (const spec of spriteSpecs) {
+    await exportSprite(spec);
+  }
 }
 
-function drawCharacterSheet(theme) {
-  const image = makeImage(96, 192, [0, 0, 0, 0]);
+async function exportTilesheet() {
+  const id = 'mochi-tiles';
+  const masterPath = join(paths.source, `${id}-master.png`);
+  const runtimePath = join(paths.tiled, `${id}.png`);
+  const svg = tilesheetSvg();
+
+  await sharp(Buffer.from(svg)).png().toFile(masterPath);
+  await sharp(masterPath).resize(512, 192, { fit: 'fill' }).png().toFile(runtimePath);
+  await writeSourceCard({
+    id,
+    role: 'Jade Lantern Court town tilesheet',
+    runtimePath: 'apps/game/src/tiled/mochi-tiles.png',
+    masterPath: 'assets/source/game/hd/mochi-tiles-master.png',
+    masterDimensions: '1024x384',
+    runtimeDimensions: '512x192',
+    frameLayout: '8x3 tiles, 64x64 runtime tiles',
+    prompt: 'Mochirii High-Fidelity Wuxia town tilesheet for Jade Lantern Court: jade grass, lacquer paths, silk-paper lanterns, guild garden, market, trade, and Canary shrine landmarks, smooth illustrated 2D, original generated-for-project world art.',
+    exportStatus: 'project-authored/generated-for-project'
+  });
+}
+
+async function exportSprite(spec) {
+  const masterPath = join(paths.source, `${spec.id}-master.png`);
+  const runtimePath = join(paths.sprites, `${spec.id}.png`);
+  const svg = spriteSheetSvg(spec);
+
+  await sharp(Buffer.from(svg)).png().toFile(masterPath);
+  await sharp(masterPath).resize(384, 768, { fit: 'fill' }).png().toFile(runtimePath);
+  await writeSourceCard({
+    id: spec.id,
+    role: spec.role,
+    runtimePath: `apps/game/public/spritesheets/${spec.id}.png`,
+    masterPath: `assets/source/game/hd/${spec.id}-master.png`,
+    masterDimensions: '768x1536',
+    runtimeDimensions: '384x768',
+    frameLayout: '3x4 frames, 128x192 runtime frames',
+    prompt: spec.prompt,
+    exportStatus: 'project-authored/generated-for-project'
+  });
+}
+
+async function writeSourceCard(card) {
+  await writeFile(
+    join(paths.source, `${card.id}.source.json`),
+    `${JSON.stringify({ ...card, tool: 'sharp svg-to-png source-master export', generatedAt: sourceCardGeneratedAt }, null, 2)}\n`,
+    'utf8'
+  );
+}
+
+function spriteSheetSvg(spec) {
+  const frameWidth = 256;
+  const frameHeight = 384;
+  const frames = [];
+
   for (let row = 0; row < 4; row += 1) {
     for (let col = 0; col < 3; col += 1) {
-      const ox = col * 32;
-      const oy = row * 48;
-      drawCharacterFrame(image, ox, oy, row, col, theme);
+      frames.push(`<g transform="translate(${col * frameWidth} ${row * frameHeight})">${drawSpriteFrame(spec, row, col)}</g>`);
     }
   }
-  return image;
+
+  return svgWrap(768, 1536, `
+    <defs>
+      <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="8"/>
+      </filter>
+      <linearGradient id="silk-${spec.id}" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="${spec.palette.light || spec.palette.roof || spec.palette.lid || spec.palette.trim || '#fff0c0'}"/>
+        <stop offset="58%" stop-color="${spec.palette.robe || spec.palette.body || spec.palette.wood || spec.palette.base || '#75b99e'}"/>
+        <stop offset="100%" stop-color="#2a2828"/>
+      </linearGradient>
+      <radialGradient id="aura-${spec.id}" cx="50%" cy="44%" r="58%">
+        <stop offset="0%" stop-color="${spec.palette.light || spec.palette.accent || '#fff1a8'}" stop-opacity="0.78"/>
+        <stop offset="100%" stop-color="${spec.palette.accent || '#f0c36b'}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    ${frames.join('\n')}
+  `);
 }
 
-function drawCharacterFrame(image, ox, oy, row, col, theme) {
-  const step = col === 0 ? -1 : col === 2 ? 1 : 0;
-  const bob = col === 1 ? -1 : 0;
-  const side = row === 1 ? -1 : row === 2 ? 1 : 0;
-  const facingUp = row === 3;
+function drawSpriteFrame(spec, row, col) {
+  const bob = col === 1 ? -8 : col === 2 ? 5 : 0;
+  if (spec.kind === 'humanoid') return humanoidFrame(spec, row, col, bob);
+  if (spec.kind === 'spirit') return spiritFrame(spec, row, col, bob);
+  if (spec.kind === 'chest') return chestFrame(spec, row, col, bob);
+  if (spec.kind === 'grove') return groveFrame(spec, row, col, bob);
+  if (spec.kind === 'party') return partyFrame(spec, row, col, bob);
+  if (spec.kind === 'journal') return journalFrame(spec, row, col, bob);
+  if (spec.kind === 'gate') return expeditionGateFrame(spec, row, col, bob);
+  if (spec.kind === 'altar') return routeInvitationAltarFrame(spec, row, col, bob);
+  if (spec.kind === 'dojo') return techniqueDojoFrame(spec, row, col, bob);
+  if (spec.kind === 'tactic') return tacticScrollStandFrame(spec, row, col, bob);
+  if (spec.kind === 'dais') return affinityDaisFrame(spec, row, col, bob);
+  if (spec.kind === 'board') return boardFrame(spec, row, col, bob);
+  if (spec.kind === 'ring') return trainingRingFrame(spec, row, col, bob);
+  if (spec.kind === 'rank') return guildRankBellFrame(spec, row, col, bob);
+  if (spec.kind === 'moonwell') return growthMoonwellFrame(spec, row, col, bob);
+  return shrineFrame(spec, row, col, bob);
+}
 
-  fillEllipse(image, ox + 16, oy + 41, 22, 6, colors.shadow);
-  fillEllipse(image, ox + 16, oy + 39, 14, 3, [255, 219, 139, 34]);
+function humanoidFrame(spec, row, col, bob) {
+  const side = row === 1 ? -12 : row === 2 ? 12 : 0;
+  const back = row === 3;
+  const step = col === 0 ? -9 : col === 2 ? 9 : 0;
+  return `
+    <ellipse cx="128" cy="316" rx="70" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <path d="M80 150 C92 112 112 94 134 96 C166 100 184 122 190 160 L202 280 C175 302 90 302 61 280 Z" fill="#1c2222" opacity="0.9"/>
+    <path d="M88 154 C102 120 118 108 134 108 C158 112 176 130 181 160 L190 275 C164 294 96 294 70 275 Z" fill="url(#silk-${spec.id})"/>
+    <path d="M91 160 L71 257 C84 268 103 269 117 259 L126 169 Z" fill="${spec.palette.trim}" opacity="0.92"/>
+    <path d="M166 162 L186 257 C173 268 154 269 140 259 L130 169 Z" fill="${spec.palette.trim}" opacity="0.92"/>
+    <path d="M104 198 C126 209 146 209 166 198 L161 224 C139 235 117 235 96 224 Z" fill="#f8e7b8" opacity="0.94"/>
+    <path d="M106 238 C124 251 145 251 162 238 L166 257 C142 271 118 271 94 257 Z" fill="${spec.palette.accent}" opacity="0.98"/>
+    <path d="M120 154 L136 154 L139 282 L118 282 Z" fill="${spec.palette.accent}" opacity="0.75"/>
+    <ellipse cx="${128 + side}" cy="${104 + bob}" rx="47" ry="52" fill="#151617"/>
+    <ellipse cx="${128 + side}" cy="${112 + bob}" rx="40" ry="43" fill="${spec.palette.skin}"/>
+    <path d="M88 ${104 + bob} C94 ${60 + bob} 115 ${50 + bob} 139 ${59 + bob} C165 ${69 + bob} 178 ${88 + bob} 169 ${114 + bob} C149 ${98 + bob} 120 ${94 + bob} 88 ${104 + bob} Z" fill="${spec.palette.hair}"/>
+    <path d="M106 ${62 + bob} C118 ${41 + bob} 143 ${41 + bob} 155 ${62 + bob} L151 ${76 + bob} C135 ${67 + bob} 121 ${67 + bob} 110 ${76 + bob} Z" fill="${spec.palette.trim}"/>
+    <path d="M111 ${72 + bob} C123 ${62 + bob} 141 ${62 + bob} 153 ${72 + bob}" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    ${back ? `<path d="M92 ${112 + bob} C112 ${138 + bob} 148 ${138 + bob} 168 ${112 + bob} L167 ${151 + bob} C139 ${164 + bob} 113 ${164 + bob} 88 ${151 + bob} Z" fill="${spec.palette.hair}"/>` : `
+      <ellipse cx="${111 + side}" cy="${119 + bob}" rx="5" ry="7" fill="#1d1f20"/>
+      <ellipse cx="${145 + side}" cy="${119 + bob}" rx="5" ry="7" fill="#1d1f20"/>
+      <path d="M118 ${145 + bob} C127 ${152 + bob} 137 ${152 + bob} 146 ${145 + bob}" stroke="#7b3f3e" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <circle cx="${113 + side}" cy="${116 + bob}" r="2" fill="#fff8d8"/>
+      <circle cx="${147 + side}" cy="${116 + bob}" r="2" fill="#fff8d8"/>
+    `}
+    <path d="M74 286 C91 ${300 + step} 108 ${300 + step} 119 286 L113 331 C94 338 76 334 62 320 Z" fill="#181818"/>
+    <path d="M182 286 C165 ${300 - step} 148 ${300 - step} 137 286 L143 331 C162 338 180 334 194 320 Z" fill="#181818"/>
+    <path d="M70 274 C104 300 152 300 190 274" stroke="#fff4cf" stroke-opacity="0.28" stroke-width="7" stroke-linecap="round"/>
+  `;
+}
 
-  // Boots and hem are chunky on purpose: readable Kenney-like silhouettes.
-  fill(image, ox + 9 + step, oy + 34, 6, 7, colors.ink);
-  fill(image, ox + 18 - step, oy + 34, 6, 7, colors.ink);
-  fill(image, ox + 10 + step, oy + 33, 4, 6, theme.trim);
-  fill(image, ox + 19 - step, oy + 33, 4, 6, theme.trim);
+function spiritFrame(spec, row, col, bob) {
+  const side = row === 1 ? -10 : row === 2 ? 10 : 0;
+  const back = row === 3;
+  return `
+    <ellipse cx="128" cy="316" rx="55" ry="17" fill="#071413" opacity="0.24" filter="url(#softShadow)"/>
+    <ellipse cx="${128 + side}" cy="${176 + bob}" rx="98" ry="92" fill="url(#aura-${spec.id})"/>
+    <path d="M54 ${166 + bob} C64 ${99 + bob} 95 ${68 + bob} 131 ${73 + bob} C172 ${79 + bob} 203 ${111 + bob} 202 ${164 + bob} C202 ${229 + bob} 165 ${263 + bob} 124 ${260 + bob} C85 ${257 + bob} 52 ${224 + bob} 54 ${166 + bob} Z" fill="#202021" opacity="0.86"/>
+    <path d="M64 ${167 + bob} C73 ${110 + bob} 100 ${83 + bob} 132 ${88 + bob} C167 ${93 + bob} 193 ${120 + bob} 192 ${165 + bob} C192 ${219 + bob} 160 ${248 + bob} 126 ${246 + bob} C92 ${244 + bob} 63 ${216 + bob} 64 ${167 + bob} Z" fill="url(#silk-${spec.id})"/>
+    <ellipse cx="${113 + side}" cy="${136 + bob}" rx="32" ry="18" fill="${spec.palette.light}" opacity="0.72"/>
+    <ellipse cx="${146 + side}" cy="${212 + bob}" rx="44" ry="24" fill="#fffdf1" opacity="0.16"/>
+    ${spiritCrest(spec, side, bob)}
+    ${back ? `<path d="M92 ${156 + bob} C114 ${137 + bob} 148 ${137 + bob} 169 ${156 + bob}" stroke="${spec.palette.accent}" stroke-width="14" stroke-linecap="round" fill="none"/>` : `
+      <ellipse cx="${108 + side}" cy="${171 + bob}" rx="7" ry="10" fill="#1c1d1d"/>
+      <ellipse cx="${150 + side}" cy="${171 + bob}" rx="7" ry="10" fill="#1c1d1d"/>
+      <path d="M115 ${205 + bob} C126 ${214 + bob} 139 ${214 + bob} 150 ${205 + bob}" stroke="${spec.palette.accent}" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <circle cx="${111 + side}" cy="${167 + bob}" r="3" fill="#fffbe4"/>
+      <circle cx="${153 + side}" cy="${167 + bob}" r="3" fill="#fffbe4"/>
+    `}
+    <path d="M86 ${230 + bob} C109 ${252 + bob} 148 ${252 + bob} 172 ${230 + bob}" stroke="${spec.palette.trim}" stroke-width="10" stroke-linecap="round" opacity="0.9" fill="none"/>
+    <path d="M74 ${202 + bob} C42 ${213 + bob} 38 ${248 + bob} 67 ${260 + bob}" stroke="${spec.palette.trim}" stroke-width="18" stroke-linecap="round" opacity="0.68" fill="none"/>
+    <path d="M182 ${202 + bob} C214 ${213 + bob} 218 ${248 + bob} 189 ${260 + bob}" stroke="${spec.palette.trim}" stroke-width="18" stroke-linecap="round" opacity="0.68" fill="none"/>
+    <circle cx="${91 + side}" cy="${208 + bob}" r="9" fill="${spec.palette.light}" opacity="0.46"/>
+    <circle cx="${166 + side}" cy="${206 + bob}" r="7" fill="${spec.palette.light}" opacity="0.42"/>
+  `;
+}
 
-  fillEllipse(image, ox + 16, oy + 30 + bob, 18, 20, colors.softInk);
-  fillGradient(image, ox + 9, oy + 20 + bob, 14, 18, theme.robe, mix(theme.robe, colors.ink, 0.22));
-  fill(image, ox + 8, oy + 24 + bob, 16, 2, colors.ink);
-  fill(image, ox + 10, oy + 21 + bob, 12, 3, mix(theme.robe, colors.cream, 0.22));
-  fill(image, ox + 11, oy + 24 + bob, 10, 3, colors.paper);
-  fill(image, ox + 8, oy + 22 + bob, 4, 13, theme.trim);
-  fill(image, ox + 21, oy + 22 + bob, 4, 13, theme.trim);
-  fill(image, ox + 8, oy + 22 + bob, 1, 13, colors.ink);
-  fill(image, ox + 24, oy + 22 + bob, 1, 13, colors.ink);
-  fill(image, ox + 12, oy + 28 + bob, 8, 2, theme.accent);
-  fill(image, ox + 12, oy + 31 + bob, 8, 1, [255, 255, 255, 80]);
-  fill(image, ox + 15, oy + 20 + bob, 2, 18, mix(theme.trim, colors.ink, 0.22));
-  fill(image, ox + 12, oy + 34 + bob, 8, 2, mix(theme.robe, colors.ink, 0.35));
-
-  fillEllipse(image, ox + 16 + side, oy + 16 + bob, 15, 13, colors.ink);
-  fillEllipse(image, ox + 16 + side, oy + 16 + bob, 13, 12, theme.skin);
-  fill(image, ox + 9 + side, oy + 9 + bob, 14, 7, theme.hair);
-  fill(image, ox + 10 + side, oy + 8 + bob, 12, 3, mix(theme.hair, colors.cream, 0.12));
-  fill(image, ox + 11 + side, oy + 7 + bob, 10, 3, theme.trim);
-  fill(image, ox + 13 + side, oy + 6 + bob, 6, 2, theme.accent);
-  fill(image, ox + 10 + side, oy + 14 + bob, 2, 4, mix(theme.skin, colors.ink, 0.08));
-  fill(image, ox + 20 + side, oy + 14 + bob, 2, 4, mix(theme.skin, colors.ink, 0.08));
-
-  if (facingUp) {
-    fill(image, ox + 10, oy + 15 + bob, 12, 6, theme.hair);
-    fill(image, ox + 12, oy + 21 + bob, 8, 2, theme.trim);
-  } else if (side) {
-    fill(image, ox + 16 + side * 3, oy + 16 + bob, 2, 2, colors.ink);
-    fill(image, ox + 14 + side * 2, oy + 20 + bob, 4, 1, [116, 56, 50, 255]);
-    fill(image, ox + 16 + side * 5, oy + 17 + bob, 2, 1, colors.cream);
-  } else {
-    fill(image, ox + 12, oy + 17 + bob, 2, 2, colors.ink);
-    fill(image, ox + 18, oy + 17 + bob, 2, 2, colors.ink);
-    fill(image, ox + 14, oy + 20 + bob, 4, 1, [116, 56, 50, 255]);
-    fill(image, ox + 13, oy + 18 + bob, 1, 1, colors.cream);
-    fill(image, ox + 19, oy + 18 + bob, 1, 1, colors.cream);
+function spiritCrest(spec, side, bob) {
+  if (spec.id === 'spirit-lirabao') {
+    return `
+      <path d="M72 ${145 + bob} C39 ${114 + bob} 53 ${76 + bob} 94 ${103 + bob}" fill="#202021"/>
+      <path d="M184 ${145 + bob} C217 ${114 + bob} 203 ${76 + bob} 162 ${103 + bob}" fill="#202021"/>
+      <path d="M80 ${143 + bob} C55 ${116 + bob} 67 ${91 + bob} 98 ${111 + bob}" fill="${spec.palette.trim}"/>
+      <path d="M176 ${143 + bob} C201 ${116 + bob} 189 ${91 + bob} 158 ${111 + bob}" fill="${spec.palette.trim}"/>
+      <path d="M127 ${107 + bob} L142 ${130 + bob} L128 ${145 + bob} L113 ${130 + bob} Z" fill="${spec.palette.accent}"/>
+    `;
   }
-
-  fill(image, ox + 9, oy + 21 + bob, 1, 17, colors.ink);
-  fill(image, ox + 22, oy + 21 + bob, 1, 17, colors.ink);
-  fill(image, ox + 11, oy + 39, 11, 1, colors.ink);
-  fill(image, ox + 10, oy + 21 + bob, 1, 14, [255, 255, 255, 48]);
-  fill(image, ox + 13, oy + 23 + bob, 7, 1, [255, 248, 211, 110]);
-  fill(image, ox + 8, oy + 38, 16, 1, [255, 220, 118, 55]);
-}
-
-function drawSpiritSheet(theme) {
-  const image = makeImage(96, 192, [0, 0, 0, 0]);
-  for (let row = 0; row < 4; row += 1) {
-    for (let col = 0; col < 3; col += 1) {
-      const ox = col * 32;
-      const oy = row * 48;
-      drawSpiritFrame(image, ox, oy, row, col, theme);
-    }
+  if (spec.id === 'spirit-jintari') {
+    return `
+      <path d="M78 ${151 + bob} L110 ${78 + bob} L134 ${143 + bob} Z" fill="#202021"/>
+      <path d="M178 ${151 + bob} L146 ${78 + bob} L122 ${143 + bob} Z" fill="#202021"/>
+      <path d="M86 ${147 + bob} L111 ${91 + bob} L127 ${141 + bob} Z" fill="${spec.palette.trim}"/>
+      <path d="M170 ${147 + bob} L145 ${91 + bob} L129 ${141 + bob} Z" fill="${spec.palette.trim}"/>
+      <path d="M126 ${103 + bob} C145 ${96 + bob} 158 ${111 + bob} 154 ${131 + bob}" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    `;
   }
-  return image;
+  return `
+    <path d="M104 ${139 + bob} L128 ${70 + bob} L152 ${139 + bob} Z" fill="#202021"/>
+    <path d="M111 ${137 + bob} L128 ${85 + bob} L145 ${137 + bob} Z" fill="${spec.palette.trim}"/>
+    <path d="M83 ${153 + bob} C65 ${126 + bob} 78 ${103 + bob} 108 ${122 + bob}" fill="${spec.palette.accent}" opacity="0.88"/>
+    <path d="M173 ${153 + bob} C191 ${126 + bob} 178 ${103 + bob} 148 ${122 + bob}" fill="${spec.palette.accent}" opacity="0.88"/>
+  `;
 }
 
-function drawSpiritFrame(image, ox, oy, row, col, theme) {
-  const bob = col === 1 ? -2 : col === 2 ? 1 : 0;
-  const side = row === 1 ? -1 : row === 2 ? 1 : 0;
-  const facingUp = row === 3;
-
-  fillEllipse(image, ox + 16, oy + 40, 18, 4, colors.shadow);
-  fillEllipse(image, ox + 16, oy + 40, 12, 2, [255, 229, 141, 36]);
-  fillEllipse(image, ox + 16, oy + 25 + bob, 27, 25, [...theme.body.slice(0, 3), 42]);
-  fillEllipse(image, ox + 16 + side, oy + 24 + bob, 22, 19, colors.ink);
-  fillEllipse(image, ox + 16 + side, oy + 24 + bob, 20, 18, theme.body);
-  fillEllipse(image, ox + 16 + side, oy + 20 + bob, 14, 9, theme.light);
-  fillEllipse(image, ox + 16 + side, oy + 28 + bob, 15, 7, [255, 255, 255, 58]);
-  fillEllipse(image, ox + 13 + side, oy + 17 + bob, 5, 4, [255, 255, 255, 92]);
-
-  if (theme.variant === 'momo') {
-    fillEllipse(image, ox + 8 + side, oy + 18 + bob, 7, 9, colors.ink);
-    fillEllipse(image, ox + 24 + side, oy + 18 + bob, 7, 9, colors.ink);
-    fillEllipse(image, ox + 8 + side, oy + 18 + bob, 6, 8, theme.trim);
-    fillEllipse(image, ox + 24 + side, oy + 18 + bob, 6, 8, theme.trim);
-    flower(image, ox + 21 + side, oy + 15 + bob, theme.accent);
-  }
-  if (theme.variant === 'yuzu') {
-    fillTri(image, ox + 8 + side, oy + 20 + bob, ox + 14 + side, oy + 9 + bob, ox + 17 + side, oy + 21 + bob, colors.ink);
-    fillTri(image, ox + 24 + side, oy + 20 + bob, ox + 18 + side, oy + 9 + bob, ox + 15 + side, oy + 21 + bob, colors.ink);
-    fillTri(image, ox + 9 + side, oy + 19 + bob, ox + 14 + side, oy + 10 + bob, ox + 16 + side, oy + 20 + bob, theme.trim);
-    fillTri(image, ox + 23 + side, oy + 19 + bob, ox + 18 + side, oy + 10 + bob, ox + 16 + side, oy + 20 + bob, theme.trim);
-    fill(image, ox + 15 + side, oy + 12 + bob, 3, 5, theme.accent);
-  }
-  if (theme.variant === 'sora') {
-    fillTri(image, ox + 11 + side, oy + 19 + bob, ox + 16 + side, oy + 8 + bob, ox + 21 + side, oy + 19 + bob, colors.ink);
-    fillTri(image, ox + 12 + side, oy + 18 + bob, ox + 16 + side, oy + 9 + bob, ox + 20 + side, oy + 18 + bob, theme.trim);
-    fill(image, ox + 10 + side, oy + 16 + bob, 12, 2, theme.accent);
-    fillEllipse(image, ox + 24 + side, oy + 25 + bob, 7, 5, colors.ink);
-    fillEllipse(image, ox + 24 + side, oy + 25 + bob, 6, 4, theme.trim);
-  }
-
-  if (!facingUp) {
-    fill(image, ox + 12 + side, oy + 24 + bob, 2, 2, colors.ink);
-    fill(image, ox + 19 + side, oy + 24 + bob, 2, 2, colors.ink);
-    fill(image, ox + 14 + side, oy + 30 + bob, 5, 2, theme.trim);
-    fill(image, ox + 13 + side, oy + 25 + bob, 1, 1, colors.cream);
-    fill(image, ox + 20 + side, oy + 25 + bob, 1, 1, colors.cream);
-  } else {
-    fill(image, ox + 11 + side, oy + 22 + bob, 10, 4, theme.accent);
-  }
-
-  fillEllipse(image, ox + 16 + side, oy + 33 + bob, 8, 3, theme.accent);
-  fillEllipse(image, ox + 17 + side, oy + 35 + bob, 6, 2, [255, 255, 255, 70]);
-  fill(image, ox + 8 + side, oy + 31 + bob, 16, 1, [255, 255, 255, 42]);
+function chestFrame(spec, _row, col, _bob) {
+  const open = col === 1;
+  return `
+    <ellipse cx="128" cy="318" rx="82" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="218" rx="112" ry="92" fill="${spec.palette.accent}" opacity="${open ? '0.28' : '0.12'}"/>
+    <path d="M52 184 L204 184 L218 299 L38 299 Z" fill="#231d1c"/>
+    <path d="M61 190 L195 190 L206 289 L50 289 Z" fill="url(#silk-${spec.id})"/>
+    <path d="M51 ${open ? 142 : 153} C66 98 190 98 205 ${open ? 142 : 153} L200 188 L56 188 Z" fill="#231d1c"/>
+    <path d="M62 ${open ? 151 : 160} C78 117 178 117 194 ${open ? 151 : 160} L189 184 L67 184 Z" fill="${spec.palette.lid}"/>
+    <path d="M123 150 L136 150 L139 296 L119 296 Z" fill="${spec.palette.accent}"/>
+    <rect x="100" y="214" width="56" height="48" rx="12" fill="#211d1c"/>
+    <rect x="111" y="218" width="34" height="30" rx="8" fill="${spec.palette.jade}"/>
+    <path d="M76 201 C109 215 147 215 184 201" stroke="#fff0b6" stroke-width="8" stroke-opacity="0.36" fill="none"/>
+    <path d="M78 268 C112 284 150 284 184 268" stroke="#1b1414" stroke-width="9" stroke-opacity="0.44" fill="none"/>
+  `;
 }
 
-function drawChestSheet() {
-  const image = makeImage(96, 192, [0, 0, 0, 0]);
-  for (let row = 0; row < 4; row += 1) {
-    for (let col = 0; col < 3; col += 1) {
-      const ox = col * 32;
-      const oy = row * 48;
-      const glow = col === 1 ? 24 : 0;
-      fillEllipse(image, ox + 16, oy + 39, 23, 5, colors.shadow);
-      fillEllipse(image, ox + 16, oy + 27, 27, 21, [255, 203, 93, glow]);
-      fill(image, ox + 4, oy + 22, 24, 15, colors.ink);
-      fillGradient(image, ox + 6, oy + 22, 20, 13, [151, 82, 48, 255], [78, 50, 40, 255]);
-      fill(image, ox + 5, oy + 17, 22, 9, colors.ink);
-      fillGradient(image, ox + 7, oy + 17, 18, 8, [224, 130, 61, 255], [139, 74, 47, 255]);
-      fill(image, ox + 8, oy + 20, 16, 3, [236, 157, 72, 255]);
-      fill(image, ox + 15, oy + 17, 3, 19, colors.gold);
-      fill(image, ox + 11, oy + 26, 10, 5, colors.softInk);
-      fill(image, ox + 14, oy + 26, 4, 3, colors.lanternLight);
-      fill(image, ox + 13, oy + 29, 6, 2, colors.gold);
-      fill(image, ox + 9, oy + 24, 5, 1, [255, 218, 128, 130]);
-      fill(image, ox + 19, oy + 24, 5, 1, [255, 218, 128, 110]);
-      fill(image, ox + 8, oy + 34, 16, 2, [58, 39, 35, 255]);
-      if (col === 1) {
-        fill(image, ox + 11, oy + 15, 10, 1, [255, 244, 173, 150]);
-        fill(image, ox + 9, oy + 37, 14, 1, [255, 223, 118, 80]);
-      }
-    }
-  }
-  return image;
+function groveFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.48 : 0.32;
+  return `
+    <ellipse cx="128" cy="318" rx="88" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="210" rx="108" ry="94" fill="${spec.palette.light}" opacity="${glow}"/>
+    <path d="M42 244 C61 190 92 160 129 160 C166 160 197 190 215 244 C189 286 68 286 42 244 Z" fill="#20251f" opacity="0.9"/>
+    <path d="M55 241 C72 199 99 175 129 175 C158 175 184 199 201 241 C178 271 80 271 55 241 Z" fill="${spec.palette.leaf}"/>
+    <ellipse cx="128" cy="236" rx="52" ry="24" fill="${spec.palette.stone}" stroke="#2e3a32" stroke-width="8"/>
+    <ellipse cx="128" cy="226" rx="30" ry="14" fill="${spec.palette.tea}" opacity="0.72"/>
+    <path d="M69 192 C91 177 105 181 119 199 C99 207 83 207 69 192 Z" fill="${spec.palette.bamboo}"/>
+    <path d="M187 192 C165 177 151 181 137 199 C157 207 173 207 187 192 Z" fill="${spec.palette.bamboo}"/>
+    <path d="M57 138 V258 M198 138 V258" stroke="#24352b" stroke-width="17" stroke-linecap="round"/>
+    <path d="M61 145 V250 M194 145 V250" stroke="${spec.palette.bamboo}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M60 144 C94 168 162 168 196 144" stroke="${spec.palette.ribbon}" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <ellipse cx="61" cy="137" rx="16" ry="23" fill="#2a211f"/>
+    <ellipse cx="61" cy="137" rx="10" ry="17" fill="${spec.palette.tea}"/>
+    <ellipse cx="195" cy="137" rx="16" ry="23" fill="#2a211f"/>
+    <ellipse cx="195" cy="137" rx="10" ry="17" fill="${spec.palette.tea}"/>
+    <circle cx="101" cy="207" r="7" fill="#fff8d4" opacity="0.72"/>
+    <circle cx="156" cy="207" r="6" fill="#fff8d4" opacity="0.62"/>
+    <circle cx="128" cy="192" r="5" fill="#fff8d4" opacity="0.66"/>
+    <path d="M87 252 C111 265 145 265 170 252" stroke="#fff4cf" stroke-width="8" stroke-linecap="round" opacity="0.42" fill="none"/>
+  `;
 }
 
-function drawBoardSheet(theme) {
-  const image = makeImage(96, 192, [0, 0, 0, 0]);
-  for (let row = 0; row < 4; row += 1) {
-    for (let col = 0; col < 3; col += 1) {
-      const ox = col * 32;
-      const oy = row * 48;
-      const bob = col === 1 ? -1 : 0;
-      fillEllipse(image, ox + 16, oy + 40, 22, 5, colors.shadow);
-      fill(image, ox + 7, oy + 20 + bob, 5, 19, colors.ink);
-      fill(image, ox + 20, oy + 20 + bob, 5, 19, colors.ink);
-      fillGradient(image, ox + 9, oy + 20 + bob, 3, 18, theme.wood, mix(theme.wood, colors.ink, 0.3));
-      fillGradient(image, ox + 21, oy + 20 + bob, 3, 18, theme.wood, mix(theme.wood, colors.ink, 0.3));
-      fill(image, ox + 5, oy + 17 + bob, 22, 19, colors.ink);
-      fillGradient(image, ox + 7, oy + 17 + bob, 18, 18, theme.wood, mix(theme.wood, colors.ink, 0.26));
-      fill(image, ox + 3, oy + 13 + bob, 26, 7, colors.ink);
-      fillGradient(image, ox + 5, oy + 13 + bob, 22, 6, mix(theme.roof, colors.cream, 0.08), mix(theme.roof, colors.ink, 0.2));
-      fill(image, ox + 9, oy + 21 + bob, 14, 10, theme.cloth);
-      outline(image, ox + 9, oy + 21 + bob, 14, 10, mix(colors.ink, theme.wood, 0.18));
-      fill(image, ox + 11, oy + 23 + bob, 10, 1, [255, 255, 255, 165]);
-      fill(image, ox + 11, oy + 27 + bob, 10, 1, [102, 77, 55, 145]);
-      fill(image, ox + 11, oy + 31 + bob, 8, 1, theme.accent);
-      fill(image, ox + 8, oy + 18 + bob, 16, 1, [255, 236, 146, 90]);
-      fill(image, ox + 6, oy + 35 + bob, 20, 2, [28, 24, 22, 160]);
-      if (theme.mode === 'market') {
-        fillEllipse(image, ox + 25, oy + 21 + bob, 5, 7, colors.ink);
-        fillEllipse(image, ox + 25, oy + 21 + bob, 4, 6, colors.lantern);
-        fill(image, ox + 24, oy + 18 + bob, 3, 1, colors.roofDark);
-        fill(image, ox + 24, oy + 20 + bob, 2, 5, colors.lanternLight);
-        fill(image, ox + 12, oy + 33 + bob, 8, 2, colors.gold);
-      } else {
-        fill(image, ox + 10, oy + 33 + bob, 5, 3, colors.gold);
-        fill(image, ox + 17, oy + 33 + bob, 5, 3, colors.jadeLight);
-        fill(image, ox + 15, oy + 34 + bob, 2, 1, colors.cream);
-      }
-    }
-  }
-  return image;
+function partyFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.4 : 0.25;
+  return `
+    <ellipse cx="128" cy="318" rx="78" ry="20" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="198" rx="98" ry="92" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="58" y="118" width="22" height="180" rx="8" fill="#221f1e"/>
+    <rect x="176" y="118" width="22" height="180" rx="8" fill="#221f1e"/>
+    <rect x="63" y="126" width="12" height="164" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="181" y="126" width="12" height="164" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M52 118 L204 118 L190 169 L66 169 Z" fill="#221f1e"/>
+    <path d="M63 126 L193 126 L183 158 L73 158 Z" fill="${spec.palette.silk}"/>
+    <rect x="68" y="160" width="120" height="102" rx="18" fill="#221f1e"/>
+    <rect x="78" y="169" width="100" height="83" rx="15" fill="url(#silk-${spec.id})"/>
+    <circle cx="100" cy="207" r="19" fill="#1f2724"/>
+    <circle cx="100" cy="207" r="13" fill="${spec.palette.medallion}"/>
+    <circle cx="128" cy="207" r="22" fill="#1f2724"/>
+    <circle cx="128" cy="207" r="15" fill="${spec.palette.medallion}"/>
+    <circle cx="156" cy="207" r="19" fill="#1f2724"/>
+    <circle cx="156" cy="207" r="13" fill="${spec.palette.medallion}"/>
+    <path d="M94 207 H106 M122 207 H134 M150 207 H162" stroke="#4f8b78" stroke-width="6" stroke-linecap="round"/>
+    <path d="M83 249 C105 266 151 266 174 249" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M68 170 C94 188 162 188 188 170" stroke="${spec.palette.ribbon}" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M76 160 C82 193 68 219 56 237" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" opacity="0.72" fill="none"/>
+    <path d="M180 160 C174 193 188 219 200 237" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" opacity="0.72" fill="none"/>
+  `;
 }
 
-function drawShrineSheet() {
-  const image = makeImage(96, 192, [0, 0, 0, 0]);
-  for (let row = 0; row < 4; row += 1) {
-    for (let col = 0; col < 3; col += 1) {
-      const ox = col * 32;
-      const oy = row * 48;
-      const pulse = col === 1 ? 28 : 12;
-      fillEllipse(image, ox + 16, oy + 40, 22, 5, colors.shadow);
-      fillEllipse(image, ox + 16, oy + 24, 27, 28, [255, 231, 107, pulse]);
-      fill(image, ox + 5, oy + 31, 22, 9, colors.ink);
-      fillGradient(image, ox + 7, oy + 31, 18, 7, [112, 96, 169, 255], [53, 48, 98, 255]);
-      fill(image, ox + 7, oy + 24, 18, 10, colors.ink);
-      fillGradient(image, ox + 9, oy + 24, 14, 8, colors.violetLight, colors.violet);
-      fill(image, ox + 8, oy + 18, 16, 6, colors.ink);
-      fillGradient(image, ox + 10, oy + 18, 12, 6, colors.gold, [168, 114, 50, 255]);
-      fillDiamond(image, ox + 16, oy + 15, 7, 12, colors.ink);
-      fillDiamond(image, ox + 16, oy + 15, 5, 10, colors.canary);
-      fill(image, ox + 15, oy + 9, 3, 14, colors.lanternLight);
-      fill(image, ox + 7, oy + 27, 18, 4, [61, 51, 101, 255]);
-      fill(image, ox + 9, oy + 17, 14, 2, colors.lanternLight);
-      fill(image, ox + 13, oy + 13, 6, 1, colors.cream);
-      if (col === 1) {
-        fill(image, ox + 11, oy + 21, 10, 1, [255, 255, 210, 130]);
-        fill(image, ox + 9, oy + 36, 14, 1, [255, 234, 143, 70]);
-      }
-    }
-  }
-  return image;
+function journalFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.46 : 0.3;
+  return `
+    <ellipse cx="128" cy="318" rx="82" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="190" rx="104" ry="96" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="54" y="136" width="24" height="170" rx="9" fill="#221f1e"/>
+    <rect x="178" y="136" width="24" height="170" rx="9" fill="#221f1e"/>
+    <rect x="60" y="144" width="12" height="154" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="184" y="144" width="12" height="154" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M45 128 L211 128 L194 171 L62 171 Z" fill="#221f1e"/>
+    <path d="M59 136 L197 136 L186 160 L70 160 Z" fill="${spec.palette.ribbon}"/>
+    <rect x="61" y="171" width="134" height="91" rx="16" fill="#221f1e"/>
+    <rect x="72" y="181" width="112" height="69" rx="12" fill="${spec.palette.wood}"/>
+    <path d="M82 194 C99 181 116 181 128 196 C140 181 158 181 174 194 L174 236 C154 226 139 228 128 240 C117 228 101 226 82 236 Z" fill="#221f1e"/>
+    <path d="M90 197 C105 188 119 190 128 201 L128 231 C117 222 104 220 90 226 Z" fill="${spec.palette.paper}"/>
+    <path d="M166 197 C151 188 137 190 128 201 L128 231 C139 222 152 220 166 226 Z" fill="${spec.palette.paper}"/>
+    <path d="M102 207 H119 M101 218 H118 M138 207 H155 M139 218 H157" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.62"/>
+    <circle cx="91" cy="237" r="10" fill="${spec.palette.jade}"/>
+    <circle cx="165" cy="237" r="10" fill="${spec.palette.jade}"/>
+    <path d="M82 253 C105 268 151 268 174 253" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <ellipse cx="58" cy="126" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="58" cy="126" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <ellipse cx="198" cy="126" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="198" cy="126" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <path d="M65 162 C96 180 160 180 191 162" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round" opacity="0.55" fill="none"/>
+  `;
 }
 
-function tile(image, col, row, painter) {
-  painter(image, col * 32, row * 32);
+function expeditionGateFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.46 : 0.28;
+  return `
+    <ellipse cx="128" cy="318" rx="88" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="190" rx="108" ry="106" fill="${spec.palette.light}" opacity="${glow}"/>
+    <path d="M48 256 C54 170 84 112 128 112 C172 112 202 170 208 256" fill="none" stroke="#221f1e" stroke-width="28" stroke-linecap="round"/>
+    <path d="M62 253 C68 181 91 132 128 132 C165 132 188 181 194 253" fill="none" stroke="${spec.palette.wood}" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="128" cy="159" r="43" fill="#221f1e"/>
+    <circle cx="128" cy="159" r="34" fill="${spec.palette.moon}"/>
+    <path d="M101 160 C117 148 139 148 155 160" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.45" fill="none"/>
+    <path d="M70 171 C94 193 162 193 186 171" stroke="${spec.palette.ribbon}" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M48 126 V292 M73 112 V290 M183 112 V290 M208 126 V292" stroke="#221f1e" stroke-width="15" stroke-linecap="round"/>
+    <path d="M52 134 V282 M76 120 V282 M180 120 V282 M204 134 V282" stroke="${spec.palette.bamboo}" stroke-width="7" stroke-linecap="round"/>
+    <path d="M39 242 L217 242 L206 297 L50 297 Z" fill="#221f1e"/>
+    <path d="M55 248 L201 248 L192 286 L64 286 Z" fill="${spec.palette.jade}"/>
+    <path d="M76 266 C101 253 155 253 180 266" stroke="#fff4cf" stroke-width="8" stroke-linecap="round" opacity="0.48" fill="none"/>
+    <ellipse cx="52" cy="129" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="52" cy="129" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <ellipse cx="204" cy="129" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="204" cy="129" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <path d="M88 221 H168" stroke="#221f1e" stroke-width="17" stroke-linecap="round"/>
+    <path d="M94 221 H162" stroke="${spec.palette.accent}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M110 208 L128 191 L146 208" stroke="#fff8d4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  `;
 }
 
-function scatterGrass(image, ox, oy) {
-  fill(image, ox + 4, oy + 6, 5, 1, colors.grassLight);
-  fill(image, ox + 17, oy + 5, 4, 1, colors.grassDark);
-  fill(image, ox + 23, oy + 15, 5, 1, colors.grassLight);
-  fill(image, ox + 8, oy + 21, 5, 1, colors.grassDark);
-  fill(image, ox + 15, oy + 26, 6, 1, colors.grassLight);
-  fill(image, ox + 6, oy + 7, 1, 2, colors.grassLight);
-  fill(image, ox + 24, oy + 16, 1, 2, colors.grassLight);
+function routeInvitationAltarFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.5 : 0.3;
+  return `
+    <ellipse cx="128" cy="318" rx="82" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="198" rx="102" ry="98" fill="${spec.palette.light}" opacity="${glow}"/>
+    <path d="M55 250 L201 250 L214 304 L42 304 Z" fill="#221f1e"/>
+    <path d="M68 255 L188 255 L199 292 L57 292 Z" fill="${spec.palette.wood}"/>
+    <ellipse cx="128" cy="250" rx="61" ry="30" fill="#221f1e"/>
+    <ellipse cx="128" cy="242" rx="50" ry="24" fill="${spec.palette.bowl}"/>
+    <ellipse cx="128" cy="235" rx="31" ry="13" fill="${spec.palette.light}" opacity="0.62"/>
+    <path d="M70 206 C95 190 161 190 186 206" stroke="${spec.palette.ribbon}" stroke-width="13" stroke-linecap="round" fill="none"/>
+    <path d="M78 223 C103 211 153 211 178 223" stroke="${spec.palette.paper}" stroke-width="9" stroke-linecap="round" opacity="0.72" fill="none"/>
+    <path d="M63 143 V264 M193 143 V264" stroke="#221f1e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M68 151 V254 M188 151 V254" stroke="${spec.palette.shadow}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M58 139 C90 166 166 166 198 139" stroke="#221f1e" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M68 141 C97 159 159 159 188 141" stroke="${spec.palette.wood}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M101 157 C105 119 118 98 128 98 C138 98 151 119 155 157" stroke="#221f1e" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M111 157 C114 128 122 113 128 113 C134 113 142 128 145 157" stroke="${spec.palette.seal}" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="128" cy="121" r="18" fill="#221f1e"/>
+    <circle cx="128" cy="121" r="12" fill="${spec.palette.seal}"/>
+    <path d="M122 121 H134 M128 115 V127" stroke="#fff7d4" stroke-width="5" stroke-linecap="round"/>
+    <rect x="88" y="170" width="80" height="43" rx="11" fill="#221f1e"/>
+    <rect x="98" y="178" width="60" height="28" rx="8" fill="${spec.palette.paper}"/>
+    <path d="M107 189 H150 M110 199 H145" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.64"/>
+    <circle cx="74" cy="204" r="13" fill="#221f1e"/>
+    <circle cx="74" cy="204" r="8" fill="${spec.palette.seal}"/>
+    <circle cx="182" cy="204" r="13" fill="#221f1e"/>
+    <circle cx="182" cy="204" r="8" fill="${spec.palette.seal}"/>
+    <path d="M83 267 C108 282 148 282 173 267" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M77 152 C92 174 75 201 58 219" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" opacity="0.78" fill="none"/>
+    <path d="M179 152 C164 174 181 201 198 219" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" opacity="0.78" fill="none"/>
+  `;
 }
 
-function flower(image, x, y, color) {
-  fill(image, x, y + 1, 1, 1, color);
-  fill(image, x + 1, y, 1, 1, color);
-  fill(image, x + 1, y + 1, 1, 1, colors.lanternLight);
-  fill(image, x + 2, y + 1, 1, 1, color);
-  fill(image, x + 1, y + 2, 1, 1, color);
+function techniqueDojoFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.42 : 0.26;
+  return `
+    <ellipse cx="128" cy="318" rx="86" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="202" rx="106" ry="94" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="52" y="126" width="23" height="180" rx="9" fill="#221f1e"/>
+    <rect x="181" y="126" width="23" height="180" rx="9" fill="#221f1e"/>
+    <rect x="58" y="135" width="12" height="163" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="187" y="135" width="12" height="163" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M45 120 L211 120 L194 165 L62 165 Z" fill="#221f1e"/>
+    <path d="M59 130 L197 130 L186 154 L70 154 Z" fill="${spec.palette.ribbon}"/>
+    <ellipse cx="128" cy="239" rx="74" ry="38" fill="#221f1e"/>
+    <ellipse cx="128" cy="233" rx="62" ry="30" fill="${spec.palette.floor}"/>
+    <ellipse cx="128" cy="232" rx="42" ry="20" fill="none" stroke="#fff4cf" stroke-width="8" stroke-opacity="0.55"/>
+    <rect x="72" y="165" width="112" height="54" rx="12" fill="#221f1e"/>
+    <rect x="82" y="174" width="92" height="37" rx="9" fill="${spec.palette.wood}"/>
+    <path d="M92 190 H164" stroke="${spec.palette.scroll}" stroke-width="13" stroke-linecap="round"/>
+    <path d="M101 190 H155" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.62"/>
+    <circle cx="93" cy="190" r="9" fill="${spec.palette.jade}"/>
+    <circle cx="163" cy="190" r="9" fill="${spec.palette.jade}"/>
+    <path d="M77 221 C100 204 156 204 179 221" stroke="${spec.palette.ribbon}" stroke-width="11" stroke-linecap="round" opacity="0.86" fill="none"/>
+    <path d="M90 252 C113 268 143 268 166 252" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M92 148 L116 114 M164 148 L140 114" stroke="#221f1e" stroke-width="13" stroke-linecap="round"/>
+    <path d="M96 146 L119 120 M160 146 L137 120" stroke="${spec.palette.jade}" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="56" cy="122" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="56" cy="122" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <ellipse cx="200" cy="122" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="200" cy="122" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <path d="M64 160 C96 181 160 181 192 160" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.44" fill="none"/>
+  `;
 }
 
-function bambooStalk(image, x, y, height, color) {
-  fill(image, x, y, 4, height, color);
-  for (let offset = 5; offset < height; offset += 6) {
-    fill(image, x, y + offset, 4, 1, [38, 91, 57, 255]);
-  }
-  fill(image, x + 1, y, 1, height, [146, 198, 105, 120]);
+function tacticScrollStandFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.48 : 0.3;
+  const ribbonLift = col === 1 ? -5 : col === 2 ? 4 : 0;
+  return `
+    <ellipse cx="128" cy="318" rx="82" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="199" rx="104" ry="96" fill="${spec.palette.light}" opacity="${glow}"/>
+    <rect x="54" y="124" width="22" height="184" rx="9" fill="#221f1e"/>
+    <rect x="180" y="124" width="22" height="184" rx="9" fill="#221f1e"/>
+    <rect x="60" y="133" width="11" height="166" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="186" y="133" width="11" height="166" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M47 118 L209 118 L195 159 L61 159 Z" fill="#221f1e"/>
+    <path d="M61 127 L195 127 L186 149 L70 149 Z" fill="${spec.palette.ribbon}"/>
+    <rect x="61" y="161" width="134" height="107" rx="15" fill="#221f1e"/>
+    <rect x="73" y="171" width="110" height="86" rx="12" fill="${spec.palette.paper}"/>
+    <path d="M83 187 C103 177 121 183 128 198 C136 183 154 177 174 187 L174 236 C153 226 137 230 128 244 C119 230 103 226 83 236 Z" fill="#fff1c7"/>
+    <path d="M84 188 C104 178 121 184 128 199 L128 244 C119 230 103 226 83 236 Z" fill="${spec.palette.paper}"/>
+    <path d="M172 188 C152 178 135 184 128 199 L128 244 C137 230 153 226 173 236 Z" fill="#ead8a9"/>
+    <path d="M93 199 H118 M92 211 H116 M139 199 H164 M140 211 H165 M101 225 H117 M140 225 H155" stroke="${spec.palette.ink}" stroke-width="5" stroke-linecap="round" opacity="0.68"/>
+    <circle cx="89" cy="245" r="11" fill="#221f1e"/>
+    <circle cx="89" cy="245" r="7" fill="${spec.palette.jade}"/>
+    <circle cx="167" cy="245" r="11" fill="#221f1e"/>
+    <circle cx="167" cy="245" r="7" fill="${spec.palette.jade}"/>
+    <path d="M71 ${203 + ribbonLift} C93 ${187 + ribbonLift} 163 ${187 + ribbonLift} 185 ${203 + ribbonLift}" stroke="${spec.palette.ribbon}" stroke-width="10" stroke-linecap="round" opacity="0.84" fill="none"/>
+    <path d="M78 270 C105 286 151 286 178 270" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M64 154 C95 174 161 174 192 154" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.44" fill="none"/>
+    <path d="M102 129 L118 99 M154 129 L138 99" stroke="#221f1e" stroke-width="13" stroke-linecap="round"/>
+    <path d="M106 127 L121 106 M150 127 L135 106" stroke="${spec.palette.jade}" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="128" cy="103" r="18" fill="#221f1e"/>
+    <circle cx="128" cy="103" r="12" fill="${spec.palette.accent}"/>
+    <path d="M122 103 H134 M128 97 V109" stroke="#fff7d4" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="57" cy="120" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="57" cy="120" rx="9" ry="16" fill="${spec.palette.accent}"/>
+    <ellipse cx="199" cy="120" rx="15" ry="22" fill="#221f1e"/>
+    <ellipse cx="199" cy="120" rx="9" ry="16" fill="${spec.palette.accent}"/>
+  `;
 }
 
-function makeImage(width, height, color) {
-  const data = Buffer.alloc(width * height * 4);
-  for (let i = 0; i < data.length; i += 4) {
-    data[i] = color[0];
-    data[i + 1] = color[1];
-    data[i + 2] = color[2];
-    data[i + 3] = color[3];
-  }
-  return { width, height, data };
+function affinityDaisFrame(spec, _row, col, _bob) {
+  const glow = col === 1 ? 0.48 : 0.3;
+  return `
+    <ellipse cx="128" cy="318" rx="84" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="199" rx="104" ry="104" fill="${spec.palette.light}" opacity="${glow}"/>
+    <path d="M52 248 L204 248 L218 304 L38 304 Z" fill="#221f1e"/>
+    <path d="M66 252 L190 252 L203 293 L53 293 Z" fill="${spec.palette.base}"/>
+    <ellipse cx="128" cy="248" rx="70" ry="35" fill="#221f1e"/>
+    <ellipse cx="128" cy="241" rx="59" ry="28" fill="${spec.palette.jade}"/>
+    <ellipse cx="128" cy="226" rx="44" ry="21" fill="${spec.palette.mirror}" opacity="0.88"/>
+    <path d="M78 210 C101 195 155 195 178 210" stroke="${spec.palette.ribbon}" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M85 232 C105 244 151 244 171 232" stroke="#fff8d4" stroke-width="7" stroke-linecap="round" opacity="0.52" fill="none"/>
+    <path d="M61 153 V263 M195 153 V263" stroke="#221f1e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M66 160 V253 M190 160 V253" stroke="${spec.palette.shadow}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M55 148 C88 173 168 173 201 148" stroke="${spec.palette.ribbon}" stroke-width="13" stroke-linecap="round" fill="none"/>
+    <ellipse cx="61" cy="143" rx="16" ry="23" fill="#221f1e"/>
+    <ellipse cx="61" cy="143" rx="10" ry="17" fill="${spec.palette.accent}"/>
+    <ellipse cx="195" cy="143" rx="16" ry="23" fill="#221f1e"/>
+    <ellipse cx="195" cy="143" rx="10" ry="17" fill="${spec.palette.accent}"/>
+    <path d="M128 91 L168 162 L128 214 L88 162 Z" fill="#221f1e"/>
+    <path d="M128 106 L155 161 L128 197 L101 161 Z" fill="${spec.palette.mirror}"/>
+    <path d="M126 119 H133 V186 H126 Z" fill="#ffffff" opacity="0.46"/>
+    <circle cx="128" cy="160" r="15" fill="${spec.palette.light}" opacity="0.42"/>
+    <path d="M82 267 C109 282 148 282 174 267" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+  `;
 }
 
-function fill(image, x, y, width, height, color) {
-  for (let yy = y; yy < y + height; yy += 1) {
-    for (let xx = x; xx < x + width; xx += 1) {
-      setPixel(image, xx, yy, color);
-    }
-  }
+function boardFrame(spec, _row, _col, _bob) {
+  const market = spec.id === 'market-board';
+  return `
+    <ellipse cx="128" cy="318" rx="76" ry="20" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <rect x="63" y="142" width="24" height="170" rx="9" fill="#221f1e"/>
+    <rect x="169" y="142" width="24" height="170" rx="9" fill="#221f1e"/>
+    <rect x="69" y="146" width="14" height="159" rx="6" fill="${spec.palette.wood}"/>
+    <rect x="173" y="146" width="14" height="159" rx="6" fill="${spec.palette.wood}"/>
+    <path d="M43 116 L213 116 L196 158 L60 158 Z" fill="#221f1e"/>
+    <path d="M55 121 L201 121 L190 151 L66 151 Z" fill="${spec.palette.roof}"/>
+    <rect x="58" y="154" width="140" height="118" rx="16" fill="#221f1e"/>
+    <rect x="70" y="164" width="116" height="96" rx="13" fill="url(#silk-${spec.id})"/>
+    <rect x="88" y="184" width="80" height="42" rx="8" fill="${spec.palette.cloth}"/>
+    <path d="M96 197 H159 M96 211 H148 M96 224 H139" stroke="#8b6947" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
+    ${market ? `
+      <ellipse cx="194" cy="179" rx="17" ry="25" fill="#221f1e"/>
+      <ellipse cx="194" cy="179" rx="12" ry="20" fill="${spec.palette.accent}"/>
+      <path d="M191 165 H197 V193 H191 Z" fill="#fff1b8" opacity="0.52"/>
+    ` : `
+      <circle cx="111" cy="242" r="13" fill="${spec.palette.accent}"/>
+      <circle cx="148" cy="242" r="13" fill="#f0d26f"/>
+      <path d="M122 242 H137" stroke="#fff6cf" stroke-width="8" stroke-linecap="round"/>
+    `}
+    <path d="M69 160 C100 173 154 173 187 160" stroke="#fff1b8" stroke-width="8" stroke-opacity="0.26" fill="none"/>
+  `;
 }
 
-function fillGradient(image, x, y, width, height, top, bottom) {
-  for (let yy = 0; yy < height; yy += 1) {
-    const amount = height <= 1 ? 0 : yy / (height - 1);
-    fill(image, x, y + yy, width, 1, mix(top, bottom, amount));
-  }
+function trainingRingFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.34 : 0.2;
+  return `
+    <ellipse cx="128" cy="318" rx="88" ry="22" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="218" rx="104" ry="66" fill="${spec.palette.light}" opacity="${pulse}"/>
+    <ellipse cx="128" cy="232" rx="88" ry="48" fill="#201d1c"/>
+    <ellipse cx="128" cy="226" rx="76" ry="40" fill="${spec.palette.floor}"/>
+    <ellipse cx="128" cy="226" rx="52" ry="25" fill="none" stroke="#fff4cf" stroke-width="9" stroke-opacity="0.56"/>
+    <path d="M65 205 C94 189 162 189 191 205" stroke="${spec.palette.accent}" stroke-width="10" stroke-linecap="round" opacity="0.84" fill="none"/>
+    <path d="M68 249 C96 269 160 269 188 249" stroke="#2f6b5b" stroke-width="8" stroke-linecap="round" opacity="0.74" fill="none"/>
+    <rect x="54" y="122" width="20" height="166" rx="8" fill="#221f1e"/>
+    <rect x="59" y="130" width="10" height="149" rx="5" fill="${spec.palette.wood}"/>
+    <rect x="182" y="122" width="20" height="166" rx="8" fill="#221f1e"/>
+    <rect x="187" y="130" width="10" height="149" rx="5" fill="${spec.palette.wood}"/>
+    <path d="M64 140 C92 164 164 164 192 140" stroke="${spec.palette.ribbon}" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M70 158 C99 177 157 177 186 158" stroke="#fff3d0" stroke-width="6" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <circle cx="64" cy="126" r="16" fill="#221f1e"/>
+    <circle cx="64" cy="126" r="10" fill="${spec.palette.accent}"/>
+    <circle cx="192" cy="126" r="16" fill="#221f1e"/>
+    <circle cx="192" cy="126" r="10" fill="${spec.palette.accent}"/>
+    <path d="M102 207 L119 221 L102 235 M154 207 L137 221 L154 235" stroke="#fff7d4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.78" fill="none"/>
+  `;
 }
 
-function fillEllipse(image, cx, cy, width, height, color) {
-  const rx = Math.max(1, width / 2);
-  const ry = Math.max(1, height / 2);
-  const minX = Math.floor(cx - rx);
-  const maxX = Math.ceil(cx + rx);
-  const minY = Math.floor(cy - ry);
-  const maxY = Math.ceil(cy + ry);
-  for (let y = minY; y <= maxY; y += 1) {
-    for (let x = minX; x <= maxX; x += 1) {
-      const dx = (x + 0.5 - cx) / rx;
-      const dy = (y + 0.5 - cy) / ry;
-      if (dx * dx + dy * dy <= 1) {
-        setPixel(image, x, y, color);
-      }
-    }
-  }
+function guildRankBellFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.5 : 0.3;
+  const tassel = col === 1 ? -6 : col === 2 ? 5 : 0;
+  return `
+    <ellipse cx="128" cy="318" rx="80" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="192" rx="102" ry="112" fill="${spec.palette.light}" opacity="${pulse}"/>
+    <path d="M55 260 C57 170 84 119 128 119 C172 119 199 170 201 260" fill="none" stroke="#221f1e" stroke-width="24" stroke-linecap="round"/>
+    <path d="M68 258 C70 182 92 139 128 139 C164 139 186 182 188 258" fill="none" stroke="${spec.palette.wood}" stroke-width="12" stroke-linecap="round"/>
+    <path d="M47 252 L209 252 L221 305 L35 305 Z" fill="#221f1e"/>
+    <path d="M62 257 L194 257 L203 292 L53 292 Z" fill="${spec.palette.shadow}"/>
+    <path d="M92 151 C99 113 116 94 128 94 C140 94 157 113 164 151" fill="#221f1e"/>
+    <path d="M103 151 C108 123 121 111 128 111 C135 111 148 123 153 151" fill="${spec.palette.seal}"/>
+    <ellipse cx="128" cy="187" rx="48" ry="55" fill="#221f1e"/>
+    <path d="M88 192 C93 157 108 135 128 135 C148 135 163 157 168 192 L158 232 C141 245 115 245 98 232 Z" fill="${spec.palette.bell}"/>
+    <path d="M101 182 C113 171 143 171 155 182" stroke="#fff7d4" stroke-width="7" stroke-linecap="round" opacity="0.58" fill="none"/>
+    <path d="M94 215 C113 228 143 228 162 215" stroke="#25574d" stroke-width="7" stroke-linecap="round" opacity="0.44" fill="none"/>
+    <circle cx="128" cy="232" r="15" fill="#221f1e"/>
+    <circle cx="128" cy="232" r="9" fill="${spec.palette.seal}"/>
+    <rect x="82" y="245" width="92" height="32" rx="10" fill="#221f1e"/>
+    <rect x="93" y="251" width="70" height="20" rx="7" fill="${spec.palette.paper}"/>
+    <path d="M106 261 H151" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+    <path d="M76 ${160 + tassel} C95 ${178 + tassel} 102 ${201 + tassel} 89 ${225 + tassel}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M180 ${160 + tassel} C161 ${178 + tassel} 154 ${201 + tassel} 167 ${225 + tassel}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <circle cx="73" cy="145" r="15" fill="#221f1e"/>
+    <circle cx="73" cy="145" r="9" fill="${spec.palette.seal}"/>
+    <circle cx="183" cy="145" r="15" fill="#221f1e"/>
+    <circle cx="183" cy="145" r="9" fill="${spec.palette.seal}"/>
+    <path d="M86 270 C111 284 145 284 170 270" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+  `;
 }
 
-function fillTri(image, x1, y1, x2, y2, x3, y3, color) {
-  const minX = Math.floor(Math.min(x1, x2, x3));
-  const maxX = Math.ceil(Math.max(x1, x2, x3));
-  const minY = Math.floor(Math.min(y1, y2, y3));
-  const maxY = Math.ceil(Math.max(y1, y2, y3));
-  const area = edge(x1, y1, x2, y2, x3, y3);
-  if (area === 0) return;
-
-  for (let y = minY; y <= maxY; y += 1) {
-    for (let x = minX; x <= maxX; x += 1) {
-      const w0 = edge(x2, y2, x3, y3, x, y);
-      const w1 = edge(x3, y3, x1, y1, x, y);
-      const w2 = edge(x1, y1, x2, y2, x, y);
-      if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
-        setPixel(image, x, y, color);
-      }
-    }
-  }
+function growthMoonwellFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.5 : 0.28;
+  const shimmer = col === 1 ? -5 : col === 2 ? 5 : 0;
+  return `
+    <ellipse cx="128" cy="319" rx="84" ry="21" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="188" rx="108" ry="118" fill="${spec.palette.moon}" opacity="${pulse}"/>
+    <path d="M48 260 L208 260 L222 306 L34 306 Z" fill="#221f1e"/>
+    <path d="M63 264 L193 264 L204 294 L52 294 Z" fill="${spec.palette.base}"/>
+    <ellipse cx="128" cy="230" rx="72" ry="42" fill="#221f1e"/>
+    <ellipse cx="128" cy="224" rx="60" ry="32" fill="${spec.palette.water}"/>
+    <path d="M82 221 C102 207 154 207 174 221" stroke="#fff7d4" stroke-width="8" stroke-linecap="round" opacity="0.62" fill="none"/>
+    <path d="M92 ${231 + shimmer} C112 ${244 + shimmer} 144 ${244 + shimmer} 164 ${231 + shimmer}" stroke="#28726c" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+    <path d="M71 254 C86 185 106 145 128 145 C150 145 170 185 185 254" fill="none" stroke="#221f1e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M84 252 C96 195 112 164 128 164 C144 164 160 195 172 252" fill="none" stroke="${spec.palette.jade}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M98 134 C109 101 122 88 128 88 C134 88 147 101 158 134 C145 126 111 126 98 134 Z" fill="#221f1e"/>
+    <path d="M111 132 C119 109 125 103 128 103 C131 103 137 109 145 132 C136 127 120 127 111 132 Z" fill="${spec.palette.moon}"/>
+    <path d="M76 ${151 + shimmer} C99 ${170 + shimmer} 106 ${200 + shimmer} 92 ${225 + shimmer}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M180 ${151 + shimmer} C157 ${170 + shimmer} 150 ${200 + shimmer} 164 ${225 + shimmer}" stroke="${spec.palette.ribbon}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <circle cx="80" cy="147" r="14" fill="#221f1e"/>
+    <circle cx="80" cy="147" r="8" fill="${spec.palette.seal}"/>
+    <circle cx="176" cy="147" r="14" fill="#221f1e"/>
+    <circle cx="176" cy="147" r="8" fill="${spec.palette.seal}"/>
+    <path d="M115 186 C117 173 123 164 128 164 C133 164 139 173 141 186 C136 183 120 183 115 186 Z" fill="${spec.palette.blossom}"/>
+    <path d="M103 190 C91 182 87 168 93 160 C107 164 116 173 119 187 Z" fill="${spec.palette.blossom}" opacity="0.9"/>
+    <path d="M153 190 C165 182 169 168 163 160 C149 164 140 173 137 187 Z" fill="${spec.palette.blossom}" opacity="0.9"/>
+    <rect x="86" y="248" width="84" height="28" rx="9" fill="#221f1e"/>
+    <rect x="96" y="254" width="64" height="16" rx="6" fill="#f4e7bd"/>
+    <path d="M109 262 H148" stroke="#8b6947" stroke-width="5" stroke-linecap="round" opacity="0.72"/>
+    <path d="M82 272 C109 287 147 287 174 272" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity="0.42" fill="none"/>
+  `;
 }
 
-function fillDiamond(image, cx, cy, width, height, color) {
-  const halfW = Math.max(1, Math.floor(width / 2));
-  const halfH = Math.max(1, Math.floor(height / 2));
-  for (let y = -halfH; y <= halfH; y += 1) {
-    const span = Math.max(0, Math.floor(halfW * (1 - Math.abs(y) / (halfH + 1))));
-    fill(image, cx - span, cy + y, span * 2 + 1, 1, color);
-  }
+function shrineFrame(spec, _row, col, _bob) {
+  const pulse = col === 1 ? 0.55 : 0.32;
+  return `
+    <ellipse cx="128" cy="318" rx="76" ry="20" fill="#071413" opacity="0.32" filter="url(#softShadow)"/>
+    <ellipse cx="128" cy="176" rx="104" ry="122" fill="${spec.palette.light}" opacity="${pulse}"/>
+    <path d="M62 253 L194 253 L211 306 L45 306 Z" fill="#221f1e"/>
+    <path d="M73 257 L183 257 L197 295 L59 295 Z" fill="${spec.palette.base}"/>
+    <path d="M70 183 L186 183 L197 259 L59 259 Z" fill="#221f1e"/>
+    <path d="M83 192 L173 192 L181 249 L75 249 Z" fill="url(#silk-${spec.id})"/>
+    <path d="M77 143 L179 143 L188 191 L68 191 Z" fill="#221f1e"/>
+    <path d="M91 150 L165 150 L174 181 L82 181 Z" fill="${spec.palette.accent}"/>
+    <path d="M128 68 L166 152 L128 205 L90 152 Z" fill="#221f1e"/>
+    <path d="M128 85 L154 151 L128 190 L102 151 Z" fill="${spec.palette.light}"/>
+    <path d="M125 101 H132 V174 H125 Z" fill="${spec.palette.trim}" opacity="0.92"/>
+    <path d="M96 208 H160 M88 232 H168" stroke="#fff4bb" stroke-width="10" stroke-linecap="round" opacity="0.32"/>
+    <circle cx="128" cy="155" r="16" fill="#fffbe0" opacity="0.48"/>
+  `;
 }
 
-function edge(x1, y1, x2, y2, x, y) {
-  return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1);
-}
-
-function outline(image, x, y, width, height, color) {
-  fill(image, x, y, width, 1, color);
-  fill(image, x, y + height - 1, width, 1, color);
-  fill(image, x, y, 1, height, color);
-  fill(image, x + width - 1, y, 1, height, color);
-}
-
-function setPixel(image, x, y, color) {
-  if (x < 0 || y < 0 || x >= image.width || y >= image.height) return;
-  const index = (y * image.width + x) * 4;
-  const alpha = color[3] ?? 255;
-  if (alpha >= 255) {
-    image.data[index] = color[0];
-    image.data[index + 1] = color[1];
-    image.data[index + 2] = color[2];
-    image.data[index + 3] = 255;
-    return;
-  }
-
-  const existingAlpha = image.data[index + 3] / 255;
-  const nextAlpha = alpha / 255;
-  const outAlpha = nextAlpha + existingAlpha * (1 - nextAlpha);
-  if (outAlpha <= 0) return;
-
-  image.data[index] = Math.round((color[0] * nextAlpha + image.data[index] * existingAlpha * (1 - nextAlpha)) / outAlpha);
-  image.data[index + 1] = Math.round((color[1] * nextAlpha + image.data[index + 1] * existingAlpha * (1 - nextAlpha)) / outAlpha);
-  image.data[index + 2] = Math.round((color[2] * nextAlpha + image.data[index + 2] * existingAlpha * (1 - nextAlpha)) / outAlpha);
-  image.data[index + 3] = Math.round(outAlpha * 255);
-}
-
-function mix(a, b, amount) {
-  return [
-    Math.round(a[0] + (b[0] - a[0]) * amount),
-    Math.round(a[1] + (b[1] - a[1]) * amount),
-    Math.round(a[2] + (b[2] - a[2]) * amount),
-    Math.round((a[3] ?? 255) + ((b[3] ?? 255) - (a[3] ?? 255)) * amount)
+function tilesheetSvg() {
+  const tileSize = 128;
+  const materials = [
+    ['jade-grass', '#4c9366', '#2e704f', 'grass'],
+    ['lacquer-path', '#e4b670', '#8c6247', 'path'],
+    ['court-water', '#5198bd', '#215f91', 'water'],
+    ['timber-wall', '#8b5a3d', '#3f2e2b', 'wall'],
+    ['silk-garden', '#579562', '#2e704f', 'garden'],
+    ['guild-marker', '#6c8f79', '#3f6255', 'sign'],
+    ['market-roof', '#b64d45', '#6a3735', 'market'],
+    ['canary-floor', '#6a609f', '#3f3a72', 'canary'],
+    ['paper-lantern', '#4d9363', '#2e704f', 'lantern'],
+    ['spirit-habitat', '#659c74', '#42684f', 'habitat'],
+    ['moon-bridge', '#b78650', '#6f4e39', 'bridge'],
+    ['red-awning', '#a64d45', '#512f2f', 'awning'],
+    ['canary-marker', '#766ab0', '#4b417f', 'marker'],
+    ['soft-shadow', '#4b9365', '#2d634b', 'shadow'],
+    ['bamboo', '#4d9962', '#2d6a49', 'bamboo'],
+    ['lacquer-plank', '#7d5a42', '#45352f', 'plank'],
+    ['shrine-stone', '#cfc4a4', '#827970', 'stone'],
+    ['trade-counter', '#5c8d78', '#385f55', 'counter'],
+    ['blossom-bed', '#8d5171', '#3d754e', 'blossom'],
+    ['water-bank', '#4c91b6', '#285f84', 'bank'],
+    ['guild-seal-cue', '#8c4937', '#4d2f2c', 'chest'],
+    ['care-shrine', '#c7574d', '#623a39', 'care'],
+    ['canary-shrine', '#665ba0', '#3b356a', 'shrine'],
+    ['trade-post-cue', '#5a9a88', '#365e55', 'trade']
   ];
+
+  const tiles = materials.map(([name, top, bottom, kind], index) => {
+    const x = (index % 8) * tileSize;
+    const y = Math.floor(index / 8) * tileSize;
+    return `<g transform="translate(${x} ${y})">${tileSvg(name, top, bottom, kind)}</g>`;
+  });
+
+  return svgWrap(1024, 384, `
+    <defs>
+      <filter id="tileSoft" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3"/>
+      </filter>
+    </defs>
+    ${tiles.join('\n')}
+  `);
 }
 
-function writePng(path, image) {
-  writeFileSync(path, encodePng(image.width, image.height, image.data));
+function tileSvg(name, top, bottom, kind) {
+  return `
+    <defs>
+      <linearGradient id="${name}" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="${top}"/>
+        <stop offset="100%" stop-color="${bottom}"/>
+      </linearGradient>
+    </defs>
+    <rect width="128" height="128" rx="0" fill="url(#${name})"/>
+    <path d="M0 3 H128 M0 124 H128 M125 0 V128" stroke="#fff7cf" stroke-opacity="0.08" stroke-width="4"/>
+    ${tileMarks(kind)}
+  `;
 }
 
-function encodePng(width, height, rgba) {
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  const raw = Buffer.alloc((width * 4 + 1) * height);
-
-  for (let y = 0; y < height; y += 1) {
-    raw[y * (width * 4 + 1)] = 0;
-    rgba.copy(raw, y * (width * 4 + 1) + 1, y * width * 4, (y + 1) * width * 4);
-  }
-
-  return Buffer.concat([
-    signature,
-    chunk('IHDR', Buffer.concat([uint32(width), uint32(height), Buffer.from([8, 6, 0, 0, 0])])),
-    chunk('IDAT', deflateSync(raw)),
-    chunk('IEND', Buffer.alloc(0))
-  ]);
+function tileMarks(kind) {
+  const commonShadow = `<ellipse cx="64" cy="99" rx="43" ry="12" fill="#071413" opacity="0.18" filter="url(#tileSoft)"/>`;
+  const marks = {
+    grass: `<path d="M18 31 H48 M76 24 H104 M23 82 H52 M82 89 H112" stroke="#b9d88e" stroke-width="5" stroke-linecap="round" opacity="0.42"/>`,
+    path: `<path d="M0 42 H128 M0 84 H128 M44 0 V42 M89 43 V84 M31 84 V128" stroke="#76573f" stroke-width="5" opacity="0.36"/><path d="M13 19 H44 M72 64 H105 M50 106 H91" stroke="#fff0bc" stroke-width="5" opacity="0.36"/>`,
+    water: `<path d="M11 31 C29 21 46 41 65 31 C84 21 99 41 117 31 M6 72 C24 62 42 82 62 72 C83 62 101 82 123 72" stroke="#d3f4ee" stroke-width="8" stroke-linecap="round" opacity="0.58"/>`,
+    wall: `<path d="M0 29 H128 M0 64 H128 M0 98 H128 M36 0 V128 M91 0 V128" stroke="#2b2220" stroke-width="7" opacity="0.55"/><path d="M14 15 H50 M70 49 H112 M12 84 H47" stroke="#d79b65" stroke-width="5" opacity="0.34"/>`,
+    garden: `${commonShadow}<circle cx="38" cy="45" r="13" fill="#f29ab3"/><circle cx="73" cy="39" r="12" fill="#f2cc67"/><circle cx="94" cy="68" r="11" fill="#c993df"/><path d="M28 81 C58 67 87 69 112 86" stroke="#2b6b48" stroke-width="10" fill="none"/>`,
+    sign: `${commonShadow}<rect x="58" y="28" width="13" height="72" rx="5" fill="#432d29"/><rect x="30" y="22" width="68" height="37" rx="9" fill="#f0dca4" stroke="#322927" stroke-width="7"/><path d="M42 41 H85" stroke="#ba584d" stroke-width="7" stroke-linecap="round"/>`,
+    market: `${commonShadow}<path d="M19 40 L109 40 L94 78 L34 78 Z" fill="#d76354" stroke="#2c2322" stroke-width="7"/><rect x="34" y="78" width="60" height="32" fill="#633a33"/><path d="M50 91 H78" stroke="#f5cf77" stroke-width="7"/>`,
+    canary: `<circle cx="64" cy="64" r="45" fill="#bdaee9" opacity="0.48"/><path d="M64 20 L96 64 L64 108 L32 64 Z" fill="#f7df6d" opacity="0.9"/><path d="M64 10 V118 M10 64 H118" stroke="#fff7ba" stroke-width="7" opacity="0.45"/>`,
+    lantern: `${commonShadow}<rect x="58" y="18" width="13" height="78" rx="6" fill="#55372f"/><ellipse cx="64" cy="70" rx="24" ry="31" fill="#f3c95e" stroke="#3a2927" stroke-width="6"/><path d="M52 60 H76 M52 78 H76" stroke="#fff0ad" stroke-width="5" opacity="0.72"/>`,
+    habitat: `${commonShadow}<ellipse cx="64" cy="80" rx="47" ry="27" fill="#d6a35d" stroke="#332827" stroke-width="7"/><ellipse cx="64" cy="67" rx="31" ry="17" fill="#fff0b8"/><path d="M47 80 H82" stroke="#ef87a5" stroke-width="8" stroke-linecap="round"/>`,
+    bridge: `<rect x="10" y="35" width="108" height="62" rx="12" fill="#b17d4e" stroke="#2d2423" stroke-width="7"/><path d="M13 55 H115 M13 77 H115 M42 35 V97 M84 35 V97" stroke="#5f4035" stroke-width="7" opacity="0.58"/>`,
+    awning: `${commonShadow}<path d="M19 36 L109 36 L97 67 L31 67 Z" fill="#d55d4f" stroke="#2c2322" stroke-width="7"/><rect x="33" y="68" width="62" height="40" fill="#704237"/><rect x="45" y="78" width="38" height="18" fill="#ead8a9"/>`,
+    marker: `${commonShadow}<circle cx="64" cy="62" r="39" fill="#8a7bc6" stroke="#372e59" stroke-width="8"/><path d="M64 28 L83 64 L64 101 L45 64 Z" fill="#f7df6d"/><circle cx="64" cy="64" r="13" fill="#fff8c9" opacity="0.68"/>`,
+    shadow: `<ellipse cx="64" cy="64" rx="51" ry="33" fill="#071413" opacity="0.38" filter="url(#tileSoft)"/><ellipse cx="64" cy="64" rx="31" ry="18" fill="#0d221f" opacity="0.25"/>`,
+    bamboo: `<path d="M34 25 V105 M63 16 V110 M91 30 V104" stroke="#a1c76d" stroke-width="12" stroke-linecap="round"/><path d="M23 45 H54 M50 66 H82 M77 50 H112" stroke="#2f734e" stroke-width="8" stroke-linecap="round"/>`,
+    plank: `<path d="M0 33 H128 M0 70 H128 M0 103 H128 M33 0 V128 M88 0 V128" stroke="#2f2927" stroke-width="7" opacity="0.54"/><path d="M20 19 H67 M52 55 H114 M15 91 H66" stroke="#d59a64" stroke-width="5" opacity="0.32"/>`,
+    stone: `${commonShadow}<rect x="26" y="34" width="76" height="65" rx="12" fill="#d7ccb0" stroke="#514a42" stroke-width="7"/><path d="M38 56 H88 M44 74 H78" stroke="#8c806e" stroke-width="6" stroke-linecap="round"/>`,
+    counter: `${commonShadow}<rect x="30" y="54" width="68" height="48" rx="9" fill="#6e4435" stroke="#2a2221" stroke-width="7"/><circle cx="51" cy="80" r="10" fill="#efc75d"/><circle cx="78" cy="80" r="10" fill="#95d1b2"/>`,
+    blossom: `${commonShadow}<ellipse cx="64" cy="73" rx="47" ry="24" fill="#d789aa" stroke="#2e2428" stroke-width="7"/><circle cx="46" cy="57" r="10" fill="#ffd6e3"/><circle cx="83" cy="61" r="11" fill="#ffd16d"/>`,
+    bank: `<rect y="0" width="128" height="36" fill="#4e9164"/><path d="M0 39 C32 30 58 49 89 38 C106 32 118 34 128 41" stroke="#e5bd7c" stroke-width="13" fill="none"/><path d="M8 74 C32 62 48 82 72 70 C95 59 108 77 122 70" stroke="#d4f3ef" stroke-width="7" fill="none" opacity="0.56"/>`,
+    chest: `${commonShadow}<rect x="34" y="59" width="60" height="42" rx="8" fill="#8c4937" stroke="#271f1e" stroke-width="7"/><path d="M38 59 C44 33 84 33 90 59" fill="#bf653f" stroke="#271f1e" stroke-width="7"/><rect x="58" y="58" width="13" height="44" fill="#f2c65f"/>`,
+    care: `${commonShadow}<rect x="37" y="42" width="54" height="66" rx="13" fill="#c7574d" stroke="#2c2322" stroke-width="7"/><path d="M64 54 L82 78 L64 101 L46 78 Z" fill="#fff0b4"/><path d="M50 94 H78" stroke="#f0c462" stroke-width="8" stroke-linecap="round"/>`,
+    shrine: `${commonShadow}<rect x="34" y="66" width="60" height="44" rx="9" fill="#665ba0" stroke="#2c2544" stroke-width="7"/><path d="M64 20 L91 66 L64 96 L37 66 Z" fill="#f6de66" stroke="#2c2544" stroke-width="7"/><path d="M64 31 V84" stroke="#fff6bd" stroke-width="7"/>`,
+    trade: `${commonShadow}<path d="M22 45 L106 45 L95 75 L33 75 Z" fill="#5a9a88" stroke="#2a2422" stroke-width="7"/><rect x="35" y="75" width="58" height="31" fill="#61473a"/><circle cx="54" cy="91" r="8" fill="#f0c462"/><circle cx="75" cy="91" r="8" fill="#9ed7b7"/>`
+  };
+  return marks[kind] || marks.grass;
 }
 
-function chunk(type, data) {
-  const typeBuffer = Buffer.from(type);
-  return Buffer.concat([uint32(data.length), typeBuffer, data, uint32(crc32(Buffer.concat([typeBuffer, data])))]);
+function svgWrap(width, height, body) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>`;
 }
-
-function uint32(value) {
-  const buffer = Buffer.alloc(4);
-  buffer.writeUInt32BE(value >>> 0);
-  return buffer;
-}
-
-const crcTable = Array.from({ length: 256 }, (_, n) => {
-  let c = n;
-  for (let k = 0; k < 8; k += 1) {
-    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  }
-  return c >>> 0;
-});
-
-function crc32(buffer) {
-  let crc = 0xffffffff;
-  for (const byte of buffer) {
-    crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
-
-main();

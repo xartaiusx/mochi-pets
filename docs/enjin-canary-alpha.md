@@ -111,7 +111,7 @@ This route is not for browser clients or the Mochirii website. It requires:
 
 Supported operations:
 
-- `hot-to-cold-certificate`: submits a managed-wallet mint proof for the Momo Canary certificate.
+- `hot-to-cold-certificate`: submits a managed-wallet mint proof for the Lirabao Canary certificate.
 - `cold-to-hot-burn`: submits a managed-wallet burn proof.
 - `fixed-listing`: submits a `FIXED_PRICE` marketplace listing proof. Requires `price`.
 - `poll-transaction`: reads `GetTransaction` and forwards the latest state as `chain.operation_update`. Requires `enjinTransactionUuid`.
@@ -125,7 +125,7 @@ Example body shape:
   "playerId": "supabase-user-id",
   "tokenId": "1",
   "amount": 1,
-  "itemId": "momo-canary-certificate",
+  "itemId": "lirabao-canary-certificate",
   "confirmNoRealValue": true
 }
 ```

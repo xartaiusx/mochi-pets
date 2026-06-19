@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
@@ -9,7 +10,7 @@ const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_SYNC_APPROVAL || '
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JSON || 'reports/alpha-sync-approval.json');
 const auditPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const externalGatePath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const prStateFixturePath = process.env.MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE || '';
 const previewEnvPath = resolve(credsDir, process.env.MOCHI_SOCIAL_PREVIEW_ENV_FILE || 'mochi-social-alpha-vercel-preview.local.txt');
 const generatedAt = new Date().toISOString();
@@ -17,8 +18,8 @@ const generatedAt = new Date().toISOString();
 const gitState = readGitState();
 const siteGitState = readGitStateAt(siteRepoPath);
 const prState = {
-  game: readPr('xartaiusx/mochi-social', '1', gitState.localHead),
-  site: readPr('Mochirii-Wushu/Mochirii', '259', siteGitState.localHead)
+  game: readPr('xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || gitState.branch, gitState.localHead),
+  site: readPr('Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || siteGitState.branch, siteGitState.localHead)
 };
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
@@ -149,11 +150,16 @@ function readExternalGateSummary() {
   };
 }
 
-function readPr(repo, number, localHead) {
-  const fixture = readPrFixture(repo, number, localHead);
+function readPr(repo, selector, localHead) {
+  const normalizedSelector = sanitize(selector || '');
+  const fixture = readPrFixture(repo, normalizedSelector, localHead);
   if (fixture) return fixture;
 
-  const result = spawnSync('gh', ['pr', 'view', number, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title'], {
+  const explicitNumber = /^\d+$/.test(normalizedSelector);
+  const args = explicitNumber
+    ? ['pr', 'view', normalizedSelector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title']
+    : ['pr', 'list', '--repo', repo, '--head', normalizedSelector, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,title'];
+  const result = spawnSync('gh', args, {
     cwd: root,
     encoding: 'utf8',
     shell: false
@@ -161,30 +167,58 @@ function readPr(repo, number, localHead) {
   if (result.status !== 0) {
     return {
       repo,
-      number,
+      selector: normalizedSelector,
       ok: false,
       message: sanitize(result.stderr || result.error?.message || 'GitHub PR state could not be read.')
     };
   }
 
   try {
-    const data = JSON.parse(result.stdout);
+    const parsed = JSON.parse(result.stdout);
+    const data = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (!data) {
+      return {
+        repo,
+        selector: normalizedSelector,
+        ok: false,
+        message: explicitNumber ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for branch ${normalizedSelector}.`
+      };
+    }
+    if (Array.isArray(parsed) && parsed.length > 1) {
+      return {
+        repo,
+        selector: normalizedSelector,
+        ok: false,
+        message: `Multiple open GitHub PRs were found for branch ${normalizedSelector}. Set an explicit PR number.`
+      };
+    }
     const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
     const failingChecks = checks
       .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
       .map((check) => sanitize(check.name || check.context))
       .filter(Boolean);
     const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+    const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+    const failures = [
+      data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
+      data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+      localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
+      ...failingChecks.map((check) => `failing check ${check}`)
+    ].filter(Boolean);
     return {
       repo,
-      number,
-      ok: (data.mergeStateStatus === 'CLEAN' || data.isDraft === true) && failingChecks.length === 0,
+      selector: normalizedSelector,
+      number: data.number || (explicitNumber ? normalizedSelector : null),
+      ok: failures.length === 0,
+      gateFailures: failures,
       url: sanitize(data.url),
       title: sanitize(data.title),
+      state: sanitize(data.state),
+      headRefName: sanitize(data.headRefName),
       isDraft: data.isDraft === true,
       headRefOid: sanitize(data.headRefOid),
       localHead: sanitize(localHead),
-      localHeadMatchesPrHead: Boolean(localHead && data.headRefOid && localHead === data.headRefOid),
+      localHeadMatchesPrHead,
       mergeStateStatus: sanitize(data.mergeStateStatus),
       checkNames,
       failingChecks
@@ -192,31 +226,31 @@ function readPr(repo, number, localHead) {
   } catch {
     return {
       repo,
-      number,
+      selector: normalizedSelector,
       ok: false,
       message: 'GitHub PR JSON could not be parsed.'
     };
   }
 }
 
-function readPrFixture(repo, number, localHead) {
+function readPrFixture(repo, selector, localHead) {
   if (!prStateFixturePath) return null;
   const fixture = readJson(resolve(prStateFixturePath));
   if (!fixture.ok) {
     return {
       repo,
-      number,
+      selector,
       ok: false,
       message: `PR fixture could not be read: ${fixture.message}`
     };
   }
 
-  const key = `${repo}#${number}`;
-  const data = fixture.data?.[key] || fixture.data?.[repo]?.[number] || null;
+  const key = `${repo}#${selector}`;
+  const data = fixture.data?.[key] || fixture.data?.[repo]?.[selector] || null;
   if (!data) {
     return {
       repo,
-      number,
+      selector,
       ok: false,
       message: `PR fixture missing ${key}`
     };
@@ -228,16 +262,27 @@ function readPrFixture(repo, number, localHead) {
     .map((check) => sanitize(check.name || check.context))
     .filter(Boolean);
   const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const failures = [
+    data.state === 'OPEN' || !data.state ? '' : `PR state is ${data.state}`,
+    data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
+    ...failingChecks.map((check) => `failing check ${check}`)
+  ].filter(Boolean);
   return {
     repo,
-    number,
-    ok: (data.mergeStateStatus === 'CLEAN' || data.isDraft === true) && failingChecks.length === 0,
+    selector,
+    number: data.number || (/^\d+$/.test(selector) ? selector : null),
+    ok: failures.length === 0,
+    gateFailures: failures,
     url: sanitize(data.url),
     title: sanitize(data.title),
+    state: sanitize(data.state || 'OPEN'),
+    headRefName: sanitize(data.headRefName),
     isDraft: data.isDraft === true,
     headRefOid: sanitize(data.headRefOid),
     localHead: sanitize(localHead),
-    localHeadMatchesPrHead: Boolean(localHead && data.headRefOid && localHead === data.headRefOid),
+    localHeadMatchesPrHead,
     mergeStateStatus: sanitize(data.mergeStateStatus),
     checkNames,
     failingChecks
@@ -257,6 +302,8 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
   const flyPreviewSecretsNeeded = hasExternalFailure(currentExternalGateSummary, 'Fly preview secret names');
   const liveGameContractNeeded = hasExternalFailure(currentExternalGateSummary, 'Live game contract') || hasExternalFailure(currentExternalGateSummary, 'Live game URL');
   const sitePreviewContractNeeded = hasExternalFailure(currentExternalGateSummary, 'Site preview contract');
+  const gameDeployCandidate = verifiedMilestoneDeployCandidate(currentGitState);
+  const siteDeployCandidate = verifiedMilestoneDeployCandidate(currentSiteGitState);
 
   return [
     {
@@ -269,7 +316,7 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       exactAction: `git push origin ${branch}`,
       costRisk: 'No separate approval required under current user policy for public-repo commits/pushes; verify the resulting PR checks afterward.',
       noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Local RPG branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
+      approvalText: `Proceed with public-repo sync: push ${root} branch ${branch} to ${upstream}, then verify GitHub Actions/PR checks for Mochi Social.`,
       requiresApproval: false
     },
     {
@@ -279,11 +326,39 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       currentlyRequired: siteSyncNeeded,
       requirementReason: siteSyncNeeded ? `Mochirii branch is ahead ${currentSiteGitState.ahead} / behind ${currentSiteGitState.behind} or has local state that remote PR checks cannot prove.` : 'Mochirii site branch is already synced and clean.',
       action: 'Push local Mochirii site branch to origin and verify GitHub Actions/PR checks.',
-      exactAction: `git -C C:\\Users\\xtyty\\Documents\\Mochirii push origin ${siteBranch}`,
+      exactAction: `git -C "${siteRepoPath}" push origin ${siteBranch}`,
       costRisk: 'No separate approval required under current user policy for public-repo commits/pushes; verify the resulting PR checks afterward.',
       noCostAlternative: 'Keep the branch local only if intentionally avoiding a sync; github.site-local-branch-sync will remain red in npm run alpha:rc-audit until pushed.',
-      approvalText: `Proceed with public-repo sync: push C:\\Users\\xtyty\\Documents\\Mochirii branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
+      approvalText: `Proceed with public-repo sync: push ${siteRepoPath} branch ${siteBranch} to ${siteUpstream}, then verify GitHub Actions/PR checks for Mochirii.`,
       requiresApproval: false
+    },
+    {
+      id: 'fly-verified-milestone-deploy',
+      provider: 'Fly.io',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: gameDeployCandidate,
+      requirementReason: gameDeployCandidate
+        ? 'The game branch is clean and synced, so the active goal can request an explicit Fly deploy approval after local proof and PR/CI verification.'
+        : 'Finish local proof, commit/push, and PR/CI verification before requesting a Fly deploy for this milestone.',
+      action: 'Deploy the verified Mochi Social game milestone to Fly.',
+      exactAction: `fly deploy -a ${flyApp}`,
+      costRisk: 'Fly deploys create a new hosted release, can restart Machines, can write logs, and can add request/runtime usage on the existing app and volume.',
+      noCostAlternative: 'Keep the verified milestone committed, pushed, and locally proven while leaving the Fly runtime unchanged.',
+      approvalText: `I approve deploying the verified Mochi Social game milestone to Fly app ${flyApp} with fly deploy after local checks, push, and PR/CI verification. I understand this may restart hosted resources or add usage.`
+    },
+    {
+      id: 'vercel-verified-milestone-deploy',
+      provider: 'Vercel',
+      phase: 'Alpha Preview Ready',
+      currentlyRequired: siteDeployCandidate,
+      requirementReason: siteDeployCandidate
+        ? 'The Mochirii site branch is clean and synced, so the active goal can request an explicit Vercel deploy approval after site-side proof and PR/CI verification.'
+        : 'Finish Mochirii site proof, commit/push, and PR/CI verification before requesting a Vercel deploy for this milestone.',
+      action: 'Deploy the verified Mochirii web milestone or preview embed to the approved Vercel target.',
+      exactAction: `Run the approved Vercel deploy command or dashboard deploy for ${siteRepoPath} using the approved target ${sitePreviewUrl}.`,
+      costRisk: 'Vercel deploys can trigger builds, function/edge execution, logs, preview traffic, and usage on the connected account.',
+      noCostAlternative: 'Keep the game/site branches pushed and PR checks verified while leaving the live or preview Mochirii deployment unchanged.',
+      approvalText: `I approve deploying the verified Mochirii web milestone that embeds ${gameUrl} to the approved Vercel target ${sitePreviewUrl}. I understand this may trigger builds, hosted traffic, logs, or usage.`
     },
     {
       id: 'fly-secret-update',
@@ -318,7 +393,7 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       action: 'Run the approved hosted Fly game contract check for Alpha Preview Ready.',
       exactAction: `$env:MOCHI_SOCIAL_GAME_URL="${gameUrl}"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="${sitePreviewUrl}"; $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; npm run alpha:external-gates`,
       costRisk: 'Hosted contract checks fetch the Fly runtime and can create Fly request/bandwidth/log usage. They do not deploy, scale, or run load tests.',
-      noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, and localhost smoke checks only.',
+      noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, npm run alpha:responsive-gameplay, and localhost smoke checks only.',
       approvalText: `I approve the hosted Fly game contract check for ${flyApp} using MOCHI_SOCIAL_GAME_URL=${gameUrl} with MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true. I understand it may hit Fly resources and add usage.`
     },
     {
@@ -354,6 +429,15 @@ function branchSyncNeeded(state) {
     || (state.behind || 0) !== 0
     || (Array.isArray(state.dirty) && state.dirty.length > 0)
     || (Array.isArray(state.errors) && state.errors.length > 0);
+}
+
+function verifiedMilestoneDeployCandidate(state) {
+  if (!state) return false;
+  if (!state.localHead || !state.upstream) return false;
+  if ((state.ahead || 0) !== 0 || (state.behind || 0) !== 0) return false;
+  if (Array.isArray(state.dirty) && state.dirty.length > 0) return false;
+  if (Array.isArray(state.errors) && state.errors.length > 0) return false;
+  return true;
 }
 
 function hasExternalFailure(summary, name) {
@@ -501,11 +585,13 @@ function renderMarkdown(report) {
   const prState = formatPrState(report.prState);
   const gameSyncAction = report.approvalActions.find((action) => action.id === 'github-branch-sync');
   const siteSyncAction = report.approvalActions.find((action) => action.id === 'github-site-branch-sync');
+  const deployActions = report.approvalActions.filter((action) => action.id === 'fly-verified-milestone-deploy' || action.id === 'vercel-verified-milestone-deploy');
+  const deployQueue = deployActions.map((action) => `- ${action.id}: ${action.currentlyRequired ? 'ready for exact approval request' : 'not yet ready for deploy approval'}; ${action.requirementReason}`).join('\n');
   const combinedGitHubSyncApproval = gameSyncAction?.currentlyRequired && siteSyncAction?.currentlyRequired
     ? `Suggested combined public-repo sync command note:
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and push C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}; then verify GitHub Actions/PR checks for both Mochi Social and Mochirii.
+Push ${root} branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'} and push ${siteRepoPath} branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}; then verify GitHub Actions/PR checks for both Mochi Social and Mochirii.
 \`\`\`
 
 `
@@ -633,6 +719,12 @@ MOCHI_SOCIAL_SITE_PREVIEW_URL=https://<vercel-preview-host>
 
 ${approvals}
 
+## Verified Milestone Deploy Queue
+
+The active goal requests commit, push, and deploy after each verified milestone. This packet treats deploy as a provider mutation queue, not as approval by itself.
+
+${deployQueue}
+
 ## Cost-Sensitive Action Matrix
 
 ${actionMatrix}
@@ -640,14 +732,14 @@ ${actionMatrix}
 ${combinedGitHubSyncApproval}Public-repo sync note for the GitHub game branch:
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochi Social.
+Push ${root} branch ${report.git.branch || '<branch>'} to ${report.git.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
 Public-repo sync note for the Mochirii site branch:
 
 ${siteSyncAction?.currentlyRequired ? '' : 'No Mochirii site push is required right now because the site branch is already synced.\n\n'}
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Mochirii branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochirii.
+Push ${siteRepoPath} branch ${report.siteGit.branch || '<branch>'} to ${report.siteGit.upstream || 'origin/<branch>'}, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 Suggested explicit approval text for hosted/provider gates:
@@ -677,11 +769,12 @@ function formatPrState(prState) {
 
 function formatPr(label, pr) {
   if (!pr) return `- ${label}: not recorded.`;
-  if (!pr.ok) {
-    return `- ${label}: ${pr.repo}#${pr.number} not verified (${pr.message || 'unknown'}).`;
+  if (!pr.url) {
+    return `- ${label}: ${pr.repo}#${pr.number || pr.selector || 'unknown'} not verified (${pr.message || 'unknown'}).`;
   }
   const localMatch = pr.localHeadMatchesPrHead ? 'local HEAD matches PR head' : 'local HEAD does not match PR head';
   const checks = Array.isArray(pr.checkNames) && pr.checkNames.length ? pr.checkNames.join(', ') : 'none';
   const draft = pr.isDraft ? 'draft' : 'ready';
-  return `- ${label}: ${pr.url} ${draft} ${pr.mergeStateStatus} remote=${pr.headRefOid || 'unknown'} ${localMatch}; checks=${checks}`;
+  const gate = pr.ok ? 'verified' : `not verified: ${(pr.gateFailures || [pr.message || 'unknown']).join('; ')}`;
+  return `- ${label}: ${pr.url} ${draft} state=${pr.state || 'unknown'} ${pr.mergeStateStatus} remote=${pr.headRefOid || 'unknown'} ${localMatch}; checks=${checks}; ${gate}`;
 }

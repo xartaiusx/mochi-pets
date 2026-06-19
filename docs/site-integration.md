@@ -47,6 +47,47 @@ Alpha RC manifests also include:
 - `market.auctions=false`
 - `ugc="curated"`
 
+Closed Alpha Preview manifests also expose machine-readable tester-entry contracts for the Mochirii website:
+
+- `routes.public=["/healthz","/play","/embed","/integration/game-manifest.json"]`
+- `alphaPreview.stopPoint="alpha-preview-ready"`
+- `alphaPreview.websiteEntryPath="/games/mochi-social"`
+- `alphaPreview.accessGateOwner="parent-website"`
+- `alphaPreview.testerPasswordOwner="parent-website"`
+- `alphaPreview.providerMutationAllowedByDefault=false`
+- `alphaPreview.fundedChainRequiredForPreview=false`
+- `alphaPreview.enjinCanaryModeBeforeFunding="configured-preview-stub"`
+- `progress.authority="mochirii-edge"`
+- `progress.linkedAccount=true`
+- `progress.guestFallback=true`
+- `progress.snapshotEndpoint="/integration/alpha/progress"`
+- `cleanRoom.restrictedSourceReferences=false`
+- `cleanRoom.copiedRestrictedSourceNames=false`
+- `cleanRoom.copiedRestrictedSourceAssets=false`
+- `cleanRoom.restrictedSourceVisualDerivatives=false`
+- `brand.world="Mochirii"`
+- `brand.town="Jade Lantern Court"`
+- `brand.artDirection="Mochirii High-Fidelity Wuxia"`
+- `runtimeArt.pixelArt=false`
+- `runtimeArt.retro=false`
+- `runtimeArt.tileSizePx=64`
+- `runtimeArt.eventSpritesheet={ width: 384, height: 768, columns: 3, rows: 4, frameWidth: 128, frameHeight: 192 }`
+- `spirits.system="Mochi Spirits"`
+- `spirits.roster` contains exactly `lirabao`, `jintari`, and `aozhen`
+- `playableContent.contentPolicy="original-mochirii-feature-parity"`
+- `playableContent.capture` catalogs the first-court spirit roster, starter vow, route scouting, field accords, route mastery, route patrol, and Jade Capture Rite IDs
+- `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, lineage register, and blossom cradle IDs
+- `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
+- `playableContent.roleplay` catalogs the three-posting quest chain, quest ledger, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
+- `playableContent.roleplay` catalogs first-court quest, guild, habitat, story, census, waystone, and Jade Route Charter route-travel proof IDs for website readiness copy.
+- `playableContent.economyAndCanary` catalogs no-real-value provision, craft, market receipt, direct exchange accord, relic attunement, Lirabao Canary certificate preview, and Canary request/return action types
+- `playableContent.runtimeAssets` mirrors the 64px tile and 384x768 spritesheet runtime asset contract
+- `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
+
+The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.
+
+The `quest.ledger_record` alpha action is a no-real-value roleplay proof. It records the Jade Quest Ledger Seal after first-court quest postings, journal, route, market, provision, commission, and two-tester rally readiness; it does not change bridge event names, settle inventory, or require provider mutation.
+
 ## Supabase Bridge v1
 
 The parent website owns Supabase session refresh. It may send short-lived access tokens to the iframe. Never send refresh tokens or service-role keys.
@@ -68,6 +109,17 @@ Recommended website flow:
 2. When a signed-in session exists, send `{ type: "MOCHI_SOCIAL_AUTH", protocolVersion: 1, payload: { accessToken, expiresAt } }`.
 3. On sign-out, send `{ type: "MOCHI_SOCIAL_SIGN_OUT", protocolVersion: 1 }`.
 4. Treat `MOCHI_SOCIAL_AUTH_STATE` as display/status only; the game server remains authoritative.
+
+## Account Progress Contract
+
+Signed-in Supabase mode is the account-persistent path. Tester-password mode remains guest-only.
+
+- The game calls `GET /integration/alpha/progress` with `Authorization: Bearer <access token>`.
+- The game server validates the token with Supabase `getUser(jwt)` and forwards only the derived user id to Mochirii Edge with the scoped game server token.
+- Mochirii Edge returns the latest `mochi_social_progress_snapshots` row for that tester after allowlist and terms checks.
+- The HUD adopts the remote snapshot only when its revision/timestamp is newer than local browser state.
+- If account sync is unavailable, the HUD must show sync-unavailable copy and keep the local preview state no-real-value.
+- The parent website must not send progress snapshots, service-role keys, refresh tokens, or game server tokens through `postMessage`.
 
 ## Chain Finality Contract
 

@@ -1,0 +1,13 @@
+{
+  "id": "market-board",
+  "role": "Fixed-price market board",
+  "runtimePath": "apps/game/public/spritesheets/market-board.png",
+  "masterPath": "assets/source/game/hd/market-board-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Mochirii guild market board with lacquer posts, parchment tags, jade pins, warm lantern accent, transparent background, smooth illustrated 2D prop sprite sheet.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

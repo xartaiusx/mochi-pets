@@ -15,3 +15,7 @@ apps/game/node_modules
 .env
 .env.*
 !.env.example
+p2pool.cache
+p2pool.log
+p2pool_*_peers.txt
+p2pool_peers.txt

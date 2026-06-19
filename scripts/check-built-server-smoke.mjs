@@ -71,10 +71,31 @@ async function run() {
   assert(manifest.body.chain?.network === 'CANARY', 'Built server manifest must stay Canary-only.');
   assert(manifest.body.alpha?.noRealValue === true, 'Built server manifest must keep no-real-value posture.');
   assert(manifest.body.market?.auctions === false, 'Built server manifest must keep auctions disabled.');
+  assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Built server manifest must expose Alpha Preview Ready as the website stop point.');
+  assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Built server manifest must reject provider mutation by default.');
+  assert(manifest.body.progress?.authority === 'mochirii-edge', 'Built server manifest must expose Mochirii Edge account-progress authority.');
+  assert(manifest.body.progress?.snapshotEndpoint === '/integration/alpha/progress', 'Built server manifest must expose the local progress snapshot endpoint.');
+  assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Built server manifest must declare zero restricted-source references.');
+  assert(manifest.body.cleanRoom?.copiedRestrictedSourceAssets === false, 'Built server manifest must declare zero copied restricted-source assets.');
+  assert(manifest.body.brand?.artDirection === 'Mochirii High-Fidelity Wuxia', 'Built server manifest must expose Mochirii High-Fidelity Wuxia art direction.');
+  assert(manifest.body.runtimeArt?.tileSizePx === 64, 'Built server manifest must expose the 64px tile contract.');
+  assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Built server manifest must expose the three-spirit first-court roster.');
+  assert(Array.isArray(manifest.body.manualReview?.requiredTargets) && manifest.body.manualReview.requiredTargets.length === 3, 'Built server manifest must expose the manual prompt review targets.');
+  assert(manifest.body.playableContent?.capture?.spiritIds?.join(',') === 'lirabao,jintari,aozhen', 'Built server manifest must expose the first-court spirit capture roster.');
+  assert(manifest.body.playableContent?.raising?.bondMilestoneIds?.length === 9, 'Built server manifest must expose all bond milestone IDs.');
+  assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Built server manifest must expose summit battle content.');
+  assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Built server manifest must expose the first quest chain.');
+  assert(manifest.body.playableContent?.economyAndCanary?.canaryCertificateItemIds?.join(',') === 'lirabao-canary-certificate', 'Built server manifest must expose the Lirabao Canary certificate preview item.');
+  assert(manifest.body.playableContent?.runtimeAssets?.spritesheets?.length === 21, 'Built server manifest must expose runtime asset coverage.');
 
   const alpha = await getJson('/integration/alpha/status', 'alpha status');
   assert(alpha.body.chainRuntime?.mode === 'configured-preview-stub', 'Built server must expose configured-preview-stub without Enjin secrets.');
   assert(alpha.body.enjinCanaryConfigured === false, 'Built server must not report Enjin configured under smoke env.');
+  assert(alpha.body.edgeFunctions?.progress === 'mochi-social-alpha-progress', 'Built server alpha status must expose the progress Edge Function name.');
+
+  const progress = await getJson('/integration/alpha/progress', 'guest progress');
+  assert(progress.body.ok === true, 'Guest progress endpoint must stay playable without Supabase auth.');
+  assert(progress.body.mode === 'guest-local', 'Guest progress endpoint must identify local guest fallback.');
 
   const play = await request('/play', 'play route');
   assert(play.status === 200 && String(play.body).includes('Mochi Social'), 'Built server /play must return the game HTML.');

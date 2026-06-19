@@ -81,8 +81,8 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 
 | Surface | Owner | Value |
 | --- | --- | --- |
-| Game branch | `xartaiusx/mochi-social` | `codex/mochi-social-alpha-rc` |
-| Site branch | `Mochirii-Wushu/Mochirii` | `codex/reaper-pending-verification-containment` |
+| Game branch | `xartaiusx/mochi-social` | `codex/mochi-social-fullscale-alpha-preview` |
+| Site branch | `Mochirii-Wushu/Mochirii` | `codex/mochi-social-alpha-rc` |
 | Game host | Fly | `mochi-social-game`, region `sjc` |
 | Game saves | Fly volume | `mochi_social_data` mounted at `/data` |
 | Site host | Vercel Preview | `/games/mochi-social` |
@@ -140,7 +140,7 @@ Supabase Edge Function secret ownership:
 | Privileged game writes | Mochirii Edge Functions |
 | Scoped server trust | `MOCHI_SOCIAL_GAME_SERVER_TOKEN` |
 | Allowlist and terms | Mochirii Supabase |
-| Pets, inventory, market, trades, chat, reports, feedback, ledger | Mochirii Supabase |
+| Mochi Spirits, inventory, market, trades, chat, reports, feedback, ledger | Mochirii Supabase |
 | Service-role key | Supabase Edge runtime only, never game/client |
 
 ## Enjin Canary State Machine

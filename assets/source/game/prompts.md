@@ -1,30 +1,36 @@
 # Mochi Social Source Art Prompts
 
-These notes document the original project-authored prompt basis for the Alpha Preview visual upgrade. Runtime assets are exported by `apps/game/scripts/generate-assets.mjs`.
+These notes document the project-authored prompt basis for the Mochirii High-Fidelity Wuxia art lane. Runtime assets are exported by `apps/game/scripts/generate-assets.mjs`; per-asset source cards live in `assets/source/game/hd/`.
 
 ## Master Prompt
 
 ```text
-High-fidelity source intent for a crisp Cozy Wushu 2D RPG asset for Mochi Social, exported as a small readable pixel-kit runtime asset, top-down 2D RPG clarity, Kenney-informed compact silhouette clarity, dusk lantern lighting, jade green and red timber palette, warm gold rim light, soft contact shadow, clear silhouette at gameplay zoom, no text, no logos, no real-world brands, alpha preview no-real-value game asset.
+Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated finish, soft lantern lighting, jade, lacquer, silk, paper, and gold materials, transparent background for sprites or cohesive world-art background for tiles, clear gameplay silhouette, no baked-in text, no logos, no third-party visual reference dependency, no production value implication, alpha no-real-value game asset.
 ```
-
-## Kenney Reference Basis
-
-The current refresh uses Kenney's official free asset catalog as a readability reference, especially Tiny Town, RPG-tagged packs, UI Pack, and Input Prompts. No Kenney files are copied, traced, downloaded into runtime, vendored, or required at runtime. The source analysis lives in `docs/kenney-reference-analysis.md`.
-
-## HD Source Export Basis
-
-The active pass uses `assets/source/game/hd-source-export.md`: design each asset with a high-detail source intent, then export down into crisp 32px/96x192 runtime PNGs with clean value groups, fewer noisy textures, strong outlines, and obvious interaction cues.
 
 ## Runtime Asset Set
 
-- Town tilesheet: cozy hidden Wushu guild town tiles with crisp kit clarity, calmer grass, stronger path/water/wall separation, readable landmark zones, lanterns, bridge, shrine stone, market/trade landmarks, and soft shadows.
-- Player avatar: friendly guild tester in warm Wushu travel robes, chunky readable walk/idle frames, no brand marks.
-- Welcome NPC: jade-robed local guild friend, warm posture, readable small silhouette and stronger robe contrast.
-- Momo Mochi Spirit: blush companion spirit, gentle temperament, soft glow, rounded silhouette.
-- Yuzu Mochi Spirit: gold companion spirit, bright temperament, citrus glow, distinct ears and outline.
-- Sora Mochi Spirit: sky-blue companion spirit, curious temperament, airy glow, distinct crest.
-- Chest: lacquered alpha reward chest with stronger bevel, gold trim, contact shadow, no real-money cue.
-- Market board: fixed-price test market board with parchment shapes, lantern glow, no readable text.
-- Trade post: direct-trade preview post with jade cloth, exchange tokens as abstract shapes, no real-value cue.
-- Canary shrine: Canary preview shrine with jade/gold crystal, stronger crystal silhouette, soft glow, no production/mainnet value cue.
+- Town tilesheet: Jade Lantern Court guild town tiles with readable path, water, wall, garden, habitat, market, trade, and Canary zones.
+- Wayfarer: Mochirii Wayfarer in layered silk travel robes with jade sash.
+- Sifu Narao: calm guild mentor in jade and ivory robes.
+- Lirabao: blush-cloud Mochi Spirit with jade forehead mark and gentle temperament.
+- Jintari: goldleaf Mochi Spirit with lucky cord tail and bright guild-market affinity.
+- Aozhen: sky-jade Mochi Spirit with mist crest and scout/journal affinity.
+- Guild seal chest: lacquered chest with jade clasp and gold cord.
+- Habitat grove: spirit invitation grove with jade stepping stones, tea glow, silk lanterns, young bamboo, and spirit motes.
+- Journal pavilion: Mochirii spirit journal pavilion with lacquer reading stand, open silk-paper field journal, jade page weights, and small lanterns.
+- Expedition gate: Mochirii Moonbridge field expedition gate with curved lacquer moon-arch, bamboo trail markers, jade route lanterns, and silk scout ribbons.
+- Route invitation altar: Mochirii route spirit invitation altar with jade offering bowl, silk route ribbons, lacquer crescent stand, and gold harmony seals.
+- Technique dojo: Mochirii spirit technique dojo with jade practice scroll, lacquer weapon rack, silk focus ribbons, and warm lanterns.
+- Tactic scroll stand: Mochirii battle tactic scroll stand with open silk-paper stance scrolls, jade focus weights, lacquered wuxia lesson frame, and gold lantern light.
+- Affinity dais: Mochirii affinity trial dais with jade mirror disc, silk affinity ribbons, lacquer base, and warm lantern reflection.
+- Guild rank bell: Mochirii guild rank trial bell with jade bell, lacquer arch, silk rank tassels, and gold no-real-value rank seal glow.
+- Growth moonwell: Mochirii Moonwell Bloom Rite shrine with jade moon basin, silk bloom tassels, gold growth sigil glow, and lacquer base.
+- Party banner: Mochi Spirit party formation banner with three jade spirit medallions, lacquer frame, silk tassels, and lantern glow.
+- Market board: fixed-price test market board with parchment tags and jade pins.
+- Trade post: direct-trade preview post with jade cloth canopy and paired exchange charms.
+- Training ring: no-injury spirit training ring with jade floor circle, silk sparring ribbons, lacquer posts, and warm lantern accents.
+- Quest board: roleplay quest board with layered parchment slips, jade pins, guild ribbons, and lacquer frame.
+- Canary shrine: no-real-value Canary preview shrine with violet lacquer base and gold crystal.
+
+Each source card records role, prompt, dimensions, tool, generated date, and project-authored/generated-for-project status.

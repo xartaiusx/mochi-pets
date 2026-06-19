@@ -3,6 +3,19 @@ import { provideTiledMap } from '@rpgjs/tiledmap/client';
 import { applyAlphaWorldState, type AlphaWorldStatePatch } from '../integration/browser-bridge';
 import { provideMain } from '../modules/main';
 
+const SPIRIT_SHEET = {
+  ...Presets.RMSpritesheet(3, 4),
+  width: 384,
+  height: 768,
+  rectWidth: 128,
+  rectHeight: 192,
+  spriteRealSize: {
+    width: 64,
+    height: 96
+  },
+  scale: [0.5, 0.5]
+};
+
 export default {
   providers: [
     provideTiledMap({
@@ -28,49 +41,109 @@ export default {
       {
         spritesheets: [
           {
-            id: 'mochi',
-            image: '/spritesheets/mochi.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'wayfarer',
+            image: '/spritesheets/wayfarer.png',
+            ...SPIRIT_SHEET
           },
           {
-            id: 'friend',
-            image: '/spritesheets/friend.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'sifu-narao',
+            image: '/spritesheets/sifu-narao.png',
+            ...SPIRIT_SHEET
           },
           {
             id: 'chest',
             image: '/spritesheets/chest.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           },
           {
-            id: 'spirit-momo',
-            image: '/spritesheets/spirit-momo.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'spirit-lirabao',
+            image: '/spritesheets/spirit-lirabao.png',
+            ...SPIRIT_SHEET
           },
           {
-            id: 'spirit-yuzu',
-            image: '/spritesheets/spirit-yuzu.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'spirit-jintari',
+            image: '/spritesheets/spirit-jintari.png',
+            ...SPIRIT_SHEET
           },
           {
-            id: 'spirit-sora',
-            image: '/spritesheets/spirit-sora.png',
-            ...Presets.RMSpritesheet(3, 4)
+            id: 'spirit-aozhen',
+            image: '/spritesheets/spirit-aozhen.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'habitat-grove',
+            image: '/spritesheets/habitat-grove.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'party-banner',
+            image: '/spritesheets/party-banner.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'journal-pavilion',
+            image: '/spritesheets/journal-pavilion.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'expedition-gate',
+            image: '/spritesheets/expedition-gate.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'route-invitation-altar',
+            image: '/spritesheets/route-invitation-altar.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'technique-dojo',
+            image: '/spritesheets/technique-dojo.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'tactic-scroll-stand',
+            image: '/spritesheets/tactic-scroll-stand.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'affinity-dais',
+            image: '/spritesheets/affinity-dais.png',
+            ...SPIRIT_SHEET
           },
           {
             id: 'market-board',
             image: '/spritesheets/market-board.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           },
           {
             id: 'trade-post',
             image: '/spritesheets/trade-post.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'training-ring',
+            image: '/spritesheets/training-ring.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'quest-board',
+            image: '/spritesheets/quest-board.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'guild-rank-bell',
+            image: '/spritesheets/guild-rank-bell.png',
+            ...SPIRIT_SHEET
+          },
+          {
+            id: 'growth-moonwell',
+            image: '/spritesheets/growth-moonwell.png',
+            ...SPIRIT_SHEET
           },
           {
             id: 'canary-shrine',
             image: '/spritesheets/canary-shrine.png',
-            ...Presets.RMSpritesheet(3, 4)
+            ...SPIRIT_SHEET
           }
         ]
       }

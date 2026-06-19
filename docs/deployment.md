@@ -9,6 +9,15 @@ Mochi Social uses a split deployment boundary.
 
 The game runtime needs a long-lived server process and multiplayer transport. Vercel Functions are not the game WebSocket server, so Vercel should only reference the deployed game URL.
 
+## Verified Milestone Deploy Queue
+
+The active Alpha Preview goal asks for each verified major milestone to be committed, pushed, and deployed before the next milestone. In this repo, commit and public-repo push may proceed after local verification, followed by PR/CI verification. The deploy step is always represented as an approval queue entry until the operator gives fresh action-specific approval after a cost/usage note.
+
+- `fly-verified-milestone-deploy`: deploy the verified Mochi Social game milestone to the Fly app.
+- `vercel-verified-milestone-deploy`: deploy the verified Mochirii web milestone or preview embed to the approved Vercel target.
+
+Generate `npm run alpha:operator-checklist`, `npm run alpha:provider-preflight`, and `npm run alpha:sync-approval` before asking for those deploy approvals. These packets are no-secret evidence, not approval. They do not run `fly deploy`, trigger Vercel builds, set secrets, run hosted checks, or mutate Supabase/Discord/Enjin.
+
 ## Fly Setup
 
 Fly operations are no-cost gated. Read-only checks such as `fly status` and `fly secrets list` are allowed. Smoke or contract checks against an already-running hosted URL can still create traffic, so `npm run alpha:external-gates` requires `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` before it fetches hosted Fly/Vercel contract URLs. Creating apps, creating or resizing volumes, deploying, scaling, cloning Machines, changing regions, or running hosted load tests can add usage or charges and requires fresh user approval. See [`docs/no-cost-operations.md`](no-cost-operations.md).

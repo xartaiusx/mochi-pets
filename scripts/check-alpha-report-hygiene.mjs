@@ -2,16 +2,19 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_REPORT_HYGIENE_JSON || 'reports/alpha-report-hygiene.json');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const files = [
   'reports/alpha-local-suite.json',
   'reports/built-server-smoke.json',
   'reports/alpha-local-acceptance.json',
   'reports/alpha-load-smoke.json',
   'reports/alpha-browser-presence.json',
+  'reports/alpha-responsive-gameplay.json',
   'reports/alpha-visual-snapshot.json',
   'reports/alpha-visual-review.json',
   'reports/alpha-visual-review.md',
@@ -25,6 +28,8 @@ const files = [
   'reports/alpha-provider-preflight.json',
   'reports/alpha-sync-approval.json',
   'reports/alpha-external-gates.json',
+  'reports/alpha-branch-inventory.json',
+  'reports/alpha-branch-inventory.md',
   'reports/enjin-operator-smoke.json',
   resolve(credsDir, 'mochi-social-alpha-operator-next-steps.md'),
   resolve(credsDir, 'mochi-social-alpha-external-gates-status.md'),
@@ -35,8 +40,10 @@ const files = [
 const optionalFiles = [
   'reports/alpha-preview-ready.json',
   'reports/alpha-preview-ready.md',
-  resolve(siteRepoPath(), 'reports/mochi-social-preview-ready.json'),
-  resolve(siteRepoPath(), 'reports/mochi-social-preview-ready.md'),
+  'reports/alpha-local-site-iframe.json',
+  'reports/alpha-site-iframe-responsive.json',
+  resolve(siteRepoPath, 'reports/mochi-social-preview-ready.json'),
+  resolve(siteRepoPath, 'reports/mochi-social-preview-ready.md'),
   resolve(credsDir, 'mochi-social-alpha-preview-ready.md'),
   resolve(credsDir, 'mochirii-mochi-social-preview-ready.md')
 ];
@@ -52,6 +59,7 @@ const secretPatterns = [
   { label: 'Enjin token assignment', pattern: /\bENJIN_PLATFORM_TOKEN\s*=\s*["']?(?!\.\.\.|<|your-|YOUR_|REPLACE_|example\b)[^\s"']{8,}/i },
   { label: 'Supabase service role assignment', pattern: /\bSUPABASE_SERVICE_ROLE_KEY\s*=\s*["']?(?!\.\.\.|<|your-|YOUR_|REPLACE_|example\b)[^\s"']{8,}/i },
   { label: 'Unredacted local suite token', pattern: /\blocal-suite-token-[a-z0-9]+\b/i },
+  { label: 'Unredacted local site iframe token', pattern: /\blocal-site-iframe-token-[a-z0-9]+\b/i },
   { label: 'Wallet seed filename with contents marker', pattern: /\bwallet\.seed\s*[:=]\s*["']?(?!<|private|redacted|placeholder)[^\s"']+/i }
 ];
 
@@ -98,10 +106,6 @@ function defaultCredsDir() {
   if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
   if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
   return join(root, '.local', 'creds');
-}
-
-function siteRepoPath() {
-  return resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
 }
 
 function pathForReport(absolutePath) {

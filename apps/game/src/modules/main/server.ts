@@ -1,6 +1,6 @@
 import { defineModule } from '@rpgjs/common';
 import type { RpgServer } from '@rpgjs/server';
-import { CanaryShrine, CareShrine, MarketBoard, SPIRITS, SpiritEvent, TokenChest, TradePost, WelcomeNpc } from './event';
+import { AffinityDais, CanaryShrine, CareShrine, ExpeditionGate, GrowthMoonwell, GuildRankBell, GuildSealChest, HabitatGrove, JournalPavilion, MarketBoard, PartyBanner, QuestBoard, RouteInvitationAltar, SPIRITS, SpiritEvent, TacticScrollStand, TechniqueDojo, TradePost, TrainingRing, WelcomeNpc } from './event';
 import { player } from './player';
 
 export default defineModule<RpgServer>({
@@ -11,56 +11,128 @@ export default defineModule<RpgServer>({
       events: [
         {
           id: 'welcome-npc',
-          x: 448,
-          y: 256,
+          x: 896,
+          y: 512,
           event: WelcomeNpc()
         },
         {
-          id: 'token-chest',
-          x: 320,
-          y: 352,
-          event: TokenChest()
+          id: 'guild-seal-chest',
+          x: 640,
+          y: 704,
+          event: GuildSealChest()
         },
         {
-          id: 'spirit-momo',
-          x: 192,
-          y: 160,
+          id: 'journal-pavilion',
+          x: 768,
+          y: 704,
+          event: JournalPavilion()
+        },
+        {
+          id: 'expedition-gate',
+          x: 256,
+          y: 704,
+          event: ExpeditionGate()
+        },
+        {
+          id: 'route-invitation-altar',
+          x: 384,
+          y: 704,
+          event: RouteInvitationAltar()
+        },
+        {
+          id: 'technique-dojo',
+          x: 896,
+          y: 704,
+          event: TechniqueDojo()
+        },
+        {
+          id: 'tactic-scroll-stand',
+          x: 1280,
+          y: 320,
+          event: TacticScrollStand()
+        },
+        {
+          id: 'affinity-dais',
+          x: 1408,
+          y: 704,
+          event: AffinityDais()
+        },
+        {
+          id: 'spirit-lirabao',
+          x: 384,
+          y: 320,
           event: SpiritEvent(SPIRITS[0])
         },
         {
-          id: 'spirit-yuzu',
-          x: 256,
-          y: 160,
+          id: 'spirit-jintari',
+          x: 512,
+          y: 320,
           event: SpiritEvent(SPIRITS[1])
         },
         {
-          id: 'spirit-sora',
-          x: 320,
-          y: 160,
+          id: 'spirit-aozhen',
+          x: 640,
+          y: 320,
           event: SpiritEvent(SPIRITS[2])
         },
         {
           id: 'care-shrine',
-          x: 384,
-          y: 160,
+          x: 768,
+          y: 320,
           event: CareShrine()
         },
         {
+          id: 'habitat-grove',
+          x: 896,
+          y: 320,
+          event: HabitatGrove()
+        },
+        {
+          id: 'party-banner',
+          x: 1152,
+          y: 320,
+          event: PartyBanner()
+        },
+        {
+          id: 'training-ring',
+          x: 1024,
+          y: 320,
+          event: TrainingRing()
+        },
+        {
+          id: 'quest-board',
+          x: 1024,
+          y: 704,
+          event: QuestBoard()
+        },
+        {
+          id: 'guild-rank-bell',
+          x: 1280,
+          y: 512,
+          event: GuildRankBell()
+        },
+        {
+          id: 'growth-moonwell',
+          x: 1408,
+          y: 512,
+          event: GrowthMoonwell()
+        },
+        {
           id: 'market-board',
-          x: 576,
-          y: 352,
+          x: 1152,
+          y: 704,
           event: MarketBoard()
         },
         {
           id: 'trade-post',
-          x: 640,
-          y: 352,
+          x: 1280,
+          y: 704,
           event: TradePost()
         },
         {
           id: 'canary-shrine',
-          x: 704,
-          y: 160,
+          x: 1408,
+          y: 320,
           event: CanaryShrine()
         }
       ]

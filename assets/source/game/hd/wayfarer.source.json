@@ -1,0 +1,13 @@
+{
+  "id": "wayfarer",
+  "role": "Player avatar",
+  "runtimePath": "apps/game/public/spritesheets/wayfarer.png",
+  "masterPath": "assets/source/game/hd/wayfarer-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Mochirii Wayfarer in layered silk travel robes, jade sash, lacquer trim, soft wuxia lighting, transparent background, smooth illustrated 2D sprite sheet, original project-authored alpha asset.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

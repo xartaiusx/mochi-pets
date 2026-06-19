@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_PREVIEW_READY_JSON || 'reports/alpha-preview-ready.json');
 const reportMdPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_PREVIEW_READY_MD || 'reports/alpha-preview-ready.md');
@@ -12,7 +14,10 @@ const handoffPath = resolve(credsDir, 'mochi-social-alpha-preview-ready.md');
 const requirements = [];
 
 addCurrentOkReport('preview.local-evidence', 'Local alpha evidence is current and green.', 'reports/alpha-local-evidence.json', root);
+addCurrentOkReport('preview.local-site-iframe', 'Local Mochirii site iframe proof is current and green.', 'reports/alpha-local-site-iframe.json', root);
+addResponsiveSiteIframeRequirement();
 addCurrentOkReport('preview.report-hygiene', 'No-secret report hygiene is current and green.', 'reports/alpha-report-hygiene.json', root);
+addCurrentOkReport('preview.branch-inventory', 'Branch inventory is current, green, and no-destructive.', 'reports/alpha-branch-inventory.json', root);
 addManualPromptRequirement();
 addCurrentOkReport('preview.operator-checklist', 'Operator checklist is current and green.', 'reports/alpha-operator-checklist.json', root);
 addCurrentOkReport('preview.provider-preflight', 'Provider preflight is current and green.', 'reports/alpha-provider-preflight.json', root);
@@ -80,17 +85,58 @@ function addManualPromptRequirement() {
     return;
   }
 
-  const failures = currentGitStateFailures(prompt.data?.git, root, 'manual prompt review report');
+  const gitFailures = currentGitStateFailures(prompt.data?.git, root, 'manual prompt review report');
+  const sourceEvidence = manualPromptSourceEvidence(prompt.data);
+  const failures = sourceEvidence.matchesCurrentSource
+    ? gitFailures.filter((failure) => !failure.includes('localHead does not match current HEAD'))
+    : gitFailures;
   if (prompt.data?.ok !== true) failures.push('manual prompt review report is not ok');
   if (prompt.data?.review?.status !== 'completed') failures.push('manual prompt review is not completed');
+  if (!sourceEvidence.matchesCurrentSource) failures.push(...sourceEvidence.failures);
   const completed = Array.isArray(prompt.data?.completedChecks) ? prompt.data.completedChecks : [];
-  const missing = ['welcome-npc', 'token-chest', 'care-shrine'].filter((id) => !completed.includes(id));
+  const missing = ['welcome-npc', 'guild-seal-chest', 'care-shrine'].filter((id) => !completed.includes(id));
   if (missing.length) failures.push(`manual prompt review missing completed checks: ${missing.join(', ')}`);
 
-  add('preview.manual-prompt-review', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Rendered NPC, chest, and habitat/care prompt review is complete for current HEAD.', {
+  add('preview.manual-prompt-review', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Rendered NPC, guild seal chest, and habitat/care prompt review is complete for current HEAD.', {
     path: 'reports/alpha-manual-prompt-review.json',
     status: prompt.data?.review?.status,
-    completedChecks: completed
+    completedChecks: completed,
+    sourceEvidence
+  });
+}
+
+function addResponsiveSiteIframeRequirement() {
+  const relativePath = process.env.MOCHI_SOCIAL_SITE_IFRAME_RESPONSIVE_JSON || 'reports/alpha-site-iframe-responsive.json';
+  const responsive = readJson(resolve(root, relativePath));
+  if (!responsive.ok) {
+    add('preview.responsive-site-iframe', 'fail', `Responsive gameplay report is missing or invalid: ${responsive.message}.`, {
+      path: relativePath
+    });
+    return;
+  }
+
+  const failures = currentGitStateFailures(responsive.data?.git, root, 'responsive gameplay report');
+  const site = responsive.data?.site || {};
+  const siteResults = Array.isArray(responsive.data?.siteIframeResults) ? responsive.data.siteIframeResults : [];
+  if (responsive.data?.ok !== true) failures.push('responsive gameplay report is not ok');
+  if (site.required !== true) failures.push('Mochirii site iframe smoke must run with MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true for Preview Ready');
+  if (site.configured !== true) failures.push('Mochirii site iframe base URL was not configured');
+  if (site.status !== 'checked') failures.push(`Mochirii site iframe status is ${site.status || 'missing'}, expected checked`);
+  if (site.entryPath !== '/games/mochi-social') failures.push(`Mochirii site iframe entry path is ${site.entryPath || 'missing'}, expected /games/mochi-social`);
+  if (siteResults.length !== 9) failures.push(`Mochirii site iframe must cover all nine viewports, found ${siteResults.length}`);
+
+  const missingScreenshots = siteResults.filter((result) => !(result.screenshot?.bytes > 1000));
+  if (missingScreenshots.length) failures.push(`${missingScreenshots.length} Mochirii site iframe viewport screenshot(s) were empty or missing`);
+
+  const expectedGameplayKeys = Array.isArray(responsive.data?.gameplayKeys) ? responsive.data.gameplayKeys.length : 0;
+  const weakInputProof = siteResults.filter((result) => result.inputOwnership?.gameplay?.checks?.length !== expectedGameplayKeys);
+  if (weakInputProof.length) failures.push(`${weakInputProof.length} Mochirii site iframe viewport(s) are missing full per-key gameplay input proof`);
+
+  add('preview.responsive-site-iframe', failures.length ? 'fail' : 'pass', failures.length ? failures.join('; ') : 'Responsive gameplay covered the unlocked Mochirii /games/mochi-social iframe across all nine viewports.', {
+    path: relativePath,
+    site,
+    siteIframeResults: siteResults.length,
+    expectedGameplayKeys
   });
 }
 
@@ -211,6 +257,51 @@ function readJson(file) {
   }
 }
 
+function manualPromptSourceEvidence(report) {
+  const expected = [
+    {
+      label: 'eventSource',
+      path: resolve(root, 'apps/game/src/modules/main/event.ts'),
+      expectedHash: report?.sourceEvidence?.eventSource?.sha256
+    },
+    {
+      label: 'mapServerSource',
+      path: resolve(root, 'apps/game/src/modules/main/server.ts'),
+      expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
+    }
+  ];
+  const failures = [];
+  const files = expected.map((entry) => {
+    const currentHash = fileSha256(entry.path);
+    if (!entry.expectedHash) failures.push(`${entry.label} hash is missing from manual prompt review report`);
+    if (!currentHash) failures.push(`${entry.label} source file is missing`);
+    if (entry.expectedHash && currentHash && entry.expectedHash !== currentHash) {
+      failures.push(`${entry.label} source hash changed since manual prompt review`);
+    }
+    return {
+      label: entry.label,
+      path: pathForReport(entry.path),
+      matches: Boolean(entry.expectedHash && currentHash && entry.expectedHash === currentHash)
+    };
+  });
+  return {
+    matchesCurrentSource: failures.length === 0,
+    files,
+    failures
+  };
+}
+
+function fileSha256(file) {
+  if (!existsSync(file)) return '';
+  return createHash('sha256').update(readFileSync(file)).digest('hex');
+}
+
+function pathForReport(file) {
+  return String(file || '').startsWith(root)
+    ? String(file).slice(root.length + 1).replace(/\\/g, '/')
+    : String(file || '').replace(/\\/g, '/');
+}
+
 function git(args, cwd) {
   const result = spawnSync('git', args, { cwd, encoding: 'utf8', shell: false });
   return {
@@ -267,11 +358,11 @@ ${failures}
 ## Next Actions
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Local RPG branch codex/mochi-social-alpha-rc to origin/codex/mochi-social-alpha-rc if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
+Push ${root} branch ${summaryReport.git.branch || '<game-branch>'} to ${summaryReport.git.upstream || '<game-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochi Social.
 \`\`\`
 
 \`\`\`text
-Push C:\\Users\\xtyty\\Documents\\Mochirii branch codex/reaper-pending-verification-containment to origin/codex/reaper-pending-verification-containment if it is ahead, then verify GitHub Actions/PR checks for Mochirii PR #259.
+Push ${siteRepoPath} branch ${summaryReport.siteGit.branch || '<site-branch>'} to ${summaryReport.siteGit.upstream || '<site-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 \`\`\`text

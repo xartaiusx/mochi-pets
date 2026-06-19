@@ -1,0 +1,13 @@
+{
+  "id": "sifu-narao",
+  "role": "Welcome NPC and care shrine mentor",
+  "runtimePath": "apps/game/public/spritesheets/sifu-narao.png",
+  "masterPath": "assets/source/game/hd/sifu-narao-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Sifu Narao, calm Mochirii guild mentor in jade and ivory robes with lacquered shoulder cords, warm lantern light, transparent background, smooth illustrated 2D sprite sheet.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

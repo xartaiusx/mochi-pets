@@ -28,20 +28,367 @@ const ALPHA_FEATURES = {
     provider: 'enjin',
     network: 'CANARY',
     custody: 'managed-hot-cold',
-    finalityRequired: true
+    finalityRequired: true,
+    operationUpdates: true,
+    previewFinalityReviews: true
   },
   market: {
     fixedPrice: true,
+    guildReceipts: true,
     directTrade: true,
     auctions: false,
     cashout: false
   },
+  gameplay: {
+    spiritCapture: true,
+    spiritStarterVows: true,
+    spiritCaptureRites: true,
+    spiritAttunement: true,
+    routeInvitations: true,
+    routeMastery: true,
+    habitatBonds: true,
+    spiritSanctuaryRites: true,
+    spiritResearch: true,
+    spiritCompendium: true,
+    spiritRosterArchives: true,
+    spiritCareCycles: true,
+    spiritTemperamentConcords: true,
+    spiritFieldAlmanacs: true,
+    routeEcologySurveys: true,
+    spiritWeatherVeils: true,
+    spiritEncounterRotations: true,
+    spiritEncounterAtlases: true,
+    spiritHabitatCensuses: true,
+    spiritCraftWrits: true,
+    tradeExchangeAccords: true,
+    routeWaystones: true,
+    routeCharters: true,
+    spiritNurtureRites: true,
+    spiritRecoveryTeas: true,
+    spiritKinshipAlbums: true,
+    spiritNurseryGroves: true,
+    spiritBloomAscendances: true,
+    spiritLineageRegisters: true,
+    partyFormation: true,
+    partyHarmony: true,
+    harmonyTrials: true,
+    teamSparMatches: true,
+    mentorChallenges: true,
+    dojoLadders: true,
+    sifuCouncils: true,
+    summitCircuits: true,
+    battleChronicles: true,
+    spiritTournamentBrackets: true,
+    spiritRivalCircles: true,
+    spiritStoryChapters: true,
+    battleRoundTranscripts: true,
+    conditionWeaves: true,
+    fieldExpeditions: true,
+    fieldAccords: true,
+    routePatrols: true,
+    itemProvisions: true,
+    spiritBondGiftRites: true,
+    spiritNameBannerRites: true,
+    itemProvisionCatalogs: true,
+    battleItemKits: true,
+    remedyPouches: true,
+    questLedgers: true,
+    storyDialogueScrolls: true,
+    spiritRosterCabinets: true,
+    spiritBlossomCradles: true,
+    guildCommissions: true,
+    socialRallies: true,
+    wayfarerChronicles: true,
+    guildAscensionTrials: true,
+    guildInsigniaCases: true,
+    affinityTrials: true,
+    affinityMatrices: true,
+    battleTactics: true,
+    techniqueLoadouts: true,
+    techniqueCodexes: true,
+    spiritTraits: true,
+    spiritRelicAttunements: true,
+    guildRankTrials: true,
+    spiritGrowthRites: true,
+    sparringLadder: true,
+    trainingBattles: true,
+    techniqueMastery: true,
+    raisingCare: true,
+    bondMilestones: true,
+    roleplayQuests: true,
+    questChains: true,
+    spiritJournal: true,
+    copiedUpstreamContent: false
+  },
   ugc: 'curated'
+} as const;
+
+const PLAYABLE_CONTENT_CATALOG = {
+  scope: 'first-court-alpha-preview',
+  contentPolicy: 'original-mochirii-feature-parity',
+  capture: {
+    spiritIds: ['lirabao', 'jintari', 'aozhen'],
+    starterVowIds: ['jade-starter-vow'],
+    expeditionRouteIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
+    fieldAccordIds: ['moonbridge-goldleaf-accord', 'cloudbell-skyvow-accord'],
+    routeMasteryIds: ['jade-cloudbell-circuit'],
+    routePatrolIds: ['jade-cloudbell-patrol'],
+    captureRiteIds: ['jade-court-capture-rite']
+  },
+  raising: {
+    careActionIds: ['tea-ribbon-care'],
+    raiseActionIds: ['jade-brush-groom', 'mooncake-share'],
+    bondMilestoneIds: [
+      'lirabao-lantern-spark',
+      'lirabao-ribbon-warmth',
+      'lirabao-moonwell-glow',
+      'jintari-market-spark',
+      'jintari-trade-step',
+      'jintari-lacquer-glow',
+      'aozhen-skybell-spark',
+      'aozhen-reedwind-step',
+      'aozhen-cloud-vow-glow'
+    ],
+    growthRiteIds: ['moonwell-bloom-rite'],
+    careCycleIds: ['jade-court-care-cycle'],
+    nurtureRiteIds: ['jade-moonwell-nurture-rite'],
+    recoveryTeaIds: ['jade-teahouse-recovery'],
+    kinshipAlbumIds: ['jade-kinship-album'],
+    nurseryGroveIds: ['jade-nursery-grove'],
+    bloomAscendanceIds: ['jade-bloom-ascendance'],
+    lineageRegisterIds: ['jade-lineage-register'],
+    blossomCradleIds: ['jade-blossom-cradle'],
+    bondGiftRiteIds: ['jade-bond-gift-rite']
+  },
+  battle: {
+    moveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
+    tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
+    techniqueLoadoutIds: ['jade-step-loadout'],
+    techniqueCodexIds: ['jade-technique-codex'],
+    traitAttunementIds: ['jade-heart-trait'],
+    conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
+    conditionWeaveIds: ['jade-mirror-condition-weave'],
+    affinityTrialIds: ['jade-mirror-trial', 'silk-cinder-trial'],
+    affinityMatrixIds: ['jade-affinity-matrix'],
+    harmonyFormIds: ['triune-jade-harmony'],
+    harmonyTrialIds: ['jade-echo-concord'],
+    teamSparMatchIds: ['jade-mirror-team-match'],
+    mentorChallengeIds: ['silk-banner-mentor-drill'],
+    dojoLadderIds: ['jade-dojo-ladder'],
+    sparLadderIds: ['jade-echo-apprentice', 'silk-river-disciple'],
+    tournamentBracketIds: ['jade-banner-tournament'],
+    rivalCircleIds: ['jade-rival-circle'],
+    sifuCouncilIds: ['jade-sifu-council'],
+    summitCircuitIds: ['jade-summit-circuit'],
+    battleChronicleIds: ['jade-battle-chronicle']
+  },
+  roleplay: {
+          questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
+          questLedgerIds: ['jade-quest-ledger'],
+          dialogueScrollIds: ['jade-dialogue-scroll'],
+          storyChapterIds: ['jade-scroll-story-chapter'],
+    guildRankTrialIds: ['jade-court-initiate'],
+    guildCommissionIds: ['jade-court-commission-ledger'],
+    guildSocialRallyIds: ['jade-courtyard-rally'],
+    guildWayfarerChronicleIds: ['jade-wayfarer-chronicle'],
+    guildAscensionTrialIds: ['jade-court-ascension-trial'],
+    guildInsigniaCaseIds: ['jade-insignia-case'],
+    habitatBondIds: ['jade-court-habitat-bond'],
+    sanctuaryRiteIds: ['jade-court-sanctuary-rite'],
+    researchFolioIds: ['jade-court-research-folio'],
+    compendiumIds: ['jade-court-spirit-compendium'],
+    rosterArchiveIds: ['jade-court-roster-archive'],
+    rosterCabinetIds: ['jade-roster-cabinet'],
+    nameBannerRiteIds: ['jade-name-banner-rite'],
+    fieldAlmanacIds: ['jade-field-almanac'],
+    routeEcologySurveyIds: ['jade-route-ecology-survey'],
+    weatherVeilIds: ['jade-weather-veil'],
+    encounterRotationIds: ['jade-encounter-rotation'],
+    encounterAtlasIds: ['jade-encounter-atlas'],
+    habitatCensusIds: ['jade-habitat-census'],
+    routeWaystoneIds: ['jade-cloudbell-waystone'],
+    routeCharterIds: ['jade-route-charter']
+  },
+  economyAndCanary: {
+    provisionSatchelIds: ['jade-court-provision-satchel'],
+    provisionCatalogIds: ['jade-provision-catalog'],
+    battleKitIds: ['jade-battle-kit'],
+    remedyPouchIds: ['jade-remedy-pouch'],
+    craftWritIds: ['jade-court-craft-writ'],
+    marketReceiptIds: ['jade-court-market-receipt'],
+    tradeExchangeAccordIds: ['jade-exchange-accord'],
+    relicAttunementIds: ['jade-relic-attunement'],
+    canaryCertificateItemIds: ['lirabao-canary-certificate'],
+    canaryActionTypes: ['chain.withdraw_request', 'chain.deposit_request', 'chain.operation_update']
+  },
+  runtimeAssets: {
+    tileSize: 64,
+    tilesheet: {
+      path: 'src/tiled/mochi-tiles.png',
+      width: 512,
+      height: 192
+    },
+    spritesheets: [
+      'wayfarer',
+      'sifu-narao',
+      'chest',
+      'spirit-lirabao',
+      'spirit-jintari',
+      'spirit-aozhen',
+      'habitat-grove',
+      'party-banner',
+      'journal-pavilion',
+      'expedition-gate',
+      'route-invitation-altar',
+      'technique-dojo',
+      'tactic-scroll-stand',
+      'affinity-dais',
+      'market-board',
+      'trade-post',
+      'training-ring',
+      'quest-board',
+      'guild-rank-bell',
+      'growth-moonwell',
+      'canary-shrine'
+    ].map((id) => ({
+      path: `public/spritesheets/${id}.png`,
+      width: 384,
+      height: 768,
+      framesWidth: 3,
+      framesHeight: 4,
+      rectWidth: 128,
+      rectHeight: 192
+    }))
+  }
+} as const;
+
+const MANIFEST_CONTRACTS = {
+  routes: {
+    public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
+    integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+  },
+  progress: {
+    authority: 'mochirii-edge',
+    linkedAccount: true,
+    guestFallback: true,
+    snapshotEndpoint: '/integration/alpha/progress',
+    accountMode: 'signed-in-supabase',
+    guestMode: 'local-file-and-local-storage'
+  },
+  alphaPreview: {
+    status: 'closed-preview',
+    stopPoint: 'alpha-preview-ready',
+    websiteEntryPath: '/games/mochi-social',
+    accessGateOwner: 'parent-website',
+    testerPasswordOwner: 'parent-website',
+    authBridgeTokenPolicy: 'short-lived-access-token-only',
+    manualPromptReviewRequired: true,
+    localEvidenceRequired: true,
+    hostedChecksRequireApproval: true,
+    providerMutationAllowedByDefault: false,
+    fundedChainRequiredForPreview: false,
+    enjinCanaryModeBeforeFunding: 'configured-preview-stub'
+  },
+  cleanRoom: {
+    policy: 'project-authored-original-content-only',
+    restrictedSourceReferences: false,
+    copiedRestrictedSourceCode: false,
+    copiedRestrictedSourceNames: false,
+    copiedRestrictedSourceLore: false,
+    copiedRestrictedSourceMaps: false,
+    copiedRestrictedSourceDialogue: false,
+    copiedRestrictedSourceFilenames: false,
+    copiedRestrictedSourceAssets: false,
+    restrictedSourceVisualDerivatives: false,
+    scanner: 'npm run clean-room-scan'
+  },
+  brand: {
+    world: 'Mochirii',
+    town: 'Jade Lantern Court',
+    playerAvatar: 'Mochirii Wayfarer',
+    guide: 'Sifu Narao',
+    system: 'Mochi Spirits',
+    artDirection: 'Mochirii High-Fidelity Wuxia'
+  },
+  runtimeArt: {
+    style: 'smooth illustrated 2D',
+    pixelArt: false,
+    retro: false,
+    tileSizePx: 64,
+    townTilesheet: {
+      width: 512,
+      height: 192
+    },
+    eventSpritesheet: {
+      width: 384,
+      height: 768,
+      columns: 3,
+      rows: 4,
+      frameWidth: 128,
+      frameHeight: 192
+    }
+  },
+  spirits: {
+    system: 'Mochi Spirits',
+    habitat: 'Jade Lantern Court',
+    roster: [
+      {
+        id: 'lirabao',
+        name: 'Lirabao',
+        title: 'Blush-Cloud Mochi Spirit',
+        affinity: 'blossom',
+        temperament: 'gentle',
+        habitat: 'Jade Lantern Court',
+        certificateEligible: true
+      },
+      {
+        id: 'jintari',
+        name: 'Jintari',
+        title: 'Goldleaf Mochi Spirit',
+        affinity: 'citrus-gold',
+        temperament: 'bright',
+        habitat: 'Jade Lantern Court',
+        certificateEligible: false
+      },
+      {
+        id: 'aozhen',
+        name: 'Aozhen',
+        title: 'Sky-Jade Mochi Spirit',
+        affinity: 'sky-jade',
+        temperament: 'curious',
+        habitat: 'Jade Lantern Court',
+        certificateEligible: false
+      }
+    ]
+  },
+  playableContent: PLAYABLE_CONTENT_CATALOG,
+  manualReview: {
+    requiredBeforeAlphaPreviewReady: true,
+    requiredTargets: [
+      {
+        id: 'welcome-npc',
+        label: 'Welcome NPC dialog',
+        actor: 'sifu-narao'
+      },
+      {
+        id: 'guild-seal-chest',
+        label: 'Guild seal chest prompt and save feedback',
+        actor: 'chest'
+      },
+      {
+        id: 'care-shrine',
+        label: 'Habitat care loop prompt',
+        actor: 'sifu-narao',
+        setupTarget: 'spirit-lirabao'
+      }
+    ]
+  }
 } as const;
 
 const ALPHA_EDGE_FUNCTIONS = {
   session: 'mochi-social-alpha-session',
   action: 'mochi-social-alpha-action',
+  progress: 'mochi-social-alpha-progress',
   admin: 'mochi-social-alpha-admin',
   feedback: 'submit-mochi-social-feedback'
 } as const;
@@ -49,10 +396,86 @@ const ALPHA_EDGE_FUNCTIONS = {
 const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
-  'pet.befriend',
-  'pet.care',
+  'spirit.starter_vow',
+  'spirit.capture',
+  'spirit.capture_rite',
+  'spirit.route_invite',
+  'world.route_mastery',
+  'world.route_patrol',
+  'spirit.habitat_bond',
+  'spirit.sanctuary_rite',
+  'spirit.research',
+  'spirit.compendium_complete',
+  'spirit.roster_archive',
+  'spirit.care_cycle',
+  'spirit.temperament_concord',
+  'spirit.field_almanac',
+  'world.route_ecology',
+  'world.weather_veil',
+  'world.encounter_rotation',
+  'world.encounter_atlas',
+  'spirit.habitat_census',
+  'item.craft_writ',
+  'world.route_waystone',
+  'world.route_charter',
+  'spirit.nurture_rite',
+  'spirit.recovery_tea',
+  'spirit.kinship_album',
+  'spirit.nursery_grove',
+  'spirit.bloom_ascendance',
+  'spirit.lineage_register',
+  'item.bond_gift',
+  'spirit.name_banner',
+  'item.provision_satchel',
+  'item.provision_catalog',
+  'item.battle_kit',
+  'item.remedy_pouch',
+  'quest.ledger_record',
+  'story.dialogue_scroll',
+  'spirit.roster_cabinet',
+  'spirit.blossom_cradle',
+  'guild.commission_complete',
+  'guild.social_rally',
+  'guild.wayfarer_chronicle',
+  'guild.ascension_trial',
+  'spirit.attune',
+  'spirit.bond',
+  'spirit.care',
+  'spirit.journal',
+  'world.expedition',
+  'spirit.technique',
+  'spirit.technique_loadout',
+  'battle.technique_codex',
+  'spirit.trait_attune',
+  'spirit.relic_attune',
+  'battle.tactic_scroll',
+  'guild.rank_trial',
+  'spirit.growth_rite',
+  'party.set',
+  'party.harmony_form',
+  'battle.harmony_trial',
+  'battle.team_spar_match',
+  'battle.mentor_challenge',
+  'battle.dojo_ladder',
+  'battle.sifu_council',
+  'battle.summit_circuit',
+  'battle.battle_chronicle',
+  'battle.tournament_bracket',
+  'battle.rival_circle',
+  'story.chapter_complete',
+  'guild.insignia_case',
+  'battle.condition_weave',
+  'battle.affinity_trial',
+  'battle.affinity_matrix',
+  'battle.spar_ladder',
+  'spirit.train',
+  'spirit.raise',
+  'quest.accept',
+  'quest.progress',
   'market.fixed_list',
+  'market.guild_receipt',
   'trade.direct_offer',
+  'trade.exchange_accord',
   'chain.withdraw_request',
   'chain.deposit_request',
   'chain.operation_update'
@@ -121,9 +544,10 @@ const app = express();
 const transport = createRpgServerTransport(startServer, {
   tiledBasePaths: ['map', '/map', 'assets/data', '/assets/data']
 });
+const integrationJsonLimit = '256kb';
+const strictIntegrationJson = express.json({ limit: integrationJsonLimit });
 
 app.disable('x-powered-by');
-app.use(express.json({ limit: '32kb' }));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -165,6 +589,7 @@ app.get('/integration/alpha/status', (_req, res) => {
     economy: ALPHA_FEATURES.economy,
     chain: ALPHA_FEATURES.chain,
     market: ALPHA_FEATURES.market,
+    gameplay: ALPHA_FEATURES.gameplay,
     ugc: ALPHA_FEATURES.ugc,
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
     enjinCanaryConfigured: enjinRuntime.configured,
@@ -173,7 +598,34 @@ app.get('/integration/alpha/status', (_req, res) => {
   });
 });
 
-app.post('/integration/alpha/action', async (req, res) => {
+app.get('/integration/alpha/progress', async (req, res) => {
+  const accessToken = getBearerToken(req);
+  const authResult = await validateSupabaseAccessTokenForExpress(accessToken);
+  if (!authResult.ok) {
+    res.status(process.env.SUPABASE_AUTH_REQUIRED === 'true' ? 401 : 200).json({
+      ok: process.env.SUPABASE_AUTH_REQUIRED !== 'true',
+      mode: 'guest-local',
+      progress: null,
+      message: authResult.error ?? 'Guest progress remains local until a signed-in Supabase session is linked.'
+    });
+    return;
+  }
+
+  if (authResult.mode !== 'linked' || !authResult.userId) {
+    res.json({
+      ok: true,
+      mode: 'guest-local',
+      progress: null,
+      message: 'Guest progress remains local until a signed-in Supabase session is linked.'
+    });
+    return;
+  }
+
+  const forwarded = await forwardAlphaProgress(authResult.userId);
+  res.status(forwarded.status).json(forwarded.body);
+});
+
+app.post('/integration/alpha/action', strictIntegrationJson, async (req, res) => {
   const action = req.body;
   if (!isAlphaActionEnvelope(action)) {
     res.status(400).json({
@@ -199,7 +651,7 @@ app.post('/integration/alpha/action', async (req, res) => {
   res.status(forwarded.status).json(forwarded.body);
 });
 
-app.post('/integration/alpha/enjin/submit', async (req, res) => {
+app.post('/integration/alpha/enjin/submit', strictIntegrationJson, async (req, res) => {
   const tokenResult = requireGameServerToken(req);
   if (!tokenResult.ok) {
     res.status(tokenResult.status).json({
@@ -253,7 +705,7 @@ app.post('/integration/alpha/enjin/submit', async (req, res) => {
   }
 });
 
-app.post('/integration/auth/verify', async (req, res) => {
+app.post('/integration/auth/verify', strictIntegrationJson, async (req, res) => {
   const accessToken = typeof req.body?.accessToken === 'string' ? req.body.accessToken : undefined;
   const result = await validateSupabaseAccessTokenForExpress(accessToken);
   res.status(result.ok ? 200 : 401).json(result);
@@ -359,7 +811,8 @@ function createGameManifestForExpress(origin: string, version: string) {
       mode: process.env.SUPABASE_AUTH_REQUIRED === 'true' ? 'closed-alpha' : 'guest-first',
       tokenPolicy: 'access-token-only'
     },
-    ...ALPHA_FEATURES
+    ...ALPHA_FEATURES,
+    ...MANIFEST_CONTRACTS
   };
 }
 
@@ -399,11 +852,43 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
   };
 }
 
+async function forwardAlphaProgress(playerId: string): Promise<{ status: number; body: Record<string, unknown> }> {
+  const request = buildAlphaProgressRequest(playerId);
+  if (!request) {
+    return {
+      status: 503,
+      body: {
+        ok: false,
+        error: 'alpha_progress_edge_not_configured',
+        message: 'Signed-in account progress requires Mochirii Supabase Edge Functions and a scoped game server token.'
+      }
+    };
+  }
+
+  try {
+    const response = await fetch(request.url, request.init);
+    const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    return {
+      status: response.status,
+      body
+    };
+  } catch (error) {
+    return {
+      status: 502,
+      body: {
+        ok: false,
+        error: 'alpha_progress_edge_unreachable',
+        message: error instanceof Error ? error.message : 'Mochirii Supabase alpha progress could not be reached.'
+      }
+    };
+  }
+}
+
 async function buildEnjinOperatorUpdateAction(envelope: ValidEnjinOperatorEnvelope) {
   const baseInput = {
     requestId: envelope.requestId,
     playerId: envelope.playerId,
-    itemId: envelope.itemId || 'momo-canary-certificate'
+    itemId: envelope.itemId || 'lirabao-canary-certificate'
   };
 
   if (envelope.operation === 'poll-transaction') {
@@ -559,6 +1044,23 @@ function buildAlphaActionRequest(action: AlphaActionEnvelope) {
         'x-mochi-social-server-token': config.serverToken
       },
       body: JSON.stringify(action)
+    }
+  };
+}
+
+function buildAlphaProgressRequest(playerId: string) {
+  const config = getSupabaseEdgeConfig();
+  if (!config.functionsUrl || !config.serverToken) return null;
+
+  return {
+    url: `${config.functionsUrl.replace(/\/+$/, '')}/${ALPHA_EDGE_FUNCTIONS.progress}`,
+    init: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mochi-social-server-token': config.serverToken
+      },
+      body: JSON.stringify({ playerId })
     }
   };
 }
@@ -862,7 +1364,7 @@ function createEnjinCanaryRuntime(config = getEnjinCanaryConfig()): EnjinCanaryR
     mode: configured ? 'configured' : 'configured-preview-stub',
     message: configured
       ? 'Enjin Canary is configured for operator-verified hot/cold proof submission.'
-      : 'Enjin Canary is running as a configured preview stub. The certificate request is recorded with no real value until Fly secrets, Enjin Platform, Fuel Tank, and Wallet Daemon signing are configured.',
+      : 'Enjin Canary is running as a configured preview stub. Chain requests are recorded with no real value until Fly secrets, Enjin Platform, Fuel Tank, and Wallet Daemon signing are configured.',
     requiredServerEnv: ['ENJIN_PLATFORM_TOKEN', 'ENJIN_COLLECTION_ID', 'ENJIN_FUEL_TANK_ID']
   };
 }

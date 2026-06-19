@@ -18,6 +18,8 @@ const expectedProviderActionIds = [
   'fly-funded-chain-secret-update',
   'fly-live-game-url',
   'fly-live-game-contract',
+  'fly-verified-milestone-deploy',
+  'vercel-verified-milestone-deploy',
   'vercel-supabase-preview-contract',
   'enjin-canary-readiness'
 ];
@@ -36,6 +38,10 @@ const externalFailures = Array.isArray(externalGates.data?.checks)
     .filter((check) => check.status === 'fail')
     .map((check) => `${sanitize(check.name)}: ${sanitize(check.message)}`)
   : [];
+const providerActionQueue = mergeProviderActionQueue(
+  uniqueProviderActions([...buildVerifiedMilestoneDeployQueue(), ...actionQueue]),
+  externalGates.data?.checks || []
+);
 
 const report = {
   ok: true,
@@ -51,9 +57,10 @@ const report = {
   },
   noCostBoundary: 'Preflight checks filenames and generated no-secret reports only. Pushing, setting secrets, deploying, hosted smokes, Wallet Daemon startup/import, Enjin operations, and Fuel Tank funding still require explicit action-specific approval.',
   privateInputs,
-  providerActionQueue: mergeProviderActionQueue(actionQueue, externalGates.data?.checks || []),
+  deployAfterMilestonePolicy: buildDeployAfterMilestonePolicy(),
+  providerActionQueue,
   externalFailures,
-  nextApprovalIds: mergeProviderActionQueue(actionQueue, externalGates.data?.checks || []).map((item) => item.id),
+  nextApprovalIds: providerActionQueue.map((item) => item.id),
   missingExpectedPrivateInputFiles: privateInputs.filter((input) => input.expectedBeforeProviderWork && !input.exists).map((input) => input.fileName)
 };
 
@@ -119,6 +126,52 @@ function buildPrivateInputInventory(projectRef) {
   }));
 }
 
+function buildDeployAfterMilestonePolicy() {
+  return {
+    requestedByGoal: true,
+    status: 'pending-exact-provider-approval',
+    noProviderMutationPerformed: true,
+    summary: 'Verified major milestones may be committed and pushed after local proof, but live Fly/Vercel deploys remain queued until the operator approves the exact provider action after a cost/usage note.',
+    safeAlreadyAllowed: [
+      'local verification',
+      'public-repo commit',
+      'public-repo branch push',
+      'PR/CI status verification'
+    ],
+    providerApprovalRequiredFor: [
+      'fly-verified-milestone-deploy',
+      'vercel-verified-milestone-deploy',
+      'hosted contract checks',
+      'provider secret or environment changes'
+    ]
+  };
+}
+
+function buildVerifiedMilestoneDeployQueue() {
+  const flyApp = externalGates.data?.flyApp || operatorChecklist.data?.targets?.flyApp || 'mochi-social-game';
+  const gameUrl = externalGates.data?.gameUrl || `https://${flyApp}.fly.dev`;
+  const sitePreviewUrl = externalGates.data?.sitePreviewUrl || 'https://<vercel-preview-host>';
+
+  return [
+    {
+      id: 'fly-verified-milestone-deploy',
+      provider: 'Fly.io',
+      title: 'Deploy the verified Mochi Social game milestone to Fly after explicit approval.',
+      blocker: 'The active goal requests deploys after verified milestones, but Fly deploys mutate hosted resources and can add usage; this preflight did not deploy.',
+      approvalText: `I approve deploying the verified Mochi Social game milestone to Fly app ${flyApp} with fly deploy after local checks, push, and PR/CI verification. I understand this may restart hosted resources or add usage.`,
+      noCostFallback: `Keep the milestone committed, pushed, and locally verified; leave ${gameUrl} unchanged until deploy approval is granted.`
+    },
+    {
+      id: 'vercel-verified-milestone-deploy',
+      provider: 'Vercel',
+      title: 'Deploy the verified Mochirii web milestone or preview embed after explicit approval.',
+      blocker: 'The active goal requests live-site deploys after verified milestones, but Vercel deploys and preview traffic can add usage; this game repo preflight did not mutate the Mochirii site.',
+      approvalText: `I approve deploying the verified Mochirii web milestone that embeds ${gameUrl} to the approved Vercel target ${sitePreviewUrl}. I understand this may trigger builds, hosted traffic, logs, or usage.`,
+      noCostFallback: 'Keep the game/site branches pushed and PR checks verified; leave the live/preview Mochirii web deployment unchanged until deploy approval is granted.'
+    }
+  ];
+}
+
 function sanitizeAction(action) {
   return {
     id: sanitize(action.id),
@@ -128,6 +181,20 @@ function sanitizeAction(action) {
     approvalText: sanitize(action.approvalText),
     noCostFallback: sanitize(action.noCostFallback)
   };
+}
+
+function uniqueProviderActions(actions) {
+  const seen = new Set();
+  const unique = [];
+
+  for (const action of actions) {
+    const id = sanitize(action?.id);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    unique.push({ ...action, id });
+  }
+
+  return unique;
 }
 
 function mergeProviderActionQueue(operatorQueue, externalChecks) {
@@ -255,6 +322,9 @@ function renderMarkdown(summary) {
   const nextApprovalLines = summary.nextApprovalIds.length
     ? summary.nextApprovalIds.map((id) => `- ${id}`).join('\n')
     : '- None.';
+  const deployPolicy = summary.deployAfterMilestonePolicy;
+  const deployProviderLines = deployPolicy.providerApprovalRequiredFor.map((id) => `- ${id}`).join('\n');
+  const deploySafeLines = deployPolicy.safeAlreadyAllowed.map((item) => `- ${item}`).join('\n');
 
   return `# Mochi Social Alpha Provider Preflight
 
@@ -282,6 +352,21 @@ ${privateInputLines}
 Missing expected private input files:
 
 ${summary.missingExpectedPrivateInputFiles.length ? summary.missingExpectedPrivateInputFiles.map((file) => `- ${file}`).join('\n') : '- None.'}
+
+## Verified Milestone Deploy Queue
+
+- Requested by active goal: ${deployPolicy.requestedByGoal ? 'yes' : 'no'}
+- Status: ${deployPolicy.status}
+- Provider mutation performed: ${deployPolicy.noProviderMutationPerformed ? 'no' : 'yes'}
+- Summary: ${deployPolicy.summary}
+
+Safe steps already allowed after verification:
+
+${deploySafeLines}
+
+Provider approval still required for:
+
+${deployProviderLines}
 
 ## Current External Failures
 

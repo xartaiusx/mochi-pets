@@ -1,0 +1,13 @@
+{
+  "id": "spirit-jintari",
+  "role": "Mochi Spirit, guild market affinity companion",
+  "runtimePath": "apps/game/public/spritesheets/spirit-jintari.png",
+  "masterPath": "assets/source/game/hd/spirit-jintari-master.png",
+  "masterDimensions": "768x1536",
+  "runtimeDimensions": "384x768",
+  "frameLayout": "3x4 frames, 128x192 runtime frames",
+  "prompt": "Mochirii Jintari Mochi Spirit, warm goldleaf guardian with lacquer ear-fins and lucky cord tail, bright temperament, transparent background, smooth illustrated 2D sprite sheet.",
+  "exportStatus": "project-authored/generated-for-project",
+  "tool": "sharp svg-to-png source-master export",
+  "generatedAt": "2026-06-13T00:00:00.000Z"
+}

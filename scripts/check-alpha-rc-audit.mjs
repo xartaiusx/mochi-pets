@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
 
 const root = process.cwd();
-const siteRepoPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_REPO_PATH || '../Mochirii');
+const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const checkedAt = new Date().toISOString();
@@ -16,6 +18,7 @@ addSitePreviewReadyReportRequirements();
 addProviderGateRequirements();
 addLocalEvidenceRequirements();
 addReportHygieneRequirements();
+addBranchInventoryRequirements();
 addOperatorChecklistRequirements();
 addProviderPreflightRequirements();
 addSyncApprovalRequirements();
@@ -56,6 +59,7 @@ function addStaticRequirements() {
     '/embed',
     '/integration/game-manifest.json',
     '/integration/alpha/status',
+    '/integration/alpha/progress',
     '/integration/alpha/action',
     '/integration/alpha/enjin/submit'
   ]);
@@ -63,7 +67,9 @@ function addStaticRequirements() {
     'noRealValue: true',
     "network: 'CANARY'",
     'cashout: false',
-    "ugc: 'curated'"
+    "ugc: 'curated'",
+    'socialRallies: true',
+    "'guild.social_rally'"
   ]);
   requireFileIncludes('game.bridge-protocol', 'Bridge protocol declares Supabase access-token auth and sign-out events.', 'apps/game/src/integration/protocol.ts', [
     'MOCHI_SOCIAL_AUTH',
@@ -76,20 +82,28 @@ function addStaticRequirements() {
     'BRIDGE_EVENTS.auth',
     'BRIDGE_EVENTS.signOut',
     'accessToken',
-    'configured-preview-stub'
+    'configured-preview-stub',
+    'data-alpha-action="guild.social_rally"',
+    'data-rally-label',
+    'guildSocialRally',
+    'rallyProof'
   ]);
   requireFileIncludes('game.supabase-edge-bridge', 'Supabase Edge bridge uses the scoped game server token header and keeps service-role secrets out of game requests.', 'apps/game/src/integration/supabase-edge-client.ts', [
     'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
     'x-mochi-social-server-token',
     'ALPHA_EDGE_FUNCTIONS.action',
+    'ALPHA_EDGE_FUNCTIONS.progress',
+    'buildAlphaProgressRequest',
     'JSON.stringify(action)'
   ]);
   requireFileIncludes('game.supabase-edge-tests', 'Supabase Edge bridge tests prove no service-role fallback and no server token in the action body.', 'apps/game/tests/supabase-edge-client.test.ts', [
     'scoped server token in a header only',
+    'authoritative progress snapshot request',
     'not.toContain',
     'SUPABASE_SERVICE_ROLE_KEY',
-    'mochi-social-alpha-action'
+    'mochi-social-alpha-action',
+    'mochi-social-alpha-progress'
   ]);
   requireFileIncludes('game.enjin-finality', 'Enjin helper enforces Canary, Fuel Tank, idempotency, and finality before hot credit.', 'apps/game/src/integration/enjin-canary.ts', [
     "network: 'CANARY'",
@@ -98,12 +112,26 @@ function addStaticRequirements() {
     'canCreditHotInventory',
     "state === 'FINALIZED'"
   ]);
-  requireFileIncludes('game.local-acceptance', 'Local acceptance covers pet, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
-    'pet.befriend',
-    'pet.care',
+  requireFileIncludes('game.local-acceptance', 'Local acceptance covers spirit, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
+    'spirit.bond',
+    'spirit.care',
+    'spirit.habitat_bond',
+    'jade-court-habitat-bond',
+    'spirit.research',
+    'jade-court-research-folio',
+    'spirit.compendium_complete',
+    'jade-court-spirit-compendium',
+    'item.provision_satchel',
+    'jade-court-provision-satchel',
+    'guild.commission_complete',
+    'jade-court-commission-ledger',
+    'guild.social_rally',
+    'jade-courtyard-rally',
     'market.fixed_list',
     'trade.direct_offer',
     'chain.withdraw_request',
+    'chain.deposit_request',
+    'confirmNoCreditUntilFinalized',
     'ledgerVersion=1',
     'alphaStopPoint',
     'chainNetwork',
@@ -119,10 +147,12 @@ function addStaticRequirements() {
     'alpha:local-acceptance',
     'alpha:load-smoke',
     'alpha:browser-presence',
+    'alpha:responsive-gameplay',
     'alpha:visual-snapshot',
     'alpha:visual-review',
     'alpha:enjin-operator-smoke',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
+    'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE',
     'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN',
     'delete env.ENJIN_PLATFORM_TOKEN',
     'reports/alpha-local-suite.json'
@@ -138,6 +168,13 @@ function addStaticRequirements() {
     'assertCurrentGitState',
     'current HEAD',
     'browser presence must prove observer-side movement',
+    'responsive gameplay must cover the required nine-viewport matrix',
+    'responsive gameplay must cover /play and /embed',
+    'parent-iframe input ownership',
+    'Mochirii site iframe status',
+    'responsive gameplay must cover the Mochirii site iframe across all viewports when configured',
+    'browser/visual sequence evidence',
+    'summarizeBrowserVisualSequence',
     'visual snapshot canvas PNG must be non-empty',
     'visual review must keep rendered prompt interaction as a manual pre-RC gate',
     'Wallet Daemon local check must stay no-cost and metadata-only',
@@ -149,6 +186,7 @@ function addStaticRequirements() {
     'alpha-report-hygiene.json',
     'alpha-operator-checklist.json',
     'alpha-provider-preflight.json',
+    'alpha-responsive-gameplay.json',
     'wallet-daemon-local.json',
     'mochi-social-alpha-operator-next-steps.md',
     'mochi-social-alpha-provider-preflight.md',
@@ -166,6 +204,9 @@ function addStaticRequirements() {
     'costRisk',
     'noCostAlternative',
     'Cost-Sensitive Action Matrix',
+    'Verified Milestone Deploy Queue',
+    'fly-verified-milestone-deploy',
+    'vercel-verified-milestone-deploy',
     'GitHub Actions/PR checks',
     'Proceed with public-repo sync'
   ]);
@@ -180,10 +221,14 @@ function addStaticRequirements() {
     'funded-chain-gates',
     'github-site-branch-sync',
     'fly-funded-chain-secret-update',
+    'fly-verified-milestone-deploy',
+    'vercel-verified-milestone-deploy',
     'approvalText',
     'noCostFallback',
     'readGitState',
     'localHead',
+    'alpha:responsive-gameplay',
+    'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL',
     'No-cost rule',
     'noCostRule'
   ]);
@@ -199,6 +244,9 @@ function addStaticRequirements() {
     'fly-secret-update',
     'fly-funded-chain-secret-update',
     'fly-live-game-contract',
+    'Verified Milestone Deploy Queue',
+    'fly-verified-milestone-deploy',
+    'vercel-verified-milestone-deploy',
     'vercel-supabase-preview-contract',
     'enjin-canary-readiness'
   ]);
@@ -226,22 +274,75 @@ function addStaticRequirements() {
   requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, movement signatures, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
     'Nearby: 2 testers',
     'data-presence-label',
-    'data-alpha-action="pet.care"',
+    'data-alpha-action="spirit.care"',
     'data-alpha-local-action="profile.view"',
     'profileViewed',
-    'data-alpha-local-action="friend.add"',
-    'friendProof',
+    'data-alpha-local-action="guild.buddy"',
+    'guildBuddyProof',
     'data-alpha-local-action="status.set"',
     'statusMood',
-    'data-alpha-local-action="pet.inspect"',
-    'lastInspectedPetId',
+    'data-alpha-local-action="spirit.inspect"',
+    'lastInspectedSpiritId',
+    'data-alpha-action="world.expedition"',
+    'expeditionProof',
+    'data-alpha-action="spirit.route_invite"',
+    'routeInviteProof',
+    'data-alpha-action="world.route_mastery"',
+    'routeMasteryProof',
+    'data-alpha-action="spirit.habitat_bond"',
+    'habitatBondProof',
+    'data-alpha-action="spirit.research"',
+    'researchProof',
+    'jade-court-research-folio',
+    'data-alpha-action="spirit.compendium_complete"',
+    'compendiumProof',
+    'jade-court-spirit-compendium',
+    'data-alpha-action="item.provision_satchel"',
+    'provisionProof',
+    'jade-court-provision-satchel',
+    'data-alpha-action="guild.commission_complete"',
+    'commissionProof',
+    'jade-court-commission-ledger',
+    'data-alpha-action="guild.social_rally"',
+    'rallyProof',
+    'emoteProof',
+    'Jade Courtyard Rally',
+    'data-alpha-action="party.harmony_form"',
+    'harmonyFormProof',
+    'data-alpha-action="battle.harmony_trial"',
+    'harmonyTrialProof',
+    'data-alpha-action="battle.team_spar_match"',
+    'teamSparMatchProof',
+    'data-alpha-action="battle.mentor_challenge"',
+    'mentorChallengeProof',
+    'silk-banner-mentor-drill',
+    'data-alpha-action="spirit.technique_loadout"',
+    'techniqueLoadoutProof',
+    'jade-step-loadout',
+    'data-alpha-action="spirit.trait_attune"',
+    'traitAttunementProof',
+    'jade-heart-trait',
+    'data-alpha-action="battle.condition_weave"',
+    'conditionWeaveProof',
+    'jade-mirror-condition-weave',
+    'data-alpha-action="battle.tactic_scroll"',
+    'tacticProof',
+    'data-alpha-action="guild.rank_trial"',
+    'guildRankProof',
+    'data-alpha-action="spirit.growth_rite"',
+    'growthRiteProof',
+    'data-alpha-action="battle.affinity_trial"',
+    'affinityProof',
     'chain.withdraw_request',
+    'chain.deposit_request',
+    'canaryReturnRequested',
+    'Jade Vault Return Proof staged',
     'mochiSocial.alphaState',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'reports/alpha-browser-presence.json',
     'canvasMovement',
     'changedAfterFirstTabMove',
-    'ArrowRight',
+    'ArrowLeft',
     'ArrowDown',
     'createHash',
     'canvas'
@@ -257,6 +358,43 @@ function addStaticRequirements() {
     'createHash',
     'canvas'
   ]);
+  requireFileIncludes('game.responsive-gameplay', 'Responsive gameplay smoke verifies /play, /embed, and parent-iframe input ownership across the alpha viewport matrix.', 'scripts/check-alpha-responsive-gameplay.mjs', [
+    'playwright-core',
+    'alpha-responsive-gameplay.json',
+    'reports/responsive-gameplay',
+    'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE',
+    'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL',
+    'MOCHI_SOCIAL_TESTER_PASSWORD',
+    'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME',
+    '/games/mochi-social',
+    'local-only by default',
+    'viewports',
+    '1920',
+    '390',
+    '/play',
+    '/embed',
+    'parent iframe',
+    'siteIframeResults',
+    'movementKeys',
+    'interactionKeys',
+    'legacyInteractionKeys',
+    'gameplayKeys',
+    'ArrowDown',
+    'Space',
+    'Enter',
+    'Spacebar',
+    'horizontalOverflow',
+    'panelOverlaps',
+    'safeRectObstructions',
+    'criticalRects',
+    'actionButtonRects',
+    'parentBefore',
+    'parentAfter',
+    'textOverflow',
+    'assertScrollUnchanged',
+    'verifyLegacyInteractionKeyOwnership',
+    'verifyEditableInputKeepsText'
+  ]);
   requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab presence, HUD action proof, map-object coverage, and manual prompt limitations to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
     'alpha-visual-review.json',
     'alpha-visual-review.md',
@@ -264,19 +402,60 @@ function addStaticRequirements() {
     'manualPromptGate',
     'pending-human-review',
     'observerMovement',
-    'token-chest',
-    'Lantern Garden'
+    'guild-seal-chest',
+    'technique-dojo',
+    'tactic-scroll-stand',
+    'guild-rank-bell',
+    'growth-moonwell',
+    'expedition-gate',
+    'route-invitation-altar',
+    'fieldExpedition',
+    'routeInvitation',
+    'habitatBond',
+    'spiritResearch',
+    'researchProof',
+    'spiritCompendium',
+    'compendiumProof',
+    'provisionSatchel',
+    'provisionProof',
+    'guildCommission',
+    'commissionProof',
+    'socialRally',
+    'guildSocialRally',
+    'rallyProof',
+    'emoteProof',
+    'affinity-dais',
+    'techniqueMastery',
+    'battleTactic',
+    'techniqueLoadout',
+    'techniqueLoadoutProof',
+    'spiritTrait',
+    'traitAttunementProof',
+    'battleConditionWeave',
+    'conditionWeaveProof',
+    'canaryReturnPreview',
+    'canaryReturnRequested',
+    'guildRank',
+    'growthRite',
+    'affinityTrial',
+    'mentorChallenge',
+    'mentorChallengeProof',
+    'Jade Lantern Court'
   ]);
-  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
+  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
     'alpha-manual-prompt-review.json',
     'alpha-manual-prompt-review.md',
     'pending-human-review',
     'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_TOKEN_CHEST_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED'
+    'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED',
+    'visualArtifacts',
+    'Visual Review Evidence Bundle',
+    'alpha-visual-page.png',
+    'alpha-visual-canvas.png'
   ]);
   requireFileIncludes('game.wallet-daemon-local-check', 'Wallet Daemon local check verifies only binary metadata and help output without importing wallets, printing seeds, starting signers, or contacting Enjin.', 'scripts/check-wallet-daemon-local.mjs', [
     'wallet-daemon-local.json',
@@ -294,23 +473,48 @@ function addStaticRequirements() {
     'Mochi town map object contract',
     'runtimeEventPlacements',
     'welcome-npc',
-    'token-chest',
+    'guild-seal-chest',
     'care-shrine',
+    'expedition-gate',
+    'route-invitation-altar',
+    'technique-dojo',
+    'tactic-scroll-stand',
+    'guild-rank-bell',
+    'growth-moonwell',
+    'affinity-dais',
     'market-board',
     'trade-post',
     'canary-shrine',
     'no-real-value Enjin Canary certificate request',
-    'Lantern Garden',
+    'Jade Court Habitat Bond',
+    'Jade Court Research Folio',
+    'Jade Courtyard Rally',
+    'jade-courtyard-rally-knot',
+    'guild-social-rally',
+    'Jade Lantern Court',
     '25 * 18'
   ]);
   requireFileIncludes('game.map-event-behavior', 'Map event behavior test executes NPC, chest, care, market, trade, and Canary event handlers with save/item/dialog assertions.', 'apps/game/tests/map-event-behavior.test.ts', [
     'Mochi town event behavior',
     'Welcome NPC dialog',
-    'Mochi Token',
-    'pet-care',
+    'Mochirii Guild Seal',
+    'spirit-care',
     'bond 5/5',
+    'Jade Court Habitat Bond',
+    'Jade Court Research Folio',
+    'expedition-gate',
+    'route-invitation-altar',
+    'technique-dojo',
+    'tactic-scroll-stand',
+    'guild-rank-bell',
+    'growth-moonwell',
+    'affinity-dais',
     'market-board',
     'trade-post',
+    'Jade Courtyard Rally',
+    'jade-courtyard-rally-knot',
+    'guildSocialRally',
+    'mochiSocial.guild.rallyProof',
     'no-real-value Enjin Canary certificate request',
     'Wallet Daemon services'
   ]);
@@ -318,6 +522,7 @@ function addStaticRequirements() {
     'alpha:local-acceptance',
     'alpha:load-smoke',
     'alpha:browser-presence',
+    'alpha:responsive-gameplay',
     'alpha:enjin-operator-smoke',
     'alpha:external-gates',
     'alpha:operator-checklist',
@@ -401,13 +606,14 @@ function addSiteRequirements() {
   requireSiteFileIncludes('site.edge-functions', 'Mochirii Supabase config owns all alpha Edge Functions.', 'supabase/config.toml', [
     'mochi-social-alpha-session',
     'mochi-social-alpha-action',
+    'mochi-social-alpha-progress',
     'mochi-social-alpha-admin',
     'submit-mochi-social-feedback'
   ]);
-  requireSiteFileIncludes('site.schema', 'Mochirii migration owns allowlist, terms, pets, inventory, trades, market, feedback, chat, and chain ledger tables.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
+  requireSiteFileIncludes('site.schema', 'Mochirii migration owns allowlist, terms, spirits, inventory, trades, market, feedback, chat, and chain ledger tables.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
     'mochi_social_alpha_testers',
     'mochi_social_terms_acknowledgements',
-    'mochi_social_pets',
+    'mochi_social_spirits',
     'mochi_social_inventory',
     'mochi_social_market_listings',
     'mochi_social_trades',
@@ -418,6 +624,7 @@ function addSiteRequirements() {
   ]);
   requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms and finality-aware chain updates.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
     'alphaAccess(adminClient, playerId)',
+    'upsertAlphaProgressSnapshot(adminClient',
     'alpha_terms_required',
     'chain.operation_update',
     'chain_request_missing',
@@ -433,6 +640,12 @@ function addSiteRequirements() {
     'finalityRequired: true',
     'applyFinalizedChainInventory',
     'Mochi Social Edge authority check passed'
+  ]);
+  requireSiteFileIncludes('site.progress-authority', 'Mochirii progress Edge Function loads account-linked alpha snapshots behind the game server token.', 'supabase/functions/mochi-social-alpha-progress/index.ts', [
+    'requireGameServer(req)',
+    'alphaAccess(adminClient, playerId)',
+    'loadAlphaProgressSnapshot(adminClient, playerId)',
+    'normalizeAlphaProgressSnapshot(data)'
   ]);
   requireSiteFileIncludes('site.preview-key-loader-self-test', 'Mochirii repo locally self-tests preview publishable-key loading without leaking key values before hosted Edge smoke.', 'scripts/check-mochi-social-preview-key-loader.mjs', [
     'MOCHI_SOCIAL_ALPHA_EDGE_PUBLISHABLE_KEY_FILE',
@@ -686,6 +899,59 @@ function addReportHygieneRequirements() {
   );
 }
 
+function addBranchInventoryRequirements() {
+  const inventoryReportPath = resolve(root, process.env.MOCHI_SOCIAL_BRANCH_INVENTORY_JSON || 'reports/alpha-branch-inventory.json');
+  const inventoryReport = readJson(inventoryReportPath);
+  if (!inventoryReport.ok) {
+    add('local.branch-inventory-current', 'fail', `Branch inventory report is missing or invalid: ${inventoryReport.message}. Run npm run alpha:branch-inventory.`, { path: inventoryReportPath });
+    return;
+  }
+
+  const report = inventoryReport.data;
+  const failures = Array.isArray(report.failures) ? [...report.failures] : ['failures array missing'];
+  failures.push(...currentGitStateFailures(report.git, 'branch inventory report'));
+  if (report.ok !== true) failures.push('branch inventory report is not ok');
+  if (report.deletionPerformed !== false) failures.push('branch inventory must remain no-destructive');
+
+  const repos = Array.isArray(report.repos) ? report.repos : [];
+  for (const id of ['game', 'site']) {
+    const repo = repos.find((entry) => entry?.id === id);
+    if (!repo) {
+      failures.push(`branch inventory missing ${id} repo entry`);
+      continue;
+    }
+    if (repo.exists !== true) failures.push(`branch inventory ${id} repo must exist`);
+    if (repo.ok !== true) failures.push(`branch inventory ${id} repo entry is not ok`);
+    if (!repo.openPrRepository) failures.push(`branch inventory ${id} repo must record origin GitHub repository`);
+    if (repo.openPrStatus !== 'checked') failures.push(`branch inventory ${id} repo open PR status is ${repo.openPrStatus || 'missing'}`);
+    if (!Array.isArray(repo.branches)) failures.push(`branch inventory ${id} repo branches list is missing`);
+    if (!Array.isArray(repo.cleanupCandidates)) failures.push(`branch inventory ${id} repo cleanupCandidates list is missing`);
+  }
+
+  const cleanupCandidateCount = repos.reduce((total, repo) => total + (Array.isArray(repo?.cleanupCandidates) ? repo.cleanupCandidates.length : 0), 0);
+  add(
+    'local.branch-inventory-current',
+    failures.length ? 'fail' : 'pass',
+    failures.length
+      ? `Branch inventory report is stale or incomplete: ${failures.join(', ')}.`
+      : 'Branch inventory report is current, origin-scoped, no-destructive, and records local-safe cleanup candidates.',
+    {
+      reportPath: inventoryReportPath,
+      checkedAt: report.checkedAt,
+      deletionPerformed: report.deletionPerformed,
+      cleanupCandidateCount,
+      repos: repos.map((repo) => ({
+        id: repo.id,
+        openPrRepository: repo.openPrRepository,
+        openPrStatus: repo.openPrStatus,
+        branchCount: repo.branchCount,
+        cleanupCandidates: Array.isArray(repo.cleanupCandidates) ? repo.cleanupCandidates.length : null
+      })),
+      failures
+    }
+  );
+}
+
 function addOperatorChecklistRequirements() {
   const operatorReportPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
   const operatorReport = readJson(operatorReportPath);
@@ -932,14 +1198,20 @@ function addManualPromptReviewRequirements() {
 
   const report = promptReport.data;
   const failures = Array.isArray(report.failures) ? [...report.failures] : ['failures array missing'];
-  failures.push(...currentGitStateFailures(report.git, 'manual prompt review report'));
+  const gitFailures = currentGitStateFailures(report.git, 'manual prompt review report');
+  const sourceEvidence = manualPromptSourceEvidence(report);
+  failures.push(...(sourceEvidence.matchesCurrentSource
+    ? gitFailures.filter((failure) => !failure.includes('localHead does not match current HEAD'))
+    : gitFailures
+  ));
+  if (!sourceEvidence.matchesCurrentSource) failures.push(...sourceEvidence.failures);
   if (report.ok !== true) failures.push('manual prompt review report is not ok');
   if (report.review?.status !== 'completed') failures.push(`manual prompt review status is ${report.review?.status || 'missing'}`);
   if (hasHostedUrl(report.review?.url) && report.review?.hostedAllowed !== true) {
     failures.push('hosted manual prompt review requires explicit hosted approval flag');
   }
   const checks = Array.isArray(report.checks) ? report.checks : [];
-  for (const id of ['welcome-npc', 'token-chest', 'care-shrine']) {
+  for (const id of ['welcome-npc', 'guild-seal-chest', 'care-shrine']) {
     const check = checks.find((entry) => entry.id === id);
     if (!check?.ok) failures.push(`manual prompt review missing confirmation for ${id}`);
   }
@@ -961,9 +1233,49 @@ function addManualPromptReviewRequirements() {
       hostedAllowed: report.review?.hostedAllowed,
       completedChecks: report.completedChecks,
       pendingChecks: report.pendingChecks,
+      sourceEvidence,
       failures
     }
   );
+}
+
+function manualPromptSourceEvidence(report) {
+  const expected = [
+    {
+      label: 'eventSource',
+      path: resolve(root, 'apps/game/src/modules/main/event.ts'),
+      expectedHash: report?.sourceEvidence?.eventSource?.sha256
+    },
+    {
+      label: 'mapServerSource',
+      path: resolve(root, 'apps/game/src/modules/main/server.ts'),
+      expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
+    }
+  ];
+  const failures = [];
+  const files = expected.map((entry) => {
+    const currentHash = fileSha256(entry.path);
+    if (!entry.expectedHash) failures.push(`${entry.label} hash is missing from manual prompt review report`);
+    if (!currentHash) failures.push(`${entry.label} source file is missing`);
+    if (entry.expectedHash && currentHash && entry.expectedHash !== currentHash) {
+      failures.push(`${entry.label} source hash changed since manual prompt review`);
+    }
+    return {
+      label: entry.label,
+      path: pathForReport(entry.path),
+      matches: Boolean(entry.expectedHash && currentHash && entry.expectedHash === currentHash)
+    };
+  });
+  return {
+    matchesCurrentSource: failures.length === 0,
+    files,
+    failures
+  };
+}
+
+function fileSha256(file) {
+  if (!existsSync(file)) return '';
+  return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
 function syncExternalGateSnapshotFailures(syncReport) {
@@ -988,8 +1300,8 @@ function syncExternalGateSnapshotFailures(syncReport) {
 }
 
 function addPrRequirements() {
-  checkPr('github.game-pr', 'xartaiusx/mochi-social', '1', 'Verify Mochi Social');
-  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', '259');
+  checkPr('github.game-pr', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
+  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
 }
 
 function addLocalBranchRequirements() {
@@ -1117,30 +1429,74 @@ function requireTextIncludes(id, description, file, snippets, label) {
     { file: label, missing });
 }
 
-function checkPr(id, repo, pr, requiredCheckName) {
-  const result = command(resolveGh(), ['pr', 'view', pr, '--repo', repo, '--json', 'url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
-  if (!result.ok) {
-    add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, pr, stderr: sanitize(result.stderr) });
+function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
+  const localState = localRepoPath ? readPrLocalGitState(localRepoPath) : null;
+  const selector = String(pr || '').trim();
+  const query = selector || localState?.branch || '';
+  if (!query) {
+    add(id, 'unverified', 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
     return;
   }
-  const data = parseJson(result.stdout);
+
+  const result = selector
+    ? command(resolveGh(), ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
+    : command(resolveGh(), ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
+  if (!result.ok) {
+    add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, selector: query, stderr: sanitize(result.stderr) });
+    return;
+  }
+  const parsed = parseJson(result.stdout);
+  const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
-    add(id, 'unverified', 'GitHub PR JSON could not be parsed.', { repo, pr });
+    add(id, 'fail', selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, { repo, selector: query, localState });
+    return;
+  }
+  if (Array.isArray(parsed) && parsed.length > 1) {
+    add(id, 'fail', `Multiple open GitHub PRs were found for current branch ${query}; set ${id === 'github.game-pr' ? 'MOCHI_SOCIAL_GAME_PR_NUMBER' : 'MOCHI_SOCIAL_SITE_PR_NUMBER'} to choose one.`, {
+      repo,
+      selector: query,
+      prNumbers: parsed.map((entry) => entry.number).filter(Boolean)
+    });
     return;
   }
   const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
   const failing = checks.filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()));
   const required = requiredCheckName ? checks.find((check) => check.name === requiredCheckName || check.context === requiredCheckName) : true;
+  const localHead = localState?.localHead || '';
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const failures = [
+    data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
+    data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    localHead && data.headRefOid && !localHeadMatchesPrHead ? 'PR head does not match current local HEAD' : '',
+    required ? '' : `missing required check ${requiredCheckName}`,
+    ...failing.map((check) => `failing check ${check.name || check.context || 'unknown'}`)
+  ].filter(Boolean);
   const mergeableOrDraft = data.mergeStateStatus === 'CLEAN' || data.isDraft === true;
-  const ok = mergeableOrDraft && failing.length === 0 && Boolean(required);
-  add(id, ok ? 'pass' : 'fail', ok ? `${repo}#${pr} has green checks${data.isDraft === true ? ' and remains draft' : ''}.` : `${repo}#${pr} is not clean or draft-green, has failing checks, or is missing required checks.`, {
+  const ok = data.state === 'OPEN' && mergeableOrDraft && failing.length === 0 && Boolean(required) && !failures.length;
+  add(id, ok ? 'pass' : 'fail', ok ? `${repo}#${data.number || query} is open, matches local HEAD, and has green checks${data.isDraft === true ? ' while draft' : ''}.` : failures.join('; '), {
     url: data.url,
+    number: data.number,
+    state: data.state,
+    headRefName: data.headRefName,
     headRefOid: data.headRefOid,
+    localBranch: localState?.branch,
+    localHead,
+    localHeadMatchesPrHead,
     isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checks: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)
   });
+}
+
+function readPrLocalGitState(cwd) {
+  const branch = commandAt(cwd, 'git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const head = commandAt(cwd, 'git', ['rev-parse', 'HEAD']);
+  return {
+    branch: branch.ok ? firstLine(branch.stdout) : '',
+    localHead: head.ok ? firstLine(head.stdout) : '',
+    errors: [branch, head].filter((result) => !result.ok).map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
 }
 
 function add(id, status, message, evidence = {}) {
@@ -1220,6 +1576,12 @@ function defaultCredsDir() {
   if (process.env.USERPROFILE) return resolve(process.env.USERPROFILE, 'Desktop', 'Creds');
   if (process.env.HOME) return resolve(process.env.HOME, 'Desktop', 'Creds');
   return resolve(root, '.local', 'creds');
+}
+
+function pathForReport(file) {
+  return String(file || '').startsWith(root)
+    ? String(file).slice(root.length + 1).replace(/\\/g, '/')
+    : String(file || '').replace(/\\/g, '/');
 }
 
 function sanitize(value) {
