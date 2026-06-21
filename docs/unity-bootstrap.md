@@ -2,6 +2,8 @@
 
 This repo now contains the Unity runtime at `unity/`. It was created with the installed Unity editor `6000.5.0f1`, using the Unity Hub `3D Cross-Platform` template and WebGL support already present on the workstation.
 
+Node-side scripts now target Node `24.17.0` LTS. The Node app is the hosting and integration wrapper; Unity WebGL is the active game runtime.
+
 ## Runtime Scope
 
 - Engine: Unity WebGL, URP, desktop browser target.
@@ -58,26 +60,47 @@ No third-party art package or museum image is copied into the runtime.
 Open the project:
 
 ```powershell
-& 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe' -projectPath 'C:\Users\xtyty\Documents\mochi-social\unity'
+npm run unity:open
 ```
 
 Regenerate the bootstrap scene and prefab:
 
 ```powershell
-& 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe' -batchmode -quit -projectPath 'C:\Users\xtyty\Documents\mochi-social\unity' -executeMethod MochiSocial.Editor.MochiSocialProjectBootstrap.RunAll -logFile 'C:\Users\xtyty\Documents\mochi-social\.local\unity-bootstrap.log'
+npm run unity:bootstrap
 ```
+
+Use `unity:bootstrap` only when intentionally regenerating the blockout scene and generated prefabs. Routine verification should keep the committed Unity scene stable.
 
 Run Unity tests:
 
 ```powershell
-& 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe' -batchmode -quit -projectPath 'C:\Users\xtyty\Documents\mochi-social\unity' -runTests -testPlatform EditMode -testResults 'C:\Users\xtyty\Documents\mochi-social\.local\unity-editmode-results.xml' -logFile 'C:\Users\xtyty\Documents\mochi-social\.local\unity-editmode.log'
-& 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe' -batchmode -quit -projectPath 'C:\Users\xtyty\Documents\mochi-social\unity' -runTests -testPlatform PlayMode -testResults 'C:\Users\xtyty\Documents\mochi-social\.local\unity-playmode-results.xml' -logFile 'C:\Users\xtyty\Documents\mochi-social\.local\unity-playmode.log'
+npm run unity:test:editmode
+npm run unity:test:playmode
 ```
 
 Build WebGL locally:
 
 ```powershell
-& 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe' -batchmode -quit -projectPath 'C:\Users\xtyty\Documents\mochi-social\unity' -executeMethod MochiSocial.Editor.MochiSocialProjectBootstrap.BuildWebGL -logFile 'C:\Users\xtyty\Documents\mochi-social\.local\unity-webgl-build.log'
+npm run unity:build:webgl
+```
+
+Build the deploy-prep release artifact:
+
+```powershell
+npm run build:release
+```
+
+Run the Unity verification bundle without regenerating committed scene assets:
+
+```powershell
+npm run unity:verify
+```
+
+Release smoke should require the Unity WebGL artifact instead of silently falling back to the legacy browser runtime:
+
+```powershell
+$env:MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL="true"
+npm run smoke
 ```
 
 Provider setup, UGS dashboard changes, deployments, hosted checks, load tests, paid usage, and secret mutation still require explicit approval.

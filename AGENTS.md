@@ -7,7 +7,13 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 ## Commands
 
 - Install: `npm install`
-- Dev game: `npm run dev:game`
+- Dev Unity game: `npm run dev:game`
+- Legacy browser runtime: `npm run dev:legacy`
+- Unity bootstrap: `npm run unity:bootstrap`
+- Unity EditMode tests: `npm run unity:test:editmode`
+- Unity PlayMode tests: `npm run unity:test:playmode`
+- Unity WebGL build: `npm run unity:build:webgl`
+- Unity local verification: `npm run unity:verify`
 - Clean-room literal and asset ledger scan: `npm run clean-room-scan`
 - Secret scan: `npm run secret-scan`
 - Alpha readiness: `npm run alpha:readiness`
@@ -35,12 +41,14 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Typecheck: `npm run typecheck`
 - Lint: `npm run lint`
 - Test: `npm test`
-- Build: `npm run build`
+- Build server wrapper: `npm run build`
+- Build release artifact: `npm run build:release`
 - Endpoint smoke against a running server: `npm run smoke`
 
 ## Guardrails
 
-- Use Node 22.
+- Use Node 24 LTS.
+- Unity WebGL is the active runtime for the shared-room alpha. Keep the old RPGJS runtime as legacy rollback/reference only, and do not add new player-facing gameplay there unless the task explicitly says rollback work.
 - Keep `origin` as the user-owned GitHub repo and `upstream` as the fetch-only RPGJS reference.
 - Never push to `upstream`.
 - Keep secrets out of Git. Do not commit `.env`, runtime saves, Fly secrets, Supabase service-role keys, or generated local state.
@@ -92,6 +100,8 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - For follow-up visual work, use this prompt: `Upgrade Mochi Social art as Mochirii High-Fidelity Wuxia 2D assets for Alpha Preview Ready only. Use source-master plus Sharp runtime-export thinking, prioritize Jade Lantern Court readability first, preserve RPGJS paths, Tiled contracts, tests, no-real-value labels, and local verification, update the asset ledger, keep Enjin Canary as configured-preview-stub/no-real-value, and do not mutate providers, deploy, fund Enjin, or clear funded-chain gates. Public-repo commits and pushes are allowed; verify PR checks afterward.`
 
 ## Done When Playable
+
+Current Unity Preview Ready acceptance supersedes the older RPGJS feature-parity proof list below. Active game development should target the Unity `JadeLanternRoom` WebGL build, curated presets, shared Lirabao, UGS Distributed Authority, Cloud Save, Cloud Code, and the Mochirii iframe bridge. The detailed RPGJS-era checklist remains rollback/reference material until intentionally retired from scripts.
 
 - A fresh clone passes install, typecheck, lint, test, and build.
 - `npm run dev:game` starts the browser game.

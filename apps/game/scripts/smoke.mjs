@@ -1,4 +1,5 @@
 const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const requireUnityWebgl = process.env.MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL === 'true';
 
 const checks = [
   { path: '/healthz', name: 'health' },
@@ -18,6 +19,10 @@ for (const check of checks) {
 const manifest = await fetch(`${baseUrl}/integration/game-manifest.json`).then((response) => response.json());
 if (manifest.name !== 'Mochi Social' || manifest.bridge?.namespace !== 'MOCHI_SOCIAL') {
   throw new Error('Manifest does not expose the Mochi Social integration contract.');
+}
+
+if (manifest.activeRuntime !== 'unity-webgl' && manifest.activeRuntime !== 'legacy-fallback') {
+  throw new Error('Manifest does not expose a recognized active runtime.');
 }
 
 if (
@@ -49,6 +54,17 @@ if (
 
 if (alphaStatus.alpha?.noRealValue !== true || alphaStatus.market?.enabled !== false || alphaStatus.avatarUploads !== false) {
   throw new Error('Alpha status does not keep the Unity alpha no-real-value, no-market, no-avatar-upload posture.');
+}
+
+if (requireUnityWebgl) {
+  if (manifest.activeRuntime !== 'unity-webgl' || manifest.unityWebglBuild?.present !== true) {
+    throw new Error('Release smoke requires a present Unity WebGL build.');
+  }
+
+  const embedHtml = await fetch(`${baseUrl}/embed`).then((response) => response.text());
+  if (!/createUnityInstance|Build\/.+\.loader\.js|Unity WebGL/i.test(embedHtml)) {
+    throw new Error('/embed did not serve a Unity WebGL page while MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true.');
+  }
 }
 
 if (alphaStatus.chainRuntime?.network !== 'CANARY' || !['configured', 'configured-preview-stub'].includes(alphaStatus.chainRuntime?.mode)) {

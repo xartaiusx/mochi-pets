@@ -1,5 +1,7 @@
 # Mochi Social Alpha RC Goal
 
+Current direction note: Unity WebGL shared-room development supersedes the older RPGJS 2D feature-parity language in this file. For the next alpha path, target one `JadeLanternRoom`, three curated presets, one shared Lirabao pet, UGS Distributed Authority, Cloud Save, Cloud Code, and the Mochirii iframe bridge. Treat RPGJS-specific language below as rollback/reference until it is intentionally retired from scripts and docs.
+
 ## Objective
 
 Build Mochi Social into a closed, no-real-value, Enjin Canary alpha release candidate. The alpha is a 2D RPGJS Mochi Spirits social vertical slice with Supabase-backed state, Enjin hot/cold ownership proof for selected rare assets, fixed-price/direct trade, Mochirii preview embed, admin allowlist, tester terms, and full verification.

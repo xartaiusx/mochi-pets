@@ -3,11 +3,11 @@
 Mochi Social uses a split deployment boundary.
 
 - The future Vercel website hosts the site, account UI, Supabase session management, and game launch/embed surface.
-- The Mochi Social game repo deploys the multiplayer RPG runtime to Fly.io.
+- The Mochi Social game repo deploys the Node 24 LTS hosting wrapper plus the Unity WebGL shared-room runtime to Fly.io.
 
 ## Why Fly.io for the Game
 
-The game runtime needs a long-lived server process and multiplayer transport. Vercel Functions are not the game WebSocket server, so Vercel should only reference the deployed game URL.
+The game runtime needs a long-lived server process and multiplayer transport. Vercel Functions are not the game WebSocket server, so Vercel should only reference the deployed game URL. The active player experience is Unity WebGL served from `/embed`; the old browser runtime is rollback/reference only.
 
 ## Verified Milestone Deploy Queue
 
@@ -43,10 +43,12 @@ if (!(Test-Path $fly)) { $fly = "flyctl" }
 Runtime env defaults:
 
 - `PORT=8080`
-- `RPG_SAVE_DIR=/data/saves`
 - `SUPABASE_AUTH_REQUIRED=false`
-- `RPG_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173`
+- `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`
+- `MOCHI_SOCIAL_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173`
 - `ENJIN_NETWORK=CANARY`
+
+`MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true` makes `/play`, `/embed`, and `/healthz` fail clearly if `unity/Builds/WebGL/index.html` is missing. Run `npm run build:release` before deploy approval so the Node wrapper and Unity WebGL artifact are both present.
 
 Alpha RC server-only secrets and config:
 
@@ -59,7 +61,7 @@ Alpha RC server-only secrets and config:
 
 For Alpha Preview Ready, leave `ENJIN_COLLECTION_ID` and `ENJIN_FUEL_TANK_ID` unset until real Canary collection/Fuel Tank resources exist. Do not set dummy values. The runtime should stay in `configured-preview-stub` mode and visibly explain that chain requests are no-real-value preview records until funding and finality proof are approved.
 
-Add the future Vercel domain to `RPG_ALLOWED_ORIGINS` before embedding in production.
+Add the future Vercel domain to `MOCHI_SOCIAL_ALLOWED_ORIGINS` before embedding in production. `RPG_ALLOWED_ORIGINS` may remain only for legacy rollback compatibility.
 
 Do not put Supabase service-role keys, Enjin Wallet Daemon seeds, or Wallet Daemon passphrases in the game runtime. `npm run alpha:wallet-daemon-check` may verify only the downloaded local binary metadata before deployment work; it is not a live signer readiness check. The Wallet Daemon must run as a separate service with no inbound ports.
 

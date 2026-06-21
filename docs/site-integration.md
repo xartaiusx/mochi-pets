@@ -50,6 +50,10 @@ Unity shared-room manifests expose:
 - `runtime.playerState="ugs-cloud-save-player-data"`
 - `runtime.sharedState="ugs-cloud-code-cloud-save-game-data"`
 - `runtime.multiplayerHosting="not-used-v1"`
+- `activeRuntime="unity-webgl"`
+- `unityWebglBuild.present=true` for release/deploy checks
+- `unityWebglBuild.required=true` when `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`
+- `legacyFallback.active=false` for release/deploy checks
 - `state.playerCharacterKey="character.v1"`
 - `state.sharedPetKey="room:jade-lantern-room/sharedPet.v1"`
 - `characterPresets.mode="curated-presets"`
@@ -113,6 +117,8 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
 
 The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.
+
+If `activeRuntime` is `unity-webgl-missing` or `unityWebglBuild.present=false` during a release check, the build is not deployable. Local development may leave `legacyFallback.active=true` only for rollback/reference inspection.
 
 The Unity shared-room alpha action lane also allows no-real-value audit events: `unity.character.created`, `unity.character.updated`, `unity.pet.interaction`, `unity.pet.state_saved`, `unity.room.joined`, and `unity.room.left`. These events are audit rows only; UGS remains the runtime authority for Unity character/player data and shared Lirabao state.
 

@@ -609,6 +609,9 @@ const unityWebglDir = process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR
   ? resolve(process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR)
   : resolve(repoRootDir, 'unity/Builds/WebGL');
 const unityIndexHtml = resolve(unityWebglDir, 'index.html');
+const unityWebglBuildPresent = existsSync(unityIndexHtml);
+const unityWebglRequired = process.env.MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL === 'true' ||
+  (process.env.MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL !== 'false' && process.env.NODE_ENV === 'production');
 const port = Number(process.env.PORT ?? 3000);
 const app = express();
 const transport = createRpgServerTransport(startServer, {
@@ -636,15 +639,22 @@ app.options(/.*/, (_req, res) => {
 });
 
 app.get('/healthz', (_req, res) => {
-  res.json({
-    ok: true,
+  const unityServing = getUnityServingStatus();
+  const ok = !unityWebglRequired || unityWebglBuildPresent;
+  res.status(ok ? 200 : 503).json({
+    ok,
     name: 'Mochi Social',
-    version: process.env.npm_package_version ?? '0.1.0'
+    version: process.env.npm_package_version ?? '0.1.0',
+    activeRuntime: unityServing.activeRuntime,
+    unityWebglBuild: unityServing.unityWebglBuild
   });
 });
 
 app.get('/integration/game-manifest.json', (req, res) => {
-  res.json(createGameManifestForExpress(getPublicOrigin(req), process.env.npm_package_version ?? '0.1.0'));
+  res.json({
+    ...createGameManifestForExpress(getPublicOrigin(req), process.env.npm_package_version ?? '0.1.0'),
+    ...getUnityServingStatus()
+  });
 });
 
 app.get('/integration/alpha/status', (_req, res) => {
@@ -668,6 +678,7 @@ app.get('/integration/alpha/status', (_req, res) => {
     characterPresets: UNITY_SHARED_ROOM_CONTRACT.characterPresets,
     sharedPet: UNITY_SHARED_ROOM_CONTRACT.sharedPet,
     avatarUploads: UNITY_SHARED_ROOM_CONTRACT.avatarUploads,
+    ...getUnityServingStatus(),
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
     enjinCanaryConfigured: enjinRuntime.configured,
     chainRuntime: enjinRuntime,
@@ -796,10 +807,23 @@ app.use('/parties', async (req, res, next) => {
 });
 
 app.use('/map', express.static(mapDistDir, { index: false }));
-if (existsSync(unityIndexHtml)) {
+if (unityWebglBuildPresent) {
   app.use(express.static(unityWebglDir, { index: false }));
   app.get(['/play', '/embed'], (_req, res) => {
     res.sendFile(unityIndexHtml);
+  });
+} else if (unityWebglRequired) {
+  app.get(['/play', '/embed'], (_req, res) => {
+    res.status(503).type('html').send(`<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Mochi Social Unity build missing</title></head>
+<body>
+<main>
+<h1>Mochi Social Unity build missing</h1>
+<p>The Unity WebGL build is required for this runtime. Run <code>npm run unity:build:webgl</code> before release checks or deployment.</p>
+</main>
+</body>
+</html>`);
   });
 }
 app.use(express.static(clientDistDir, { index: false }));
@@ -848,6 +872,25 @@ function getAllowedOrigins() {
     process.env.MOCHI_SOCIAL_SITE_ORIGIN ?? ''
   ].map((origin) => origin.trim());
   return new Set([...defaults, ...configured].filter(Boolean));
+}
+
+function getUnityServingStatus() {
+  return {
+    activeRuntime: unityWebglBuildPresent
+      ? 'unity-webgl'
+      : unityWebglRequired
+        ? 'unity-webgl-missing'
+        : 'legacy-fallback',
+    unityWebglBuild: {
+      present: unityWebglBuildPresent,
+      required: unityWebglRequired,
+      source: process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR ? 'MOCHI_SOCIAL_UNITY_WEBGL_DIR' : 'unity/Builds/WebGL'
+    },
+    legacyFallback: {
+      available: true,
+      active: !unityWebglBuildPresent && !unityWebglRequired
+    }
+  };
 }
 
 function getBearerToken(req: Request) {

@@ -2,19 +2,29 @@
   "name": "mochi-social",
   "version": "0.1.0",
   "private": true,
-  "description": "Mochi Social, a lightweight multiplayer browser RPG kept separate from its future Vercel/Supabase website.",
+  "description": "Mochi Social Unity WebGL shared-room runtime kept separate from its future Vercel/Supabase website.",
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=22 <23"
+    "node": ">=24.17.0 <25"
   },
   "workspaces": [
     "apps/game"
   ],
   "scripts": {
     "prepare-assets": "node apps/game/scripts/generate-assets.mjs",
-    "dev:game": "npm run prepare-assets && npm --workspace @mochi-social/game run dev",
-    "build": "npm run prepare-assets && npm --workspace @mochi-social/game run build",
+    "dev:game": "npm run dev:unity",
+    "dev:unity": "npm run unity:open",
+    "dev:legacy": "npm run prepare-assets && npm --workspace @mochi-social/game run dev",
+    "build": "npm run build:server",
+    "build:server": "npm run prepare-assets && npm --workspace @mochi-social/game run build",
+    "build:release": "npm run build:server && npm run unity:build:webgl",
+    "unity:open": "node scripts/run-unity.mjs open",
+    "unity:bootstrap": "node scripts/run-unity.mjs bootstrap",
+    "unity:test:editmode": "node scripts/run-unity.mjs test-editmode",
+    "unity:test:playmode": "node scripts/run-unity.mjs test-playmode",
+    "unity:build:webgl": "node scripts/run-unity.mjs build-webgl",
+    "unity:verify": "node scripts/run-unity.mjs verify",
     "start": "npm --workspace @mochi-social/game run start",
     "clean-room-scan": "node scripts/check-clean-room-literals.mjs",
     "secret-scan": "node scripts/check-secrets.mjs",

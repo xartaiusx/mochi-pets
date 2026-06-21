@@ -10,11 +10,11 @@ Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. I
 - Fly.io secrets and volumes: https://fly.io/docs/apps/secrets/ and https://fly.io/docs/volumes/overview/
 - Supabase Edge secrets and Auth user validation: https://supabase.com/docs/guides/functions/secrets and https://supabase.com/docs/reference/javascript/auth-getuser
 - Enjin Canary, cENJ, Fuel Tanks, and Wallet Daemon: https://docs.enjin.io/getting-started/quick-start-guide, https://docs.enjin.io/guides/platform/managing-users/using-fuel-tanks, and https://docs.enjin.io/getting-started/using-wallet-daemon
-- RPGJS v5 and browser WebSockets: https://github.com/RSamaium/RPG-JS and https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+- Unity WebGL, Unity Multiplayer Services Distributed Authority, Cloud Save, and browser WebSockets: https://docs.unity3d.com/6000.4/Documentation/Manual/webgl.html, https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects%402.9/manual/learn/distributed-authority-quick-start.html, https://docs.unity.com/en-us/cloud-save, and https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
 
 ## Preview Target
 
-- Game runtime: Fly app `mochi-social-game`.
+- Game runtime: Node 24 LTS wrapper plus Unity WebGL shared room on Fly app `mochi-social-game`.
 - Website doorway: Mochirii Vercel Preview route `/games/mochi-social`.
 - Website public env: `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
 - Website server env for the first live pass: `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password` plus `MOCHI_SOCIAL_TESTER_PASSWORD`.
@@ -25,7 +25,7 @@ Alpha Preview Ready is the live-on-site stop point before full Alpha RC Ready. I
 
 Treat `provider.external-gates` as two lanes:
 
-- `preview-live-gates`: Fly game URL, Vercel Preview embed, tester-password access, no-real-value labels, and hosted contract checks after explicit hosted-check approval. Supabase allowlist, terms, and feedback remain the stricter Alpha RC path.
+- `preview-live-gates`: Fly game URL, Unity WebGL artifact present, Vercel Preview embed, tester-password or Supabase tester access, no-real-value labels, and hosted contract checks after explicit hosted-check approval. Supabase allowlist, terms, and feedback remain the stricter persistent-play path.
 - `funded-chain-gates`: Enjin collection ID, Fuel Tank ID, cENJ funding, Wallet Daemon signing, and finalized proof smoke. This lane is expected red until later approval.
 
 Alpha Preview Ready can pass while funded-chain gates are red. Alpha RC Ready cannot pass until both lanes are green.
@@ -69,6 +69,8 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 ```
 
 ## Game-Design Acceptance
+
+Current Unity Preview Ready acceptance supersedes the older RPGJS feature-parity proof list below. For the Unity alpha, the deployable game must be one `JadeLanternRoom` WebGL build with three curated character presets, one shared Lirabao pet, `MOCHI_SOCIAL_AUTH` bridge login, UGS Distributed Authority session join, Cloud Save character persistence, Cloud Code shared-pet persistence, and no avatar upload/market/trade/funded-chain behavior. The detailed RPGJS-era checklist remains rollback/reference material until the legacy runtime is intentionally retired from scripts.
 
 Before testers enter the Vercel Preview:
 

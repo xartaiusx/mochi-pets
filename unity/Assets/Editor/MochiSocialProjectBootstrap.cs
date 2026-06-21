@@ -31,7 +31,6 @@ namespace MochiSocial.Editor
 
         public static void BuildWebGL()
         {
-            RunAll();
             var outputPath = "Builds/WebGL";
             Directory.CreateDirectory(outputPath);
             var report = BuildPipeline.BuildPlayer(

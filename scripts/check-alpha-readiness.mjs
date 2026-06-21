@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
+    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"build:release"', '"unity:verify"', '"dev:legacy"', '"smoke"']
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
@@ -15,11 +15,15 @@ const checks = [
   },
   {
     file: '.github/workflows/ci.yml',
-    includes: ['npm run secret-scan', 'npm run alpha:readiness', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:readiness', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+  },
+  {
+    file: 'Dockerfile',
+    includes: ['FROM node:24.17.0-slim', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true', 'unity/Builds/WebGL']
   },
   {
     file: 'AGENTS.md',
-    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
+    includes: ['Node 24 LTS', 'Unity WebGL is the active runtime', 'legacy rollback/reference', 'no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
   },
   {
     file: 'AGENTS.md',
@@ -1029,7 +1033,7 @@ const checks = [
   },
   {
     file: 'docs/deployment.md',
-    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
+    includes: ['Node 24 LTS hosting wrapper plus the Unity WebGL shared-room runtime', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true', 'MOCHI_SOCIAL_ALLOWED_ORIGINS', 'npm run build:release', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
     file: 'docs/enjin-canary-alpha.md',
@@ -2438,6 +2442,10 @@ const unityPreviewReadinessChecks = [
   {
     file: 'apps/game/scripts/smoke.mjs',
     includes: [
+      'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL',
+      "manifest.activeRuntime !== 'unity-webgl'",
+      'Release smoke requires a present Unity WebGL build',
+      '/embed did not serve a Unity WebGL page',
       "manifest.engine !== 'unity-webgl'",
       "manifest.room?.mode !== 'single-shared-room'",
       "manifest.room?.capacity !== 25",
@@ -2539,8 +2547,8 @@ if (/network:\s*['"]ENJIN['"]/.test(manifestText)) {
 }
 
 const packageJson = JSON.parse(read('package.json') || '{}');
-if (packageJson.engines?.node !== '>=22 <23') {
-  failures.push('package.json: Node 22 engine contract changed.');
+if (packageJson.engines?.node !== '>=24.17.0 <25') {
+  failures.push('package.json: Node 24 LTS engine contract changed.');
 }
 
 if (failures.length) {
