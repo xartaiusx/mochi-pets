@@ -50,24 +50,36 @@ async function run() {
 
   assert(health.body.ok === true && health.body.name === 'Mochi Social', '/healthz did not identify Mochi Social.');
   assert(manifest.body.chain?.network === 'CANARY', 'Manifest must stay Canary-only.');
+  assert(manifest.body.engine === 'unity-webgl', 'Manifest must expose Unity WebGL as the engine.');
+  assert(manifest.body.room?.mode === 'single-shared-room', 'Manifest must expose single-shared-room mode.');
+  assert(manifest.body.room?.capacity === 25, 'Manifest must expose room capacity 25.');
+  assert(manifest.body.room?.sharedPetKey === 'lirabao', 'Manifest must expose Lirabao as the shared pet key.');
+  assert(manifest.body.runtime?.realtimeAuthority === 'ugs-distributed-authority', 'Manifest must expose UGS Distributed Authority.');
+  assert(manifest.body.runtime?.stateAuthority === 'ugs-cloud-save', 'Manifest must expose UGS Cloud Save.');
+  assert(manifest.body.state?.playerCharacterKey === 'character.v1', 'Manifest must expose character.v1 Player Data.');
+  assert(manifest.body.state?.sharedPetKey === 'room:jade-lantern-room/sharedPet.v1', 'Manifest must expose the shared Lirabao state key.');
+  assert(manifest.body.characterPresets?.count === 3, 'Manifest must expose three curated presets.');
+  assert(manifest.body.characterPresets?.avatarUploads === false, 'Manifest must reject avatar uploads.');
+  assert(manifest.body.sharedPet?.key === 'lirabao', 'Manifest must expose Lirabao.');
+  assert(manifest.body.sharedPet?.universalStarter === true, 'Manifest must keep Lirabao universal.');
+  assert(manifest.body.market?.enabled === false, 'Manifest must disable market systems for Unity Preview Ready.');
+  assert(manifest.body.market?.fixedPrice === false, 'Manifest must disable fixed-price listings.');
+  assert(manifest.body.market?.directTrade === false, 'Manifest must disable direct trade.');
   assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
+  assert(manifest.body.avatarUploads === false, 'Manifest must disable avatar uploads.');
   assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Manifest must expose Alpha Preview Ready as the tester-entry stop point.');
   assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Manifest must reject provider mutation by default.');
   assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Manifest must declare zero restricted-source references.');
-  assert(manifest.body.runtimeArt?.pixelArt === false, 'Manifest must reject pixel-art direction.');
-  assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Manifest must expose the first-court Mochi Spirit roster.');
-  assert(manifest.body.playableContent?.capture?.captureRiteIds?.includes('jade-court-capture-rite'), 'Manifest must expose capture rite content during load smoke.');
-  assert(manifest.body.playableContent?.battle?.mentorChallengeIds?.includes('silk-banner-mentor-drill'), 'Manifest must expose mentor battle content during load smoke.');
-  assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Manifest must expose roleplay quest content during load smoke.');
-  assert(manifest.body.playableContent?.roleplay?.questLedgerIds?.includes('jade-quest-ledger'), 'Manifest must expose quest ledger content during load smoke.');
-  assert(manifest.body.playableContent?.roleplay?.rosterCabinetIds?.includes('jade-roster-cabinet'), 'Manifest must expose roster cabinet content during load smoke.');
-  assert(manifest.body.playableContent?.roleplay?.habitatCensusIds?.includes('jade-habitat-census'), 'Manifest must expose habitat census content during load smoke.');
-  assert(manifest.body.playableContent?.roleplay?.routeCharterIds?.includes('jade-route-charter'), 'Manifest must expose route charter content during load smoke.');
-  assert(manifest.body.playableContent?.raising?.blossomCradleIds?.includes('jade-blossom-cradle'), 'Manifest must expose blossom cradle raising content during load smoke.');
-  assert(manifest.body.playableContent?.economyAndCanary?.provisionCatalogIds?.includes('jade-provision-catalog'), 'Manifest must expose provision catalog content during load smoke.');
-  assert(manifest.body.playableContent?.economyAndCanary?.battleKitIds?.includes('jade-battle-kit'), 'Manifest must expose battle kit content during load smoke.');
-  assert(manifest.body.playableContent?.economyAndCanary?.remedyPouchIds?.includes('jade-remedy-pouch'), 'Manifest must expose remedy pouch content during load smoke.');
   assert(alphaStatus.body.alpha?.noRealValue === true, 'Alpha status must keep no-real-value enabled.');
+  assert(alphaStatus.body.alpha?.stopPoint === 'alpha-preview-ready', 'Alpha status must expose Alpha Preview Ready.');
+  assert(alphaStatus.body.engine === 'unity-webgl', 'Alpha status must expose Unity WebGL as the engine.');
+  assert(alphaStatus.body.room?.mode === 'single-shared-room', 'Alpha status must expose single-shared-room mode.');
+  assert(alphaStatus.body.room?.capacity === 25, 'Alpha status must expose room capacity 25.');
+  assert(alphaStatus.body.room?.sharedPetKey === 'lirabao', 'Alpha status must expose Lirabao as the shared pet key.');
+  assert(alphaStatus.body.runtime?.realtimeAuthority === 'ugs-distributed-authority', 'Alpha status must expose UGS Distributed Authority.');
+  assert(alphaStatus.body.runtime?.stateAuthority === 'ugs-cloud-save', 'Alpha status must expose UGS Cloud Save.');
+  assert(alphaStatus.body.market?.enabled === false, 'Alpha status must disable market systems for Unity Preview Ready.');
+  assert(alphaStatus.body.avatarUploads === false, 'Alpha status must disable avatar uploads.');
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {
     throw new Error(
@@ -85,14 +97,26 @@ async function run() {
     const tester = String(index + 1).padStart(2, '0');
     return [
       {
-        requestId: `${runId}-p${tester}-emote`,
-        type: 'emote.send',
-        payload: { emote: 'wave', simulatedTester: tester }
+        requestId: `${runId}-p${tester}-room-joined`,
+        type: 'unity.room.joined',
+        payload: {
+          roomSessionId: 'jade-lantern-room-alpha',
+          engine: 'unity-webgl',
+          simulatedTester: tester,
+          noRealValue: true
+        }
       },
       {
-        requestId: `${runId}-p${tester}-chat`,
-        type: 'chat.send',
-        payload: { channel: 'town', message: `Alpha load smoke tester ${tester}` }
+        requestId: `${runId}-p${tester}-pet-interaction`,
+        type: 'unity.pet.interaction',
+        payload: {
+          sharedPetKey: 'lirabao',
+          sharedPetStateKey: 'room:jade-lantern-room/sharedPet.v1',
+          interaction: 'wave',
+          expectedRevision: index + 1,
+          simulatedTester: tester,
+          noRealValue: true
+        }
       }
     ];
   }).flat();
@@ -114,7 +138,7 @@ async function run() {
     assert(entry, `Missing local ledger entry for ${action.requestId}.`);
     assert(entry.ledgerVersion === 1, `Ledger entry ${action.requestId} must use ledgerVersion=1.`);
     assert(entry.source === 'local-alpha-ledger', `Ledger entry ${action.requestId} must identify the local fallback ledger source.`);
-    assert(entry.alphaStopPoint === 'alpha-rc-ready', `Ledger entry ${action.requestId} must keep the alpha RC stop point.`);
+    assert(entry.alphaStopPoint === 'alpha-preview-ready', `Ledger entry ${action.requestId} must keep the Alpha Preview Ready stop point.`);
     assert(entry.chainNetwork === 'CANARY', `Ledger entry ${action.requestId} must stay Canary-scoped.`);
     assert(entry.noRealValue === true, `Ledger entry ${action.requestId} must be no-real-value.`);
   }

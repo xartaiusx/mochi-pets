@@ -261,9 +261,16 @@ describe('alpha contract', () => {
     expect(SERVER_ENV_CONTRACT).toContain('MOCHI_SOCIAL_GAME_SERVER_TOKEN');
     expect(SERVER_ENV_CONTRACT.some((name) => name.includes('SERVICE_ROLE'))).toBe(false);
     expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-social-alpha-progress');
+    expect(ALPHA_EDGE_FUNCTIONS.unityAuth).toBe('mochi-social-unity-auth');
   });
 
   it('validates alpha action envelopes', () => {
+    expect(ALPHA_ACTION_TYPES).toContain('unity.character.created');
+    expect(ALPHA_ACTION_TYPES).toContain('unity.character.updated');
+    expect(ALPHA_ACTION_TYPES).toContain('unity.pet.interaction');
+    expect(ALPHA_ACTION_TYPES).toContain('unity.pet.state_saved');
+    expect(ALPHA_ACTION_TYPES).toContain('unity.room.joined');
+    expect(ALPHA_ACTION_TYPES).toContain('unity.room.left');
     expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.starter_vow');
     expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');

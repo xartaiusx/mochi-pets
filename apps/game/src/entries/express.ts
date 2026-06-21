@@ -1,5 +1,6 @@
 import express, { type Request } from 'express';
 import { createServer as createHttpServer } from 'node:http';
+import { existsSync } from 'node:fs';
 import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +17,7 @@ const ALPHA_FEATURES = {
     noRealValue: true,
     testerAge: '18+',
     access: 'signed-in-allowlist',
-    stopPoint: 'alpha-rc-ready'
+    stopPoint: 'alpha-preview-ready'
   },
   economy: {
     mode: 'test-soft-currency',
@@ -385,17 +386,81 @@ const MANIFEST_CONTRACTS = {
   }
 } as const;
 
+const UNITY_SHARED_ROOM_CONTRACT = {
+  engine: 'unity-webgl',
+  room: {
+    key: 'jade-lantern-room-alpha',
+    name: 'Jade Lantern Room',
+    scene: 'JadeLanternRoom',
+    mode: 'single-shared-room',
+    capacity: 25,
+    sharedPetKey: 'lirabao'
+  },
+  runtime: {
+    renderer: 'unity-6000.5-urp-webgl',
+    targetPlatform: 'desktop-browser-webgl',
+    realtimeAuthority: 'ugs-distributed-authority',
+    sessionService: 'unity-multiplayer-services',
+    authentication: 'unity-authentication-custom-id',
+    stateAuthority: 'ugs-cloud-save',
+    playerState: 'ugs-cloud-save-player-data',
+    sharedState: 'ugs-cloud-code-cloud-save-game-data',
+    multiplayerHosting: 'not-used-v1'
+  },
+  state: {
+    playerCharacterKey: 'character.v1',
+    sharedPetKey: 'room:jade-lantern-room/sharedPet.v1',
+    liveAvatarTransformsDurable: false,
+    liveEmotesDurable: false
+  },
+  characterPresets: {
+    mode: 'curated-presets',
+    count: 3,
+    avatarUploads: false,
+    presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']
+  },
+  sharedPet: {
+    key: 'lirabao',
+    name: 'Lirabao',
+    universalStarter: true,
+    stateAuthority: 'cloud-code-authoritative-save'
+  },
+  market: {
+    enabled: false,
+    fixedPrice: false,
+    guildReceipts: false,
+    directTrade: false,
+    auctions: false,
+    cashout: false,
+    reason: 'market-trade-and-real-value-systems-are-out-of-scope-for-unity-shared-room-v1'
+  },
+  edgeFunctions: {
+    unityAuth: 'mochi-social-unity-auth',
+    action: 'mochi-social-alpha-action',
+    progress: 'mochi-social-alpha-progress',
+    feedback: 'submit-mochi-social-feedback'
+  },
+  avatarUploads: false
+} as const;
+
 const ALPHA_EDGE_FUNCTIONS = {
   session: 'mochi-social-alpha-session',
   action: 'mochi-social-alpha-action',
   progress: 'mochi-social-alpha-progress',
   admin: 'mochi-social-alpha-admin',
-  feedback: 'submit-mochi-social-feedback'
+  feedback: 'submit-mochi-social-feedback',
+  unityAuth: 'mochi-social-unity-auth'
 } as const;
 
 const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
+  'unity.character.created',
+  'unity.character.updated',
+  'unity.pet.interaction',
+  'unity.pet.state_saved',
+  'unity.room.joined',
+  'unity.room.left',
   'spirit.starter_vow',
   'spirit.capture',
   'spirit.capture_rite',
@@ -536,9 +601,14 @@ interface EnjinSubmittedTransaction {
 }
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
+const repoRootDir = resolve(currentDir, '../../../..');
 const clientDistDir = resolve(currentDir, '../client');
 const mapDistDir = resolve(clientDistDir, 'assets/data');
 const indexHtml = resolve(clientDistDir, 'index.html');
+const unityWebglDir = process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR
+  ? resolve(process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR)
+  : resolve(repoRootDir, 'unity/Builds/WebGL');
+const unityIndexHtml = resolve(unityWebglDir, 'index.html');
 const port = Number(process.env.PORT ?? 3000);
 const app = express();
 const transport = createRpgServerTransport(startServer, {
@@ -588,9 +658,16 @@ app.get('/integration/alpha/status', (_req, res) => {
     alpha: ALPHA_FEATURES.alpha,
     economy: ALPHA_FEATURES.economy,
     chain: ALPHA_FEATURES.chain,
-    market: ALPHA_FEATURES.market,
+    market: UNITY_SHARED_ROOM_CONTRACT.market,
     gameplay: ALPHA_FEATURES.gameplay,
     ugc: ALPHA_FEATURES.ugc,
+    engine: UNITY_SHARED_ROOM_CONTRACT.engine,
+    room: UNITY_SHARED_ROOM_CONTRACT.room,
+    runtime: UNITY_SHARED_ROOM_CONTRACT.runtime,
+    state: UNITY_SHARED_ROOM_CONTRACT.state,
+    characterPresets: UNITY_SHARED_ROOM_CONTRACT.characterPresets,
+    sharedPet: UNITY_SHARED_ROOM_CONTRACT.sharedPet,
+    avatarUploads: UNITY_SHARED_ROOM_CONTRACT.avatarUploads,
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
     enjinCanaryConfigured: enjinRuntime.configured,
     chainRuntime: enjinRuntime,
@@ -719,6 +796,12 @@ app.use('/parties', async (req, res, next) => {
 });
 
 app.use('/map', express.static(mapDistDir, { index: false }));
+if (existsSync(unityIndexHtml)) {
+  app.use(express.static(unityWebglDir, { index: false }));
+  app.get(['/play', '/embed'], (_req, res) => {
+    res.sendFile(unityIndexHtml);
+  });
+}
 app.use(express.static(clientDistDir, { index: false }));
 
 app.get(['/', '/play', '/embed'], (_req, res) => {
@@ -752,8 +835,18 @@ function getPublicOrigin(req: Request) {
 }
 
 function getAllowedOrigins() {
-  const defaults = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'];
-  const configured = process.env.RPG_ALLOWED_ORIGINS?.split(',').map((origin) => origin.trim()) ?? [];
+  const defaults = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001'
+  ];
+  const configured = [
+    ...(process.env.RPG_ALLOWED_ORIGINS?.split(',') ?? []),
+    ...(process.env.MOCHI_SOCIAL_ALLOWED_ORIGINS?.split(',') ?? []),
+    process.env.MOCHI_SOCIAL_SITE_ORIGIN ?? ''
+  ].map((origin) => origin.trim());
   return new Set([...defaults, ...configured].filter(Boolean));
 }
 
@@ -812,7 +905,8 @@ function createGameManifestForExpress(origin: string, version: string) {
       tokenPolicy: 'access-token-only'
     },
     ...ALPHA_FEATURES,
-    ...MANIFEST_CONTRACTS
+    ...MANIFEST_CONTRACTS,
+    ...UNITY_SHARED_ROOM_CONTRACT
   };
 }
 
@@ -929,7 +1023,7 @@ async function appendLocalAlphaLedger(action: AlphaActionEnvelope) {
     `${JSON.stringify({
       ledgerVersion: 1,
       source: 'local-alpha-ledger',
-      alphaStopPoint: 'alpha-rc-ready',
+      alphaStopPoint: 'alpha-preview-ready',
       chainNetwork: 'CANARY',
       noRealValue: true,
       receivedAt: new Date().toISOString(),

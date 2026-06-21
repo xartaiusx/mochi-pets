@@ -20,30 +20,35 @@ if (manifest.name !== 'Mochi Social' || manifest.bridge?.namespace !== 'MOCHI_SO
   throw new Error('Manifest does not expose the Mochi Social integration contract.');
 }
 
-if (manifest.chain?.provider !== 'enjin' || manifest.chain?.network !== 'CANARY' || manifest.alpha?.noRealValue !== true) {
-  throw new Error('Manifest does not expose the closed Enjin Canary alpha contract.');
+if (
+  manifest.engine !== 'unity-webgl' ||
+  manifest.room?.mode !== 'single-shared-room' ||
+  manifest.room?.capacity !== 25 ||
+  manifest.room?.sharedPetKey !== 'lirabao' ||
+  manifest.runtime?.realtimeAuthority !== 'ugs-distributed-authority' ||
+  manifest.runtime?.stateAuthority !== 'ugs-cloud-save'
+) {
+  throw new Error('Manifest does not expose the Unity shared-room runtime contract.');
+}
+
+if (manifest.alpha?.noRealValue !== true || manifest.market?.enabled !== false || manifest.avatarUploads !== false) {
+  throw new Error('Manifest does not keep the Unity alpha no-real-value, no-market, no-avatar-upload posture.');
 }
 
 const alphaStatus = await fetch(`${baseUrl}/integration/alpha/status`).then((response) => response.json());
-if (alphaStatus.market?.fixedPrice !== true || alphaStatus.market?.auctions !== false) {
-  throw new Error('Alpha status does not expose fixed-price/no-auction market scope.');
+if (
+  alphaStatus.engine !== 'unity-webgl' ||
+  alphaStatus.room?.mode !== 'single-shared-room' ||
+  alphaStatus.room?.capacity !== 25 ||
+  alphaStatus.room?.sharedPetKey !== 'lirabao' ||
+  alphaStatus.runtime?.realtimeAuthority !== 'ugs-distributed-authority' ||
+  alphaStatus.runtime?.stateAuthority !== 'ugs-cloud-save'
+) {
+  throw new Error('Alpha status does not expose the Unity shared-room runtime contract.');
 }
 
-if (
-  alphaStatus.gameplay?.spiritAttunement !== true ||
-  alphaStatus.gameplay?.routeMastery !== true ||
-  alphaStatus.gameplay?.habitatBonds !== true ||
-  alphaStatus.gameplay?.spiritResearch !== true ||
-  alphaStatus.gameplay?.partyHarmony !== true ||
-  alphaStatus.gameplay?.harmonyTrials !== true ||
-  alphaStatus.gameplay?.teamSparMatches !== true ||
-  alphaStatus.gameplay?.trainingBattles !== true ||
-  alphaStatus.gameplay?.raisingCare !== true ||
-  alphaStatus.gameplay?.roleplayQuests !== true ||
-  alphaStatus.gameplay?.questChains !== true ||
-  alphaStatus.gameplay?.copiedUpstreamContent !== false
-) {
-  throw new Error('Alpha status does not expose the Mochirii-native creature loop scope.');
+if (alphaStatus.alpha?.noRealValue !== true || alphaStatus.market?.enabled !== false || alphaStatus.avatarUploads !== false) {
+  throw new Error('Alpha status does not keep the Unity alpha no-real-value, no-market, no-avatar-upload posture.');
 }
 
 if (alphaStatus.chainRuntime?.network !== 'CANARY' || !['configured', 'configured-preview-stub'].includes(alphaStatus.chainRuntime?.mode)) {

@@ -33,7 +33,33 @@ Fetch:
 GET /integration/game-manifest.json
 ```
 
-The manifest includes name, version, play URL, embed URL, origin, bridge protocol version, and auth mode.
+The manifest includes name, version, play URL, embed URL, origin, bridge protocol version, auth mode, and the Unity shared-room runtime contract.
+
+Unity shared-room manifests expose:
+
+- `engine="unity-webgl"`
+- `room.key="jade-lantern-room-alpha"`
+- `room.scene="JadeLanternRoom"`
+- `room.mode="single-shared-room"`
+- `room.capacity=25`
+- `room.sharedPetKey="lirabao"`
+- `runtime.realtimeAuthority="ugs-distributed-authority"`
+- `runtime.sessionService="unity-multiplayer-services"`
+- `runtime.authentication="unity-authentication-custom-id"`
+- `runtime.stateAuthority="ugs-cloud-save"`
+- `runtime.playerState="ugs-cloud-save-player-data"`
+- `runtime.sharedState="ugs-cloud-code-cloud-save-game-data"`
+- `runtime.multiplayerHosting="not-used-v1"`
+- `state.playerCharacterKey="character.v1"`
+- `state.sharedPetKey="room:jade-lantern-room/sharedPet.v1"`
+- `characterPresets.mode="curated-presets"`
+- `characterPresets.count=3`
+- `characterPresets.avatarUploads=false`
+- `sharedPet.key="lirabao"`
+- `sharedPet.universalStarter=true`
+- `market.enabled=false`
+- `avatarUploads=false`
+- `edgeFunctions.unityAuth="mochi-social-unity-auth"`
 
 Alpha RC manifests also include:
 
@@ -43,7 +69,9 @@ Alpha RC manifests also include:
 - `economy.mode="test-soft-currency"`
 - `chain.provider="enjin"`
 - `chain.network="CANARY"`
-- `market.fixedPrice=true`
+- `market.enabled=false`
+- `market.fixedPrice=false`
+- `market.directTrade=false`
 - `market.auctions=false`
 - `ugc="curated"`
 
@@ -86,7 +114,9 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 
 The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.
 
-The `quest.ledger_record` alpha action is a no-real-value roleplay proof. It records the Jade Quest Ledger Seal after first-court quest postings, journal, route, market, provision, commission, and two-tester rally readiness; it does not change bridge event names, settle inventory, or require provider mutation.
+The Unity shared-room alpha action lane also allows no-real-value audit events: `unity.character.created`, `unity.character.updated`, `unity.pet.interaction`, `unity.pet.state_saved`, `unity.room.joined`, and `unity.room.left`. These events are audit rows only; UGS remains the runtime authority for Unity character/player data and shared Lirabao state.
+
+The legacy `quest.ledger_record` alpha action is a no-real-value roleplay proof retained for the rollback/reference runtime. It records the Jade Quest Ledger Seal after first-court quest postings, journal, route, market, provision, commission, and two-tester rally readiness; it does not change bridge event names, settle inventory, or require provider mutation.
 
 ## Supabase Bridge v1
 
@@ -106,7 +136,7 @@ Game to parent:
 Recommended website flow:
 
 1. Subscribe to Supabase `onAuthStateChange`.
-2. When a signed-in session exists, send `{ type: "MOCHI_SOCIAL_AUTH", protocolVersion: 1, payload: { accessToken, expiresAt } }`.
+2. When a signed-in session exists, send `{ type: "MOCHI_SOCIAL_AUTH", protocolVersion: 1, payload: { accessToken, expiresAt, functionsUrl } }`.
 3. On sign-out, send `{ type: "MOCHI_SOCIAL_SIGN_OUT", protocolVersion: 1 }`.
 4. Treat `MOCHI_SOCIAL_AUTH_STATE` as display/status only; the game server remains authoritative.
 

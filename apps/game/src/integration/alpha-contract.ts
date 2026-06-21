@@ -5,7 +5,7 @@ export const ALPHA_FEATURES = {
     noRealValue: true,
     testerAge: '18+',
     access: 'signed-in-allowlist',
-    stopPoint: 'alpha-rc-ready'
+    stopPoint: 'alpha-preview-ready'
   },
   economy: {
     mode: 'test-soft-currency',
@@ -117,7 +117,8 @@ export const ALPHA_EDGE_FUNCTIONS = {
   action: 'mochi-social-alpha-action',
   progress: 'mochi-social-alpha-progress',
   admin: 'mochi-social-alpha-admin',
-  feedback: 'submit-mochi-social-feedback'
+  feedback: 'submit-mochi-social-feedback',
+  unityAuth: 'mochi-social-unity-auth'
 } as const;
 
 export const SERVER_ENV_CONTRACT = [
@@ -133,6 +134,12 @@ export const SERVER_ENV_CONTRACT = [
 export const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
+  'unity.character.created',
+  'unity.character.updated',
+  'unity.pet.interaction',
+  'unity.pet.state_saved',
+  'unity.room.joined',
+  'unity.room.left',
   'spirit.starter_vow',
   'spirit.capture',
   'spirit.capture_rite',

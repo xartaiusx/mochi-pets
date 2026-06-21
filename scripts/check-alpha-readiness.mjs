@@ -2369,6 +2369,152 @@ const checks = [
   }
 ];
 
+const unityPreviewReadinessChecks = [
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: [
+      '/healthz',
+      '/play',
+      '/embed',
+      '/integration/game-manifest.json',
+      '/integration/alpha/status',
+      '/integration/alpha/progress',
+      '/integration/alpha/action',
+      '/integration/alpha/enjin/submit',
+      "alphaStopPoint: 'alpha-preview-ready'",
+      "source: 'local-alpha-ledger'",
+      "chainNetwork: 'CANARY'",
+      'UNITY_SHARED_ROOM_CONTRACT',
+      "engine: 'unity-webgl'",
+      "key: 'jade-lantern-room-alpha'",
+      "mode: 'single-shared-room'",
+      'capacity: 25',
+      "sharedPetKey: 'lirabao'",
+      "realtimeAuthority: 'ugs-distributed-authority'",
+      "stateAuthority: 'ugs-cloud-save'",
+      "playerCharacterKey: 'character.v1'",
+      "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'",
+      "mode: 'curated-presets'",
+      'avatarUploads: false',
+      "universalStarter: true",
+      "stateAuthority: 'cloud-code-authoritative-save'",
+      'enabled: false',
+      'fixedPrice: false',
+      'directTrade: false',
+      'cashout: false',
+      'unity.character.created',
+      'unity.character.updated',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'unity.room.joined',
+      'unity.room.left',
+      'requireGameServerToken',
+      'confirmNoRealValue',
+      'configured-preview-stub'
+    ]
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: [
+      'publishes the Unity WebGL shared-room contract',
+      "engine: 'unity-webgl'",
+      "key: 'jade-lantern-room-alpha'",
+      "scene: 'JadeLanternRoom'",
+      "mode: 'single-shared-room'",
+      'capacity: 25',
+      "sharedPetKey: 'lirabao'",
+      "realtimeAuthority: 'ugs-distributed-authority'",
+      "authentication: 'unity-authentication-custom-id'",
+      "playerCharacterKey: 'character.v1'",
+      "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'",
+      "presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']",
+      'avatarUploads: false',
+      'universalStarter: true',
+      'enabled: false',
+      'fixedPrice: false',
+      'directTrade: false'
+    ]
+  },
+  {
+    file: 'apps/game/scripts/smoke.mjs',
+    includes: [
+      "manifest.engine !== 'unity-webgl'",
+      "manifest.room?.mode !== 'single-shared-room'",
+      "manifest.room?.capacity !== 25",
+      "manifest.room?.sharedPetKey !== 'lirabao'",
+      "manifest.runtime?.realtimeAuthority !== 'ugs-distributed-authority'",
+      "manifest.runtime?.stateAuthority !== 'ugs-cloud-save'",
+      "manifest.market?.enabled !== false",
+      'no-market',
+      'no-avatar-upload',
+      'configured-preview-stub'
+    ]
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: [
+      'Unity WebGL Alpha Preview Ready contract acceptance',
+      'MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE',
+      'unity.room.joined',
+      'unity.character.created',
+      'unity.character.updated',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'unity.room.left',
+      'jade-lantern-room-alpha',
+      'JadeLanternRoom',
+      'single-shared-room',
+      'room:jade-lantern-room/sharedPet.v1',
+      'character.v1',
+      'jade_wayfarer',
+      'lotus_guardian',
+      'lantern_scholar',
+      'ugs-distributed-authority',
+      'ugs-cloud-save',
+      'cloud-code-authoritative-save',
+      'local-alpha-ledger',
+      'ledgerVersion=1',
+      'alpha-preview-ready',
+      'chainNetwork',
+      'market systems for Preview Ready',
+      'avatar uploads'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: [
+      'MOCHI_SOCIAL_LOAD_PLAYERS',
+      'local-alpha-ledger',
+      'ledgerVersion=1',
+      'alpha-preview-ready',
+      'chainNetwork',
+      'simulated testers',
+      'HTTP alpha contract load smoke',
+      'unity.room.joined',
+      'unity.pet.interaction',
+      'jade-lantern-room-alpha',
+      'room:jade-lantern-room/sharedPet.v1',
+      "manifest.body.engine === 'unity-webgl'",
+      "manifest.body.room?.mode === 'single-shared-room'",
+      "manifest.body.market?.enabled === false",
+      "alphaStatus.body.runtime?.stateAuthority === 'ugs-cloud-save'"
+    ]
+  }
+];
+
+const legacyFeatureParityFiles = new Set([
+  'apps/game/src/entries/express.ts',
+  'apps/game/tests/manifest.test.ts',
+  'apps/game/scripts/smoke.mjs',
+  'scripts/check-local-alpha-acceptance.mjs',
+  'scripts/check-alpha-load-smoke.mjs'
+]);
+
+const readinessChecks = [
+  ...checks.filter((check) => !legacyFeatureParityFiles.has(check.file)),
+  ...unityPreviewReadinessChecks
+];
+
 function read(file) {
   const fullPath = path.join(root, file);
   if (!existsSync(fullPath)) {
@@ -2378,7 +2524,7 @@ function read(file) {
   return readFileSync(fullPath, 'utf8');
 }
 
-for (const check of checks) {
+for (const check of readinessChecks) {
   const text = read(check.file);
   for (const snippet of check.includes) {
     if (!text.includes(snippet)) {

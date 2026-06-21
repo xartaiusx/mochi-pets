@@ -277,14 +277,79 @@ export const MANIFEST_CONTRACTS = {
   }
 } as const;
 
+export const UNITY_SHARED_ROOM_CONTRACT = {
+  engine: 'unity-webgl',
+  room: {
+    key: 'jade-lantern-room-alpha',
+    name: 'Jade Lantern Room',
+    scene: 'JadeLanternRoom',
+    mode: 'single-shared-room',
+    capacity: 25,
+    sharedPetKey: 'lirabao'
+  },
+  runtime: {
+    renderer: 'unity-6000.5-urp-webgl',
+    targetPlatform: 'desktop-browser-webgl',
+    realtimeAuthority: 'ugs-distributed-authority',
+    sessionService: 'unity-multiplayer-services',
+    authentication: 'unity-authentication-custom-id',
+    stateAuthority: 'ugs-cloud-save',
+    playerState: 'ugs-cloud-save-player-data',
+    sharedState: 'ugs-cloud-code-cloud-save-game-data',
+    multiplayerHosting: 'not-used-v1'
+  },
+  state: {
+    playerCharacterKey: 'character.v1',
+    sharedPetKey: 'room:jade-lantern-room/sharedPet.v1',
+    liveAvatarTransformsDurable: false,
+    liveEmotesDurable: false
+  },
+  characterPresets: {
+    mode: 'curated-presets',
+    count: 3,
+    avatarUploads: false,
+    presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']
+  },
+  sharedPet: {
+    key: 'lirabao',
+    name: 'Lirabao',
+    universalStarter: true,
+    stateAuthority: 'cloud-code-authoritative-save'
+  },
+  market: {
+    enabled: false,
+    fixedPrice: false,
+    guildReceipts: false,
+    directTrade: false,
+    auctions: false,
+    cashout: false,
+    reason: 'market-trade-and-real-value-systems-are-out-of-scope-for-unity-shared-room-v1'
+  },
+  edgeFunctions: {
+    unityAuth: 'mochi-social-unity-auth',
+    action: 'mochi-social-alpha-action',
+    progress: 'mochi-social-alpha-progress',
+    feedback: 'submit-mochi-social-feedback'
+  },
+  avatarUploads: false
+} as const;
+
 export interface GameManifest {
   name: 'Mochi Social';
   slug: 'mochi-social';
   version: string;
+  engine: typeof UNITY_SHARED_ROOM_CONTRACT.engine;
   origin: string;
   playUrl: string;
   embedUrl: string;
   healthUrl: string;
+  room: typeof UNITY_SHARED_ROOM_CONTRACT.room;
+  runtime: typeof UNITY_SHARED_ROOM_CONTRACT.runtime;
+  state: typeof UNITY_SHARED_ROOM_CONTRACT.state;
+  characterPresets: typeof UNITY_SHARED_ROOM_CONTRACT.characterPresets;
+  sharedPet: typeof UNITY_SHARED_ROOM_CONTRACT.sharedPet;
+  avatarUploads: typeof UNITY_SHARED_ROOM_CONTRACT.avatarUploads;
+  edgeFunctions: typeof UNITY_SHARED_ROOM_CONTRACT.edgeFunctions;
   bridge: {
     protocolVersion: number;
     namespace: 'MOCHI_SOCIAL';
@@ -300,7 +365,7 @@ export interface GameManifest {
   alpha: typeof ALPHA_FEATURES.alpha;
   economy: typeof ALPHA_FEATURES.economy;
   chain: typeof ALPHA_FEATURES.chain;
-  market: typeof ALPHA_FEATURES.market;
+  market: typeof UNITY_SHARED_ROOM_CONTRACT.market;
   gameplay: typeof ALPHA_FEATURES.gameplay;
   ugc: typeof ALPHA_FEATURES.ugc;
   routes: typeof MANIFEST_CONTRACTS.routes;
@@ -342,6 +407,7 @@ export function createGameManifest(origin: string, version = '0.1.0'): GameManif
       tokenPolicy: 'access-token-only'
     },
     ...ALPHA_FEATURES,
-    ...MANIFEST_CONTRACTS
+    ...MANIFEST_CONTRACTS,
+    ...UNITY_SHARED_ROOM_CONTRACT
   };
 }
