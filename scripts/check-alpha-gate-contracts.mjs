@@ -46,9 +46,15 @@ assertSnippets('sync approval', syncApproval, [
 ]);
 
 assertSnippets('preview ready', previewReady, [
+  'Mochi Social Alpha Preview Ready local game audit',
+  'Unity-first report proves the deployable local game runtime only',
   "fundedChainRequiredForPreview: false",
-  "preview-live-gates are not green",
-  "hosted contract checks have not been explicitly approved/run"
+  "hostedChecksPerformed: false",
+  "providerMutationPerformed: false",
+  "preview.unity-verify",
+  "preview.build-release",
+  "preview.unity-required-smoke",
+  "preview.load-smoke-report"
 ]);
 
 assertSnippets('RC audit', rcAudit, [

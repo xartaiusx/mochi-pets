@@ -2149,7 +2149,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-preview-ready.mjs',
-    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.local-site-iframe', 'preview.responsive-site-iframe', 'alpha-site-iframe-responsive.json', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true', 'siteIframeResults', '/games/mochi-social', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review']
+    includes: ['Mochi Social Alpha Preview Ready local game audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'Unity-first report proves the deployable local game runtime only', 'fundedChainRequiredForPreview: false', 'hostedChecksPerformed: false', 'providerMutationPerformed: false', 'preview.unity-verify', 'preview.build-release', 'preview.built-server-smoke', 'preview.unity-required-smoke', 'preview.load-smoke-report', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL', 'MOCHI_SOCIAL_LOAD_PLAYERS', 'preview.game-branch-sync', 'preview.site-branch-sync']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',
