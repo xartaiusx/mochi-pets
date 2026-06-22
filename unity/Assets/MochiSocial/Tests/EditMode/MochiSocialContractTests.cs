@@ -40,6 +40,16 @@ namespace MochiSocial.Tests
         }
 
         [Test]
+        public void LocalSocialSignalsStayCuratedAndSessionOnly()
+        {
+            Assert.That(LocalSocialSignalCatalog.All.Count, Is.EqualTo(3));
+            Assert.That(LocalSocialSignalCatalog.TryGetSignal("settling-in", out _), Is.True);
+            Assert.That(LocalSocialSignalCatalog.TryGetSignal("caring-for-lirabao", out _), Is.True);
+            Assert.That(LocalSocialSignalCatalog.TryGetSignal("waving", out _), Is.True);
+            Assert.That(LocalSocialSignalCatalog.TryGetSignal("custom-chat-upload", out _), Is.False);
+        }
+
+        [Test]
         public void CharacterStateRejectsInvalidPresetIds()
         {
             var invalid = CharacterPresetCatalog.CreateDefault();

@@ -39,6 +39,9 @@ const checks = [
       'Choose a character preset.',
       'Choose your character.',
       'Saved play uses one of these curated Mochirii presets.',
+      'Room signal',
+      'Status:',
+      '1 Settling in  |  2 Caring  |  3 Waving',
       'Signing into Mochi Social.',
       'Sign-in failed.',
       'Signed out of Mochi Social.',
@@ -49,6 +52,19 @@ const checks = [
       /Unity auth failed/i,
       /Signed out of Unity services/i,
       /Shared pet Cloud Code/i
+    ]
+  },
+  {
+    file: 'unity/Assets/MochiSocial/Scripts/Data/LocalSocialSignalCatalog.cs',
+    includes: [
+      'settling-in',
+      'Caring for Lirabao',
+      'Waving hello'
+    ],
+    forbidden: [
+      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
+      /\b(?:market|trade|trading|cashout)\b/i
     ]
   },
   {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MochiSocial.Auth;
 using MochiSocial.Bridge;
@@ -30,6 +31,9 @@ namespace MochiSocial.Runtime
         private bool characterCreationRequired;
         private bool characterCreationBusy;
         private string characterCreationMessage = "Choose a character preset.";
+        private string localSocialSignalLabel = "Settling in";
+        private readonly List<string> localSocialFeed = new List<string> { "Room signal ready." };
+        private const int MaxLocalSocialFeedLines = 4;
 
         private void Awake()
         {
@@ -81,6 +85,42 @@ namespace MochiSocial.Runtime
             if (!lirabao.TryApplyLocalInteraction(interactionType, playerId, lirabao.CurrentState.revision, out var error))
             {
                 bridge.EmitError(error, "Lirabao did not accept that interaction.");
+                return;
+            }
+
+            var normalized = (interactionType ?? string.Empty).Trim().ToLowerInvariant();
+            if (normalized == "care")
+            {
+                SetLocalSocialSignal("caring-for-lirabao");
+            }
+            else if (normalized == "wave")
+            {
+                SetLocalSocialSignal("waving");
+            }
+            else if (normalized == "approach")
+            {
+                AppendLocalSocialFeed("You approach Lirabao.");
+            }
+        }
+
+        private void Update()
+        {
+            if (characterCreationRequired || roomSession?.CurrentSession == null)
+            {
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                SetLocalSocialSignal("settling-in");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                SetLocalSocialSignal("caring-for-lirabao");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                SetLocalSocialSignal("waving");
             }
         }
 
@@ -131,6 +171,7 @@ namespace MochiSocial.Runtime
                 characterCreationRequired = true;
                 characterCreationBusy = false;
                 characterCreationMessage = "Choose a character preset.";
+                SetLocalSocialSignal("settling-in");
                 SpawnLocalPreviewAvatar(CharacterPresetCatalog.CreateDefault(AuthenticationService.Instance.PlayerId));
                 bridge.EmitAuthState("creating-character", "Choose your character.");
             }
@@ -199,6 +240,7 @@ namespace MochiSocial.Runtime
                 characterCreationRequired = false;
                 characterCreationBusy = false;
                 SpawnLocalPreviewAvatar(characterState);
+                SetLocalSocialSignal("settling-in");
                 await EnterSharedRoomAsync();
                 bridge.EmitAuthState("signed-in", $"Joined Jade Lantern Room as {preset.label}.", unityPlayerId);
             }
@@ -290,13 +332,48 @@ namespace MochiSocial.Runtime
             }
         }
 
-        private void OnGUI()
+        private void SetLocalSocialSignal(string signalId)
         {
-            if (!characterCreationRequired)
+            if (!LocalSocialSignalCatalog.TryGetSignal(signalId, out var signal))
+            {
+                bridge.EmitError("invalid_social_signal", "Choose one of the room signals.");
+                return;
+            }
+
+            localSocialSignalLabel = signal.label;
+            AppendLocalSocialFeed($"Signal: {signal.label}.");
+        }
+
+        private void AppendLocalSocialFeed(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
             {
                 return;
             }
 
+            localSocialFeed.Add(message);
+            while (localSocialFeed.Count > MaxLocalSocialFeedLines)
+            {
+                localSocialFeed.RemoveAt(0);
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (characterCreationRequired)
+            {
+                DrawCharacterCreationPanel();
+                return;
+            }
+
+            if (roomSession?.CurrentSession != null)
+            {
+                DrawLocalSocialSignalPanel();
+            }
+        }
+
+        private void DrawCharacterCreationPanel()
+        {
             var width = Mathf.Min(420f, Mathf.Max(260f, Screen.width - 32f));
             var rect = new Rect((Screen.width - width) * 0.5f, 24f, width, 220f);
             GUILayout.BeginArea(rect, GUI.skin.box);
@@ -314,6 +391,33 @@ namespace MochiSocial.Runtime
 
             GUI.enabled = true;
             GUILayout.Label("Saved play uses one of these curated Mochirii presets.");
+            GUILayout.EndArea();
+        }
+
+        private void DrawLocalSocialSignalPanel()
+        {
+            var width = Mathf.Min(360f, Mathf.Max(260f, Screen.width - 32f));
+            var height = 210f;
+            var rect = new Rect(16f, Mathf.Max(24f, Screen.height - height - 16f), width, height);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+            GUILayout.Label("Room signal");
+            GUILayout.Label($"Status: {localSocialSignalLabel}");
+            GUILayout.Label($"Room: {roomSession?.CurrentSession?.PlayerCount ?? 1}/{MochiSocialConstants.RoomCapacity}");
+            GUILayout.Label("1 Settling in  |  2 Caring  |  3 Waving");
+
+            foreach (var signal in LocalSocialSignalCatalog.All)
+            {
+                if (GUILayout.Button(signal.label, GUILayout.Height(28f)))
+                {
+                    SetLocalSocialSignal(signal.id);
+                }
+            }
+
+            foreach (var line in localSocialFeed)
+            {
+                GUILayout.Label(line);
+            }
+
             GUILayout.EndArea();
         }
 
