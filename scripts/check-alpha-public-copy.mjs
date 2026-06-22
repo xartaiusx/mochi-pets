@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const blockedToolReferencePattern = new RegExp(`\\b(?:${
   [
     ['Co', 'dex'].join(''),
+    ['A', 'I'].join(''),
     ['Open', 'A', 'I'].join(''),
     ['L', 'L', 'M'].join(''),
     ['ag', 'ent'].join(''),
@@ -29,6 +30,28 @@ const checks = [
       /\bpublic[- ](?:launch|release)\b/i,
       /\bwider release\b/i,
       /\b(?:Distributed Authority|Cloud Save|Edge Function|Unity Custom ID)\b/i
+    ]
+  },
+  {
+    file: 'docs/README.md',
+    includes: [
+      'shared guild room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'no real value',
+      'Player-Facing Playtest Docs',
+      'tester page',
+      'public game UI'
+    ],
+    forbidden: [
+      blockedToolReferencePattern,
+      /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
+      /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
+      /\bpublic[- ](?:launch|release)\b/i,
+      /\bwider release\b/i,
+      /\b(?:Distributed Authority|Cloud Save|Edge Function|Unity Custom ID)\b/i,
+      /\b(?:operator|ledger)\b/i
     ]
   },
   {
