@@ -15,7 +15,9 @@ const checks = [
     forbidden: [
       /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
-      /\b(?:market|trade|trading|cashout)\b/i,
+      /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
+      /\bpublic[- ](?:launch|release)\b/i,
+      /\bwider release\b/i,
       /\b(?:Distributed Authority|Cloud Save|Edge Function|Unity Custom ID)\b/i
     ]
   },
@@ -67,7 +69,9 @@ const checks = [
     forbidden: [
       /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
-      /\b(?:market|trade|trading|cashout)\b/i
+      /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
+      /\bpublic[- ](?:launch|release)\b/i,
+      /\bwider release\b/i
     ]
   },
   {
@@ -81,7 +85,9 @@ const checks = [
     forbidden: [
       /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
-      /\b(?:market|trade|trading|cashout)\b/i
+      /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
+      /\bpublic[- ](?:launch|release)\b/i,
+      /\bwider release\b/i
     ]
   },
   {
@@ -96,7 +102,9 @@ const checks = [
     forbidden: [
       /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
-      /\b(?:market|trade|trading|cashout)\b/i
+      /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
+      /\bpublic[- ](?:launch|release)\b/i,
+      /\bwider release\b/i
     ]
   }
 ];

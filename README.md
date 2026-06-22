@@ -13,7 +13,7 @@ Approved members enter one 3D room, create a curated character, meet Lirabao, ca
 - Member sign-in for saved character and pet progress.
 - Tester password page before entry on the live site.
 
-Not included in this playtest: avatar uploads, multiple rooms, buying or selling, paid item value, mobile-specific play, or public release features.
+Not included in this playtest: avatar uploads, multiple rooms, paid item value, mobile-specific play, or features outside the closed guild room.
 
 ## Local Development
 
