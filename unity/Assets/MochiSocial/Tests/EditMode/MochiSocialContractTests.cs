@@ -161,6 +161,34 @@ namespace MochiSocial.Tests
         }
 
         [Test]
+        public void SharedPetUnavailableStateIsValid()
+        {
+            var unavailable = SharedPetState.CreateUnavailable();
+
+            Assert.That(unavailable.IsValid(), Is.True);
+            Assert.That(unavailable.state, Is.EqualTo("unavailable"));
+            Assert.That(unavailable.mood, Is.EqualTo("resting"));
+        }
+
+        [Test]
+        public void SharedPetStaleReloadStateIsValidAndKeepsRevision()
+        {
+            var pet = SharedPetState.CreateDefault();
+            pet.revision = 7;
+            pet.careMeter = 72;
+            pet.lastInteractionBy = "tester-a";
+
+            var reload = SharedPetState.CreateStaleRevisionReload(pet);
+
+            Assert.That(reload.IsValid(), Is.True);
+            Assert.That(reload.state, Is.EqualTo("stale_revision_reload"));
+            Assert.That(reload.mood, Is.EqualTo("reloading"));
+            Assert.That(reload.revision, Is.EqualTo(pet.revision));
+            Assert.That(reload.careMeter, Is.EqualTo(pet.careMeter));
+            Assert.That(reload.lastInteractionBy, Is.EqualTo(pet.lastInteractionBy));
+        }
+
+        [Test]
         public void SharedPetRejectsUnknownStateNames()
         {
             var pet = SharedPetState.CreateDefault();

@@ -65,6 +65,24 @@ namespace MochiSocial.Data
             };
         }
 
+        public static SharedPetState CreateUnavailable()
+        {
+            return new SharedPetState
+            {
+                mood = "resting",
+                state = "unavailable",
+                lastInteractionUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+        }
+
+        public static SharedPetState CreateStaleRevisionReload(SharedPetState current)
+        {
+            var next = current != null && current.IsValid() ? current.Clone() : CreateDefault();
+            next.mood = "reloading";
+            next.state = "stale_revision_reload";
+            return next;
+        }
+
         public SharedPetState Clone()
         {
             return new SharedPetState

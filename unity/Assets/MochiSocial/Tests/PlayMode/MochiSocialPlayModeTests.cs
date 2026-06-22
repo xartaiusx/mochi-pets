@@ -41,5 +41,23 @@ namespace MochiSocial.Tests
             Object.Destroy(petObject);
             yield return null;
         }
+
+        [UnityTest]
+        public IEnumerator LirabaoShowsUnavailableAndStaleReloadStates()
+        {
+            var petObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var pet = petObject.AddComponent<LirabaoPetController>();
+
+            pet.ShowUnavailable();
+            Assert.That(pet.CurrentState.state, Is.EqualTo("unavailable"));
+            Assert.That(pet.CurrentState.mood, Is.EqualTo("resting"));
+
+            pet.ShowStaleRevisionReload();
+            Assert.That(pet.CurrentState.state, Is.EqualTo("stale_revision_reload"));
+            Assert.That(pet.CurrentState.mood, Is.EqualTo("reloading"));
+
+            Object.Destroy(petObject);
+            yield return null;
+        }
     }
 }

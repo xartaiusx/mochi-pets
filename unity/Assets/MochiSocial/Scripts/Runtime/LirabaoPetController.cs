@@ -10,6 +10,8 @@ namespace MochiSocial.Runtime
         [SerializeField] private Color idleColor = new Color(0.98f, 0.82f, 0.86f);
         [SerializeField] private Color happyColor = new Color(1.00f, 0.72f, 0.58f);
         [SerializeField] private Color curiousColor = new Color(0.77f, 0.95f, 0.86f);
+        [SerializeField] private Color reloadColor = new Color(0.74f, 0.80f, 0.96f);
+        [SerializeField] private Color unavailableColor = new Color(0.66f, 0.68f, 0.70f);
 
         private Vector3 startPosition;
 
@@ -43,6 +45,16 @@ namespace MochiSocial.Runtime
             ApplyVisualState();
         }
 
+        public void ShowStaleRevisionReload()
+        {
+            SetState(SharedPetState.CreateStaleRevisionReload(CurrentState));
+        }
+
+        public void ShowUnavailable()
+        {
+            SetState(SharedPetState.CreateUnavailable());
+        }
+
         public bool TryApplyLocalInteraction(string interactionType, string actorId, long expectedRevision, out string error)
         {
             if (!SharedPetState.TryApplyInteraction(CurrentState, interactionType, actorId, expectedRevision, out var updated, out error))
@@ -67,13 +79,19 @@ namespace MochiSocial.Runtime
                 return;
             }
 
-            var targetColor = CurrentState.mood switch
+            var targetColor = CurrentState.state switch
             {
-                "comforted" => happyColor,
-                "playful" => happyColor,
-                "curious" => curiousColor,
-                _ => idleColor
+                "stale_revision_reload" => reloadColor,
+                "unavailable" => unavailableColor,
+                _ => CurrentState.mood switch
+                {
+                    "comforted" => happyColor,
+                    "playful" => happyColor,
+                    "curious" => curiousColor,
+                    _ => idleColor
+                }
             };
+
             bodyRenderer.sharedMaterial.color = targetColor;
         }
     }

@@ -46,7 +46,9 @@ const checks = [
       'Signing into Mochi Social.',
       'Sign-in failed.',
       'Signed out of Mochi Social.',
-      'Shared Lirabao state could not be loaded'
+      'Shared Lirabao state could not be loaded',
+      'Lirabao is resting. Try again soon.',
+      "Another tester cared for Lirabao first. The room refreshed Lirabao's latest mood."
     ],
     forbidden: [
       /Signing into Unity services/i,

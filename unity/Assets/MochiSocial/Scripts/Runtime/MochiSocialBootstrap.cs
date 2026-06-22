@@ -293,7 +293,8 @@ namespace MochiSocial.Runtime
             catch (Exception ex)
             {
                 Debug.LogWarning($"[Mochi Social] Shared Lirabao state could not be loaded: {ex.Message}");
-                lirabao.SetState(SharedPetState.CreateDefault());
+                lirabao.ShowUnavailable();
+                bridge.EmitError("shared_pet_unavailable", "Lirabao is resting. Try again soon.");
             }
         }
 
@@ -312,8 +313,9 @@ namespace MochiSocial.Runtime
             }
             catch (Exception ex) when (ex.Message.Contains("shared_pet_revision_conflict", StringComparison.OrdinalIgnoreCase))
             {
+                lirabao.ShowStaleRevisionReload();
+                bridge.EmitError("shared_pet_revision_conflict", "Another tester cared for Lirabao first. The room refreshed Lirabao's latest mood.");
                 await LoadSharedPetOrDefaultAsync();
-                bridge.EmitError("shared_pet_revision_conflict", "Lirabao changed for another tester first. The shared pet state was reloaded.");
             }
             catch (Exception ex)
             {
