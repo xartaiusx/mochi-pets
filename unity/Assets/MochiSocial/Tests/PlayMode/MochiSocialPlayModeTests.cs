@@ -59,5 +59,41 @@ namespace MochiSocial.Tests
             Object.Destroy(petObject);
             yield return null;
         }
+
+        [UnityTest]
+        public IEnumerator AvatarAppliesCuratedCharacterAppearanceBeforeNetworkSpawn()
+        {
+            var avatarObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            avatarObject.AddComponent<CharacterController>();
+            var avatar = avatarObject.AddComponent<MochiAvatarController>();
+            CharacterPresetCatalog.TryGetPreset("lotus_guardian", out var preset);
+            var state = CharacterPresetCatalog.FromPreset(preset, "tester", Vector3.zero, 0);
+
+            var accepted = avatar.ApplyCharacterState(state);
+
+            Assert.That(accepted, Is.True);
+            Assert.That(avatar.AcceptsLocalInput, Is.True);
+            Assert.That(avatar.CurrentPresetId, Is.EqualTo("lotus_guardian"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(avatar.CurrentPrimaryColor), Is.EqualTo(state.primaryColor));
+            Object.Destroy(avatarObject);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator AvatarRejectsInvalidCharacterPresetState()
+        {
+            var avatarObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            avatarObject.AddComponent<CharacterController>();
+            var avatar = avatarObject.AddComponent<MochiAvatarController>();
+            var invalid = CharacterPresetCatalog.CreateDefault();
+            invalid.presetId = "avatar_upload";
+
+            var accepted = avatar.ApplyCharacterState(invalid);
+
+            Assert.That(accepted, Is.False);
+            Assert.That(avatar.CurrentPresetId, Is.EqualTo("jade_wayfarer"));
+            Object.Destroy(avatarObject);
+            yield return null;
+        }
     }
 }

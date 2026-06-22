@@ -7,6 +7,7 @@ using MochiSocial.Core;
 using MochiSocial.Data;
 using MochiSocial.Networking;
 using MochiSocial.Services;
+using Unity.Netcode;
 using Unity.Services.Authentication;
 using UnityEngine;
 
@@ -30,6 +31,7 @@ namespace MochiSocial.Runtime
         private bool authInFlight;
         private bool characterCreationRequired;
         private bool characterCreationBusy;
+        private bool networkAvatarAdopted;
         private string characterCreationMessage = "Choose a character preset.";
         private string localSocialSignalLabel = "Settling in";
         private readonly List<string> localSocialFeed = new List<string> { "Room signal ready." };
@@ -105,6 +107,11 @@ namespace MochiSocial.Runtime
 
         private void Update()
         {
+            if (roomSession?.CurrentSession != null && characterState != null && !networkAvatarAdopted)
+            {
+                TryAdoptNetworkPlayerAvatar();
+            }
+
             if (characterCreationRequired || roomSession?.CurrentSession == null)
             {
                 return;
@@ -200,6 +207,7 @@ namespace MochiSocial.Runtime
             unityPlayerId = null;
             characterCreationRequired = false;
             characterCreationBusy = false;
+            networkAvatarAdopted = false;
             bridge.EmitAuthState("signed-out", "Signed out of Mochi Social.");
         }
 
@@ -231,6 +239,7 @@ namespace MochiSocial.Runtime
         private async Task EnterSharedRoomAsync()
         {
             await roomSession.JoinSharedRoomAsync();
+            TryAdoptNetworkPlayerAvatar();
             await LoadSharedPetOrDefaultAsync();
         }
 
@@ -338,13 +347,64 @@ namespace MochiSocial.Runtime
             var spawn = state?.lastSpawnPoint ?? (spawnPoint == null ? Vector3.zero : spawnPoint.position);
             localAvatar = Instantiate(avatarPrefab, spawn, Quaternion.identity);
             localAvatar.name = "Local Mochirii Avatar";
-            ApplyAvatarColors(localAvatar, state);
+            ApplyAvatarAppearance(localAvatar, state);
             cameraFollow?.SetTarget(localAvatar.transform);
+            networkAvatarAdopted = false;
         }
 
-        private static void ApplyAvatarColors(GameObject avatar, CharacterState state)
+        private bool TryAdoptNetworkPlayerAvatar()
+        {
+            var networkAvatar = FindLocalNetworkAvatar();
+            if (networkAvatar == null)
+            {
+                return false;
+            }
+
+            if (localAvatar != null && localAvatar != networkAvatar && !IsSpawnedNetworkAvatar(localAvatar))
+            {
+                Destroy(localAvatar);
+            }
+
+            localAvatar = networkAvatar;
+            localAvatar.name = "Local Mochirii Avatar";
+            if (characterState != null)
+            {
+                localAvatar.transform.position = characterState.lastSpawnPoint;
+            }
+
+            ApplyAvatarAppearance(localAvatar, characterState);
+            cameraFollow?.SetTarget(localAvatar.transform);
+            networkAvatarAdopted = true;
+            return true;
+        }
+
+        private static GameObject FindLocalNetworkAvatar()
+        {
+            var manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsListening)
+            {
+                return null;
+            }
+
+            var playerObject = manager.LocalClient?.PlayerObject ?? manager.SpawnManager?.GetLocalPlayerObject();
+            return playerObject == null ? null : playerObject.gameObject;
+        }
+
+        private static bool IsSpawnedNetworkAvatar(GameObject avatar)
+        {
+            var networkObject = avatar == null ? null : avatar.GetComponent<NetworkObject>();
+            return networkObject != null && networkObject.IsSpawned;
+        }
+
+        private static void ApplyAvatarAppearance(GameObject avatar, CharacterState state)
         {
             if (avatar == null || state == null)
+            {
+                return;
+            }
+
+            var controller = avatar.GetComponent<MochiAvatarController>();
+            if (controller != null && controller.ApplyCharacterState(state))
             {
                 return;
             }

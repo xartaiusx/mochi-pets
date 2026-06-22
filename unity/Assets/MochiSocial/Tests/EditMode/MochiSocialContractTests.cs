@@ -25,6 +25,10 @@ namespace MochiSocial.Tests
             Assert.That(CharacterPresetCatalog.TryGetPreset("jade_wayfarer", out _), Is.True);
             Assert.That(CharacterPresetCatalog.TryGetPreset("avatar_upload", out _), Is.False);
             Assert.That(CharacterPresetCatalog.TryGetPreset("../custom", out _), Is.False);
+            Assert.That(CharacterPresetCatalog.TryGetPresetIndex("lotus_guardian", out var presetIndex), Is.True);
+            Assert.That(CharacterPresetCatalog.TryGetPresetAt(presetIndex, out var indexedPreset), Is.True);
+            Assert.That(indexedPreset.id, Is.EqualTo("lotus_guardian"));
+            Assert.That(CharacterPresetCatalog.TryGetPresetAt(99, out _), Is.False);
         }
 
         [Test]

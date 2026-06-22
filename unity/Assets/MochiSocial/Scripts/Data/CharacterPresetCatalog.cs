@@ -51,6 +51,33 @@ namespace MochiSocial.Data
             return preset != null;
         }
 
+        public static bool TryGetPresetAt(int index, out CharacterPreset preset)
+        {
+            if (index < 0 || index >= Presets.Length)
+            {
+                preset = null;
+                return false;
+            }
+
+            preset = Presets[index];
+            return true;
+        }
+
+        public static bool TryGetPresetIndex(string presetId, out int index)
+        {
+            for (var candidateIndex = 0; candidateIndex < Presets.Length; candidateIndex += 1)
+            {
+                if (string.Equals(Presets[candidateIndex].id, presetId, StringComparison.Ordinal))
+                {
+                    index = candidateIndex;
+                    return true;
+                }
+            }
+
+            index = -1;
+            return false;
+        }
+
         public static CharacterState CreateDefault(string displayNameReference = "member-display-name")
         {
             var preset = Presets[0];

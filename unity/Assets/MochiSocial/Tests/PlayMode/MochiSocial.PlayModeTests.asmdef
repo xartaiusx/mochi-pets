@@ -2,7 +2,8 @@
   "name": "MochiSocial.PlayModeTests",
   "rootNamespace": "MochiSocial.Tests",
   "references": [
-    "MochiSocial.Runtime"
+    "MochiSocial.Runtime",
+    "Unity.Netcode.Runtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
