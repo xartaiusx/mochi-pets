@@ -9,9 +9,11 @@ describe('Express runtime entry', () => {
     expect(expressEntrySource).toContain('const strictIntegrationJson = express.json({ limit: integrationJsonLimit });');
     expect(expressEntrySource).not.toContain('app.use(express.json');
 
-    for (const route of ['/integration/alpha/action', '/integration/alpha/enjin/submit', '/integration/auth/verify']) {
+    for (const route of ['/integration/alpha/action', '/integration/auth/verify']) {
       expect(expressEntrySource).toContain(`app.post('${route}', strictIntegrationJson,`);
     }
+    expect(expressEntrySource).not.toContain("app.post('/integration/alpha/enjin/submit'");
+    expect(expressEntrySource).not.toContain('MOCHI_SOCIAL_ENABLE_FUTURE_CHAIN_ROUTES');
     expect(expressEntrySource).toContain("app.get('/integration/alpha/progress', async (req, res) => {");
     expect(expressEntrySource).toContain('forwardAlphaProgress(authResult.userId)');
     expect(expressEntrySource).toContain('buildAlphaProgressRequest(playerId)');

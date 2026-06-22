@@ -94,7 +94,7 @@ export const MANIFEST_CONTRACTS = {
     world: 'Mochirii',
     room: 'Jade Lantern Room',
     sharedPet: 'Lirabao',
-    artDirection: 'Cozy Wushu 3D'
+    artDirection: 'Mochirii courtyard 3D'
   },
   gameplay: {
     scope: 'single-shared-room',

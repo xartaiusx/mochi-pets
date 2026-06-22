@@ -47,7 +47,7 @@ The Supabase audit mirror is optional until provider setup is approved. If enabl
 
 ## Visual Reference Authority
 
-The blockout uses project-authored primitives and materials. Visual direction should stay in the Cozy Wushu / Jade Lantern Room lane, with external references used only as architecture and atmosphere references:
+The blockout uses project-authored primitives and materials. Visual direction should stay in the Mochirii courtyard / Jade Lantern Room lane, with external references used only as architecture and atmosphere references:
 
 - The Met Astor Chinese Garden Court
 - UNESCO Classical Gardens of Suzhou

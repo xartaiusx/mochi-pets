@@ -1045,11 +1045,11 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/manifest.ts',
-    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "scene: 'JadeLanternRoom'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "artDirection: 'Cozy Wushu 3D'", "scope: 'single-shared-room'", "integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action']"]
+    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "scene: 'JadeLanternRoom'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "artDirection: 'Mochirii courtyard 3D'", "scope: 'single-shared-room'", "integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action']"]
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "key: 'jade-lantern-room-alpha'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "'unity.pet.interaction'", "'unity.pet.state_saved'", 'future_asset_route_disabled', 'MOCHI_SOCIAL_ENABLE_FUTURE_CHAIN_ROUTES']
+    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "key: 'jade-lantern-room-alpha'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "'unity.pet.interaction'", "'unity.pet.state_saved'", "'unity.room.joined'", "'unity.room.left'"]
   },
   {
     file: 'apps/game/src/integration/enjin-canary.ts',
@@ -2168,7 +2168,6 @@ const unityPreviewReadinessChecks = [
       '/integration/alpha/status',
       '/integration/alpha/progress',
       '/integration/alpha/action',
-      '/integration/alpha/enjin/submit',
       "alphaStopPoint: 'alpha-preview-ready'",
       "source: 'local-alpha-ledger'",
       'UNITY_SHARED_ROOM_CONTRACT',
@@ -2194,9 +2193,7 @@ const unityPreviewReadinessChecks = [
       'unity.pet.interaction',
       'unity.pet.state_saved',
       'unity.room.joined',
-      'unity.room.left',
-      'requireGameServerToken',
-      'confirmNoRealValue'
+      'unity.room.left'
     ]
   },
   {

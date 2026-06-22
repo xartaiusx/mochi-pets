@@ -90,7 +90,7 @@ async function run() {
   assert(manifest.body.progress?.snapshotEndpoint === '/integration/alpha/progress', 'Built server manifest must expose the local progress snapshot endpoint.');
   assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Built server manifest must declare zero restricted-source references.');
   assert(manifest.body.cleanRoom?.copiedRestrictedSourceAssets === false, 'Built server manifest must declare zero copied restricted-source assets.');
-  assert(manifest.body.brand?.artDirection === 'Cozy Wushu 3D', 'Built server manifest must expose Cozy Wushu 3D art direction.');
+  assert(manifest.body.brand?.artDirection === 'Mochirii courtyard 3D', 'Built server manifest must expose Mochirii courtyard 3D art direction.');
   assert(manifest.body.sharedPet?.states?.includes('care_received'), 'Built server manifest must expose Lirabao care state.');
   assert(!('playableContent' in manifest.body), 'Built server manifest must not expose legacy playable content catalog.');
   assert(!('chainRuntime' in manifest.body), 'Built server manifest must not expose future chain runtime state.');
