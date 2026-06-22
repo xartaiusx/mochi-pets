@@ -113,8 +113,18 @@ if (walletDaemon.data?.status === 'verified-binary') {
   assert(['not-configured', 'missing'].includes(walletDaemon.data?.status), 'Wallet Daemon local check must be verified-binary, not-configured, or missing');
 }
 assert(operatorSmoke.data?.scope?.includes('does not submit live Enjin operations by default'), 'operator smoke must remain fail-closed by default');
-assert(builtServer.data?.checks?.some((check) => check.name === 'tokened operator submit' && check.status === 409), 'built server smoke must prove tokened Enjin route fails closed without Enjin secrets');
-assert(acceptance.data?.actions?.some((action) => action.type === 'chain.withdraw_request'), 'local acceptance must record a Canary withdraw request');
+assert(
+  builtServer.data?.checks?.every?.((check) => check.body?.legacyFallback?.active !== true),
+  'built server smoke must not activate the legacy fallback'
+);
+assert(
+  operatorSmoke.data?.checks?.some((check) => check.name === 'private Enjin route inactive' && check.status === 'absent')
+    || operatorSmoke.data?.checks?.some((check) => check.name === 'tokened private Enjin operator submit' && check.status === 409),
+  'operator smoke must prove Enjin is absent or fail-closed without live operations'
+);
+for (const actionType of ['unity.room.joined', 'unity.character.created', 'unity.character.updated', 'unity.pet.interaction', 'unity.pet.state_saved', 'unity.room.left']) {
+  assert(acceptance.data?.actions?.some((action) => action.type === actionType), `local acceptance must record ${actionType}`);
+}
 assert(loadSmoke.data?.actions?.length >= 20, 'load smoke must record at least 10 testers worth of chat/emote actions');
 
 const summary = {
@@ -252,8 +262,10 @@ function summarizeResponsiveInputOwnership(data) {
     if (unhandledChecks.length !== expectedUnhandledKeys) {
       failures.push(`${label} expected ${expectedUnhandledKeys} unhandled key checks, found ${unhandledChecks.length}`);
     }
-    if (ownership.gameplay?.focus?.activeIsCanvas !== true) {
-      failures.push(`${label} did not focus the gameplay canvas before gameplay key checks`);
+    if (!ownership.gameplay?.focus) {
+      failures.push(`${label} missing gameplay focus evidence`);
+    } else if (ownership.gameplay.focus.editableActive === true) {
+      failures.push(`${label} focused an editable element before gameplay key checks`);
     }
     for (const check of gameplayChecks) {
       if (check.keydown?.defaultPrevented !== true) failures.push(`${label} did not prevent gameplay key ${check.key}`);

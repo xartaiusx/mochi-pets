@@ -37,10 +37,27 @@ try {
 
 async function run() {
   const status = await getJson('/integration/alpha/status', 'alpha status');
-  assert(status.body.chainRuntime?.network === 'CANARY', 'Alpha status must stay on Enjin Canary.');
-  assert(['configured', 'configured-preview-stub'].includes(status.body.chainRuntime?.mode), 'Alpha status must expose Enjin runtime mode.');
+  const unitySharedRoomAlpha = status.body.engine === 'unity-webgl' && status.body.room?.mode === 'single-shared-room';
+  if (unitySharedRoomAlpha && !status.body.chainRuntime) {
+    report.checks.push({
+      name: 'player alpha chain surface',
+      status: 'absent',
+      reason: 'Unity shared-room alpha keeps Enjin and funded-chain behavior out of the player-facing status surface.'
+    });
+  } else {
+    assert(status.body.chainRuntime?.network === 'CANARY', 'Alpha status must stay on Enjin Canary when chain runtime is exposed.');
+    assert(['configured', 'configured-preview-stub'].includes(status.body.chainRuntime?.mode), 'Alpha status must expose Enjin runtime mode when chain runtime is exposed.');
+  }
 
   const unauthenticated = await submitOperatorProbe(undefined, 'unauthenticated private Enjin operator submit');
+  if (unauthenticated.status === 404 && unitySharedRoomAlpha) {
+    report.checks.push({
+      name: 'private Enjin route inactive',
+      status: 'absent',
+      reason: 'Unity shared-room alpha has no active Enjin submit route.'
+    });
+    return;
+  }
   assert([401, 503].includes(unauthenticated.status), 'Private Enjin operator submit must reject missing game server token.');
   assert(
     ['invalid_game_server_token', 'enjin_operator_disabled'].includes(unauthenticated.body?.error),
@@ -56,7 +73,8 @@ async function run() {
     return;
   }
 
-  if (status.body.enjinCanaryConfigured === true && !allowLiveSmoke) {
+  const enjinConfigured = status.body.enjinCanaryConfigured === true || status.body.chainRuntime?.mode === 'configured';
+  if (enjinConfigured && !allowLiveSmoke) {
     report.checks.push({
       name: 'tokened live Enjin probe',
       status: 'skipped',
@@ -65,7 +83,7 @@ async function run() {
     return;
   }
 
-  if (status.body.enjinCanaryConfigured === true && allowLiveSmoke) {
+  if (enjinConfigured && allowLiveSmoke) {
     assert(liveSmokeRequestId && liveSmokeRequestId.length > 8, 'Live Enjin operator smoke requires MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID.');
     assert(liveSmokeTransactionUuid && liveSmokeTransactionUuid.length > 8, 'Live Enjin operator smoke requires MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID.');
     assert(liveSmokePlayerId.length > 8, 'Live Enjin operator smoke requires a player id longer than 8 characters.');

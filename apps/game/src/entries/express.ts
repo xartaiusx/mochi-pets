@@ -1,7 +1,7 @@
 import express, { type Request } from 'express';
 import { createServer as createHttpServer } from 'node:http';
 import { existsSync } from 'node:fs';
-import { appendFile, mkdir } from 'node:fs/promises';
+import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRpgServerTransport } from '@rpgjs/server/node';
@@ -324,8 +324,12 @@ app.use('/parties', async (req, res, next) => {
 app.use('/map', express.static(mapDistDir, { index: false }));
 if (unityWebglBuildPresent) {
   app.use(express.static(unityWebglDir, { index: false }));
-  app.get(['/play', '/embed'], (_req, res) => {
-    res.sendFile(unityIndexHtml);
+  app.get(['/play', '/embed'], async (_req, res, next) => {
+    try {
+      res.type('html').send(await renderUnityIndexHtml());
+    } catch (error) {
+      next(error);
+    }
   });
 } else if (unityWebglRequired) {
   app.get(['/play', '/embed'], (_req, res) => {
@@ -406,6 +410,81 @@ function getUnityServingStatus() {
       active: !unityWebglBuildPresent && !unityWebglRequired
     }
   };
+}
+
+async function renderUnityIndexHtml() {
+  const html = await readFile(unityIndexHtml, 'utf8');
+  if (html.includes('data-mochi-social-unity-key-guard')) {
+    return html;
+  }
+
+  const injection = `<style data-mochi-social-unity-frame-style>
+html,
+body {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #231f20;
+}
+
+#unity-container,
+#unity-container.unity-desktop,
+#unity-container.unity-mobile {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  transform: none !important;
+}
+
+#unity-canvas {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  display: block;
+  outline: none;
+}
+
+#unity-footer {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 4;
+}
+</style>
+<script data-mochi-social-unity-key-guard>
+(() => {
+  const gameplayKeys = new Set(['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D', 'Enter', 'Space', ' ', 'Spacebar']);
+  function prepareCanvas() {
+    document.querySelectorAll('canvas').forEach((canvas) => {
+      if (canvas.getAttribute('tabindex') !== '0') canvas.setAttribute('tabindex', '0');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', prepareCanvas);
+  window.addEventListener('load', prepareCanvas);
+  window.setInterval(prepareCanvas, 1000);
+  function isEditable(element) {
+    const tag = String(element?.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || element?.isContentEditable === true;
+  }
+  function preventGameplayKey(event) {
+    if (!document.querySelector('canvas')) return;
+    if (isEditable(event.target) || isEditable(document.activeElement)) return;
+    if (gameplayKeys.has(event.key) || gameplayKeys.has(event.code)) event.preventDefault();
+  }
+  window.__mochiSocialUnityKeyGuard = { active: true };
+  window.addEventListener('keydown', preventGameplayKey, true);
+  document.addEventListener('keydown', preventGameplayKey, true);
+})();
+</script>`;
+
+  return html.includes('</body>')
+    ? html.replace('</body>', `${injection}</body>`)
+    : `${html}${injection}`;
 }
 
 function assertNoFutureSystemKeys(payload: unknown, label: string) {
