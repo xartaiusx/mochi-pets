@@ -32,6 +32,9 @@ jobs:
       - name: Alpha readiness
         run: npm run alpha:readiness
 
+      - name: Unity Cloud Code contract
+        run: npm run unity:cloud-code-contract
+
       - name: Alpha gate contracts
         run: npm run alpha:gate-contracts
 

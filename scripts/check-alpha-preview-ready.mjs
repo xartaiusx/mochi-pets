@@ -25,6 +25,7 @@ async function run() {
   }
 
   addCommandRequirement('preview.unity-verify', 'Unity EditMode, PlayMode, and WebGL build verification passed.', commandForPlatform('npm'), ['run', 'unity:verify']);
+  addCommandRequirement('preview.unity-cloud-code-contract', 'Unity Cloud Code shared-pet authority contract passed.', commandForPlatform('npm'), ['run', 'unity:cloud-code-contract']);
   addCommandRequirement('preview.build-release', 'Node 24 and Unity WebGL release build passed.', commandForPlatform('npm'), ['run', 'build:release']);
   addCommandRequirement('preview.built-server-smoke', 'Built server Unity WebGL smoke passed.', commandForPlatform('npm'), ['run', 'alpha:built-server-smoke']);
   await addUnityRequiredRuntimeSmokeRequirement();
@@ -82,6 +83,7 @@ function addStaticContractRequirement() {
   for (const snippet of [
     '"node": ">=24.17.0 <25"',
     '"unity:verify"',
+    '"unity:cloud-code-contract"',
     '"build:release"',
     '"alpha:built-server-smoke"',
     '"secret-scan"',

@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:public-copy"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"build:release"', '"unity:verify"', '"dev:legacy"', '"smoke"']
+    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:public-copy"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"build:release"', '"unity:cloud-code-contract"', '"unity:verify"', '"dev:legacy"', '"smoke"']
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
@@ -15,7 +15,11 @@ const checks = [
   },
   {
     file: '.github/workflows/ci.yml',
-    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:readiness', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:readiness', 'npm run unity:cloud-code-contract', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+  },
+  {
+    file: 'scripts/check-unity-cloud-code-contract.mjs',
+    includes: ['mochiSocialLoadSharedPet.js', 'mochiSocialInteractSharedPet.js', 'shared_pet_revision_conflict', 'invalid_pet_interaction', 'unity.pet.state_saved', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'Supabase mirror failure must not block the UGS primary save']
   },
   {
     file: 'Dockerfile',
@@ -2149,7 +2153,7 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-preview-ready.mjs',
-    includes: ['Mochi Social Alpha Preview Ready local game audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'Unity-first report proves the deployable local game runtime only', 'fundedChainRequiredForPreview: false', 'hostedChecksPerformed: false', 'providerMutationPerformed: false', 'preview.unity-verify', 'preview.build-release', 'preview.built-server-smoke', 'preview.unity-required-smoke', 'preview.load-smoke-report', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL', 'MOCHI_SOCIAL_LOAD_PLAYERS', 'preview.game-branch-sync', 'preview.site-branch-sync']
+    includes: ['Mochi Social Alpha Preview Ready local game audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'Unity-first report proves the deployable local game runtime only', 'fundedChainRequiredForPreview: false', 'hostedChecksPerformed: false', 'providerMutationPerformed: false', 'preview.unity-verify', 'preview.unity-cloud-code-contract', 'preview.build-release', 'preview.built-server-smoke', 'preview.unity-required-smoke', 'preview.load-smoke-report', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL', 'MOCHI_SOCIAL_LOAD_PLAYERS', 'preview.game-branch-sync', 'preview.site-branch-sync']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',

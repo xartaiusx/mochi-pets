@@ -24,6 +24,7 @@
     "unity:test:editmode": "node scripts/run-unity.mjs test-editmode",
     "unity:test:playmode": "node scripts/run-unity.mjs test-playmode",
     "unity:build:webgl": "node scripts/run-unity.mjs build-webgl",
+    "unity:cloud-code-contract": "node scripts/check-unity-cloud-code-contract.mjs",
     "unity:verify": "node scripts/run-unity.mjs verify",
     "start": "npm --workspace @mochi-social/game run start",
     "clean-room-scan": "node scripts/check-clean-room-literals.mjs",
