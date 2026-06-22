@@ -2281,6 +2281,114 @@ const unityPreviewReadinessChecks = [
       'assertNoFutureSystemKeys',
       "alphaStatus.body.runtime?.stateAuthority === 'ugs-cloud-save'"
     ]
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: [
+      'Unity WebGL two-tab room smoke',
+      'MOCHI_SOCIAL_BROWSER_EXECUTABLE',
+      'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
+      'reports/alpha-browser-presence.json',
+      '/integration/game-manifest.json',
+      "manifest.engine === 'unity-webgl'",
+      "manifest.activeRuntime === 'unity-webgl'",
+      "manifest.room?.mode === 'single-shared-room'",
+      "manifest.room?.capacity === 25",
+      "manifest.room?.sharedPetKey === 'lirabao'",
+      "manifest.legacyFallback?.active === false",
+      'unityWebglBuild',
+      'firstTab.goto(`${baseUrl}/embed?tab=one`',
+      'secondTab.goto(`${baseUrl}/embed?tab=two`',
+      'legacyHudAbsent',
+      'verifyTwoTabPulse',
+      'MOCHI_SOCIAL_LOCAL_MOVEMENT',
+      'changedAfterFirstTabMove',
+      'data-alpha-action="market.fixed_list"',
+      'data-alpha-action="trade.direct_offer"',
+      'data-alpha-action^="chain."'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: [
+      'Unity shared-room alpha',
+      'alpha-visual-review.json',
+      'alpha-visual-review.md',
+      'readGitState',
+      'manualPromptGate',
+      'pending-human-review',
+      'observerMovement',
+      'legacyHudAbsent',
+      'inputGuardPresent',
+      'noFutureEconomyCopy',
+      'sharedRoomRecognition',
+      'lirabaoRecognition',
+      'inputSafety',
+      'Lirabao',
+      'single-shared-room',
+      'Mochi Social local visual review bundle passed'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-local-evidence.mjs',
+    includes: [
+      'No-secret local Alpha RC evidence summary',
+      'alpha-local-evidence.json',
+      'alpha-local-evidence.md',
+      'readGitState',
+      'assertCurrentGitState',
+      'current HEAD',
+      'browser presence must prove observer-side movement',
+      'responsive gameplay must cover the required nine-viewport matrix',
+      'parent-iframe input ownership',
+      'visual snapshot canvas PNG must be non-empty',
+      'visual review must keep rendered prompt interaction as a manual pre-RC gate',
+      'Wallet Daemon local check must stay no-cost and metadata-only',
+      'built server smoke must not activate the legacy fallback',
+      'operator smoke must prove Enjin is absent or fail-closed without live operations',
+      'unity.room.joined',
+      'unity.character.created',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'focused an editable element before gameplay key checks',
+      'local-only'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-responsive-gameplay.mjs',
+    includes: [
+      'Local Unity WebGL responsive gameplay and input-scroll guard',
+      'alpha-responsive-gameplay.json',
+      'reports/responsive-gameplay',
+      'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE',
+      'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL',
+      'MOCHI_SOCIAL_TESTER_PASSWORD',
+      'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME',
+      '/games/mochi-social',
+      'local-only by default',
+      'viewports',
+      '1920',
+      '390',
+      '/play',
+      '/embed',
+      'parent iframe',
+      'siteIframeResults',
+      'gameplayKeys',
+      'legacyInteractionKeys',
+      'unhandledKeys',
+      'ArrowDown',
+      'Space',
+      'Enter',
+      'horizontalOverflow',
+      'legacyHudAbsent',
+      'legacyInteraction',
+      'inputOwnership',
+      'verifyInputOwnership',
+      'assertScrollUnchanged',
+      'verifyInputSurfaceStyles',
+      'firstKeydown',
+      'focusGameplayCanvas'
+    ]
   }
 ];
 
@@ -2289,7 +2397,11 @@ const legacyFeatureParityFiles = new Set([
   'apps/game/tests/manifest.test.ts',
   'apps/game/scripts/smoke.mjs',
   'scripts/check-local-alpha-acceptance.mjs',
-  'scripts/check-alpha-load-smoke.mjs'
+  'scripts/check-alpha-load-smoke.mjs',
+  'scripts/check-alpha-browser-presence.mjs',
+  'scripts/check-alpha-visual-review.mjs',
+  'scripts/check-alpha-local-evidence.mjs',
+  'scripts/check-alpha-responsive-gameplay.mjs'
 ]);
 
 const readinessChecks = [
