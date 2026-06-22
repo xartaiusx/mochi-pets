@@ -114,15 +114,23 @@ async function verifiesSupabaseMirrorPayloadAndFailOpenBehavior() {
   });
 
   assert(state.state === 'happy', 'wave must set happy state.');
-  assert(harness.axios.posts.length === 1, 'valid actor interactions must mirror one Supabase audit event when configured.');
-  const mirror = harness.axios.posts[0];
-  assert(mirror.url === 'https://example.functions.supabase.co/mochi-social-alpha-action', 'mirror must post to the configured Edge Function URL.');
-  assert(mirror.body.type === 'unity.pet.state_saved', 'mirror must use unity.pet.state_saved event type.');
-  assert(mirror.body.playerId === validActorId, 'mirror must attribute the Supabase actor.');
-  assert(mirror.body.payload.petKey === 'lirabao', 'mirror payload must use Lirabao key.');
-  assert(mirror.body.payload.roomKey === 'jade-lantern-room-alpha', 'mirror payload must use Jade Lantern room key.');
-  assert(mirror.body.payload.state.revision === 1, 'mirror payload must include the saved shared pet revision.');
-  assert(mirror.options.headers['x-mochi-social-server-token'] === 'local-server-token', 'mirror must use only the server token header.');
+  assert(harness.axios.posts.length === 2, 'valid actor interactions must mirror interaction and state-saved audit events when configured.');
+  const interactionMirror = harness.axios.posts[0];
+  const savedMirror = harness.axios.posts[1];
+  assert(interactionMirror.url === 'https://example.functions.supabase.co/mochi-social-alpha-action', 'interaction mirror must post to the configured Edge Function URL.');
+  assert(savedMirror.url === 'https://example.functions.supabase.co/mochi-social-alpha-action', 'state mirror must post to the configured Edge Function URL.');
+  assert(interactionMirror.body.type === 'unity.pet.interaction', 'mirror must record unity.pet.interaction before state save evidence.');
+  assert(savedMirror.body.type === 'unity.pet.state_saved', 'mirror must record unity.pet.state_saved event type.');
+  assert(interactionMirror.body.playerId === validActorId, 'interaction mirror must attribute the Supabase actor.');
+  assert(savedMirror.body.playerId === validActorId, 'state mirror must attribute the Supabase actor.');
+  assert(interactionMirror.body.payload.petKey === 'lirabao', 'interaction mirror payload must use Lirabao key.');
+  assert(savedMirror.body.payload.petKey === 'lirabao', 'state mirror payload must use Lirabao key.');
+  assert(interactionMirror.body.payload.roomKey === 'jade-lantern-room-alpha', 'interaction mirror payload must use Jade Lantern room key.');
+  assert(savedMirror.body.payload.roomKey === 'jade-lantern-room-alpha', 'state mirror payload must use Jade Lantern room key.');
+  assert(interactionMirror.body.payload.previousRevision === 0, 'interaction mirror must include previous shared pet revision.');
+  assert(savedMirror.body.payload.state.revision === 1, 'state mirror payload must include the saved shared pet revision.');
+  assert(interactionMirror.options.headers['x-mochi-social-server-token'] === 'local-server-token', 'interaction mirror must use only the server token header.');
+  assert(savedMirror.options.headers['x-mochi-social-server-token'] === 'local-server-token', 'state mirror must use only the server token header.');
 
   harness.cloudSave.storeSharedPet(defaultSharedPetState());
   harness.axios.failNext = true;
@@ -133,6 +141,7 @@ async function verifiesSupabaseMirrorPayloadAndFailOpenBehavior() {
     secretManager: harness.secretManager
   });
   assert(failOpenState.state === 'approach', 'Supabase mirror failure must not block the UGS primary save.');
+  assert(harness.axios.posts.length === 4, 'a failed interaction mirror must not prevent the state-saved mirror attempt.');
   assert(harness.logger.warns.some((message) => /audit mirror failed/i.test(message)), 'mirror failure must be logged without exposing secrets.');
 }
 

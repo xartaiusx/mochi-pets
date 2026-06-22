@@ -27,7 +27,7 @@ module.exports = async ({ params, context, logger, secretManager }) => {
 
   const next = applyInteraction(current, String(params.interactionType || ""), String(params.actorId || context.playerId || "unknown-player"));
   await saveSharedPetState(cloudSaveApi, context.projectId, next);
-  await mirrorToSupabaseIfConfigured({ params, logger, secretManager }, next);
+  await mirrorToSupabaseIfConfigured({ params, logger, secretManager }, current, next);
   return next;
 };
 
@@ -75,8 +75,9 @@ function applyInteraction(current, interactionType, actorId) {
   return next;
 }
 
-async function mirrorToSupabaseIfConfigured({ params, logger, secretManager }, state) {
-  if (!secretManager || !UUID_RE.test(String(state.lastInteractionBy || ""))) {
+async function mirrorToSupabaseIfConfigured({ params, logger, secretManager }, previousState, state) {
+  const actorId = String(state.lastInteractionBy || "");
+  if (!secretManager || !UUID_RE.test(actorId)) {
     return;
   }
 
@@ -86,31 +87,54 @@ async function mirrorToSupabaseIfConfigured({ params, logger, secretManager }, s
     return;
   }
 
+  const actionUrl = actionUrlSecret.replace(/\/+$/, "");
+  const timestamp = state.lastInteractionUnixSeconds;
+  const headers = {
+    "Content-Type": "application/json",
+    "x-mochi-social-server-token": tokenSecret,
+  };
+
+  await postAuditEvent(logger, actionUrl, headers, {
+    requestId: `ugs-lirabao-interaction-${state.revision}-${timestamp}`,
+    type: "unity.pet.interaction",
+    playerId: actorId,
+    payload: {
+      petKey: SHARED_PET_KEY,
+      roomKey: ROOM_SESSION_ID,
+      entityType: "shared_pet",
+      entityId: SHARED_PET_KEY,
+      interactionType: params.interactionType,
+      expectedRevision: params.expectedRevision,
+      previousRevision: previousState.revision,
+    },
+  });
+
+  await postAuditEvent(logger, actionUrl, headers, {
+    requestId: `ugs-lirabao-${state.revision}-${timestamp}`,
+    type: "unity.pet.state_saved",
+    playerId: actorId,
+    payload: {
+      petKey: SHARED_PET_KEY,
+      roomKey: ROOM_SESSION_ID,
+      entityType: "shared_pet",
+      entityId: SHARED_PET_KEY,
+      interactionType: params.interactionType,
+      state,
+    },
+  });
+}
+
+async function postAuditEvent(logger, actionUrl, headers, body) {
   try {
     await axios.post(
-      actionUrlSecret.replace(/\/+$/, ""),
+      actionUrl,
+      body,
       {
-        requestId: `ugs-lirabao-${state.revision}-${state.lastInteractionUnixSeconds}`,
-        type: "unity.pet.state_saved",
-        playerId: state.lastInteractionBy,
-        payload: {
-          petKey: SHARED_PET_KEY,
-          roomKey: ROOM_SESSION_ID,
-          entityType: "shared_pet",
-          entityId: SHARED_PET_KEY,
-          interactionType: params.interactionType,
-          state,
-        },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "x-mochi-social-server-token": tokenSecret,
-        },
+        headers,
         timeout: 5000,
       },
     );
-  } catch (error) {
+  } catch {
     logger.warn("Supabase shared pet audit mirror failed without blocking UGS primary save.");
   }
 }
