@@ -27,6 +27,9 @@ namespace MochiSocial.Runtime
         private string alphaUserId;
         private string unityPlayerId;
         private bool authInFlight;
+        private bool characterCreationRequired;
+        private bool characterCreationBusy;
+        private string characterCreationMessage = "Choose a character preset.";
 
         private void Awake()
         {
@@ -113,13 +116,23 @@ namespace MochiSocial.Runtime
                 alphaUserId = authResponse.userId;
                 unityPlayerId = AuthenticationService.Instance.PlayerId;
 
-                characterState = await LoadOrCreateCharacterAsync();
-                SpawnLocalPreviewAvatar(characterState);
+                var loaded = await stateStore.LoadCharacterAsync();
+                if (CharacterPresetCatalog.IsValid(loaded))
+                {
+                    characterCreationRequired = false;
+                    characterCreationBusy = false;
+                    characterState = loaded;
+                    SpawnLocalPreviewAvatar(characterState);
+                    await EnterSharedRoomAsync();
+                    bridge.EmitAuthState("signed-in", "Joined Jade Lantern Room.", string.IsNullOrWhiteSpace(unityPlayerId) ? authResponse.unityPlayerId : unityPlayerId);
+                    return;
+                }
 
-                await roomSession.JoinSharedRoomAsync();
-                await LoadSharedPetOrDefaultAsync();
-
-                bridge.EmitAuthState("signed-in", "Joined Jade Lantern Room.", string.IsNullOrWhiteSpace(unityPlayerId) ? authResponse.unityPlayerId : unityPlayerId);
+                characterCreationRequired = true;
+                characterCreationBusy = false;
+                characterCreationMessage = "Choose a character preset.";
+                SpawnLocalPreviewAvatar(CharacterPresetCatalog.CreateDefault(AuthenticationService.Instance.PlayerId));
+                bridge.EmitAuthState("creating-character", "Choose your character.");
             }
             catch (Exception ex)
             {
@@ -143,22 +156,58 @@ namespace MochiSocial.Runtime
             characterState = null;
             alphaUserId = null;
             unityPlayerId = null;
+            characterCreationRequired = false;
+            characterCreationBusy = false;
             bridge.EmitAuthState("signed-out", "Signed out of Mochi Social.");
         }
 
-        private async Task<CharacterState> LoadOrCreateCharacterAsync()
+        private async Task EnterSharedRoomAsync()
         {
-            var loaded = await stateStore.LoadCharacterAsync();
-            if (CharacterPresetCatalog.IsValid(loaded))
+            await roomSession.JoinSharedRoomAsync();
+            await LoadSharedPetOrDefaultAsync();
+        }
+
+        private async Task CreateCharacterFromPresetAsync(string presetId)
+        {
+            if (characterCreationBusy)
             {
-                return loaded;
+                return;
             }
 
-            var spawn = spawnPoint == null ? Vector3.zero : spawnPoint.position;
-            var created = CharacterPresetCatalog.CreateDefault(AuthenticationService.Instance.PlayerId);
-            created.lastSpawnPoint = spawn;
-            await stateStore.SaveCharacterAsync(created);
-            return created;
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                bridge.EmitError("character_create_signed_out", "Sign in before creating a character.");
+                return;
+            }
+
+            if (!CharacterPresetCatalog.TryGetPreset(presetId, out var preset))
+            {
+                bridge.EmitError("invalid_character_preset", "Choose one of the curated character presets.");
+                return;
+            }
+
+            characterCreationBusy = true;
+            characterCreationMessage = $"Saving {preset.label}.";
+
+            try
+            {
+                var spawn = spawnPoint == null ? Vector3.zero : spawnPoint.position;
+                var created = CharacterPresetCatalog.FromPreset(preset, AuthenticationService.Instance.PlayerId, spawn, 0);
+                await stateStore.SaveCharacterAsync(created);
+
+                characterState = created;
+                characterCreationRequired = false;
+                characterCreationBusy = false;
+                SpawnLocalPreviewAvatar(characterState);
+                await EnterSharedRoomAsync();
+                bridge.EmitAuthState("signed-in", $"Joined Jade Lantern Room as {preset.label}.", unityPlayerId);
+            }
+            catch (Exception ex)
+            {
+                characterCreationBusy = false;
+                characterCreationMessage = "That character could not be saved. Try another preset.";
+                bridge.EmitError("character_save_failed", ex.Message);
+            }
         }
 
         private async Task LoadSharedPetOrDefaultAsync()
@@ -239,6 +288,33 @@ namespace MochiSocial.Runtime
             {
                 renderer.material.color = primary;
             }
+        }
+
+        private void OnGUI()
+        {
+            if (!characterCreationRequired)
+            {
+                return;
+            }
+
+            var width = Mathf.Min(420f, Mathf.Max(260f, Screen.width - 32f));
+            var rect = new Rect((Screen.width - width) * 0.5f, 24f, width, 220f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+            GUILayout.Label("Create your character");
+            GUILayout.Label(characterCreationMessage);
+
+            GUI.enabled = !characterCreationBusy;
+            foreach (var preset in CharacterPresetCatalog.All)
+            {
+                if (GUILayout.Button(preset.label, GUILayout.Height(36f)))
+                {
+                    _ = CreateCharacterFromPresetAsync(preset.id);
+                }
+            }
+
+            GUI.enabled = true;
+            GUILayout.Label("Saved play uses one of these curated Mochirii presets.");
+            GUILayout.EndArea();
         }
 
         private T EnsureComponent<T>(T existing) where T : Component

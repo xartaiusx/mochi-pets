@@ -35,6 +35,10 @@ const checks = [
   {
     file: 'unity/Assets/MochiSocial/Scripts/Runtime/MochiSocialBootstrap.cs',
     includes: [
+      'Create your character',
+      'Choose a character preset.',
+      'Choose your character.',
+      'Saved play uses one of these curated Mochirii presets.',
       'Signing into Mochi Social.',
       'Sign-in failed.',
       'Signed out of Mochi Social.',

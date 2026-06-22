@@ -28,6 +28,18 @@ namespace MochiSocial.Tests
         }
 
         [Test]
+        public void CuratedCharacterPresetsCreateValidSavedStates()
+        {
+            foreach (var preset in CharacterPresetCatalog.All)
+            {
+                var state = CharacterPresetCatalog.FromPreset(preset, "tester-display", Vector3.zero, 0);
+
+                Assert.That(CharacterPresetCatalog.IsValid(state), Is.True, preset.id);
+                Assert.That(state.presetId, Is.EqualTo(preset.id));
+            }
+        }
+
+        [Test]
         public void CharacterStateRejectsInvalidPresetIds()
         {
             var invalid = CharacterPresetCatalog.CreateDefault();
