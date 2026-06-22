@@ -68,6 +68,7 @@ async function run() {
   assert(health.body.activeRuntime === 'unity-webgl', 'Built server health check must serve Unity WebGL when required.');
   assert(health.body.unityWebglBuild?.present === true, 'Built server health check must see the local Unity WebGL build.');
   assert(health.body.unityWebglBuild?.required === true, 'Built server health check must require Unity WebGL for release smoke.');
+  assert(health.body.legacyFallback?.active === false, 'Built server health check must report legacy fallback inactive.');
 
   const manifest = await getJson('/integration/game-manifest.json', 'manifest');
   assert(manifest.body.name === 'Mochi Social', 'Built server manifest must identify Mochi Social.');

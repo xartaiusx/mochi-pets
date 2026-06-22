@@ -217,7 +217,8 @@ app.get('/healthz', (_req, res) => {
     name: 'Mochi Social',
     version: process.env.npm_package_version ?? '0.1.0',
     activeRuntime: unityServing.activeRuntime,
-    unityWebglBuild: unityServing.unityWebglBuild
+    unityWebglBuild: unityServing.unityWebglBuild,
+    legacyFallback: unityServing.legacyFallback
   });
 });
 
