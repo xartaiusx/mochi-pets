@@ -1041,211 +1041,15 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritWeatherVeils: true', 'spiritEncounterRotations: true', 'spiritEncounterAtlases: true', 'spiritHabitatCensuses: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritLineageRegisters: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.weather_veil'", "'world.encounter_rotation'", "'world.encounter_atlas'", "'spirit.habitat_census'", "'item.craft_writ'", "'trade.exchange_accord'", "'world.route_waystone'", "'spirit.nurture_rite'", "'spirit.lineage_register'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['guildReceipts: true', "'market.guild_receipt'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routePatrols: true', "'world.route_patrol'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRelicAttunements: true', "'spirit.relic_attune'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['itemProvisionCatalogs: true', "'item.provision_catalog'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['battleItemKits: true', "'item.battle_kit'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['remedyPouches: true', "'item.remedy_pouch'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['questLedgers: true', "'quest.ledger_record'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routeEcologySurveys: true', "'world.route_ecology'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritWeatherVeils: true', "'world.weather_veil'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritEncounterAtlases: true', "'world.encounter_atlas'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritHabitatCensuses: true', "'spirit.habitat_census'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritCraftWrits: true', "'item.craft_writ'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['tradeExchangeAccords: true', "'trade.exchange_accord'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routeWaystones: true', "'world.route_waystone'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routeCharters: true', "'world.route_charter'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritNurtureRites: true', "'spirit.nurture_rite'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRecoveryTeas: true', "'spirit.recovery_tea'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritKinshipAlbums: true', "'spirit.kinship_album'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritNurseryGroves: true', "'spirit.nursery_grove'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritBloomAscendances: true', "'spirit.bloom_ascendance'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritLineageRegisters: true', "'spirit.lineage_register'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRosterCabinets: true', "'spirit.roster_cabinet'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritBlossomCradles: true', "'spirit.blossom_cradle'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritBondGiftRites: true', "'item.bond_gift'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritNameBannerRites: true', "'spirit.name_banner'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritTournamentBrackets: true', "'battle.tournament_bracket'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRivalCircles: true', "'battle.rival_circle'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['dojoLadders: true', "'battle.dojo_ladder'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['sifuCouncils: true', "'battle.sifu_council'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['summitCircuits: true', "'battle.summit_circuit'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['battleChronicles: true', "'battle.battle_chronicle'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['storyDialogueScrolls: true', "'story.dialogue_scroll'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
+    includes: ['noRealValue: true', 'sharedRoom: true', 'desktopWebgl: true', 'curatedCharacterPresets: true', 'lirabaoCare: true', 'staleRevisionReload: true', 'avatarUploads: false', 'multipleRooms: false', 'sharding: false', 'mobileSpecificUi: false', "'unity.character.created'", "'unity.character.updated'", "'unity.pet.interaction'", "'unity.pet.state_saved'", "'unity.room.joined'", "'unity.room.left'"]
   },
   {
     file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_ROSTER_CABINETS', 'rosterCabinetIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_BLOSSOM_CRADLES', 'blossomCradleIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_BOND_GIFT_RITES', 'bondGiftRiteIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_NAME_BANNER_RITES', 'nameBannerRiteIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['MOCHI_DIALOGUE_SCROLLS', 'dialogueScrollIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_ROUTE_CHARTERS', 'routeCharterIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_BATTLE_CHRONICLES', 'battleChronicleIds']
+    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "scene: 'JadeLanternRoom'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "artDirection: 'Cozy Wushu 3D'", "scope: 'single-shared-room'", "integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action']"]
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['guildReceipts: true', "'market.guild_receipt'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['spiritRelicAttunements: true', "'spirit.relic_attune'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
+    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "key: 'jade-lantern-room-alpha'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "'unity.pet.interaction'", "'unity.pet.state_saved'", 'future_asset_route_disabled', 'MOCHI_SOCIAL_ENABLE_FUTURE_CHAIN_ROUTES']
   },
   {
     file: 'apps/game/src/integration/enjin-canary.ts',
@@ -1749,23 +1553,11 @@ const checks = [
   },
   {
     file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'spirit.blossom_cradle', 'blossomCradleProof']
-  },
-  {
-    file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_BOND_GIFT_RITES', 'resolveSpiritBondGiftRite', 'item.bond_gift', 'jade-bond-gift-ribbon']
-  },
-  {
-    file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_NAME_BANNER_RITES', 'resolveSpiritNameBannerRite', 'spirit.name_banner', 'jade-name-banner-tag']
+    includes: ['ALPHA_ACTION_TYPES).toEqual', 'unity.pet.interaction', 'unity.pet.state_saved', 'market.fixed_list', 'trade.direct_offer', 'chain.operation_update']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
-    includes: ['spiritBondGiftRites: true', "bondGiftRiteIds: ['jade-bond-gift-rite']"]
-  },
-  {
-    file: 'apps/game/tests/manifest.test.ts',
-    includes: ['spiritNameBannerRites: true', "nameBannerRiteIds: ['jade-name-banner-rite']"]
+    includes: ['publishes the Unity WebGL shared-room contract', "scene: 'JadeLanternRoom'", "sharedPetKey: 'lirabao'", 'universalStarter: true', 'enabled: false']
   },
   {
     file: 'apps/game/tests/alpha-content.test.ts',
@@ -1773,15 +1565,7 @@ const checks = [
   },
   {
     file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_ROUTE_CHARTERS', 'resolveSpiritRouteCharter', 'world.route_charter', 'routeCharterProof']
-  },
-  {
-    file: 'apps/game/tests/manifest.test.ts',
-    includes: ['spiritBloomAscendances: true']
-  },
-  {
-    file: 'apps/game/tests/manifest.test.ts',
-    includes: ['dojoLadders: true']
+    includes: ['sharedRoom).toBe(true)', 'desktopWebgl).toBe(true)', 'curatedCharacterPresets).toBe(true)', 'lirabaoCare).toBe(true)', 'multipleRooms).toBe(false)', 'sharding).toBe(false)']
   },
   {
     file: 'apps/game/tests/map-object-contract.test.ts',
@@ -2165,7 +1949,7 @@ const checks = [
   },
   {
     file: 'scripts/check-built-server-smoke.mjs',
-    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'configured-preview-stub', 'invalid_game_server_token', 'enjin_canary_not_configured', 'Local-only built Express server smoke']
+    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'Built server manifest must not expose legacy playable content catalog', 'Built server alpha status must not expose future chain runtime state', 'Local-only built Express server smoke']
   },
   {
     file: 'scripts/check-alpha-local-suite.mjs',
@@ -2387,7 +2171,6 @@ const unityPreviewReadinessChecks = [
       '/integration/alpha/enjin/submit',
       "alphaStopPoint: 'alpha-preview-ready'",
       "source: 'local-alpha-ledger'",
-      "chainNetwork: 'CANARY'",
       'UNITY_SHARED_ROOM_CONTRACT',
       "engine: 'unity-webgl'",
       "key: 'jade-lantern-room-alpha'",
@@ -2413,8 +2196,7 @@ const unityPreviewReadinessChecks = [
       'unity.room.joined',
       'unity.room.left',
       'requireGameServerToken',
-      'confirmNoRealValue',
-      'configured-preview-stub'
+      'confirmNoRealValue'
     ]
   },
   {
@@ -2455,7 +2237,7 @@ const unityPreviewReadinessChecks = [
       "manifest.market?.enabled !== false",
       'no-market',
       'no-avatar-upload',
-      'configured-preview-stub'
+      'Alpha status must not expose future asset provider state'
     ]
   },
   {
@@ -2483,7 +2265,7 @@ const unityPreviewReadinessChecks = [
       'local-alpha-ledger',
       'ledgerVersion=1',
       'alpha-preview-ready',
-      'chainNetwork',
+      'must not expose future asset network state',
       'market systems for Preview Ready',
       'avatar uploads'
     ]
@@ -2495,7 +2277,7 @@ const unityPreviewReadinessChecks = [
       'local-alpha-ledger',
       'ledgerVersion=1',
       'alpha-preview-ready',
-      'chainNetwork',
+      'must not expose future asset network state',
       'simulated testers',
       'HTTP alpha contract load smoke',
       'unity.room.joined',

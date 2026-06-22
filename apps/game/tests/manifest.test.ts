@@ -71,6 +71,10 @@ describe('game manifest', () => {
         termsRequired: true,
         noRealValue: true
       },
+      alphaPreview: {
+        providerMutationAllowedByDefault: false,
+        fundedChainRequiredForPreview: false
+      },
       ugc: 'curated',
       routes: {
         public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json']

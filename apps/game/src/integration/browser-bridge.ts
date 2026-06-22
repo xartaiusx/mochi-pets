@@ -1,4 +1,4 @@
-import { ALPHA_FEATURES, type AlphaActionType } from './alpha-contract';
+import { ALPHA_FEATURES } from './alpha-contract';
 import {
   GUILD_ASCENSION_TRIALS,
   GUILD_COMMISSIONS,
@@ -152,6 +152,8 @@ import {
   resolveTradeExchangeAccord
 } from '../alpha/content';
 import { BRIDGE_EVENTS, type AuthPayload, type AuthState, type BridgeMessage, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
+
+type LegacyHudActionType = string;
 
 const TOKEN_KEY = 'mochiSocial.accessToken';
 const EXPIRES_KEY = 'mochiSocial.accessTokenExpiresAt';
@@ -2669,7 +2671,7 @@ function createHud() {
 
   hud.querySelectorAll<HTMLButtonElement>('[data-alpha-action]').forEach((button) => {
     button.addEventListener('click', () => {
-      const actionType = button.dataset.alphaAction as AlphaActionType;
+      const actionType = button.dataset.alphaAction as LegacyHudActionType;
       void performAlphaAction(actionType, buildHudActionPayload(actionType));
     });
   });
@@ -3901,7 +3903,7 @@ function selectHudQuest(state: AlphaHudState) {
   });
 }
 
-function buildHudActionPayload(type: AlphaActionType): Record<string, unknown> {
+function buildHudActionPayload(type: LegacyHudActionType): Record<string, unknown> {
   const state = readAlphaState();
   const spiritId = state.spiritId || 'lirabao';
 
@@ -5912,7 +5914,7 @@ function performAlphaLocalAction(type: AlphaLocalActionType, payload: Record<str
   writeAlphaState(state);
 }
 
-async function performAlphaAction(type: AlphaActionType, payload: Record<string, unknown> = {}) {
+async function performAlphaAction(type: LegacyHudActionType, payload: Record<string, unknown> = {}) {
   const state = readAlphaState();
   const requestId = crypto.randomUUID();
 

@@ -153,12 +153,11 @@ function assertManifestContract(body, label) {
   assert(body.alpha?.termsRequired === true, `${label} must require terms acceptance.`);
   assert(body.alpha?.noRealValue === true, `${label} must keep alpha no-real-value.`);
   assert(body.alpha?.stopPoint === 'alpha-preview-ready', `${label} must target Alpha Preview Ready first.`);
-  assert(body.chain?.provider === 'enjin', `${label} must keep Enjin as the future chain provider.`);
-  assert(body.chain?.network === 'CANARY', `${label} must stay Canary-scoped.`);
   assert(body.alphaPreview?.stopPoint === 'alpha-preview-ready', `${label} must expose Alpha Preview Ready as the website stop point.`);
   assert(body.alphaPreview?.providerMutationAllowedByDefault === false, `${label} must reject provider mutation by default.`);
   assert(body.alphaPreview?.fundedChainRequiredForPreview === false, `${label} must not require funded-chain gates for Preview Ready.`);
-  assert(body.alphaPreview?.enjinCanaryModeBeforeFunding === 'configured-preview-stub', `${label} must keep Enjin Canary as configured-preview-stub before funding approval.`);
+  assert(!('chain' in body), `${label} must not expose future asset provider configuration.`);
+  assert(!('chainRuntime' in body), `${label} must not expose future asset runtime state.`);
   assertSharedRoomContract(body, label);
   assertRoutes(body.routes, label);
   assert(body.cleanRoom?.restrictedSourceReferences === false, `${label} must declare zero restricted-source references.`);
@@ -172,10 +171,8 @@ function assertStatusContract(body) {
   assert(body.alpha?.termsRequired === true, 'Alpha status must require terms acceptance.');
   assert(body.alpha?.noRealValue === true, 'Alpha status must keep no-real-value enabled.');
   assert(body.alpha?.stopPoint === 'alpha-preview-ready', 'Alpha status must target Alpha Preview Ready first.');
-  assert(body.chainRuntime?.network === 'CANARY', 'Alpha status must stay Canary-scoped.');
-  assert(['configured', 'configured-preview-stub'].includes(body.chainRuntime?.mode), 'Alpha status must expose the Enjin Canary runtime mode.');
-  assert(body.enjinCanaryConfigured !== true || body.chainRuntime?.mode === 'configured', 'Configured Enjin status must report configured mode.');
-  assert(body.enjinCanaryConfigured !== false || body.chainRuntime?.mode === 'configured-preview-stub', 'Unconfigured Enjin status must report configured-preview-stub mode.');
+  assert(!('chainRuntime' in body), 'Alpha status must not expose future asset runtime state.');
+  assert(!('enjinCanaryConfigured' in body), 'Alpha status must not expose future asset provider state.');
   assertSharedRoomContract(body, 'Alpha status');
 }
 
@@ -240,7 +237,7 @@ async function assertLocalLedger() {
     assert(entry.ledgerVersion === 1, `Ledger entry ${action.requestId} must use ledgerVersion=1.`);
     assert(entry.source === 'local-alpha-ledger', `Ledger entry ${action.requestId} must identify the local fallback ledger source.`);
     assert(entry.alphaStopPoint === 'alpha-preview-ready', `Ledger entry ${action.requestId} must keep the Alpha Preview Ready stop point.`);
-    assert(entry.chainNetwork === 'CANARY', `Ledger entry ${action.requestId} must stay Canary-scoped.`);
+    assert(!('chainNetwork' in entry), `Ledger entry ${action.requestId} must not expose future asset network state.`);
     assert(entry.noRealValue === true, `Ledger entry ${action.requestId} must be no-real-value.`);
     assert(entry.type === action.type, `Ledger entry ${action.requestId} type changed.`);
     assert(entry.payload?.noRealValue === true, `Ledger entry ${action.requestId} payload must preserve no-real-value.`);

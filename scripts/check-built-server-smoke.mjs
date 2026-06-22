@@ -16,7 +16,7 @@ const report = {
   ok: false,
   baseUrl,
   checkedAt: new Date().toISOString(),
-  scope: 'Local-only built Express server smoke. Starts dist/server/express.js with Unity WebGL required, throwaway secrets, and no Enjin live configuration.',
+  scope: 'Local-only built Express server smoke. Starts dist/server/express.js with Unity WebGL required and throwaway secrets.',
   git: readGitState(),
   checks: []
 };
@@ -81,25 +81,19 @@ async function run() {
   assert(manifest.body.room?.sharedPetKey === 'lirabao', 'Built server manifest must expose Lirabao as the shared starter pet.');
   assert(manifest.body.runtime?.realtimeAuthority === 'ugs-distributed-authority', 'Built server manifest must expose UGS Distributed Authority.');
   assert(manifest.body.runtime?.stateAuthority === 'ugs-cloud-save', 'Built server manifest must expose UGS Cloud Save.');
-  assert(manifest.body.chain?.network === 'CANARY', 'Built server manifest must stay Canary-only.');
   assert(manifest.body.alpha?.noRealValue === true, 'Built server manifest must keep no-real-value posture.');
   assert(manifest.body.market?.auctions === false, 'Built server manifest must keep auctions disabled.');
   assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Built server manifest must expose Alpha Preview Ready as the website stop point.');
   assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Built server manifest must reject provider mutation by default.');
+  assert(manifest.body.alphaPreview?.fundedChainRequiredForPreview === false, 'Built server manifest must not require funded-chain gates for Preview Ready.');
   assert(manifest.body.progress?.authority === 'mochirii-edge', 'Built server manifest must expose Mochirii Edge account-progress authority.');
   assert(manifest.body.progress?.snapshotEndpoint === '/integration/alpha/progress', 'Built server manifest must expose the local progress snapshot endpoint.');
   assert(manifest.body.cleanRoom?.restrictedSourceReferences === false, 'Built server manifest must declare zero restricted-source references.');
   assert(manifest.body.cleanRoom?.copiedRestrictedSourceAssets === false, 'Built server manifest must declare zero copied restricted-source assets.');
-  assert(manifest.body.brand?.artDirection === 'Mochirii High-Fidelity Wuxia', 'Built server manifest must expose Mochirii High-Fidelity Wuxia art direction.');
-  assert(manifest.body.runtimeArt?.tileSizePx === 64, 'Built server manifest must expose the 64px tile contract.');
-  assert(Array.isArray(manifest.body.spirits?.roster) && manifest.body.spirits.roster.length === 3, 'Built server manifest must expose the three-spirit first-court roster.');
-  assert(Array.isArray(manifest.body.manualReview?.requiredTargets) && manifest.body.manualReview.requiredTargets.length === 3, 'Built server manifest must expose the manual prompt review targets.');
-  assert(manifest.body.playableContent?.capture?.spiritIds?.join(',') === 'lirabao,jintari,aozhen', 'Built server manifest must expose the first-court spirit capture roster.');
-  assert(manifest.body.playableContent?.raising?.bondMilestoneIds?.length === 9, 'Built server manifest must expose all bond milestone IDs.');
-  assert(manifest.body.playableContent?.battle?.summitCircuitIds?.includes('jade-summit-circuit'), 'Built server manifest must expose summit battle content.');
-  assert(manifest.body.playableContent?.roleplay?.questChainIds?.length === 3, 'Built server manifest must expose the first quest chain.');
-  assert(manifest.body.playableContent?.economyAndCanary?.canaryCertificateItemIds?.join(',') === 'lirabao-canary-certificate', 'Built server manifest must expose the Lirabao Canary certificate preview item.');
-  assert(manifest.body.playableContent?.runtimeAssets?.spritesheets?.length === 21, 'Built server manifest must expose runtime asset coverage.');
+  assert(manifest.body.brand?.artDirection === 'Cozy Wushu 3D', 'Built server manifest must expose Cozy Wushu 3D art direction.');
+  assert(manifest.body.sharedPet?.states?.includes('care_received'), 'Built server manifest must expose Lirabao care state.');
+  assert(!('playableContent' in manifest.body), 'Built server manifest must not expose legacy playable content catalog.');
+  assert(!('chainRuntime' in manifest.body), 'Built server manifest must not expose future chain runtime state.');
 
   const alpha = await getJson('/integration/alpha/status', 'alpha status');
   assert(alpha.body.engine === 'unity-webgl', 'Built server alpha status must expose Unity WebGL as the engine.');
@@ -108,8 +102,8 @@ async function run() {
   assert(alpha.body.room?.mode === 'single-shared-room', 'Built server alpha status must expose the Unity single shared room.');
   assert(alpha.body.room?.capacity === 25, 'Built server alpha status must expose the 25-tester Unity room capacity.');
   assert(alpha.body.room?.sharedPetKey === 'lirabao', 'Built server alpha status must expose Lirabao as the shared starter pet.');
-  assert(alpha.body.chainRuntime?.mode === 'configured-preview-stub', 'Built server must expose configured-preview-stub without Enjin secrets.');
-  assert(alpha.body.enjinCanaryConfigured === false, 'Built server must not report Enjin configured under smoke env.');
+  assert(!('chainRuntime' in alpha.body), 'Built server alpha status must not expose future chain runtime state.');
+  assert(!('enjinCanaryConfigured' in alpha.body), 'Built server alpha status must not expose future chain provider state.');
   assert(alpha.body.edgeFunctions?.progress === 'mochi-social-alpha-progress', 'Built server alpha status must expose the progress Edge Function name.');
 
   const progress = await getJson('/integration/alpha/progress', 'guest progress');
@@ -121,15 +115,6 @@ async function run() {
 
   const embed = await request('/embed', 'embed route');
   assert(embed.status === 200 && isUnityWebglHtml(embed.body), 'Built server /embed must return the Unity WebGL HTML.');
-
-  const unauthenticated = await postOperator(undefined, 'unauthenticated operator submit');
-  assert(unauthenticated.status === 401, 'Built server private Enjin operator route must reject missing token.');
-  assert(unauthenticated.body?.error === 'invalid_game_server_token', 'Missing token must return invalid_game_server_token.');
-
-  const tokened = await postOperator(token, 'tokened operator submit');
-  assert(tokened.status === 409, 'Built server tokened Enjin operator route must fail closed without Enjin secrets.');
-  assert(tokened.body?.error === 'enjin_canary_not_configured', 'Tokened operator route must explain missing Enjin Canary config.');
-  assert(tokened.body?.chainRuntime?.mode === 'configured-preview-stub', 'Tokened operator response must expose configured-preview-stub.');
 }
 
 function buildServerEnv() {
@@ -180,23 +165,6 @@ async function request(path, name, init = {}) {
   const result = { name, path, status: response.status, contentType, body };
   report.checks.push(result);
   return result;
-}
-
-async function postOperator(operatorToken, name) {
-  return request('/integration/alpha/enjin/submit', name, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(operatorToken ? { 'x-mochi-social-server-token': operatorToken } : {})
-    },
-    body: JSON.stringify({
-      operation: 'poll-transaction',
-      requestId: `built-server-smoke-${Date.now().toString(36)}`,
-      playerId: 'built-server-smoke-player',
-      enjinTransactionUuid: 'built-server-smoke-transaction',
-      confirmNoRealValue: true
-    })
-  });
 }
 
 async function stopServer() {

@@ -4,10 +4,11 @@ import type { AlphaActionEnvelope } from '../src/integration/alpha-contract';
 
 const action: AlphaActionEnvelope = {
   requestId: 'req_alpha_edge_123',
-  type: 'spirit.care',
+  type: 'unity.pet.interaction',
   playerId: 'tester-123',
   payload: {
-    spiritId: 'lirabao',
+    petKey: 'lirabao',
+    interaction: 'care',
     noRealValue: true
   }
 };

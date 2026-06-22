@@ -49,7 +49,8 @@ async function run() {
   ]);
 
   assert(health.body.ok === true && health.body.name === 'Mochi Social', '/healthz did not identify Mochi Social.');
-  assert(manifest.body.chain?.network === 'CANARY', 'Manifest must stay Canary-only.');
+  assert(!('chain' in manifest.body), 'Manifest must not expose future asset provider configuration.');
+  assert(!('chainRuntime' in manifest.body), 'Manifest must not expose future asset runtime state.');
   assert(manifest.body.engine === 'unity-webgl', 'Manifest must expose Unity WebGL as the engine.');
   assert(manifest.body.room?.mode === 'single-shared-room', 'Manifest must expose single-shared-room mode.');
   assert(manifest.body.room?.capacity === 25, 'Manifest must expose room capacity 25.');
@@ -139,7 +140,7 @@ async function run() {
     assert(entry.ledgerVersion === 1, `Ledger entry ${action.requestId} must use ledgerVersion=1.`);
     assert(entry.source === 'local-alpha-ledger', `Ledger entry ${action.requestId} must identify the local fallback ledger source.`);
     assert(entry.alphaStopPoint === 'alpha-preview-ready', `Ledger entry ${action.requestId} must keep the Alpha Preview Ready stop point.`);
-    assert(entry.chainNetwork === 'CANARY', `Ledger entry ${action.requestId} must stay Canary-scoped.`);
+    assert(!('chainNetwork' in entry), `Ledger entry ${action.requestId} must not expose future asset network state.`);
     assert(entry.noRealValue === true, `Ledger entry ${action.requestId} must be no-real-value.`);
   }
 }

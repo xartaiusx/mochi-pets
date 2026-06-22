@@ -19,254 +19,37 @@ const ALPHA_FEATURES = {
     access: 'signed-in-allowlist',
     stopPoint: 'alpha-preview-ready'
   },
-  economy: {
-    mode: 'test-soft-currency',
-    hotLedger: 'supabase-postgres',
-    coldInventory: 'enjin-managed-wallet',
-    realValue: false
-  },
-  chain: {
-    provider: 'enjin',
-    network: 'CANARY',
-    custody: 'managed-hot-cold',
-    finalityRequired: true,
-    operationUpdates: true,
-    previewFinalityReviews: true
-  },
-  market: {
-    fixedPrice: true,
-    guildReceipts: true,
-    directTrade: true,
-    auctions: false,
-    cashout: false
-  },
   gameplay: {
-    spiritCapture: true,
-    spiritStarterVows: true,
-    spiritCaptureRites: true,
-    spiritAttunement: true,
-    routeInvitations: true,
-    routeMastery: true,
-    habitatBonds: true,
-    spiritSanctuaryRites: true,
-    spiritResearch: true,
-    spiritCompendium: true,
-    spiritRosterArchives: true,
-    spiritCareCycles: true,
-    spiritTemperamentConcords: true,
-    spiritFieldAlmanacs: true,
-    routeEcologySurveys: true,
-    spiritWeatherVeils: true,
-    spiritEncounterRotations: true,
-    spiritEncounterAtlases: true,
-    spiritHabitatCensuses: true,
-    spiritCraftWrits: true,
-    tradeExchangeAccords: true,
-    routeWaystones: true,
-    routeCharters: true,
-    spiritNurtureRites: true,
-    spiritRecoveryTeas: true,
-    spiritKinshipAlbums: true,
-    spiritNurseryGroves: true,
-    spiritBloomAscendances: true,
-    spiritLineageRegisters: true,
-    partyFormation: true,
-    partyHarmony: true,
-    harmonyTrials: true,
-    teamSparMatches: true,
-    mentorChallenges: true,
-    dojoLadders: true,
-    sifuCouncils: true,
-    summitCircuits: true,
-    battleChronicles: true,
-    spiritTournamentBrackets: true,
-    spiritRivalCircles: true,
-    spiritStoryChapters: true,
-    battleRoundTranscripts: true,
-    conditionWeaves: true,
-    fieldExpeditions: true,
-    fieldAccords: true,
-    routePatrols: true,
-    itemProvisions: true,
-    spiritBondGiftRites: true,
-    spiritNameBannerRites: true,
-    itemProvisionCatalogs: true,
-    battleItemKits: true,
-    remedyPouches: true,
-    questLedgers: true,
-    storyDialogueScrolls: true,
-    spiritRosterCabinets: true,
-    spiritBlossomCradles: true,
-    guildCommissions: true,
-    socialRallies: true,
-    wayfarerChronicles: true,
-    guildAscensionTrials: true,
-    guildInsigniaCases: true,
-    affinityTrials: true,
-    affinityMatrices: true,
-    battleTactics: true,
-    techniqueLoadouts: true,
-    techniqueCodexes: true,
-    spiritTraits: true,
-    spiritRelicAttunements: true,
-    guildRankTrials: true,
-    spiritGrowthRites: true,
-    sparringLadder: true,
-    trainingBattles: true,
-    techniqueMastery: true,
-    raisingCare: true,
-    bondMilestones: true,
-    roleplayQuests: true,
-    questChains: true,
-    spiritJournal: true,
-    copiedUpstreamContent: false
+    sharedRoom: true,
+    desktopWebgl: true,
+    curatedCharacterPresets: true,
+    movement: true,
+    cameraFollow: true,
+    emotes: true,
+    localSocialSignal: true,
+    lirabaoCare: true,
+    staleRevisionReload: true,
+    avatarUploads: false,
+    multipleRooms: false,
+    sharding: false,
+    mobileSpecificUi: false
   },
   ugc: 'curated'
 } as const;
 
-const PLAYABLE_CONTENT_CATALOG = {
-  scope: 'first-court-alpha-preview',
-  contentPolicy: 'original-mochirii-feature-parity',
-  capture: {
-    spiritIds: ['lirabao', 'jintari', 'aozhen'],
-    starterVowIds: ['jade-starter-vow'],
-    expeditionRouteIds: ['moonbridge-bamboo-trail', 'cloudbell-reed-bank'],
-    fieldAccordIds: ['moonbridge-goldleaf-accord', 'cloudbell-skyvow-accord'],
-    routeMasteryIds: ['jade-cloudbell-circuit'],
-    routePatrolIds: ['jade-cloudbell-patrol'],
-    captureRiteIds: ['jade-court-capture-rite']
-  },
-  raising: {
-    careActionIds: ['tea-ribbon-care'],
-    raiseActionIds: ['jade-brush-groom', 'mooncake-share'],
-    bondMilestoneIds: [
-      'lirabao-lantern-spark',
-      'lirabao-ribbon-warmth',
-      'lirabao-moonwell-glow',
-      'jintari-market-spark',
-      'jintari-trade-step',
-      'jintari-lacquer-glow',
-      'aozhen-skybell-spark',
-      'aozhen-reedwind-step',
-      'aozhen-cloud-vow-glow'
-    ],
-    growthRiteIds: ['moonwell-bloom-rite'],
-    careCycleIds: ['jade-court-care-cycle'],
-    nurtureRiteIds: ['jade-moonwell-nurture-rite'],
-    recoveryTeaIds: ['jade-teahouse-recovery'],
-    kinshipAlbumIds: ['jade-kinship-album'],
-    nurseryGroveIds: ['jade-nursery-grove'],
-    bloomAscendanceIds: ['jade-bloom-ascendance'],
-    lineageRegisterIds: ['jade-lineage-register'],
-    blossomCradleIds: ['jade-blossom-cradle'],
-    bondGiftRiteIds: ['jade-bond-gift-rite']
-  },
-  battle: {
-    moveIds: ['lantern-pulse', 'goldleaf-feint', 'skybell-guard'],
-    tacticIds: ['lantern-anchor', 'goldleaf-opening', 'skybell-ward'],
-    techniqueLoadoutIds: ['jade-step-loadout'],
-    techniqueCodexIds: ['jade-technique-codex'],
-    traitAttunementIds: ['jade-heart-trait'],
-    conditionIds: ['lantern-ward', 'goldleaf-tempo', 'skybell-guard'],
-    conditionWeaveIds: ['jade-mirror-condition-weave'],
-    affinityTrialIds: ['jade-mirror-trial', 'silk-cinder-trial'],
-    affinityMatrixIds: ['jade-affinity-matrix'],
-    harmonyFormIds: ['triune-jade-harmony'],
-    harmonyTrialIds: ['jade-echo-concord'],
-    teamSparMatchIds: ['jade-mirror-team-match'],
-    mentorChallengeIds: ['silk-banner-mentor-drill'],
-    dojoLadderIds: ['jade-dojo-ladder'],
-    sparLadderIds: ['jade-echo-apprentice', 'silk-river-disciple'],
-    tournamentBracketIds: ['jade-banner-tournament'],
-    rivalCircleIds: ['jade-rival-circle'],
-    sifuCouncilIds: ['jade-sifu-council'],
-    summitCircuitIds: ['jade-summit-circuit'],
-    battleChronicleIds: ['jade-battle-chronicle']
-  },
-  roleplay: {
-          questChainIds: ['first-lantern-vow', 'silk-market-kindness', 'skybell-spar'],
-          questLedgerIds: ['jade-quest-ledger'],
-          dialogueScrollIds: ['jade-dialogue-scroll'],
-          storyChapterIds: ['jade-scroll-story-chapter'],
-    guildRankTrialIds: ['jade-court-initiate'],
-    guildCommissionIds: ['jade-court-commission-ledger'],
-    guildSocialRallyIds: ['jade-courtyard-rally'],
-    guildWayfarerChronicleIds: ['jade-wayfarer-chronicle'],
-    guildAscensionTrialIds: ['jade-court-ascension-trial'],
-    guildInsigniaCaseIds: ['jade-insignia-case'],
-    habitatBondIds: ['jade-court-habitat-bond'],
-    sanctuaryRiteIds: ['jade-court-sanctuary-rite'],
-    researchFolioIds: ['jade-court-research-folio'],
-    compendiumIds: ['jade-court-spirit-compendium'],
-    rosterArchiveIds: ['jade-court-roster-archive'],
-    rosterCabinetIds: ['jade-roster-cabinet'],
-    nameBannerRiteIds: ['jade-name-banner-rite'],
-    fieldAlmanacIds: ['jade-field-almanac'],
-    routeEcologySurveyIds: ['jade-route-ecology-survey'],
-    weatherVeilIds: ['jade-weather-veil'],
-    encounterRotationIds: ['jade-encounter-rotation'],
-    encounterAtlasIds: ['jade-encounter-atlas'],
-    habitatCensusIds: ['jade-habitat-census'],
-    routeWaystoneIds: ['jade-cloudbell-waystone'],
-    routeCharterIds: ['jade-route-charter']
-  },
-  economyAndCanary: {
-    provisionSatchelIds: ['jade-court-provision-satchel'],
-    provisionCatalogIds: ['jade-provision-catalog'],
-    battleKitIds: ['jade-battle-kit'],
-    remedyPouchIds: ['jade-remedy-pouch'],
-    craftWritIds: ['jade-court-craft-writ'],
-    marketReceiptIds: ['jade-court-market-receipt'],
-    tradeExchangeAccordIds: ['jade-exchange-accord'],
-    relicAttunementIds: ['jade-relic-attunement'],
-    canaryCertificateItemIds: ['lirabao-canary-certificate'],
-    canaryActionTypes: ['chain.withdraw_request', 'chain.deposit_request', 'chain.operation_update']
-  },
-  runtimeAssets: {
-    tileSize: 64,
-    tilesheet: {
-      path: 'src/tiled/mochi-tiles.png',
-      width: 512,
-      height: 192
-    },
-    spritesheets: [
-      'wayfarer',
-      'sifu-narao',
-      'chest',
-      'spirit-lirabao',
-      'spirit-jintari',
-      'spirit-aozhen',
-      'habitat-grove',
-      'party-banner',
-      'journal-pavilion',
-      'expedition-gate',
-      'route-invitation-altar',
-      'technique-dojo',
-      'tactic-scroll-stand',
-      'affinity-dais',
-      'market-board',
-      'trade-post',
-      'training-ring',
-      'quest-board',
-      'guild-rank-bell',
-      'growth-moonwell',
-      'canary-shrine'
-    ].map((id) => ({
-      path: `public/spritesheets/${id}.png`,
-      width: 384,
-      height: 768,
-      framesWidth: 3,
-      framesHeight: 4,
-      rectWidth: 128,
-      rectHeight: 192
-    }))
-  }
+const ALPHA_EDGE_FUNCTIONS = {
+  session: 'mochi-social-alpha-session',
+  action: 'mochi-social-alpha-action',
+  progress: 'mochi-social-alpha-progress',
+  admin: 'mochi-social-alpha-admin',
+  feedback: 'submit-mochi-social-feedback',
+  unityAuth: 'mochi-social-unity-auth'
 } as const;
 
 const MANIFEST_CONTRACTS = {
   routes: {
     public: ['/healthz', '/play', '/embed', '/integration/game-manifest.json'],
-    integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action', '/integration/alpha/enjin/submit']
+    integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action']
   },
   progress: {
     authority: 'mochirii-edge',
@@ -274,7 +57,7 @@ const MANIFEST_CONTRACTS = {
     guestFallback: true,
     snapshotEndpoint: '/integration/alpha/progress',
     accountMode: 'signed-in-supabase',
-    guestMode: 'local-file-and-local-storage'
+    guestMode: 'local-session-only'
   },
   alphaPreview: {
     status: 'closed-preview',
@@ -283,12 +66,10 @@ const MANIFEST_CONTRACTS = {
     accessGateOwner: 'parent-website',
     testerPasswordOwner: 'parent-website',
     authBridgeTokenPolicy: 'short-lived-access-token-only',
-    manualPromptReviewRequired: true,
     localEvidenceRequired: true,
     hostedChecksRequireApproval: true,
     providerMutationAllowedByDefault: false,
-    fundedChainRequiredForPreview: false,
-    enjinCanaryModeBeforeFunding: 'configured-preview-stub'
+    fundedChainRequiredForPreview: false
   },
   cleanRoom: {
     policy: 'project-authored-original-content-only',
@@ -305,85 +86,21 @@ const MANIFEST_CONTRACTS = {
   },
   brand: {
     world: 'Mochirii',
-    town: 'Jade Lantern Court',
-    playerAvatar: 'Mochirii Wayfarer',
-    guide: 'Sifu Narao',
-    system: 'Mochi Spirits',
-    artDirection: 'Mochirii High-Fidelity Wuxia'
+    room: 'Jade Lantern Room',
+    sharedPet: 'Lirabao',
+    artDirection: 'Cozy Wushu 3D'
   },
-  runtimeArt: {
-    style: 'smooth illustrated 2D',
-    pixelArt: false,
-    retro: false,
-    tileSizePx: 64,
-    townTilesheet: {
-      width: 512,
-      height: 192
-    },
-    eventSpritesheet: {
-      width: 384,
-      height: 768,
-      columns: 3,
-      rows: 4,
-      frameWidth: 128,
-      frameHeight: 192
-    }
+  gameplay: {
+    scope: 'single-shared-room',
+    desktopWebgl: true,
+    movement: true,
+    cameraFollow: true,
+    emotes: true,
+    localSocialSignal: true,
+    lirabaoCare: true,
+    staleRevisionReload: true
   },
-  spirits: {
-    system: 'Mochi Spirits',
-    habitat: 'Jade Lantern Court',
-    roster: [
-      {
-        id: 'lirabao',
-        name: 'Lirabao',
-        title: 'Blush-Cloud Mochi Spirit',
-        affinity: 'blossom',
-        temperament: 'gentle',
-        habitat: 'Jade Lantern Court',
-        certificateEligible: true
-      },
-      {
-        id: 'jintari',
-        name: 'Jintari',
-        title: 'Goldleaf Mochi Spirit',
-        affinity: 'citrus-gold',
-        temperament: 'bright',
-        habitat: 'Jade Lantern Court',
-        certificateEligible: false
-      },
-      {
-        id: 'aozhen',
-        name: 'Aozhen',
-        title: 'Sky-Jade Mochi Spirit',
-        affinity: 'sky-jade',
-        temperament: 'curious',
-        habitat: 'Jade Lantern Court',
-        certificateEligible: false
-      }
-    ]
-  },
-  playableContent: PLAYABLE_CONTENT_CATALOG,
-  manualReview: {
-    requiredBeforeAlphaPreviewReady: true,
-    requiredTargets: [
-      {
-        id: 'welcome-npc',
-        label: 'Welcome NPC dialog',
-        actor: 'sifu-narao'
-      },
-      {
-        id: 'guild-seal-chest',
-        label: 'Guild seal chest prompt and save feedback',
-        actor: 'chest'
-      },
-      {
-        id: 'care-shrine',
-        label: 'Habitat care loop prompt',
-        actor: 'sifu-narao',
-        setupTarget: 'spirit-lirabao'
-      }
-    ]
-  }
+  edgeFunctions: ALPHA_EDGE_FUNCTIONS
 } as const;
 
 const UNITY_SHARED_ROOM_CONTRACT = {
@@ -423,6 +140,7 @@ const UNITY_SHARED_ROOM_CONTRACT = {
     key: 'lirabao',
     name: 'Lirabao',
     universalStarter: true,
+    states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable'],
     stateAuthority: 'cloud-code-authoritative-save'
   },
   market: {
@@ -431,8 +149,7 @@ const UNITY_SHARED_ROOM_CONTRACT = {
     guildReceipts: false,
     directTrade: false,
     auctions: false,
-    cashout: false,
-    reason: 'market-trade-and-real-value-systems-are-out-of-scope-for-unity-shared-room-v1'
+    cashout: false
   },
   edgeFunctions: {
     unityAuth: 'mochi-social-unity-auth',
@@ -443,15 +160,6 @@ const UNITY_SHARED_ROOM_CONTRACT = {
   avatarUploads: false
 } as const;
 
-const ALPHA_EDGE_FUNCTIONS = {
-  session: 'mochi-social-alpha-session',
-  action: 'mochi-social-alpha-action',
-  progress: 'mochi-social-alpha-progress',
-  admin: 'mochi-social-alpha-admin',
-  feedback: 'submit-mochi-social-feedback',
-  unityAuth: 'mochi-social-unity-auth'
-} as const;
-
 const ALPHA_ACTION_TYPES = [
   'chat.send',
   'emote.send',
@@ -460,90 +168,7 @@ const ALPHA_ACTION_TYPES = [
   'unity.pet.interaction',
   'unity.pet.state_saved',
   'unity.room.joined',
-  'unity.room.left',
-  'spirit.starter_vow',
-  'spirit.capture',
-  'spirit.capture_rite',
-  'spirit.route_invite',
-  'world.route_mastery',
-  'world.route_patrol',
-  'spirit.habitat_bond',
-  'spirit.sanctuary_rite',
-  'spirit.research',
-  'spirit.compendium_complete',
-  'spirit.roster_archive',
-  'spirit.care_cycle',
-  'spirit.temperament_concord',
-  'spirit.field_almanac',
-  'world.route_ecology',
-  'world.weather_veil',
-  'world.encounter_rotation',
-  'world.encounter_atlas',
-  'spirit.habitat_census',
-  'item.craft_writ',
-  'world.route_waystone',
-  'world.route_charter',
-  'spirit.nurture_rite',
-  'spirit.recovery_tea',
-  'spirit.kinship_album',
-  'spirit.nursery_grove',
-  'spirit.bloom_ascendance',
-  'spirit.lineage_register',
-  'item.bond_gift',
-  'spirit.name_banner',
-  'item.provision_satchel',
-  'item.provision_catalog',
-  'item.battle_kit',
-  'item.remedy_pouch',
-  'quest.ledger_record',
-  'story.dialogue_scroll',
-  'spirit.roster_cabinet',
-  'spirit.blossom_cradle',
-  'guild.commission_complete',
-  'guild.social_rally',
-  'guild.wayfarer_chronicle',
-  'guild.ascension_trial',
-  'spirit.attune',
-  'spirit.bond',
-  'spirit.care',
-  'spirit.journal',
-  'world.expedition',
-  'spirit.technique',
-  'spirit.technique_loadout',
-  'battle.technique_codex',
-  'spirit.trait_attune',
-  'spirit.relic_attune',
-  'battle.tactic_scroll',
-  'guild.rank_trial',
-  'spirit.growth_rite',
-  'party.set',
-  'party.harmony_form',
-  'battle.harmony_trial',
-  'battle.team_spar_match',
-  'battle.mentor_challenge',
-  'battle.dojo_ladder',
-  'battle.sifu_council',
-  'battle.summit_circuit',
-  'battle.battle_chronicle',
-  'battle.tournament_bracket',
-  'battle.rival_circle',
-  'story.chapter_complete',
-  'guild.insignia_case',
-  'battle.condition_weave',
-  'battle.affinity_trial',
-  'battle.affinity_matrix',
-  'battle.spar_ladder',
-  'spirit.train',
-  'spirit.raise',
-  'quest.accept',
-  'quest.progress',
-  'market.fixed_list',
-  'market.guild_receipt',
-  'trade.direct_offer',
-  'trade.exchange_accord',
-  'chain.withdraw_request',
-  'chain.deposit_request',
-  'chain.operation_update'
+  'unity.room.left'
 ] as const;
 
 const ENJIN_OPERATOR_OPERATIONS: EnjinOperatorOperation[] = [
@@ -659,15 +284,11 @@ app.get('/integration/game-manifest.json', (req, res) => {
 
 app.get('/integration/alpha/status', (_req, res) => {
   const edgeConfig = getSupabaseEdgeConfig();
-  const enjinConfig = getEnjinCanaryConfig();
-  const enjinRuntime = createEnjinCanaryRuntime(enjinConfig);
 
   res.json({
     ok: true,
     name: 'Mochi Social',
     alpha: ALPHA_FEATURES.alpha,
-    economy: ALPHA_FEATURES.economy,
-    chain: ALPHA_FEATURES.chain,
     market: UNITY_SHARED_ROOM_CONTRACT.market,
     gameplay: ALPHA_FEATURES.gameplay,
     ugc: ALPHA_FEATURES.ugc,
@@ -680,8 +301,6 @@ app.get('/integration/alpha/status', (_req, res) => {
     avatarUploads: UNITY_SHARED_ROOM_CONTRACT.avatarUploads,
     ...getUnityServingStatus(),
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
-    enjinCanaryConfigured: enjinRuntime.configured,
-    chainRuntime: enjinRuntime,
     edgeFunctions: ALPHA_EDGE_FUNCTIONS
   });
 });
@@ -740,6 +359,15 @@ app.post('/integration/alpha/action', strictIntegrationJson, async (req, res) =>
 });
 
 app.post('/integration/alpha/enjin/submit', strictIntegrationJson, async (req, res) => {
+  if (process.env.MOCHI_SOCIAL_ENABLE_FUTURE_CHAIN_ROUTES !== 'true') {
+    res.status(404).json({
+      ok: false,
+      error: 'future_asset_route_disabled',
+      message: 'This closed alpha build does not expose future asset operations.'
+    });
+    return;
+  }
+
   const tokenResult = requireGameServerToken(req);
   if (!tokenResult.ok) {
     res.status(tokenResult.status).json({
@@ -774,7 +402,7 @@ app.post('/integration/alpha/enjin/submit', strictIntegrationJson, async (req, r
 
   try {
     const updateAction = await buildEnjinOperatorUpdateAction(envelope);
-    const forwarded = await forwardAlphaAction(updateAction as AlphaActionEnvelope);
+    const forwarded = await forwardAlphaAction(updateAction as unknown as AlphaActionEnvelope);
     res.status(forwarded.status).json({
       ok: forwarded.body.ok === true,
       noRealValue: true,
@@ -976,14 +604,12 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
   }
 
   await appendLocalAlphaLedger(action);
-  const chainRuntime = action.type.startsWith('chain.') ? createEnjinCanaryRuntime() : undefined;
   return {
     status: 202,
     body: {
       ok: true,
       mode: 'local-alpha-ledger',
       noRealValue: true,
-      ...(chainRuntime ? { chainRuntime } : {}),
       message: 'Alpha action recorded locally. Configure Mochirii Supabase Edge Functions for authoritative preview writes.'
     }
   };
@@ -1067,7 +693,6 @@ async function appendLocalAlphaLedger(action: AlphaActionEnvelope) {
       ledgerVersion: 1,
       source: 'local-alpha-ledger',
       alphaStopPoint: 'alpha-preview-ready',
-      chainNetwork: 'CANARY',
       noRealValue: true,
       receivedAt: new Date().toISOString(),
       ...action

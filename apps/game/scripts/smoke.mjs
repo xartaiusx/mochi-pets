@@ -67,12 +67,8 @@ if (requireUnityWebgl) {
   }
 }
 
-if (alphaStatus.chainRuntime?.network !== 'CANARY' || !['configured', 'configured-preview-stub'].includes(alphaStatus.chainRuntime?.mode)) {
-  throw new Error('Alpha status does not expose the Enjin Canary runtime mode.');
-}
-
-if (alphaStatus.enjinCanaryConfigured === false && alphaStatus.chainRuntime?.mode !== 'configured-preview-stub') {
-  throw new Error('Unconfigured Enjin Canary runtime must explain configured-preview-stub mode.');
+if ('chainRuntime' in alphaStatus || 'enjinCanaryConfigured' in alphaStatus) {
+  throw new Error('Alpha status must not expose future asset provider state for the Unity shared-room alpha.');
 }
 
 console.log(`Mochi Social smoke checks passed for ${baseUrl}`);
