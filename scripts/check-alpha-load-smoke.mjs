@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(currentDir, '..');
@@ -19,6 +20,7 @@ const report = {
   checkedAt: new Date().toISOString(),
   runId,
   playerCount,
+  git: readGitState(),
   endpoints: [],
   actions: [],
   ledgerPath,
@@ -203,4 +205,41 @@ function resolveFromRoot(value) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function readGitState() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const localHead = git(['rev-parse', 'HEAD']);
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const dirty = git(['status', '--porcelain']);
+  return {
+    branch: firstLine(branch.stdout),
+    localHead: firstLine(localHead.stdout),
+    upstream: firstLine(upstream.stdout),
+    dirty: dirty.ok ? dirty.stdout.split(/\r?\n/).filter(Boolean).map((line) => sanitize(line)) : ['git status unavailable'],
+    errors: [branch, localHead, upstream, dirty]
+      .filter((result) => !result.ok)
+      .map((result) => sanitize(result.stderr || result.error || 'git command failed'))
+  };
+}
+
+function git(args) {
+  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', shell: false });
+  return {
+    ok: result.status === 0,
+    stdout: result.stdout || '',
+    stderr: result.stderr || result.error?.message || ''
+  };
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
+}
+
+function sanitize(value) {
+  return String(value || '')
+    .replace(/\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{20,}\b/g, '<redacted-github-token>')
+    .replace(/\bsb_secret_[A-Za-z0-9_-]{8,}\b/g, '<redacted-supabase-secret>')
+    .replace(/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, '<redacted-jwt>')
+    .slice(0, 1000);
 }
