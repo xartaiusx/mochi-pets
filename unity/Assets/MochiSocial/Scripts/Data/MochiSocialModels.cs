@@ -142,7 +142,12 @@ namespace MochiSocial.Data
             next.lastInteractionUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             next.revision += 1;
 
-            switch ((interactionType ?? string.Empty).Trim().ToLowerInvariant())
+            if (!TryNormalizeInteraction(interactionType, out var normalizedInteraction, out error))
+            {
+                return false;
+            }
+
+            switch (normalizedInteraction)
             {
                 case "approach":
                     next.state = "approach";
@@ -159,14 +164,28 @@ namespace MochiSocial.Data
                     next.mood = "playful";
                     next.careMeter = Mathf.Clamp(next.careMeter + 4, 0, 100);
                     break;
-                default:
-                    error = "invalid_pet_interaction";
-                    return false;
             }
 
             next.bondTier = Mathf.Clamp(1 + next.careMeter / 25, 1, 5);
             updated = next;
             return true;
+        }
+
+        public static bool TryNormalizeInteraction(string interactionType, out string normalizedInteraction, out string error)
+        {
+            normalizedInteraction = (interactionType ?? string.Empty).Trim().ToLowerInvariant();
+            error = null;
+
+            switch (normalizedInteraction)
+            {
+                case "approach":
+                case "care":
+                case "wave":
+                    return true;
+                default:
+                    error = "invalid_pet_interaction";
+                    return false;
+            }
         }
     }
 

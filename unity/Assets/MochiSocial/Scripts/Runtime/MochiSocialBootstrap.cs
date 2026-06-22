@@ -54,7 +54,7 @@ namespace MochiSocial.Runtime
             if (lirabao != null)
             {
                 lirabao.SetState(SharedPetState.CreateDefault());
-                lirabao.LocalInteractionApplied += OnLocalPetInteractionApplied;
+                lirabao.LocalInteractionRequested += OnLocalPetInteractionRequested;
             }
         }
 
@@ -67,7 +67,7 @@ namespace MochiSocial.Runtime
 
             if (lirabao != null)
             {
-                lirabao.LocalInteractionApplied -= OnLocalPetInteractionApplied;
+                lirabao.LocalInteractionRequested -= OnLocalPetInteractionRequested;
             }
         }
 
@@ -83,25 +83,17 @@ namespace MochiSocial.Runtime
                 return;
             }
 
-            var playerId = AuthenticationService.Instance.IsSignedIn ? AuthenticationService.Instance.PlayerId : "local-preview";
-            if (!lirabao.TryApplyLocalInteraction(interactionType, playerId, lirabao.CurrentState.revision, out var error))
+            if (!AuthenticationService.Instance.IsSignedIn || stateStore == null)
             {
-                bridge.EmitError(error, "Lirabao did not accept that interaction.");
+                bridge.EmitError("shared_pet_signed_out", "Sign in before caring for Lirabao.");
                 return;
             }
 
-            var normalized = (interactionType ?? string.Empty).Trim().ToLowerInvariant();
-            if (normalized == "care")
+            var playerId = AuthenticationService.Instance.PlayerId;
+            if (!lirabao.TryRequestInteraction(interactionType, playerId, lirabao.CurrentState.revision, out var error))
             {
-                SetLocalSocialSignal("caring-for-lirabao");
-            }
-            else if (normalized == "wave")
-            {
-                SetLocalSocialSignal("waving");
-            }
-            else if (normalized == "approach")
-            {
-                AppendLocalSocialFeed("You approach Lirabao.");
+                bridge.EmitError(error, "Lirabao did not accept that interaction.");
+                return;
             }
         }
 
@@ -307,7 +299,7 @@ namespace MochiSocial.Runtime
             }
         }
 
-        private async void OnLocalPetInteractionApplied(SharedPetState state, string interactionType)
+        private async void OnLocalPetInteractionRequested(SharedPetState state, string interactionType)
         {
             if (!AuthenticationService.Instance.IsSignedIn || stateStore == null)
             {
@@ -319,6 +311,7 @@ namespace MochiSocial.Runtime
                 var actorId = string.IsNullOrWhiteSpace(alphaUserId) ? AuthenticationService.Instance.PlayerId : alphaUserId;
                 var updated = await stateStore.InteractWithSharedPetAsync(state, interactionType, actorId);
                 lirabao.SetState(updated);
+                RecordAcceptedPetInteraction(interactionType);
             }
             catch (Exception ex) when (ex.Message.Contains("shared_pet_revision_conflict", StringComparison.OrdinalIgnoreCase))
             {
@@ -328,6 +321,7 @@ namespace MochiSocial.Runtime
             }
             catch (Exception ex)
             {
+                lirabao.ShowUnavailable();
                 bridge.EmitError("shared_pet_save_failed", ex.Message);
             }
         }
@@ -430,6 +424,22 @@ namespace MochiSocial.Runtime
 
             localSocialSignalLabel = signal.label;
             AppendLocalSocialFeed($"Signal: {signal.label}.");
+        }
+
+        private void RecordAcceptedPetInteraction(string interactionType)
+        {
+            switch ((interactionType ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "care":
+                    SetLocalSocialSignal("caring-for-lirabao");
+                    break;
+                case "wave":
+                    SetLocalSocialSignal("waving");
+                    break;
+                case "approach":
+                    AppendLocalSocialFeed("You approach Lirabao.");
+                    break;
+            }
         }
 
         private void AppendLocalSocialFeed(string message)

@@ -16,7 +16,7 @@ namespace MochiSocial.Runtime
         private Vector3 startPosition;
 
         public SharedPetState CurrentState { get; private set; } = SharedPetState.CreateDefault();
-        public event Action<SharedPetState, string> LocalInteractionApplied;
+        public event Action<SharedPetState, string> LocalInteractionRequested;
 
         private void Awake()
         {
@@ -55,15 +55,28 @@ namespace MochiSocial.Runtime
             SetState(SharedPetState.CreateUnavailable());
         }
 
-        public bool TryApplyLocalInteraction(string interactionType, string actorId, long expectedRevision, out string error)
+        public bool TryRequestInteraction(string interactionType, string actorId, long expectedRevision, out string error)
         {
-            if (!SharedPetState.TryApplyInteraction(CurrentState, interactionType, actorId, expectedRevision, out var updated, out error))
+            error = null;
+
+            if (CurrentState == null || !CurrentState.IsValid())
+            {
+                error = "invalid_shared_pet_state";
+                return false;
+            }
+
+            if (expectedRevision >= 0 && CurrentState.revision != expectedRevision)
+            {
+                error = "shared_pet_revision_conflict";
+                return false;
+            }
+
+            if (!SharedPetState.TryNormalizeInteraction(interactionType, out var normalizedInteraction, out error))
             {
                 return false;
             }
 
-            SetState(updated);
-            LocalInteractionApplied?.Invoke(CurrentState, interactionType);
+            LocalInteractionRequested?.Invoke(CurrentState.Clone(), normalizedInteraction);
             return true;
         }
 

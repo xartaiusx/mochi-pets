@@ -10,19 +10,31 @@ namespace MochiSocial.Tests
     public sealed class MochiSocialPlayModeTests
     {
         [UnityTest]
-        public IEnumerator LirabaoLocalCareInteractionUpdatesRevisionAndMood()
+        public IEnumerator LirabaoCareInteractionRequestsCloudCodeWithoutMutatingState()
         {
             var petObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             var pet = petObject.AddComponent<LirabaoPetController>();
             pet.SetState(SharedPetState.CreateDefault());
+            var before = pet.CurrentState.Clone();
+            var requested = false;
+            SharedPetState requestedState = null;
+            string requestedInteraction = null;
+            pet.LocalInteractionRequested += (state, interactionType) =>
+            {
+                requested = true;
+                requestedState = state;
+                requestedInteraction = interactionType;
+            };
 
-            var before = pet.CurrentState.revision;
-            var accepted = pet.TryApplyLocalInteraction("care", "tester", before, out var error);
+            var accepted = pet.TryRequestInteraction("care", "tester", before.revision, out var error);
 
             Assert.That(accepted, Is.True, error);
-            Assert.That(pet.CurrentState.revision, Is.EqualTo(before + 1));
-            Assert.That(pet.CurrentState.state, Is.EqualTo("care_received"));
-            Assert.That(pet.CurrentState.mood, Is.EqualTo("comforted"));
+            Assert.That(requested, Is.True);
+            Assert.That(requestedInteraction, Is.EqualTo("care"));
+            Assert.That(requestedState.revision, Is.EqualTo(before.revision));
+            Assert.That(pet.CurrentState.revision, Is.EqualTo(before.revision));
+            Assert.That(pet.CurrentState.state, Is.EqualTo(before.state));
+            Assert.That(pet.CurrentState.mood, Is.EqualTo(before.mood));
             Object.Destroy(petObject);
             yield return null;
         }
@@ -34,10 +46,28 @@ namespace MochiSocial.Tests
             var pet = petObject.AddComponent<LirabaoPetController>();
             pet.SetState(SharedPetState.CreateDefault());
 
-            var accepted = pet.TryApplyLocalInteraction("care", "tester", 99, out var error);
+            var accepted = pet.TryRequestInteraction("care", "tester", 99, out var error);
 
             Assert.That(accepted, Is.False);
             Assert.That(error, Is.EqualTo("shared_pet_revision_conflict"));
+            Object.Destroy(petObject);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator LirabaoRejectsInvalidInteractionIntent()
+        {
+            var petObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var pet = petObject.AddComponent<LirabaoPetController>();
+            pet.SetState(SharedPetState.CreateDefault());
+            var requested = false;
+            pet.LocalInteractionRequested += (_, _) => requested = true;
+
+            var accepted = pet.TryRequestInteraction("upload-avatar", "tester", pet.CurrentState.revision, out var error);
+
+            Assert.That(accepted, Is.False);
+            Assert.That(error, Is.EqualTo("invalid_pet_interaction"));
+            Assert.That(requested, Is.False);
             Object.Destroy(petObject);
             yield return null;
         }
