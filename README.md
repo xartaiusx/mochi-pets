@@ -1,70 +1,62 @@
 # Mochi Social
 
-Mochi Social is a small multiplayer browser RPG scaffolded as its own MIT-licensed game repo. It is designed to be embedded by, or launched from, a separate Vercel/GitHub/Supabase website without mixing website source into the game repository.
+Mochi Social is the shared guild room for Mochirii's closed playtest.
 
-## Repo Shape
+Approved members enter one 3D room, create a curated character, meet Lirabao, care for the guild pet together, and return later with saved progress. The playtest has no real value and is only for closed testing.
 
-- `apps/game`: RPGJS v5 game runtime, Express adapter, integration manifest, Supabase bridge prep, and Fly.io deployment entrypoint.
-- `docs`: source basis, deployment notes, upstream policy, and website integration contract.
-- `.github/workflows/ci.yml`: install, typecheck, lint, test, and build checks.
+## Current Playtest Scope
+
+- One shared Jade Lantern room.
+- Three curated character presets.
+- One shared guild pet: Lirabao.
+- Desktop browser play.
+- Member sign-in for saved character and pet progress.
+- Tester password page before entry on the live site.
+
+Not included in this playtest: avatar uploads, multiple rooms, buying or selling, paid item value, mobile-specific play, or public release features.
 
 ## Local Development
 
 ```powershell
 npm install
-npm run dev:game
+npm run unity:verify
+npm run build:release
 ```
 
-Open two browser tabs to the Vite URL, usually `http://localhost:3000`, and verify both players can move around the same town. Interact with the NPC and chest to verify dialog, item pickup, and save-backed player variables.
-
-## Verification
+The release build uses the shared 3D room and the Node host together. Deployable builds should run with:
 
 ```powershell
-npm run typecheck
-npm run lint
-npm test
-npm run build
+$env:MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL='true'
 ```
 
-For endpoint checks against a running server:
+If the Unity build is missing while that setting is enabled, the room routes fail clearly instead of opening the old fallback.
+
+## Local Checks
 
 ```powershell
-$env:MOCHI_SOCIAL_BASE_URL='http://localhost:3000'
+npm run unity:verify
+npm run build:release
+npm run alpha:built-server-smoke
 npm run smoke
 npm run alpha:local-acceptance
 npm run alpha:load-smoke
-npm run alpha:browser-presence
-npm run alpha:visual-snapshot
-npm run alpha:enjin-operator-smoke
+npm run typecheck
+npm run lint
+npm test
+npm run secret-scan
+git diff --check
 ```
 
-`npm run alpha:local-acceptance` and `npm run alpha:load-smoke` expect the local fallback ledger unless their preview allow flags are set. `npm run alpha:browser-presence` uses local Chrome or `MOCHI_SOCIAL_BROWSER_EXECUTABLE` to verify two tabs show the playable canvas, HUD, presence chip, canvas movement signatures, observer-side canvas change, and HUD care/chat/emote/market/trade/Canary action loop. `npm run alpha:visual-snapshot` captures ignored first-screen page/canvas PNGs for local review. Both browser checks are local-only unless their hosted allow flags are set after explicit hosted-preview approval. `npm run alpha:enjin-operator-smoke` verifies the private Enjin operator route fails closed and avoids live Enjin submissions unless an operator explicitly opts in. See `docs/alpha-acceptance.md` and `docs/alpha-operator-handoff.md` for the full Alpha RC gate, including the remaining manual NPC/chest/habitat map-object check.
+Hosted checks, provider settings, deployments, new paid resources, and live load tests require explicit approval before running.
 
-For the local no-cost release-candidate pass, run:
+## Live Site Contract
 
-```powershell
-npm run alpha:local-suite
-npm run alpha:local-evidence
-npm run alpha:operator-checklist
-npm run alpha:report-hygiene
-```
+The website opens Mochi Social through stable room routes:
 
-The suite builds once, starts the built Express runtime on a disposable localhost port with throwaway env, runs endpoint smoke, local alpha acceptance, 10-25 tester HTTP load smoke, two-tab browser presence, first-screen visual snapshot, and the private Enjin operator fail-closed check, then writes `reports/alpha-local-suite.json` and shuts the server down. The evidence command reads the ignored localhost reports and writes no-secret `reports/alpha-local-evidence.json` and `reports/alpha-local-evidence.md` summaries. The checklist command refreshes the no-secret operator handoff, and the hygiene command scans ignored local reports plus that generated checklist for accidental secret patterns.
+- `/embed`
+- `/play`
+- `/healthz`
+- `/integration/game-manifest.json`
+- `/integration/alpha/status`
 
-## Deployment Boundary
-
-Vercel should host the future website. Fly.io should host the Mochi Social game runtime because the game uses a long-lived multiplayer server/WebSocket runtime. The future website should reference the game through one public URL:
-
-- Next.js: `NEXT_PUBLIC_MOCHI_SOCIAL_URL`
-- Vite/other: `VITE_MOCHI_SOCIAL_URL`
-
-## Upstream
-
-RPGJS is used as a dependency and fetch-only upstream reference:
-
-```powershell
-git remote add upstream https://github.com/RSamaium/RPG-JS.git
-git remote set-url --push upstream DISABLED
-```
-
-Do not vendor upstream source or unlicensed starter assets into this repo.
+The live page stays behind the tester password wall. The password opens the page shell; saved play requires a signed-in approved Mochirii member account.

@@ -753,7 +753,7 @@ function addSiteRequirements() {
     'mochi-social-browser-gates.md',
     'check:mochi-social-preview-ready'
   ]);
-  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii Codex ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-codex-ops.md', [
+  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii maintainer ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-maintainer-ops.md', [
     'Alpha Preview Ready Lane',
     'configured-preview-stub',
     'preview-live-gates',

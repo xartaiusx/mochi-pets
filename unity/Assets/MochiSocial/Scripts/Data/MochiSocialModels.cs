@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MochiSocial.Core;
 using UnityEngine;
 
@@ -34,6 +35,16 @@ namespace MochiSocial.Data
     [Serializable]
     public sealed class SharedPetState
     {
+        private static readonly HashSet<string> AllowedStates = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "idle",
+            "approach",
+            "happy",
+            "care_received",
+            "stale_revision_reload",
+            "unavailable"
+        };
+
         public int version = 1;
         public string petId = MochiSocialConstants.SharedPetKey;
         public string displayName = MochiSocialConstants.SharedPetDisplayName;
@@ -77,6 +88,7 @@ namespace MochiSocial.Data
             return version == 1 &&
                    petId == MochiSocialConstants.SharedPetKey &&
                    !string.IsNullOrWhiteSpace(displayName) &&
+                   AllowedStates.Contains(state ?? string.Empty) &&
                    careMeter >= 0 &&
                    careMeter <= 100 &&
                    bondTier >= 1 &&
@@ -120,7 +132,7 @@ namespace MochiSocial.Data
                     next.careMeter = Mathf.Clamp(next.careMeter + 2, 0, 100);
                     break;
                 case "care":
-                    next.state = "happy";
+                    next.state = "care_received";
                     next.mood = "comforted";
                     next.careMeter = Mathf.Clamp(next.careMeter + 8, 0, 100);
                     break;

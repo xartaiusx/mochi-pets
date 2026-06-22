@@ -6,6 +6,7 @@ const SHARED_PET_KEY = "lirabao";
 const CUSTOM_ITEM_ID = "room:jade-lantern-room";
 const SHARED_PET_ITEM_KEY = "sharedPet.v1";
 const FULL_STATE_KEY = "room:jade-lantern-room/sharedPet.v1";
+const ALLOWED_STATES = new Set(["idle", "approach", "happy", "care_received", "stale_revision_reload", "unavailable"]);
 
 module.exports = async ({ params, context, logger }) => {
   assertSharedRoomParams(params);
@@ -69,6 +70,7 @@ function isValidSharedPetState(state) {
     state.version === 1 &&
     state.petId === SHARED_PET_KEY &&
     typeof state.displayName === "string" &&
+    ALLOWED_STATES.has(state.state) &&
     Number.isInteger(state.careMeter) &&
     state.careMeter >= 0 &&
     state.careMeter <= 100 &&

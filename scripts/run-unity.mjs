@@ -6,7 +6,7 @@ const root = process.cwd();
 const unityProjectPath = resolve(process.env.MOCHI_SOCIAL_UNITY_PROJECT_PATH || 'unity');
 const unityEditorPath = process.env.UNITY_EDITOR_PATH ||
   'C:\\Program Files\\Unity\\Hub\\Editor\\6000.5.0f1\\Editor\\Unity.exe';
-const localDir = resolve(process.env.MOCHI_SOCIAL_UNITY_REPORT_DIR || 'unity/Logs/MochiSocialCodex');
+const localDir = resolve(process.env.MOCHI_SOCIAL_UNITY_REPORT_DIR || 'unity/Logs/MochiSocialLocal');
 
 const command = process.argv[2] || '';
 const commands = new Map([

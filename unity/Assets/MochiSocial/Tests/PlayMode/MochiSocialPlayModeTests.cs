@@ -21,6 +21,7 @@ namespace MochiSocial.Tests
 
             Assert.That(accepted, Is.True, error);
             Assert.That(pet.CurrentState.revision, Is.EqualTo(before + 1));
+            Assert.That(pet.CurrentState.state, Is.EqualTo("care_received"));
             Assert.That(pet.CurrentState.mood, Is.EqualTo("comforted"));
             Object.Destroy(petObject);
             yield return null;

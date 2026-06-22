@@ -7,6 +7,7 @@ const CUSTOM_ITEM_ID = "room:jade-lantern-room";
 const SHARED_PET_ITEM_KEY = "sharedPet.v1";
 const FULL_STATE_KEY = "room:jade-lantern-room/sharedPet.v1";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+const ALLOWED_STATES = new Set(["idle", "approach", "happy", "care_received", "stale_revision_reload", "unavailable"]);
 
 module.exports = async ({ params, context, logger, secretManager }) => {
   assertSharedRoomParams(params);
@@ -58,7 +59,7 @@ function applyInteraction(current, interactionType, actorId) {
     next.mood = "curious";
     next.careMeter = clamp(current.careMeter + 2, 0, 100);
   } else if (interactionType === "care") {
-    next.state = "happy";
+    next.state = "care_received";
     next.mood = "comforted";
     next.careMeter = clamp(current.careMeter + 8, 0, 100);
   } else if (interactionType === "wave") {
@@ -135,6 +136,7 @@ function isValidSharedPetState(state) {
     state.version === 1 &&
     state.petId === SHARED_PET_KEY &&
     typeof state.displayName === "string" &&
+    ALLOWED_STATES.has(state.state) &&
     Number.isInteger(state.careMeter) &&
     state.careMeter >= 0 &&
     state.careMeter <= 100 &&

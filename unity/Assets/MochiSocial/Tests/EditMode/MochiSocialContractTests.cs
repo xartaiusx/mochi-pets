@@ -65,5 +65,34 @@ namespace MochiSocial.Tests
             pet.careMeter = 250;
             Assert.That(pet.IsValid(), Is.False);
         }
+
+        [Test]
+        public void SharedPetCareUsesCareReceivedState()
+        {
+            var pet = SharedPetState.CreateDefault();
+
+            var ok = SharedPetState.TryApplyInteraction(
+                pet,
+                "care",
+                "tester-a",
+                pet.revision,
+                out var updated,
+                out var error);
+
+            Assert.That(ok, Is.True, error);
+            Assert.That(updated.state, Is.EqualTo("care_received"));
+            Assert.That(updated.mood, Is.EqualTo("comforted"));
+            Assert.That(updated.careMeter, Is.GreaterThan(pet.careMeter));
+            Assert.That(updated.revision, Is.EqualTo(pet.revision + 1));
+        }
+
+        [Test]
+        public void SharedPetRejectsUnknownStateNames()
+        {
+            var pet = SharedPetState.CreateDefault();
+            pet.state = "custom_upload_state";
+
+            Assert.That(pet.IsValid(), Is.False);
+        }
     }
 }
