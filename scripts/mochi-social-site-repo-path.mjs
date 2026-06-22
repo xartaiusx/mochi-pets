@@ -6,6 +6,7 @@ export function resolveMochiSocialSiteRepoPath(root, env = process.env) {
   if (configured) return resolve(root, configured);
 
   const candidates = [
+    resolve(root, '../Mochirii Website'),
     resolve(root, '../Mochirii-mochi-social-alpha'),
     resolve(root, '../Mochirii')
   ];

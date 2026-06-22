@@ -325,6 +325,7 @@ function summarize(items) {
 }
 
 function renderMarkdown(summaryReport) {
+  const siteGit = summaryReport.siteGit || {};
   const rows = summaryReport.requirements
     .map((item) => `| ${item.id} | ${item.status} | ${item.message.replace(/\|/g, '/')} |`)
     .join('\n');
@@ -362,7 +363,7 @@ Push ${root} branch ${summaryReport.git.branch || '<game-branch>'} to ${summaryR
 \`\`\`
 
 \`\`\`text
-Push ${siteRepoPath} branch ${summaryReport.siteGit.branch || '<site-branch>'} to ${summaryReport.siteGit.upstream || '<site-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
+Push ${siteRepoPath} branch ${siteGit.branch || '<site-branch>'} to ${siteGit.upstream || '<site-upstream>'} if it is ahead, then verify GitHub Actions/PR checks for Mochirii.
 \`\`\`
 
 \`\`\`text
