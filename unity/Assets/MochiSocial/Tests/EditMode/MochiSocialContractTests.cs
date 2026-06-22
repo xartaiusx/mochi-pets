@@ -80,10 +80,23 @@ namespace MochiSocial.Tests
         {
             var json = "{\"type\":\"MOCHI_SOCIAL_AUTH\",\"protocolVersion\":1,\"accessToken\":\"sb-token\",\"functionsUrl\":\"https://example.functions.supabase.co\"}";
             var message = JsonUtility.FromJson<BridgeIncomingMessage>(json);
+            message.NormalizePayload();
             Assert.That(message.type, Is.EqualTo("MOCHI_SOCIAL_AUTH"));
             Assert.That(message.protocolVersion, Is.EqualTo(1));
             Assert.That(message.accessToken, Is.EqualTo("sb-token"));
             Assert.That(message.functionsUrl, Does.Contain("functions.supabase.co"));
+        }
+
+        [Test]
+        public void BridgeParsesWebsiteNestedAuthPayload()
+        {
+            var json = "{\"type\":\"MOCHI_SOCIAL_AUTH\",\"protocolVersion\":1,\"payload\":{\"accessToken\":\"sb-token\"},\"functionsUrl\":\"https://example.supabase.co/functions/v1\"}";
+            var message = JsonUtility.FromJson<BridgeIncomingMessage>(json);
+            message.NormalizePayload();
+
+            Assert.That(message.type, Is.EqualTo("MOCHI_SOCIAL_AUTH"));
+            Assert.That(message.accessToken, Is.EqualTo("sb-token"));
+            Assert.That(message.functionsUrl, Does.EndWith("/functions/v1"));
         }
 
         [Test]

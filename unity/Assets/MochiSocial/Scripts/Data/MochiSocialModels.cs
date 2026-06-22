@@ -175,11 +175,37 @@ namespace MochiSocial.Data
     {
         public string type;
         public int protocolVersion;
+        public BridgeAuthPayload payload;
         public string accessToken;
         public string expiresAt;
         public string functionsUrl;
         public string unityAuthUrl;
         public string supabaseUrl;
+
+        public void NormalizePayload()
+        {
+            if (payload == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                accessToken = payload.accessToken;
+            }
+
+            if (string.IsNullOrWhiteSpace(expiresAt))
+            {
+                expiresAt = payload.expiresAt;
+            }
+        }
+    }
+
+    [Serializable]
+    public sealed class BridgeAuthPayload
+    {
+        public string accessToken;
+        public string expiresAt;
     }
 
     [Serializable]

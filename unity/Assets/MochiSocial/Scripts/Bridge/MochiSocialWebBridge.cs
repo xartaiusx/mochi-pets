@@ -93,6 +93,7 @@ namespace MochiSocial.Bridge
                 return;
             }
 
+            message.NormalizePayload();
             MessageReceived?.Invoke(message);
         }
     }
