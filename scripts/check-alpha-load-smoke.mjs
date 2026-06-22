@@ -65,10 +65,7 @@ async function run() {
   assert(manifest.body.characterPresets?.avatarUploads === false, 'Manifest must reject avatar uploads.');
   assert(manifest.body.sharedPet?.key === 'lirabao', 'Manifest must expose Lirabao.');
   assert(manifest.body.sharedPet?.universalStarter === true, 'Manifest must keep Lirabao universal.');
-  assert(manifest.body.market?.enabled === false, 'Manifest must disable market systems for Unity Preview Ready.');
-  assert(manifest.body.market?.fixedPrice === false, 'Manifest must disable fixed-price listings.');
-  assert(manifest.body.market?.directTrade === false, 'Manifest must disable direct trade.');
-  assert(manifest.body.market?.auctions === false, 'Manifest must keep auctions disabled.');
+  assertNoFutureSystemKeys(manifest.body, 'Manifest');
   assert(manifest.body.avatarUploads === false, 'Manifest must disable avatar uploads.');
   assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Manifest must expose Alpha Preview Ready as the tester-entry stop point.');
   assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Manifest must reject provider mutation by default.');
@@ -81,7 +78,7 @@ async function run() {
   assert(alphaStatus.body.room?.sharedPetKey === 'lirabao', 'Alpha status must expose Lirabao as the shared pet key.');
   assert(alphaStatus.body.runtime?.realtimeAuthority === 'ugs-distributed-authority', 'Alpha status must expose UGS Distributed Authority.');
   assert(alphaStatus.body.runtime?.stateAuthority === 'ugs-cloud-save', 'Alpha status must expose UGS Cloud Save.');
-  assert(alphaStatus.body.market?.enabled === false, 'Alpha status must disable market systems for Unity Preview Ready.');
+  assertNoFutureSystemKeys(alphaStatus.body, 'Alpha status');
   assert(alphaStatus.body.avatarUploads === false, 'Alpha status must disable avatar uploads.');
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {
@@ -205,6 +202,11 @@ function resolveFromRoot(value) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function assertNoFutureSystemKeys(payload, label) {
+  const text = JSON.stringify(payload);
+  assert(!/\b(?:market|trade|cashout)\b/i.test(text), `${label} must not publish future economy keys for the Unity shared-room alpha.`);
 }
 
 function readGitState() {

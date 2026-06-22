@@ -82,7 +82,7 @@ async function run() {
   assert(manifest.body.runtime?.realtimeAuthority === 'ugs-distributed-authority', 'Built server manifest must expose UGS Distributed Authority.');
   assert(manifest.body.runtime?.stateAuthority === 'ugs-cloud-save', 'Built server manifest must expose UGS Cloud Save.');
   assert(manifest.body.alpha?.noRealValue === true, 'Built server manifest must keep no-real-value posture.');
-  assert(manifest.body.market?.auctions === false, 'Built server manifest must keep auctions disabled.');
+  assertNoFutureSystemKeys(manifest.body, 'Built server manifest');
   assert(manifest.body.alphaPreview?.stopPoint === 'alpha-preview-ready', 'Built server manifest must expose Alpha Preview Ready as the website stop point.');
   assert(manifest.body.alphaPreview?.providerMutationAllowedByDefault === false, 'Built server manifest must reject provider mutation by default.');
   assert(manifest.body.alphaPreview?.fundedChainRequiredForPreview === false, 'Built server manifest must not require funded-chain gates for Preview Ready.');
@@ -102,6 +102,7 @@ async function run() {
   assert(alpha.body.room?.mode === 'single-shared-room', 'Built server alpha status must expose the Unity single shared room.');
   assert(alpha.body.room?.capacity === 25, 'Built server alpha status must expose the 25-tester Unity room capacity.');
   assert(alpha.body.room?.sharedPetKey === 'lirabao', 'Built server alpha status must expose Lirabao as the shared starter pet.');
+  assertNoFutureSystemKeys(alpha.body, 'Built server alpha status');
   assert(!('chainRuntime' in alpha.body), 'Built server alpha status must not expose future chain runtime state.');
   assert(!('enjinCanaryConfigured' in alpha.body), 'Built server alpha status must not expose future chain provider state.');
   assert(alpha.body.edgeFunctions?.progress === 'mochi-social-alpha-progress', 'Built server alpha status must expose the progress Edge Function name.');
@@ -213,6 +214,11 @@ function delay(ms) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function assertNoFutureSystemKeys(body, label) {
+  const text = JSON.stringify(body);
+  assert(!/\b(?:market|trade|cashout)\b/i.test(text), `${label} must not publish future economy keys for the Unity shared-room alpha.`);
 }
 
 function isUnityWebglHtml(value) {

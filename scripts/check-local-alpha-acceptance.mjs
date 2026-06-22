@@ -158,6 +158,7 @@ function assertManifestContract(body, label) {
   assert(body.alphaPreview?.fundedChainRequiredForPreview === false, `${label} must not require funded-chain gates for Preview Ready.`);
   assert(!('chain' in body), `${label} must not expose future asset provider configuration.`);
   assert(!('chainRuntime' in body), `${label} must not expose future asset runtime state.`);
+  assertNoFutureSystemKeys(body, label);
   assertSharedRoomContract(body, label);
   assertRoutes(body.routes, label);
   assert(body.cleanRoom?.restrictedSourceReferences === false, `${label} must declare zero restricted-source references.`);
@@ -173,6 +174,7 @@ function assertStatusContract(body) {
   assert(body.alpha?.stopPoint === 'alpha-preview-ready', 'Alpha status must target Alpha Preview Ready first.');
   assert(!('chainRuntime' in body), 'Alpha status must not expose future asset runtime state.');
   assert(!('enjinCanaryConfigured' in body), 'Alpha status must not expose future asset provider state.');
+  assertNoFutureSystemKeys(body, 'Alpha status');
   assertSharedRoomContract(body, 'Alpha status');
 }
 
@@ -200,11 +202,6 @@ function assertSharedRoomContract(body, label) {
   assert(body.sharedPet?.name === 'Lirabao', `${label} must expose Lirabao name.`);
   assert(body.sharedPet?.universalStarter === true, `${label} must keep Lirabao universal.`);
   assert(body.sharedPet?.stateAuthority === 'cloud-code-authoritative-save', `${label} must keep Cloud Code authoritative shared pet saves.`);
-  assert(body.market?.enabled === false, `${label} must disable market systems for Preview Ready.`);
-  assert(body.market?.fixedPrice === false, `${label} must disable fixed-price listings.`);
-  assert(body.market?.directTrade === false, `${label} must disable direct trade.`);
-  assert(body.market?.auctions === false, `${label} must disable auctions.`);
-  assert(body.market?.cashout === false, `${label} must disable cashout.`);
   assert(body.avatarUploads === false, `${label} must disable avatar uploads.`);
   assert(body.edgeFunctions?.unityAuth === 'mochi-social-unity-auth', `${label} must expose the Unity auth Edge Function.`);
   assert(body.edgeFunctions?.action === 'mochi-social-alpha-action', `${label} must expose the alpha action Edge Function.`);
@@ -307,4 +304,9 @@ function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
+}
+
+function assertNoFutureSystemKeys(body, label) {
+  const text = JSON.stringify(body);
+  assert(!/\b(?:market|trade|cashout)\b/i.test(text), `${label} must not publish future economy keys for the Unity shared-room alpha.`);
 }

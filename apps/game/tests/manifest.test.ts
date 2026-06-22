@@ -55,13 +55,6 @@ describe('game manifest', () => {
         universalStarter: true,
         stateAuthority: 'cloud-code-authoritative-save'
       },
-      market: {
-        enabled: false,
-        fixedPrice: false,
-        directTrade: false,
-        auctions: false,
-        cashout: false
-      },
       edgeFunctions: {
         unityAuth: 'mochi-social-unity-auth'
       },
@@ -84,5 +77,7 @@ describe('game manifest', () => {
         restrictedSourceReferences: false
       }
     });
+    expect(manifest).not.toHaveProperty('market');
+    expect(JSON.stringify(manifest)).not.toMatch(/\b(?:market|trade|cashout)\b/i);
   });
 });

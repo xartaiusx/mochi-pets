@@ -1557,7 +1557,7 @@ const checks = [
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
-    includes: ['publishes the Unity WebGL shared-room contract', "scene: 'JadeLanternRoom'", "sharedPetKey: 'lirabao'", 'universalStarter: true', 'enabled: false']
+    includes: ['publishes the Unity WebGL shared-room contract', "scene: 'JadeLanternRoom'", "sharedPetKey: 'lirabao'", 'universalStarter: true', "not.toHaveProperty('market')"]
   },
   {
     file: 'apps/game/tests/alpha-content.test.ts',
@@ -2184,10 +2184,7 @@ const unityPreviewReadinessChecks = [
       'avatarUploads: false',
       "universalStarter: true",
       "stateAuthority: 'cloud-code-authoritative-save'",
-      'enabled: false',
-      'fixedPrice: false',
-      'directTrade: false',
-      'cashout: false',
+      'assertNoFutureSystemKeys',
       'unity.character.created',
       'unity.character.updated',
       'unity.pet.interaction',
@@ -2213,9 +2210,8 @@ const unityPreviewReadinessChecks = [
       "presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']",
       'avatarUploads: false',
       'universalStarter: true',
-      'enabled: false',
-      'fixedPrice: false',
-      'directTrade: false'
+      "not.toHaveProperty('market')",
+      "not.toMatch(/\\b(?:market|trade|cashout)\\b/i)"
     ]
   },
   {
@@ -2231,9 +2227,8 @@ const unityPreviewReadinessChecks = [
       "manifest.room?.sharedPetKey !== 'lirabao'",
       "manifest.runtime?.realtimeAuthority !== 'ugs-distributed-authority'",
       "manifest.runtime?.stateAuthority !== 'ugs-cloud-save'",
-      "manifest.market?.enabled !== false",
-      'no-market',
-      'no-avatar-upload',
+      'assertNoFutureSystemKeys',
+      'curated-character',
       'Alpha status must not expose future asset provider state'
     ]
   },
@@ -2263,7 +2258,7 @@ const unityPreviewReadinessChecks = [
       'ledgerVersion=1',
       'alpha-preview-ready',
       'must not expose future asset network state',
-      'market systems for Preview Ready',
+      'assertNoFutureSystemKeys',
       'avatar uploads'
     ]
   },
@@ -2283,7 +2278,7 @@ const unityPreviewReadinessChecks = [
       'room:jade-lantern-room/sharedPet.v1',
       "manifest.body.engine === 'unity-webgl'",
       "manifest.body.room?.mode === 'single-shared-room'",
-      "manifest.body.market?.enabled === false",
+      'assertNoFutureSystemKeys',
       "alphaStatus.body.runtime?.stateAuthority === 'ugs-cloud-save'"
     ]
   }

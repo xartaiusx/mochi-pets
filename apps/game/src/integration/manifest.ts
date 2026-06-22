@@ -41,14 +41,6 @@ export const UNITY_SHARED_ROOM_CONTRACT = {
     states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable'],
     stateAuthority: 'cloud-code-authoritative-save'
   },
-  market: {
-    enabled: false,
-    fixedPrice: false,
-    guildReceipts: false,
-    directTrade: false,
-    auctions: false,
-    cashout: false
-  },
   avatarUploads: false
 } as const;
 
@@ -124,7 +116,6 @@ export interface GameManifest {
   characterPresets: typeof UNITY_SHARED_ROOM_CONTRACT.characterPresets;
   sharedPet: typeof UNITY_SHARED_ROOM_CONTRACT.sharedPet;
   avatarUploads: typeof UNITY_SHARED_ROOM_CONTRACT.avatarUploads;
-  market: typeof UNITY_SHARED_ROOM_CONTRACT.market;
   bridge: {
     protocolVersion: number;
     namespace: 'MOCHI_SOCIAL';

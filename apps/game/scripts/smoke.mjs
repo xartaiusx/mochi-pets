@@ -36,9 +36,11 @@ if (
   throw new Error('Manifest does not expose the Unity shared-room runtime contract.');
 }
 
-if (manifest.alpha?.noRealValue !== true || manifest.market?.enabled !== false || manifest.avatarUploads !== false) {
-  throw new Error('Manifest does not keep the Unity alpha no-real-value, no-market, no-avatar-upload posture.');
+if (manifest.alpha?.noRealValue !== true || manifest.avatarUploads !== false) {
+  throw new Error('Manifest does not keep the Unity alpha no-real-value, curated-character posture.');
 }
+
+assertNoFutureSystemKeys(manifest, 'Manifest');
 
 const alphaStatus = await fetch(`${baseUrl}/integration/alpha/status`).then((response) => response.json());
 if (
@@ -52,9 +54,11 @@ if (
   throw new Error('Alpha status does not expose the Unity shared-room runtime contract.');
 }
 
-if (alphaStatus.alpha?.noRealValue !== true || alphaStatus.market?.enabled !== false || alphaStatus.avatarUploads !== false) {
-  throw new Error('Alpha status does not keep the Unity alpha no-real-value, no-market, no-avatar-upload posture.');
+if (alphaStatus.alpha?.noRealValue !== true || alphaStatus.avatarUploads !== false) {
+  throw new Error('Alpha status does not keep the Unity alpha no-real-value, curated-character posture.');
 }
+
+assertNoFutureSystemKeys(alphaStatus, 'Alpha status');
 
 if (requireUnityWebgl) {
   if (manifest.activeRuntime !== 'unity-webgl' || manifest.unityWebglBuild?.present !== true) {
@@ -72,3 +76,10 @@ if ('chainRuntime' in alphaStatus || 'enjinCanaryConfigured' in alphaStatus) {
 }
 
 console.log(`Mochi Social smoke checks passed for ${baseUrl}`);
+
+function assertNoFutureSystemKeys(payload, label) {
+  const json = JSON.stringify(payload);
+  if (/\b(?:market|trade|cashout)\b/i.test(json)) {
+    throw new Error(`${label} must not publish future economy keys for the Unity shared-room alpha.`);
+  }
+}

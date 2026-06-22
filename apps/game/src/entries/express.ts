@@ -142,14 +142,6 @@ const UNITY_SHARED_ROOM_CONTRACT = {
     states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable'],
     stateAuthority: 'cloud-code-authoritative-save'
   },
-  market: {
-    enabled: false,
-    fixedPrice: false,
-    guildReceipts: false,
-    directTrade: false,
-    auctions: false,
-    cashout: false
-  },
   edgeFunctions: {
     unityAuth: 'mochi-social-unity-auth',
     action: 'mochi-social-alpha-action',
@@ -230,20 +222,21 @@ app.get('/healthz', (_req, res) => {
 });
 
 app.get('/integration/game-manifest.json', (req, res) => {
-  res.json({
+  const manifest = {
     ...createGameManifestForExpress(getPublicOrigin(req), process.env.npm_package_version ?? '0.1.0'),
     ...getUnityServingStatus()
-  });
+  };
+  assertNoFutureSystemKeys(manifest, 'game manifest');
+  res.json(manifest);
 });
 
 app.get('/integration/alpha/status', (_req, res) => {
   const edgeConfig = getSupabaseEdgeConfig();
 
-  res.json({
+  const status = {
     ok: true,
     name: 'Mochi Social',
     alpha: ALPHA_FEATURES.alpha,
-    market: UNITY_SHARED_ROOM_CONTRACT.market,
     gameplay: ALPHA_FEATURES.gameplay,
     ugc: ALPHA_FEATURES.ugc,
     engine: UNITY_SHARED_ROOM_CONTRACT.engine,
@@ -256,7 +249,9 @@ app.get('/integration/alpha/status', (_req, res) => {
     ...getUnityServingStatus(),
     supabaseEdgeConfigured: Boolean(edgeConfig.functionsUrl && edgeConfig.serverToken),
     edgeFunctions: ALPHA_EDGE_FUNCTIONS
-  });
+  };
+  assertNoFutureSystemKeys(status, 'alpha status');
+  res.json(status);
 });
 
 app.get('/integration/alpha/progress', async (req, res) => {
@@ -410,6 +405,12 @@ function getUnityServingStatus() {
       active: !unityWebglBuildPresent && !unityWebglRequired
     }
   };
+}
+
+function assertNoFutureSystemKeys(payload: unknown, label: string) {
+  if (/\b(?:market|trade|cashout)\b/i.test(JSON.stringify(payload))) {
+    throw new Error(`${label} must not publish future economy keys for the Unity shared-room alpha.`);
+  }
 }
 
 function getBearerToken(req: Request) {
