@@ -99,6 +99,44 @@ namespace MochiSocial.Tests
         }
 
         [Test]
+        public void SharedPetApproachUsesApproachState()
+        {
+            var pet = SharedPetState.CreateDefault();
+
+            var ok = SharedPetState.TryApplyInteraction(
+                pet,
+                "approach",
+                "tester-a",
+                pet.revision,
+                out var updated,
+                out var error);
+
+            Assert.That(ok, Is.True, error);
+            Assert.That(updated.state, Is.EqualTo("approach"));
+            Assert.That(updated.mood, Is.EqualTo("curious"));
+            Assert.That(updated.careMeter, Is.GreaterThan(pet.careMeter));
+        }
+
+        [Test]
+        public void SharedPetWaveUsesHappyState()
+        {
+            var pet = SharedPetState.CreateDefault();
+
+            var ok = SharedPetState.TryApplyInteraction(
+                pet,
+                "wave",
+                "tester-a",
+                pet.revision,
+                out var updated,
+                out var error);
+
+            Assert.That(ok, Is.True, error);
+            Assert.That(updated.state, Is.EqualTo("happy"));
+            Assert.That(updated.mood, Is.EqualTo("playful"));
+            Assert.That(updated.careMeter, Is.GreaterThan(pet.careMeter));
+        }
+
+        [Test]
         public void SharedPetRejectsUnknownStateNames()
         {
             var pet = SharedPetState.CreateDefault();

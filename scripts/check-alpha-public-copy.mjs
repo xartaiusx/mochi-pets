@@ -52,6 +52,20 @@ const checks = [
     ]
   },
   {
+    file: 'unity/Assets/MochiSocial/Scripts/Runtime/LirabaoInteractionPrompt.cs',
+    includes: [
+      'E Care  |  Q Wave',
+      'InteractWithLirabao("approach")',
+      'InteractWithLirabao("care")',
+      'InteractWithLirabao("wave")'
+    ],
+    forbidden: [
+      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
+      /\b(?:market|trade|trading|cashout)\b/i
+    ]
+  },
+  {
     file: 'unity/Assets/Plugins/WebGL/MochiSocialBridge.jslib',
     includes: [
       'MOCHI_SOCIAL_READY',

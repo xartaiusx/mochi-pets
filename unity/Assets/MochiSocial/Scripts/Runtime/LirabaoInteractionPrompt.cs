@@ -10,6 +10,7 @@ namespace MochiSocial.Runtime
         [SerializeField] private float interactionDistance = 2.4f;
 
         private Transform player;
+        private bool wasInRange;
 
         private void Awake()
         {
@@ -39,12 +40,25 @@ namespace MochiSocial.Runtime
             if (promptLabel != null)
             {
                 promptLabel.gameObject.SetActive(canInteract);
+                promptLabel.text = "E Care  |  Q Wave";
+            }
+
+            if (canInteract && !wasInRange)
+            {
+                bootstrap?.InteractWithLirabao("approach");
             }
 
             if (canInteract && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return)))
             {
                 bootstrap?.InteractWithLirabao("care");
             }
+
+            if (canInteract && Input.GetKeyDown(KeyCode.Q))
+            {
+                bootstrap?.InteractWithLirabao("wave");
+            }
+
+            wasInRange = canInteract;
         }
     }
 }
