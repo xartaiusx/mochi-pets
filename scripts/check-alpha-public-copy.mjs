@@ -48,12 +48,19 @@ const checks = [
     includes: [
       'Playtest temporarily paused',
       'The Mochi Social room is not available right now.',
-      'saved play will resume when the room is ready.'
+      'saved play will resume when the room is ready.',
+      'Saved play could not be reached right now. Please try again soon.',
+      'Playtest action recorded locally. Sign in through Mochirii for saved play.',
+      'Saved play is not connected for this room yet.'
     ],
     forbidden: [
       /Mochi Social Unity build missing/i,
       /Unity WebGL build is required/i,
-      /npm run unity:build:webgl/i
+      /npm run unity:build:webgl/i,
+      /Supabase alpha Edge Function/i,
+      /Configure Mochirii Supabase Edge Functions/i,
+      /Signed-in account progress requires Mochirii Supabase Edge Functions/i,
+      /Mochirii Supabase alpha progress could not be reached/i
     ]
   },
   {

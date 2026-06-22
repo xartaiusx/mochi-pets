@@ -624,13 +624,13 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
         status: response.status,
         body
       };
-    } catch (error) {
+    } catch {
       return {
         status: 502,
         body: {
           ok: false,
-          error: 'alpha_edge_unreachable',
-          message: error instanceof Error ? error.message : 'Supabase alpha Edge Function could not be reached.'
+          error: 'saved_play_unavailable',
+          message: 'Saved play could not be reached right now. Please try again soon.'
         }
       };
     }
@@ -641,9 +641,9 @@ async function forwardAlphaAction(action: AlphaActionEnvelope): Promise<{ status
     status: 202,
     body: {
       ok: true,
-      mode: 'local-alpha-ledger',
+      mode: 'local-playtest-record',
       noRealValue: true,
-      message: 'Alpha action recorded locally. Configure Mochirii Supabase Edge Functions for authoritative preview writes.'
+      message: 'Playtest action recorded locally. Sign in through Mochirii for saved play.'
     }
   };
 }
@@ -655,8 +655,8 @@ async function forwardAlphaProgress(playerId: string): Promise<{ status: number;
       status: 503,
       body: {
         ok: false,
-        error: 'alpha_progress_edge_not_configured',
-        message: 'Signed-in account progress requires Mochirii Supabase Edge Functions and a scoped game server token.'
+        error: 'saved_play_not_configured',
+        message: 'Saved play is not connected for this room yet.'
       }
     };
   }
@@ -668,13 +668,13 @@ async function forwardAlphaProgress(playerId: string): Promise<{ status: number;
       status: response.status,
       body
     };
-  } catch (error) {
+  } catch {
     return {
       status: 502,
       body: {
         ok: false,
-        error: 'alpha_progress_edge_unreachable',
-        message: error instanceof Error ? error.message : 'Mochirii Supabase alpha progress could not be reached.'
+        error: 'saved_play_unavailable',
+        message: 'Saved play could not be reached right now. Please try again soon.'
       }
     };
   }

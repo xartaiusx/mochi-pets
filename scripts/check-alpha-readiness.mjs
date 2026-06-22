@@ -2276,6 +2276,7 @@ const unityPreviewReadinessChecks = [
       'ugs-distributed-authority',
       'ugs-cloud-save',
       'cloud-code-authoritative-save',
+      'local-playtest-record',
       'local-alpha-ledger',
       'ledgerVersion=1',
       'alpha-preview-ready',
@@ -2288,6 +2289,7 @@ const unityPreviewReadinessChecks = [
     file: 'scripts/check-alpha-load-smoke.mjs',
     includes: [
       'MOCHI_SOCIAL_LOAD_PLAYERS',
+      'local-playtest-record',
       'local-alpha-ledger',
       'ledgerVersion=1',
       'alpha-preview-ready',

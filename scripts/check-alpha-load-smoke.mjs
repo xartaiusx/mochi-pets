@@ -126,7 +126,7 @@ async function run() {
     const action = actions[index];
     const response = responses[index];
     assert(response.status === 202, `${action.type} for ${action.requestId} should record with 202.`);
-    assert(response.body.mode === 'local-alpha-ledger', `${action.requestId} did not use local-alpha-ledger.`);
+    assert(response.body.mode === 'local-playtest-record', `${action.requestId} did not use local-playtest-record.`);
     assert(response.body.noRealValue === true, `${action.requestId} did not preserve no-real-value response.`);
     report.actions.push({ requestId: action.requestId, type: action.type, status: response.status });
   }
