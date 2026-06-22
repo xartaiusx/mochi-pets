@@ -2,7 +2,7 @@
 
 This handoff keeps Mochi Social closed, no-real-value, and preview-only. It covers two stop points: Alpha Preview Ready first, then Alpha RC Ready after funded Enjin proof is explicitly approved. It is for the human operator who has access to Fly, Vercel, Supabase, Enjin Platform, and the Wallet Daemon host.
 
-For Codex tool choice, secret entry, source hierarchy, preview ownership, CI gates, Supabase authority, Enjin state handling, Fuel Tank dispatch, WebSocket presence, and Discord boundaries, follow [`docs/codex-external-ops.md`](codex-external-ops.md).
+For work surface choice, secret entry, source hierarchy, preview ownership, CI gates, Supabase authority, Enjin state handling, Fuel Tank dispatch, WebSocket presence, and Discord boundaries, follow [`docs/external-ops.md`](external-ops.md).
 
 For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-operations.md). Public-repo commits and pushes are allowed without a separate prompt; verify PR/CI results afterward. Do not deploy, scale, run hosted load smoke, create provider resources, set provider secrets/env vars, fund Fuel Tanks, or submit live Enjin transactions without explicit user approval for that exact action.
 

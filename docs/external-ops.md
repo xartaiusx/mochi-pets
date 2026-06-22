@@ -1,10 +1,10 @@
-# Codex External Ops Runbook
+# External Ops Runbook
 
-This runbook tells Codex how to operate Mochi Social Alpha RC across local code, Chrome dashboards, CLI tools, and external services without guessing.
+This runbook tells maintainers how to operate Mochi Social Alpha RC across local code, browser dashboards, CLI tools, and external services without guessing.
 
 ## Source Basis
 
-- Codex manual: `AGENTS.md`, skills, MCP, Chrome, Computer Use, and hooks.
+- Repository guidance: `AGENTS.md`, local workflow notes, browser checks, desktop handoff, and hooks.
 - GitHub Docs: Actions billing, budgets, branch protection, required checks, and PR checks.
 - Vercel Docs: Preview environment variables and WebSocket guidance.
 - Supabase Docs: Edge Function secrets and `getUser(jwt)` token validation.
@@ -25,11 +25,11 @@ Use sources in this order:
 
 When source behavior conflicts with repo intent, stop and record the conflict before changing code, secrets, branch protection, deployment, or chain state.
 
-## Tool Choice
+## Work Surface Choice
 
 - Use CLI for reproducible verification: `gh`, `npm`, `supabase`, `fly`, build checks, smoke checks, and PR checks.
 - Use Chrome for logged-in dashboards: GitHub billing, Vercel project env, Supabase project/branch UI, Fly dashboard, Enjin Platform, cloud Wallet Daemon setup, and Discord Developer Portal.
-- Use Computer Use only when CLI and Chrome automation cannot reach a required desktop or dashboard interaction.
+- Use desktop handoff only when CLI and browser workflows cannot reach a required desktop or dashboard interaction.
 - Use the in-app browser for local or public preview testing that does not require the user's signed-in Chrome profile.
 - Use dashboard-only flow for payment details, recovery phrases, seed/passphrase creation, and any provider step that requires MFA or private account confirmation.
 
@@ -50,11 +50,11 @@ Use [`docs/alpha-preview-ready.md`](alpha-preview-ready.md) for the next live-si
 - `preview-live-gates`: Fly game URL, Mochirii Vercel Preview `/games/mochi-social`, `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, Supabase allowlist, terms, feedback, short-lived iframe auth, no-real-value labels, and hosted contract checks after explicit approval.
 - `funded-chain-gates`: Enjin collection ID, Fuel Tank ID, cENJ funding, Wallet Daemon signing, live operator smoke, and finalized chain proof.
 
-Codex should optimize for `preview-live-gates` first. `funded-chain-gates` are expected red until the user explicitly approves cENJ/Fuel Tank/signing work. Do not set dummy Enjin IDs, dummy Fuel Tank IDs, or fake readiness flags to make Alpha RC pass.
+Maintain preview-live-gates first. `funded-chain-gates` are expected red until the user explicitly approves cENJ/Fuel Tank/signing work. Do not set dummy Enjin IDs, dummy Fuel Tank IDs, or fake readiness flags to make Alpha RC pass.
 
 For Preview Ready, keep the Canary/certificate UI visible and make the runtime report `chainRuntime.mode="configured-preview-stub"`. Chain requests are audit-only preview records until real Enjin finality exists. Never credit inventory, settle trades, settle market value, or imply player value from a chain request unless the Enjin state is `FINALIZED`.
 
-Use these prompt templates for future Codex passes:
+Use these request templates for future maintainer passes:
 
 ```text
 Build the next alpha feature against no-real-value Alpha Preview Ready. Keep Enjin visible as configured-preview-stub and do not clear funded-chain gates.
@@ -71,7 +71,7 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 ## Secret Entry Protocol
 
 - The user types payment details, API tokens, seed phrases, passphrases, and one-time codes privately.
-- Codex may verify only secret names, digests, creation timestamps, deployment status, health checks, or successful API responses.
+- Maintainers may verify only secret names, digests, creation timestamps, deployment status, health checks, or successful API responses.
 - Repo scripts may write no-secret operator checklists into `C:\Users\xtyty\Desktop\Creds`; those files must contain placeholders, secret names, statuses, and commands only.
 - Never print, summarize, screenshot, commit, or paste secret values.
 - Never store secrets in `.env`, docs, PR comments, local ledger output, screenshots, or chat.

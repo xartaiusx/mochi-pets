@@ -374,7 +374,7 @@ ${failureLines}
 
 ## Known Provider Action IDs
 
-These are all provider action IDs the Alpha RC tooling recognizes. Not every known action is required on every pass.
+These are all provider action IDs the Alpha RC workflow recognizes. Not every known action is required on every pass.
 
 ${expectedActionLines}
 

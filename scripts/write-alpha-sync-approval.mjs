@@ -748,7 +748,7 @@ Suggested explicit approval text for hosted/provider gates:
 I approve the specific provider action: <exact Fly/Vercel/Supabase/Enjin action>. I understand it may add usage or charges.
 \`\`\`
 
-Do not use this packet as approval by itself. It is a checklist for the operator and Codex before requesting or granting approval for provider/cost-sensitive work.
+Do not use this packet as approval by itself. It is a checklist for the operator and maintainers before requesting or granting approval for provider/cost-sensitive work.
 `;
 }
 

@@ -41,7 +41,7 @@ const requiredSnippets = [
     includes: [
       '/goal Execute docs/goals/monero-treasury-to-enjin-funding.md',
       'Parallel-Agent Safety',
-      'second agent may be working on Mochi Social game development in parallel',
+      'second maintainer may be working on Mochi Social game development in parallel',
       'Avoid gameplay/map/HUD/asset files',
       'Do not run `npm run prepare-assets`',
       'Do not run destructive Git commands',
@@ -70,7 +70,7 @@ const requiredSnippets = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['docs/goals/monero-treasury-to-enjin-funding.md', 'another agent is working on Mochi Social gameplay in parallel', 'avoid gameplay/map/HUD/asset files', 'never use `git add -A`']
+    includes: ['docs/goals/monero-treasury-to-enjin-funding.md', 'another maintainer is working on Mochi Social gameplay', 'avoid gameplay/map/HUD/asset files', 'never use `git add -A`']
   },
   {
     file: 'scripts/check-secrets.mjs',

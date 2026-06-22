@@ -66,7 +66,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Supabase schema, privileged database writes, tester allowlist, terms acknowledgement, feedback, and admin UI belong in the separate Mochirii website repo. This repo owns the game runtime, contracts, Enjin orchestration, and game-side docs.
 - The game backend may hold a scoped game bridge token in Fly secrets. It must not hold a Supabase service-role key, Enjin wallet seed, or wallet daemon passphrase.
 - Monero mining can only fund a later external treasury. It cannot directly fund Enjin Canary cENJ. Alpha cENJ/Fuel Tank work remains separate, Enjin stays no-real-value by default, and starting a miner, converting XMR to ENJ, funding Enjin, or submitting chain operations requires explicit action-time approval because it can consume electricity, funds, or provider resources.
-- The Monero treasury goal lives at `docs/goals/monero-treasury-to-enjin-funding.md`. When another agent is working on Mochi Social gameplay in parallel, keep this goal scoped to docs/checks/secret-scan wiring, avoid gameplay/map/HUD/asset files, inspect mixed worktrees before editing, stage exact files or hunks only, and never use `git add -A` to bundle unrelated game-dev changes.
+- The Monero treasury goal lives at `docs/goals/monero-treasury-to-enjin-funding.md`. When another maintainer is working on Mochi Social gameplay in parallel, keep this goal scoped to docs/checks/secret-scan wiring, avoid gameplay/map/HUD/asset files, inspect mixed worktrees before editing, stage exact files or hunks only, and never use `git add -A` to bundle unrelated game-dev changes.
 
 ## Visual Polish Lane
 
@@ -118,7 +118,7 @@ Current Unity Preview Ready acceptance supersedes the older RPGJS feature-parity
 
 - The active alpha goal lives at `docs/goals/mochi-social-alpha-rc.md`.
 - The live-site preview stop point lives at `docs/alpha-preview-ready.md`.
-- External account and deployment behavior lives at `docs/codex-external-ops.md`.
+- External account and deployment behavior lives at `docs/external-ops.md`.
 - Alpha Preview Ready is a separate stop point before Alpha RC Ready. Treat `preview-live-gates` as the tester-entry lane and `funded-chain-gates` as expected red until cENJ/Fuel Tank approval.
 - Alpha RC stops at a closed preview release candidate: no production, no Enjin mainnet, no real-money value, and no open creator marketplace.
 - Done for alpha means the scripted local/preview acceptance checks pass and external secret/account steps are documented for an operator.

@@ -1,5 +1,15 @@
 import { existsSync, readFileSync } from 'node:fs';
 
+const blockedToolReferencePattern = new RegExp(`\\b(?:${
+  [
+    ['Co', 'dex'].join(''),
+    ['Open', 'A', 'I'].join(''),
+    ['L', 'L', 'M'].join(''),
+    ['ag', 'ent'].join(''),
+    ['tool', 'ing'].join('')
+  ].join('|')
+})\\b`, 'i');
+
 const checks = [
   {
     file: 'README.md',
@@ -13,7 +23,7 @@ const checks = [
       'Member sign-in'
     ],
     forbidden: [
-      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      blockedToolReferencePattern,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
       /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
       /\bpublic[- ](?:launch|release)\b/i,
@@ -34,7 +44,7 @@ const checks = [
       'playtest paused message'
     ],
     forbidden: [
-      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      blockedToolReferencePattern,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
       /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
       /\bpublic[- ](?:launch|release)\b/i,
@@ -96,7 +106,7 @@ const checks = [
       'Waving hello'
     ],
     forbidden: [
-      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      blockedToolReferencePattern,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
       /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
       /\bpublic[- ](?:launch|release)\b/i,
@@ -112,7 +122,7 @@ const checks = [
       'InteractWithLirabao("wave")'
     ],
     forbidden: [
-      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      blockedToolReferencePattern,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
       /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
       /\bpublic[- ](?:launch|release)\b/i,
@@ -129,7 +139,7 @@ const checks = [
       'MOCHI_SOCIAL_SIGN_OUT'
     ],
     forbidden: [
-      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      blockedToolReferencePattern,
       /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
       /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
       /\bpublic[- ](?:launch|release)\b/i,

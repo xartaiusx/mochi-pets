@@ -1,6 +1,6 @@
 # Monero Treasury To Enjin Funding Lane
 
-This runbook keeps Monero mining separate from Mochi Social runtime code. Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ. For alpha, Enjin Canary testing still uses cENJ/Fuel Tank tooling. Any mined XMR is an external operator treasury that may later be manually converted to ENJ for mainnet work only after a separate approval.
+This runbook keeps Monero mining separate from Mochi Social runtime code. Monero can mine XMR, but it cannot directly fund Enjin Canary cENJ. For alpha, Enjin Canary testing still uses cENJ/Fuel Tank workflows. Any mined XMR is an external operator treasury that may later be manually converted to ENJ for mainnet work only after a separate approval.
 
 ## Source Basis
 
@@ -23,7 +23,7 @@ This runbook keeps Monero mining separate from Mochi Social runtime code. Monero
 
 Monero mining is an operator system, not a website feature, game feature, CI feature, or player feature. No browser mining, hidden startup, persistence, provider-hosted mining, GitHub Actions mining, visitor/device mining, or mining code belongs in Mochi Social.
 
-Starting a miner is cost-bearing because it uses electricity and hardware. Codex may prepare docs, checks, local folders, and command scaffolding, but must ask for action-time approval before launching `monerod`, P2Pool, XMRig, wallet RPC, or any long-running miner process.
+Starting a miner is cost-bearing because it uses electricity and hardware. Maintainers may prepare docs, checks, local folders, and command scaffolding, but must ask for action-time approval before launching `monerod`, P2Pool, XMRig, wallet RPC, or any long-running miner process.
 
 ## Local-Only Workspace
 
@@ -60,7 +60,7 @@ The approved architecture is local owned hardware only:
 3. XMRig connects to local P2Pool, typically `127.0.0.1:3333`.
 4. CPU settings start conservatively, with pause-on-battery and pause-while-active behavior where practical.
 
-Codex must not start any of those processes without explicit action-time approval.
+No maintainer workflow may start any of those processes without explicit action-time approval.
 
 ## Evidence
 
@@ -86,7 +86,7 @@ That command writes ignored, no-secret handoff files under `C:\Users\xtyty\Docum
 
 ## Canary Funding Lane
 
-Alpha remains no-real-value. Enjin Canary testing uses cENJ/Fuel Tank tooling, not mined XMR. Do not try to convert XMR into cENJ, do not set dummy `ENJIN_COLLECTION_ID` or `ENJIN_FUEL_TANK_ID`, and do not clear funded-chain gates until real cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality proof are approved and verified.
+Alpha remains no-real-value. Enjin Canary testing uses cENJ/Fuel Tank workflows, not mined XMR. Do not try to convert XMR into cENJ, do not set dummy `ENJIN_COLLECTION_ID` or `ENJIN_FUEL_TANK_ID`, and do not clear funded-chain gates until real cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality proof are approved and verified.
 
 Wallet Daemon remains a separate outbound-only signer. Keep `wallet.seed`, `KEY_PASS`, and `PLATFORM_KEY` private and outside the repo.
 

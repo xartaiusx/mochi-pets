@@ -46,7 +46,7 @@ Before a cost-bearing action, state:
 2. The exact command or dashboard action.
 3. Why it could add charges or usage.
 4. The no-cost alternative, if one exists.
-5. That Codex will not proceed without explicit approval for that action.
+5. That no maintainer workflow proceeds without explicit approval for that action.
 
 ## Current Cost Posture
 

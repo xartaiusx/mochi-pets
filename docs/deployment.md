@@ -31,7 +31,7 @@ fly secrets set SUPABASE_URL="..." SUPABASE_PUBLISHABLE_KEY="..."
 fly deploy
 ```
 
-If Fly app creation returns a payment or billing prompt, stop and hand the browser dashboard to the operator. Codex must not enter payment details. If the user explicitly approves app or volume creation, use the explicit app/volume path so the preview environment stays predictable:
+If Fly app creation returns a payment or billing prompt, stop and hand the browser dashboard to the operator. Maintainers must not enter payment details into shared logs, chat, commits, or PR text. If the user explicitly approves app or volume creation, use the explicit app/volume path so the preview environment stays predictable:
 
 ```powershell
 $fly = Join-Path $env:USERPROFILE ".fly\bin\flyctl.exe"

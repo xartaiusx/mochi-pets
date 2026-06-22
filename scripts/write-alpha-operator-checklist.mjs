@@ -274,7 +274,7 @@ function renderChecklist() {
 
 Generated: ${generatedAt}
 
-This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into Codex chat, Git, PR comments, screenshots, or reports.
+This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into chat, Git, PR comments, screenshots, or reports.
 
 No-cost rule: public-repo commits and pushes are allowed; verify PR checks afterward. Do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun paid/quota-bearing Actions, set provider secrets/env vars, or mutate provider resources without explicit user approval for that exact cost-bearing action. Prefer local checks and read-only provider status commands.
 
@@ -428,7 +428,7 @@ Current required outcome:
 
 Cloud Wallet Daemon path:
 
-1. Keep one Enjin Platform API token ready. The dashboard may show that a token exists, but Codex should not read or print it.
+1. Keep one Enjin Platform API token ready. The dashboard may show that a token exists, but shared workflows should not read or print it.
 2. Deploy the official Wallet Daemon as an outbound-only cloud signer only after explicit approval for any cloud resources. The Enjin docs describe AWS CloudFormation as the simplest managed path; use the current official template/link from the docs or Enjin settings.
 3. Enter PLATFORM_KEY=<private-enjin-platform-token> and KEY_PASS=<private-wallet-daemon-passphrase> privately in the cloud secret fields.
 4. Save the generated mnemonic/seed backup and passphrase in a password manager or encrypted vault only.

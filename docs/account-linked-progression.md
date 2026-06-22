@@ -21,7 +21,7 @@ Mochi Social keeps guest play local and makes signed-in Mochirii play account-li
 
 ## Parallel-Agent Guardrail
 
-Before editing, run `git status --short --branch` in both repos. Preserve unrelated dirty work, stage exact files or hunks only, and never use `git add -A` while another agent may be editing gameplay, HUD, map, asset, Reaper, or ModMail files.
+Before editing, run `git status --short --branch` in both repos. Preserve unrelated dirty work, stage exact files or hunks only, and never use `git add -A` while another maintainer may be editing gameplay, HUD, map, asset, Reaper, or ModMail files.
 
 ## No-Cost Boundary
 

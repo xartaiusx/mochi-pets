@@ -9,7 +9,7 @@ const syncApproval = read('scripts/write-alpha-sync-approval.mjs');
 const previewReady = read('scripts/check-alpha-preview-ready.mjs');
 const rcAudit = read('scripts/check-alpha-rc-audit.mjs');
 const noCostDocs = read('docs/no-cost-operations.md');
-const externalOpsDocs = read('docs/codex-external-ops.md');
+const externalOpsDocs = read('docs/external-ops.md');
 
 assertSnippets('external gates', externalGates, [
   "const previewFlySecrets = [",

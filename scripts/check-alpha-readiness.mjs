@@ -23,7 +23,7 @@ const checks = [
   },
   {
     file: 'AGENTS.md',
-    includes: ['Node 24 LTS', 'Unity WebGL is the active runtime', 'legacy rollback/reference', 'no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
+    includes: ['Node 24 LTS', 'Unity WebGL is the active runtime', 'legacy rollback/reference', 'no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
   },
   {
     file: 'AGENTS.md',
@@ -118,7 +118,7 @@ const checks = [
     includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:local-site-iframe', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
-    file: 'docs/codex-external-ops.md',
+    file: 'docs/external-ops.md',
     includes: [
       'Source Hierarchy',
       'Source Basis',
@@ -135,7 +135,7 @@ const checks = [
       'Fuel Tank Dispatch Contract',
       'WebSocket And Presence Verification',
       'Discord Boundary',
-      'Computer Use',
+      'desktop handoff',
       'No-Cost Default'
     ]
   },
@@ -217,7 +217,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/external-ops.md', 'Current Private Gates']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
