@@ -1949,7 +1949,7 @@ const checks = [
   },
   {
     file: 'scripts/check-built-server-smoke.mjs',
-    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'Built server manifest must not expose legacy playable content catalog', 'Built server alpha status must not expose future chain runtime state', 'Local-only built Express server smoke']
+    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'brotliDecompressSync', 'MochiSocialBridgeRuntime', '__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG', 'isAllowedParentOrigin', 'targetParentOrigin', 'Built server /embed must install the Unity bridge origin and auth endpoint guard', 'Built server manifest must not expose legacy playable content catalog', 'Built server alpha status must not expose future chain runtime state', 'Local-only built Express server smoke']
   },
   {
     file: 'scripts/check-alpha-local-suite.mjs',
@@ -2221,6 +2221,11 @@ const unityPreviewReadinessChecks = [
       "manifest.activeRuntime !== 'unity-webgl'",
       'Release smoke requires a present Unity WebGL build',
       '/embed did not serve a Unity WebGL page',
+      'data-mochi-social-unity-bridge-config',
+      '__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG',
+      'allowedParentOrigins.has(event.origin)',
+      'sanitizeAuthMessage(event.data)',
+      '/embed did not install the Unity bridge origin and auth endpoint guard',
       "manifest.engine !== 'unity-webgl'",
       "manifest.room?.mode !== 'single-shared-room'",
       "manifest.room?.capacity !== 25",

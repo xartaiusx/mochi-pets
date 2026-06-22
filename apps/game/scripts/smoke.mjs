@@ -69,6 +69,15 @@ if (requireUnityWebgl) {
   if (!/createUnityInstance|Build\/.+\.loader\.js|Unity WebGL/i.test(embedHtml)) {
     throw new Error('/embed did not serve a Unity WebGL page while MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true.');
   }
+
+  if (
+    !embedHtml.includes('data-mochi-social-unity-bridge-config') ||
+    !embedHtml.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG') ||
+    !embedHtml.includes('allowedParentOrigins.has(event.origin)') ||
+    !embedHtml.includes('sanitizeAuthMessage(event.data)')
+  ) {
+    throw new Error('/embed did not install the Unity bridge origin and auth endpoint guard.');
+  }
 }
 
 if ('chainRuntime' in alphaStatus || 'enjinCanaryConfigured' in alphaStatus) {

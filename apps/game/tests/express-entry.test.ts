@@ -22,4 +22,14 @@ describe('Express runtime entry', () => {
     expect(expressEntrySource).toContain("app.use('/parties', async (req, res, next) => {");
     expect(expressEntrySource).toContain('await transport.handleNodeRequest(req, res, next');
   });
+
+  it('injects a fixed Unity bridge origin and auth endpoint guard', () => {
+    expect(expressEntrySource).toContain('data-mochi-social-unity-bridge-config');
+    expect(expressEntrySource).toContain('window.__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG');
+    expect(expressEntrySource).toContain('allowedParentOrigins.has(event.origin)');
+    expect(expressEntrySource).toContain('event.stopImmediatePropagation();');
+    expect(expressEntrySource).toContain('sanitizeAuthMessage(event.data);');
+    expect(expressEntrySource).toContain('MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL');
+    expect(expressEntrySource).toContain('ALPHA_EDGE_FUNCTIONS.unityAuth');
+  });
 });

@@ -418,6 +418,7 @@ async function renderUnityIndexHtml() {
     return html;
   }
 
+  const bridgeConfigJson = escapeScriptJson(getUnityBridgeConfig());
   const injection = `<style data-mochi-social-unity-frame-style>
 html,
 body {
@@ -456,6 +457,65 @@ body {
   z-index: 4;
 }
 </style>
+<script data-mochi-social-unity-bridge-config>
+(() => {
+  const config = ${bridgeConfigJson};
+  const allowedParentOrigins = new Set(config.allowedParentOrigins || []);
+  const fixedFunctionsUrl = normalizeUrl(config.functionsUrl);
+  const fixedUnityAuthUrl = normalizeUrl(config.unityAuthUrl);
+  const fixedSupabaseUrl = normalizeUrl(config.supabaseUrl);
+
+  function normalizeUrl(value) {
+    return typeof value === 'string' ? value.trim().replace(/\\/+$/, '') : '';
+  }
+
+  function isBridgeAuthMessage(data) {
+    return data && (data.type === 'MOCHI_SOCIAL_AUTH' || data.type === 'MOCHI_SOCIAL_SIGN_OUT');
+  }
+
+  function sanitizeAuthMessage(data) {
+    const payload = data.payload && typeof data.payload === 'object' ? data.payload : {};
+    const accessToken = payload.accessToken || data.accessToken || '';
+    const expiresAt = payload.expiresAt || data.expiresAt || '';
+    const sanitizedPayload = {
+      accessToken,
+      expiresAt,
+      functionsUrl: fixedFunctionsUrl,
+      supabaseFunctionsUrl: fixedFunctionsUrl,
+      unityAuthUrl: fixedUnityAuthUrl,
+      supabaseUrl: fixedSupabaseUrl
+    };
+
+    data.payload = sanitizedPayload;
+    data.accessToken = accessToken;
+    data.expiresAt = expiresAt;
+    data.functionsUrl = fixedFunctionsUrl;
+    data.unityAuthUrl = fixedUnityAuthUrl;
+    data.supabaseUrl = fixedSupabaseUrl;
+  }
+
+  window.__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG = Object.freeze({
+    allowedParentOrigins: Array.from(allowedParentOrigins),
+    functionsUrl: fixedFunctionsUrl,
+    unityAuthUrl: fixedUnityAuthUrl,
+    supabaseUrl: fixedSupabaseUrl,
+    targetParentOrigin: config.targetParentOrigin || Array.from(allowedParentOrigins)[0] || ''
+  });
+
+  window.addEventListener('message', (event) => {
+    if (!isBridgeAuthMessage(event.data)) return;
+    if (!allowedParentOrigins.has(event.origin)) {
+      event.stopImmediatePropagation();
+      return;
+    }
+    try {
+      sanitizeAuthMessage(event.data);
+    } catch (_error) {
+      event.stopImmediatePropagation();
+    }
+  }, true);
+})();
+</script>
 <script data-mochi-social-unity-key-guard>
 (() => {
   const gameplayKeys = new Set(['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D', 'Enter', 'Space', ' ', 'Spacebar']);
@@ -485,6 +545,32 @@ body {
   return html.includes('</body>')
     ? html.replace('</body>', `${injection}</body>`)
     : `${html}${injection}`;
+}
+
+function getUnityBridgeConfig() {
+  const functionsUrl = trimTrailingSlash(process.env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL ?? '');
+  const supabaseUrl = trimTrailingSlash(process.env.MOCHI_SOCIAL_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '');
+  const allowedParentOrigins = Array.from(getAllowedOrigins());
+  const targetParentOrigin = process.env.MOCHI_SOCIAL_SITE_ORIGIN?.trim() ||
+    allowedParentOrigins.find((origin) => !/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::|$)/i.test(origin)) ||
+    allowedParentOrigins[0] ||
+    '';
+
+  return {
+    allowedParentOrigins,
+    targetParentOrigin,
+    functionsUrl,
+    unityAuthUrl: functionsUrl ? `${functionsUrl}/${ALPHA_EDGE_FUNCTIONS.unityAuth}` : '',
+    supabaseUrl
+  };
+}
+
+function trimTrailingSlash(value: string) {
+  return value.trim().replace(/\/+$/, '');
+}
+
+function escapeScriptJson(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
 function assertNoFutureSystemKeys(payload: unknown, label: string) {

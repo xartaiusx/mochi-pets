@@ -1,12 +1,15 @@
+import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
+import { brotliDecompressSync } from 'node:zlib';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(currentDir, '..');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_BUILT_SERVER_REPORT || 'reports/built-server-smoke.json');
+const unityFrameworkPath = resolve(root, 'unity/Builds/WebGL/Build/WebGL.framework.js.br');
 const port = Number(process.env.MOCHI_SOCIAL_BUILT_SERVER_PORT || await findFreePort());
 const baseUrl = `http://localhost:${port}`;
 const token = 'local-built-server-smoke-token';
@@ -48,6 +51,8 @@ try {
 }
 
 async function run() {
+  verifyUnityBridgeBuild();
+
   child = spawn(process.execPath, ['apps/game/dist/server/express.js'], {
     cwd: root,
     env: buildServerEnv(),
@@ -114,9 +119,23 @@ async function run() {
 
   const play = await request('/play', 'play route');
   assert(play.status === 200 && isUnityWebglHtml(play.body), 'Built server /play must return the Unity WebGL HTML.');
+  assert(hasUnityBridgeGuard(play.body), 'Built server /play must install the Unity bridge origin and auth endpoint guard.');
 
   const embed = await request('/embed', 'embed route');
   assert(embed.status === 200 && isUnityWebglHtml(embed.body), 'Built server /embed must return the Unity WebGL HTML.');
+  assert(hasUnityBridgeGuard(embed.body), 'Built server /embed must install the Unity bridge origin and auth endpoint guard.');
+}
+
+function verifyUnityBridgeBuild() {
+  const framework = brotliDecompressSync(readFileSync(unityFrameworkPath)).toString('utf8');
+  assert(framework.includes('MochiSocialBridgeRuntime'), 'Unity WebGL framework must include the Mochi Social bridge runtime helper.');
+  assert(framework.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG'), 'Unity WebGL framework must read the served bridge config.');
+  assert(framework.includes('isAllowedParentOrigin'), 'Unity WebGL framework must check parent origins before accepting auth messages.');
+  assert(framework.includes('targetParentOrigin'), 'Unity WebGL framework must target a configured parent origin for replies.');
+  assert(!framework.includes('payload.functionsUrl || payload.supabaseFunctionsUrl'), 'Unity WebGL framework must not trust parent-supplied Supabase function URLs.');
+  assert(!framework.includes('payload.unityAuthUrl || data.unityAuthUrl'), 'Unity WebGL framework must not trust parent-supplied Unity auth URLs.');
+  assert(!framework.includes('payload.supabaseUrl || data.supabaseUrl'), 'Unity WebGL framework must not trust parent-supplied Supabase URLs.');
+  assert(!framework.includes('postMessage(message, "*")'), 'Unity WebGL framework must not send bridge replies with a wildcard target origin.');
 }
 
 function buildServerEnv() {
@@ -224,6 +243,14 @@ function assertNoFutureSystemKeys(body, label) {
 
 function isUnityWebglHtml(value) {
   return /createUnityInstance|Build\/.+\.loader\.js|Unity WebGL/i.test(String(value || ''));
+}
+
+function hasUnityBridgeGuard(value) {
+  const html = String(value || '');
+  return html.includes('data-mochi-social-unity-bridge-config') &&
+    html.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG') &&
+    html.includes('allowedParentOrigins.has(event.origin)') &&
+    html.includes('sanitizeAuthMessage(event.data)');
 }
 
 function readGitState() {
