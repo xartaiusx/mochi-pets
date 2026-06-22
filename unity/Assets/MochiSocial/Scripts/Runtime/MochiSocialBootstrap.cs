@@ -105,7 +105,7 @@ namespace MochiSocial.Runtime
             }
 
             authInFlight = true;
-            bridge.EmitAuthState("authenticating", "Signing into Unity services.");
+            bridge.EmitAuthState("authenticating", "Signing into Mochi Social.");
 
             try
             {
@@ -124,7 +124,7 @@ namespace MochiSocial.Runtime
             catch (Exception ex)
             {
                 bridge.EmitError("unity_auth_failed", ex.Message);
-                bridge.EmitAuthState("signed-out", "Unity auth failed.");
+                bridge.EmitAuthState("signed-out", "Sign-in failed.");
             }
             finally
             {
@@ -143,7 +143,7 @@ namespace MochiSocial.Runtime
             characterState = null;
             alphaUserId = null;
             unityPlayerId = null;
-            bridge.EmitAuthState("signed-out", "Signed out of Unity services.");
+            bridge.EmitAuthState("signed-out", "Signed out of Mochi Social.");
         }
 
         private async Task<CharacterState> LoadOrCreateCharacterAsync()
@@ -175,7 +175,7 @@ namespace MochiSocial.Runtime
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[Mochi Social] Shared pet Cloud Code load fell back to local default: {ex.Message}");
+                Debug.LogWarning($"[Mochi Social] Shared Lirabao state could not be loaded: {ex.Message}");
                 lirabao.SetState(SharedPetState.CreateDefault());
             }
         }

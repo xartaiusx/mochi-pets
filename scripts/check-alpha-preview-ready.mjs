@@ -32,6 +32,7 @@ async function run() {
   addCommandRequirement('preview.lint', 'Lint checks passed.', commandForPlatform('npm'), ['run', 'lint']);
   addCommandRequirement('preview.tests', 'Automated tests passed.', commandForPlatform('npm'), ['test']);
   addCommandRequirement('preview.secret-scan', 'Secret scan passed.', commandForPlatform('npm'), ['run', 'secret-scan']);
+  addCommandRequirement('preview.public-copy', 'Player-facing alpha copy guard passed.', commandForPlatform('npm'), ['run', 'alpha:public-copy']);
   addCommandRequirement('preview.diff-check', 'Git whitespace check passed.', 'git', ['diff', '--check']);
 
   addCurrentOkReport('preview.built-server-report', 'Built server smoke report is current and green.', 'reports/built-server-smoke.json', root);
@@ -83,7 +84,8 @@ function addStaticContractRequirement() {
     '"unity:verify"',
     '"build:release"',
     '"alpha:built-server-smoke"',
-    '"secret-scan"'
+    '"secret-scan"',
+    '"alpha:public-copy"'
   ]) {
     if (!packageJson.includes(snippet)) failures.push(`package.json missing ${snippet}`);
   }

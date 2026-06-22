@@ -26,6 +26,9 @@ jobs:
       - name: Secret scan
         run: npm run secret-scan
 
+      - name: Alpha public copy
+        run: npm run alpha:public-copy
+
       - name: Alpha readiness
         run: npm run alpha:readiness
 

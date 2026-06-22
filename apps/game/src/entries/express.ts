@@ -335,11 +335,11 @@ if (unityWebglBuildPresent) {
   app.get(['/play', '/embed'], (_req, res) => {
     res.status(503).type('html').send(`<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Mochi Social Unity build missing</title></head>
+<head><meta charset="utf-8"><title>Mochi Social playtest paused</title></head>
 <body>
 <main>
-<h1>Mochi Social Unity build missing</h1>
-<p>The Unity WebGL build is required for this runtime. Run <code>npm run unity:build:webgl</code> before release checks or deployment.</p>
+<h1>Playtest temporarily paused</h1>
+<p>The Mochi Social room is not available right now. The tester page can stay open, and saved play will resume when the room is ready.</p>
 </main>
 </body>
 </html>`);

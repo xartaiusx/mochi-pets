@@ -28,6 +28,7 @@
     "start": "npm --workspace @mochi-social/game run start",
     "clean-room-scan": "node scripts/check-clean-room-literals.mjs",
     "secret-scan": "node scripts/check-secrets.mjs",
+    "alpha:public-copy": "node scripts/check-alpha-public-copy.mjs",
     "alpha:readiness": "node scripts/check-alpha-readiness.mjs",
     "alpha:monero-treasury": "node scripts/check-monero-treasury-guardrails.mjs",
     "alpha:monero-operator-handoff": "node scripts/write-monero-operator-handoff.mjs",
