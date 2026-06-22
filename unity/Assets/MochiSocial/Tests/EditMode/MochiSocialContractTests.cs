@@ -1,12 +1,21 @@
+using System.Collections.Generic;
+using System.Linq;
 using MochiSocial.Core;
 using MochiSocial.Data;
+using MochiSocial.Runtime;
 using NUnit.Framework;
+using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace MochiSocial.Tests
 {
     public sealed class MochiSocialContractTests
     {
+        private const string JadeLanternRoomPath = "Assets/MochiSocial/Scenes/JadeLanternRoom.unity";
+        private const string AvatarPrefabPath = "Assets/MochiSocial/Prefabs/MochiAvatar.prefab";
+
         [Test]
         public void SharedRoomContractMatchesWebsitePlan()
         {
@@ -16,6 +25,34 @@ namespace MochiSocial.Tests
             Assert.That(MochiSocialConstants.SharedPetKey, Is.EqualTo("lirabao"));
             Assert.That(MochiSocialConstants.CharacterSaveKey, Is.EqualTo("character.v1"));
             Assert.That(MochiSocialConstants.SharedPetSaveKey, Is.EqualTo("room:jade-lantern-room/sharedPet.v1"));
+        }
+
+        [Test]
+        public void JadeLanternRoomSceneContainsAlphaRuntimeWiring()
+        {
+            var scene = EditorSceneManager.OpenScene(JadeLanternRoomPath, OpenSceneMode.Single);
+            var components = GetSceneComponents(scene);
+
+            Assert.That(scene.name, Is.EqualTo("JadeLanternRoom"));
+            Assert.That(components.OfType<MochiSocialBootstrap>().Any(), Is.True, "Scene must include the Mochi Social bootstrap.");
+            Assert.That(components.OfType<LirabaoPetController>().Any(), Is.True, "Scene must include shared Lirabao.");
+            Assert.That(components.OfType<LirabaoInteractionPrompt>().Any(), Is.True, "Scene must include the Lirabao interaction prompt.");
+            Assert.That(components.OfType<MochiCameraFollow>().Any(), Is.True, "Scene must include camera follow.");
+            Assert.That(components.Any(component => IsComponent(component, "Unity.Netcode.NetworkManager")), Is.True, "Scene must include a NetworkManager.");
+            Assert.That(components.Any(component => component != null && component.gameObject.name.Contains("Moon Gate")), Is.True, "Scene must keep the Jade Lantern room moon gate blockout.");
+        }
+
+        [Test]
+        public void MochiAvatarPrefabIsNetworkedAndPlayerControllable()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AvatarPrefabPath);
+            Assert.That(prefab, Is.Not.Null, "Mochi avatar prefab must exist.");
+
+            var components = prefab.GetComponentsInChildren<Component>(true);
+            Assert.That(components.OfType<MochiAvatarController>().Any(), Is.True, "Avatar prefab must include desktop movement and wave/emote controller.");
+            Assert.That(components.OfType<CharacterController>().Any(), Is.True, "Avatar prefab must include CharacterController movement support.");
+            Assert.That(components.Any(component => IsComponent(component, "Unity.Netcode.NetworkObject")), Is.True, "Avatar prefab must include NetworkObject.");
+            Assert.That(components.Any(component => IsComponent(component, "Unity.Netcode.Components.NetworkTransform")), Is.True, "Avatar prefab must sync live session transforms.");
         }
 
         [Test]
@@ -212,6 +249,19 @@ namespace MochiSocial.Tests
             pet.state = "custom_upload_state";
 
             Assert.That(pet.IsValid(), Is.False);
+        }
+
+        private static IReadOnlyList<Component> GetSceneComponents(Scene scene)
+        {
+            return scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Component>(true))
+                .Where(component => component != null)
+                .ToArray();
+        }
+
+        private static bool IsComponent(Component component, string fullName)
+        {
+            return string.Equals(component?.GetType().FullName, fullName, System.StringComparison.Ordinal);
         }
     }
 }
