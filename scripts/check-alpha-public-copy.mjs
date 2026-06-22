@@ -9,7 +9,7 @@ const checks = [
       'meet Lirabao',
       'care for the guild pet together',
       'no real value',
-      'Tester password',
+      'tester password',
       'Member sign-in'
     ],
     forbidden: [
@@ -19,6 +19,28 @@ const checks = [
       /\bpublic[- ](?:launch|release)\b/i,
       /\bwider release\b/i,
       /\b(?:Distributed Authority|Cloud Save|Edge Function|Unity Custom ID)\b/i
+    ]
+  },
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: [
+      'shared guild room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'tester password',
+      'Mochirii member sign-in',
+      'no real value',
+      'playtest paused message'
+    ],
+    forbidden: [
+      /\b(?:Codex|OpenAI|LLM|agent|tooling)\b/i,
+      /\b(?:Enjin|Canary|funded-chain|configured-preview-stub)\b/i,
+      /\b(?:market|trade|trading|cashout|buying|selling)\b/i,
+      /\bpublic[- ](?:launch|release)\b/i,
+      /\bwider release\b/i,
+      /\b(?:Distributed Authority|Cloud Save|Edge Function|Unity Custom ID)\b/i,
+      /\b(?:operator|ledger)\b/i
     ]
   },
   {

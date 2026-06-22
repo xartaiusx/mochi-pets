@@ -2159,6 +2159,23 @@ const checks = [
 
 const unityPreviewReadinessChecks = [
   {
+    file: 'docs/alpha-preview-ready.md',
+    includes: [
+      'Mochi Social Alpha Preview',
+      'shared Mochirii room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'tester password',
+      'Mochirii member sign-in',
+      'All progress has no real value',
+      'There is only one shared room',
+      'There is only one shared starter pet',
+      'playtest paused message',
+      'old room should not silently open'
+    ]
+  },
+  {
     file: 'apps/game/src/entries/express.ts',
     includes: [
       '/healthz',
@@ -2398,6 +2415,7 @@ const unityPreviewReadinessChecks = [
 ];
 
 const legacyFeatureParityFiles = new Set([
+  'docs/alpha-preview-ready.md',
   'apps/game/src/entries/express.ts',
   'apps/game/tests/manifest.test.ts',
   'apps/game/scripts/smoke.mjs',
