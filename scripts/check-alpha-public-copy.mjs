@@ -42,6 +42,7 @@ const checks = [
       'Room signal',
       'Status:',
       '1 Settling in  |  2 Caring  |  3 Waving',
+      'Your latest room spot could not be saved.',
       'Signing into Mochi Social.',
       'Sign-in failed.',
       'Signed out of Mochi Social.',

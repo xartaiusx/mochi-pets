@@ -40,6 +40,20 @@ namespace MochiSocial.Tests
         }
 
         [Test]
+        public void CharacterSpawnPointUpdatePreservesCuratedPreset()
+        {
+            var state = CharacterPresetCatalog.CreateDefault("tester-display");
+            var spawn = new Vector3(2.5f, 0f, -1.25f);
+
+            var updated = CharacterPresetCatalog.WithLastSpawnPoint(state, spawn);
+
+            Assert.That(CharacterPresetCatalog.IsValid(updated), Is.True);
+            Assert.That(updated.presetId, Is.EqualTo(state.presetId));
+            Assert.That(updated.lastSpawnPoint, Is.EqualTo(spawn));
+            Assert.That(updated.revision, Is.EqualTo(state.revision + 1));
+        }
+
+        [Test]
         public void LocalSocialSignalsStayCuratedAndSessionOnly()
         {
             Assert.That(LocalSocialSignalCatalog.All.Count, Is.EqualTo(3));

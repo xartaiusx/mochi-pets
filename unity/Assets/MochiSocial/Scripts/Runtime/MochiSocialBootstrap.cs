@@ -188,6 +188,7 @@ namespace MochiSocial.Runtime
 
         private async Task HandleSignOutAsync()
         {
+            await SaveCurrentCharacterSpawnAsync();
             await roomSession.LeaveAsync();
             if (AuthenticationService.Instance.IsSignedIn)
             {
@@ -200,6 +201,31 @@ namespace MochiSocial.Runtime
             characterCreationRequired = false;
             characterCreationBusy = false;
             bridge.EmitAuthState("signed-out", "Signed out of Mochi Social.");
+        }
+
+        private async Task SaveCurrentCharacterSpawnAsync()
+        {
+            if (characterState == null || localAvatar == null || stateStore == null || !AuthenticationService.Instance.IsSignedIn)
+            {
+                return;
+            }
+
+            var updated = CharacterPresetCatalog.WithLastSpawnPoint(characterState, localAvatar.transform.position);
+            if (!CharacterPresetCatalog.IsValid(updated))
+            {
+                bridge.EmitError("character_save_failed", "Your latest room spot could not be saved.");
+                return;
+            }
+
+            try
+            {
+                await stateStore.SaveCharacterAsync(updated);
+                characterState = updated;
+            }
+            catch (Exception ex)
+            {
+                bridge.EmitError("character_save_failed", ex.Message);
+            }
         }
 
         private async Task EnterSharedRoomAsync()

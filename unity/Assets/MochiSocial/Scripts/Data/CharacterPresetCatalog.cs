@@ -73,6 +73,27 @@ namespace MochiSocial.Data
             };
         }
 
+        public static CharacterState WithLastSpawnPoint(CharacterState state, Vector3 spawnPoint)
+        {
+            if (!IsValid(state) || !TryGetPreset(state.presetId, out var preset))
+            {
+                return null;
+            }
+
+            return new CharacterState
+            {
+                presetId = state.presetId,
+                body = preset.body,
+                hair = preset.hair,
+                outfit = preset.outfit,
+                primaryColor = state.primaryColor,
+                accentColor = state.accentColor,
+                displayNameReference = state.displayNameReference,
+                lastSpawnPoint = spawnPoint,
+                revision = state.revision + 1
+            };
+        }
+
         public static bool IsValid(CharacterState state)
         {
             return state != null &&
