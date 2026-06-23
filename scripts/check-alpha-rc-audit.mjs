@@ -1197,6 +1197,7 @@ function addManualPromptReviewRequirements() {
   if (hasHostedUrl(report.review?.url) && report.review?.hostedAllowed !== true) {
     failures.push('hosted manual prompt review requires explicit hosted approval flag');
   }
+  failures.push(...manualPromptReviewContextFailures(report.reviewContext, report.review?.url, report.review?.hostedAllowed === true));
   const checks = Array.isArray(report.checks) ? report.checks : [];
   for (const id of ['character-creation', 'lirabao-care', 'saved-progress']) {
     const check = checks.find((entry) => entry.id === id);
@@ -1221,9 +1222,72 @@ function addManualPromptReviewRequirements() {
       completedChecks: report.completedChecks,
       pendingChecks: report.pendingChecks,
       sourceEvidence,
+      reviewContext: summarizeManualPromptReviewContext(report.reviewContext),
       failures
     }
   );
+}
+
+function manualPromptReviewContextFailures(context, reviewUrl, hostedAllowed) {
+  const failures = [];
+  if (!context || typeof context !== 'object') {
+    return ['manual prompt review must include review context'];
+  }
+
+  if (context.requiresSignedInTester !== true) failures.push('manual prompt review must require a signed-in tester');
+  if (context.passwordOnlyIsInsufficient !== true) failures.push('manual prompt review must mark password-only access insufficient');
+  if (context.requiresUnityAuthTokens !== true) failures.push('manual prompt review must require Unity auth tokens');
+  if (context.requiresSharedPetAuthorityPath !== true) failures.push('manual prompt review must require the shared Lirabao authority path');
+  if (context.localVisualOnlyIsInsufficient !== true) failures.push('manual prompt review must mark visual-only evidence insufficient');
+
+  const reviewUrlIsHosted = hasHostedUrl(reviewUrl);
+  if (reviewUrl && context.hostedUrl !== reviewUrlIsHosted) {
+    failures.push('manual prompt review hosted URL context does not match reviewed URL');
+  }
+  if (context.hostedAllowed !== hostedAllowed) {
+    failures.push('manual prompt review hosted approval context does not match review approval flag');
+  }
+
+  const preconditions = Array.isArray(context.completionPreconditions) ? context.completionPreconditions.join('\n') : '';
+  const insufficient = Array.isArray(context.cannotBeCompletedBy) ? context.cannotBeCompletedBy.join('\n') : '';
+  for (const snippet of [
+    'allowlisted tester',
+    'character.v1',
+    'room:jade-lantern-room/sharedPet.v1',
+    'reload/logout/login'
+  ]) {
+    if (!preconditions.includes(snippet)) failures.push(`manual prompt review context missing precondition: ${snippet}`);
+  }
+  for (const snippet of [
+    'visual screenshots alone',
+    'password wall alone',
+    'legacy runtime',
+    'static/mock token path',
+    'hosted URL without explicit hosted-preview approval'
+  ]) {
+    if (!insufficient.includes(snippet)) failures.push(`manual prompt review context missing insufficiency: ${snippet}`);
+  }
+  return failures;
+}
+
+function summarizeManualPromptReviewContext(context) {
+  if (!context || typeof context !== 'object') return null;
+  return {
+    reviewKind: sanitize(context.reviewKind || ''),
+    requiresSignedInTester: context.requiresSignedInTester === true,
+    passwordOnlyIsInsufficient: context.passwordOnlyIsInsufficient === true,
+    requiresUnityAuthTokens: context.requiresUnityAuthTokens === true,
+    requiresSharedPetAuthorityPath: context.requiresSharedPetAuthorityPath === true,
+    localVisualOnlyIsInsufficient: context.localVisualOnlyIsInsufficient === true,
+    hostedUrl: context.hostedUrl === true,
+    hostedAllowed: context.hostedAllowed === true,
+    completionPreconditions: sanitizeStringArray(context.completionPreconditions),
+    cannotBeCompletedBy: sanitizeStringArray(context.cannotBeCompletedBy)
+  };
+}
+
+function sanitizeStringArray(values) {
+  return Array.isArray(values) ? values.map((value) => sanitize(value)).filter(Boolean).slice(0, 12) : [];
 }
 
 function manualPromptSourceEvidence(report) {
