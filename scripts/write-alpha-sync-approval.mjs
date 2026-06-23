@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
@@ -18,8 +19,8 @@ const generatedAt = new Date().toISOString();
 const gitState = readGitState();
 const siteGitState = readGitStateAt(siteRepoPath);
 const prState = {
-  game: readPr('xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || gitState.branch, gitState.localHead),
-  site: readPr('Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || siteGitState.branch, siteGitState.localHead)
+  game: await readPr('xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || gitState.branch, gitState.localHead),
+  site: await readPr('Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || siteGitState.branch, siteGitState.localHead)
 };
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
@@ -150,7 +151,7 @@ function readExternalGateSummary() {
   };
 }
 
-function readPr(repo, selector, localHead) {
+async function readPr(repo, selector, localHead) {
   const normalizedSelector = sanitize(selector || '');
   const fixture = readPrFixture(repo, normalizedSelector, localHead);
   if (fixture) return fixture;
@@ -165,11 +166,16 @@ function readPr(repo, selector, localHead) {
     shell: false
   });
   if (result.status !== 0) {
+    const fallback = await readPublicPullRequest(repo, normalizedSelector, localHead);
+    if (fallback.ok) {
+      return buildPrState(repo, normalizedSelector, localHead, explicitNumber, fallback.data, 'github-public-api');
+    }
     return {
       repo,
       selector: normalizedSelector,
       ok: false,
-      message: sanitize(result.stderr || result.error?.message || 'GitHub PR state could not be read.')
+      source: 'unavailable',
+      message: sanitize(result.stderr || result.error?.message || fallback.message || 'GitHub PR state could not be read.')
     };
   }
 
@@ -192,37 +198,7 @@ function readPr(repo, selector, localHead) {
         message: `Multiple open GitHub PRs were found for branch ${normalizedSelector}. Set an explicit PR number.`
       };
     }
-    const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
-    const failingChecks = checks
-      .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
-      .map((check) => sanitize(check.name || check.context))
-      .filter(Boolean);
-    const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
-    const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
-    const failures = [
-      data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
-      data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
-      localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
-      ...failingChecks.map((check) => `failing check ${check}`)
-    ].filter(Boolean);
-    return {
-      repo,
-      selector: normalizedSelector,
-      number: data.number || (explicitNumber ? normalizedSelector : null),
-      ok: failures.length === 0,
-      gateFailures: failures,
-      url: sanitize(data.url),
-      title: sanitize(data.title),
-      state: sanitize(data.state),
-      headRefName: sanitize(data.headRefName),
-      isDraft: data.isDraft === true,
-      headRefOid: sanitize(data.headRefOid),
-      localHead: sanitize(localHead),
-      localHeadMatchesPrHead,
-      mergeStateStatus: sanitize(data.mergeStateStatus),
-      checkNames,
-      failingChecks
-    };
+    return buildPrState(repo, normalizedSelector, localHead, explicitNumber, data, 'gh');
   } catch {
     return {
       repo,
@@ -278,6 +254,41 @@ function readPrFixture(repo, selector, localHead) {
     url: sanitize(data.url),
     title: sanitize(data.title),
     state: sanitize(data.state || 'OPEN'),
+    headRefName: sanitize(data.headRefName),
+    isDraft: data.isDraft === true,
+    headRefOid: sanitize(data.headRefOid),
+    localHead: sanitize(localHead),
+    localHeadMatchesPrHead,
+    mergeStateStatus: sanitize(data.mergeStateStatus),
+    checkNames,
+    failingChecks
+  };
+}
+
+function buildPrState(repo, selector, localHead, explicitNumber, data, source) {
+  const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
+  const failingChecks = checks
+    .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
+    .map((check) => sanitize(check.name || check.context))
+    .filter(Boolean);
+  const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const failures = [
+    data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
+    data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
+    ...failingChecks.map((check) => `failing check ${check}`)
+  ].filter(Boolean);
+  return {
+    repo,
+    selector,
+    number: data.number || (explicitNumber ? selector : null),
+    ok: failures.length === 0,
+    source,
+    gateFailures: failures,
+    url: sanitize(data.url),
+    title: sanitize(data.title),
+    state: sanitize(data.state),
     headRefName: sanitize(data.headRefName),
     isDraft: data.isDraft === true,
     headRefOid: sanitize(data.headRefOid),

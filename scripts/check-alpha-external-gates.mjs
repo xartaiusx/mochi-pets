@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
@@ -96,8 +97,8 @@ try {
 }
 
 async function run() {
-  checkGitHubPr('game PR', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
-  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
+  await checkGitHubPr('game PR', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
+  await checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
   checkSupabasePreviewSecrets();
   checkFly();
   await checkLiveGameContract();
@@ -105,7 +106,7 @@ async function run() {
   checkEnjinOperatorInputs();
 }
 
-function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
+async function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   const localState = localRepoPath ? readLocalGitState(localRepoPath) : null;
   const selector = String(pr || '').trim();
   const query = selector || localState?.branch || '';
@@ -117,12 +118,15 @@ function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   const result = selector
     ? command('gh', ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
     : command('gh', ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
-  if (!result.ok) {
-    add('fail', name, 'GitHub PR state could not be read.', { repo, selector: query, stderr: result.stderr });
+  const fallback = result.ok
+    ? null
+    : await readPublicPullRequest(repo, query, localState?.localHead || '');
+  if (!result.ok && !fallback?.ok) {
+    add('fail', name, 'GitHub PR state could not be read.', { repo, selector: query, stderr: result.stderr || fallback?.message || '' });
     return;
   }
 
-  const parsed = parseJson(result.stdout);
+  const parsed = result.ok ? parseJson(result.stdout) : fallback.data;
   const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
     add('fail', name, selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, {
@@ -173,7 +177,8 @@ function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
     isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checkNames: checks.map((check) => check.name || check.context).filter(Boolean),
-    failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)
+    failingChecks: failing.map((check) => check.name || check.context).filter(Boolean),
+    source: result.ok ? 'gh' : 'github-public-api'
   });
 }
 
