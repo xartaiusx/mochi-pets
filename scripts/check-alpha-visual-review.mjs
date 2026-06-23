@@ -29,7 +29,10 @@ assert(String(snapshotDom.title || '').includes('Mochi Social'), 'visual snapsho
 assert(snapshotDom.runtime === 'unity-webgl', 'visual snapshot must identify the Unity WebGL runtime');
 assert(snapshotDom.canvas === true, 'visual snapshot must show canvas DOM evidence');
 assert(snapshotDom.keyGuard === true, 'visual snapshot must show Unity input guard evidence');
+assert(snapshotDom.unityRuntimeReady === true, 'visual snapshot must show the Unity runtime ready marker');
+assert(snapshotDom.unityLastEventType === 'MOCHI_SOCIAL_READY', 'visual snapshot must record the Unity READY bridge event');
 assert(snapshotDom.unityCanvasId === 'unity-canvas', 'visual snapshot must show the Unity canvas id');
+assert(snapshotDom.unityLoaderErrorPresent === false, 'visual snapshot must not show a Unity loader or compression error');
 assert(Array.isArray(snapshotDom.legacyHudSelectors) && snapshotDom.legacyHudSelectors.length === 0, 'visual snapshot must not expose legacy HUD selectors');
 assert(snapshotDom.futureEconomyTextPresent === false, 'visual snapshot must not expose market, trade, cashout, or funded-chain text');
 assert(snapshotManifest.engine === 'unity-webgl', 'visual snapshot manifest must expose Unity WebGL');
@@ -44,9 +47,13 @@ assert(pagePng.exists && pagePng.bytes > 1000 && pagePng.width >= 600 && pagePng
 assert(canvasPng.exists && canvasPng.bytes > 1000 && canvasPng.width >= 600 && canvasPng.height >= 400, 'visual snapshot canvas PNG must be non-empty');
 assert(Array.isArray(browserPresence.data?.tabs) && browserPresence.data.tabs.length === 2, 'browser presence must include two tabs');
 assert(browserPresence.data?.tabs?.every((tab) => String(tab.title || '').includes('Mochi Social')), 'browser presence tabs must identify Mochi Social');
+assert(browserPresence.data?.tabs?.every((tab) => tab.unityRuntimeReady === true), 'browser presence tabs must reach the Unity runtime ready marker');
+assert(browserPresence.data?.tabs?.every((tab) => tab.unityLastEventType === 'MOCHI_SOCIAL_READY'), 'browser presence tabs must record the Unity READY event');
 assert(browserPresence.data?.tabs?.every((tab) => tab.canvas?.screenshotBytes > 1000), 'browser presence tabs must include non-empty Unity canvas screenshots');
 assert(browserPresence.data?.bridge?.hasCreateUnityInstance === true, 'browser presence must detect the Unity loader bridge');
 assert(browserPresence.data?.bridge?.hasUnityCanvas === true, 'browser presence must detect the Unity canvas');
+assert(browserPresence.data?.bridge?.unityRuntimeReady === true, 'browser presence must detect the Unity runtime ready marker');
+assert(browserPresence.data?.bridge?.unityLastEventType === 'MOCHI_SOCIAL_READY', 'browser presence must detect the Unity READY event');
 assert(browserPresence.data?.legacyHudAbsent?.ok === true, 'browser presence must prove legacy HUD selectors are absent');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must carry observer-side shared-room pulse proof');
 
@@ -81,9 +88,12 @@ const summary = {
     firstScreenRenderable: pagePng.exists && pagePng.bytes > 1000,
     unityCanvasRenderable: canvasPng.exists && canvasPng.bytes > 1000,
     twoTabPresence: Array.isArray(browserPresence.data?.tabs) && browserPresence.data.tabs.length === 2,
+    twoTabRuntimeReady: browserPresence.data?.tabs?.every((tab) => tab.unityRuntimeReady === true) === true,
     observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true,
     legacyHudAbsent: browserPresence.data?.legacyHudAbsent?.ok === true && snapshotDom.legacyHudSelectors?.length === 0,
     inputGuardPresent: snapshotDom.keyGuard === true,
+    runtimeReady: snapshotDom.unityRuntimeReady === true,
+    unityLoaderHealthy: snapshotDom.unityLoaderErrorPresent === false,
     noFutureEconomyCopy: snapshotDom.futureEconomyTextPresent === false
   },
   visualChecklist: {

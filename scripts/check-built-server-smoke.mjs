@@ -124,11 +124,23 @@ async function run() {
   const embed = await request('/embed', 'embed route');
   assert(embed.status === 200 && isUnityWebglHtml(embed.body), 'Built server /embed must return the Unity WebGL HTML.');
   assert(hasUnityBridgeGuard(embed.body), 'Built server /embed must install the Unity bridge origin and auth endpoint guard.');
+
+  const frameworkAsset = await request('/Build/WebGL.framework.js.br', 'Unity framework brotli asset', { method: 'HEAD' });
+  assert(frameworkAsset.status === 200, 'Built server must serve the Unity WebGL framework asset.');
+  assert(frameworkAsset.contentEncoding === 'br', 'Built server must serve Brotli Unity assets with Content-Encoding: br.');
+  assert(frameworkAsset.contentType.includes('application/javascript'), 'Built server must serve the Unity framework asset as JavaScript.');
+
+  const wasmAsset = await request('/Build/WebGL.wasm.br', 'Unity wasm brotli asset', { method: 'HEAD' });
+  assert(wasmAsset.status === 200, 'Built server must serve the Unity WebGL wasm asset.');
+  assert(wasmAsset.contentEncoding === 'br', 'Built server must serve Brotli Unity wasm with Content-Encoding: br.');
+  assert(wasmAsset.contentType.includes('application/wasm'), 'Built server must serve the Unity wasm asset as application/wasm.');
 }
 
 function verifyUnityBridgeBuild() {
   const framework = brotliDecompressSync(readFileSync(unityFrameworkPath)).toString('utf8');
   assert(framework.includes('MochiSocialBridgeRuntime'), 'Unity WebGL framework must include the Mochi Social bridge runtime helper.');
+  assert(framework.includes('__MOCHI_SOCIAL_UNITY_RUNTIME_READY'), 'Unity WebGL framework must publish a browser runtime-ready marker after C# bootstrap.');
+  assert(framework.includes('__MOCHI_SOCIAL_UNITY_LAST_EVENT'), 'Unity WebGL framework must publish the latest browser bridge event for local evidence.');
   assert(framework.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG'), 'Unity WebGL framework must read the served bridge config.');
   assert(framework.includes('isAllowedParentOrigin'), 'Unity WebGL framework must check parent origins before accepting auth messages.');
   assert(framework.includes('targetParentOrigin'), 'Unity WebGL framework must target a configured parent origin for replies.');
@@ -181,9 +193,10 @@ async function getJson(path, name) {
 async function request(path, name, init = {}) {
   const response = await fetch(`${baseUrl}${path}`, init);
   const contentType = response.headers.get('content-type') || '';
-  const text = await response.text();
+  const contentEncoding = response.headers.get('content-encoding') || '';
+  const text = init.method === 'HEAD' ? '' : await response.text();
   const body = contentType.includes('application/json') && text ? JSON.parse(text) : text;
-  const result = { name, path, status: response.status, contentType, body };
+  const result = { name, path, status: response.status, contentType, contentEncoding, body };
   report.checks.push(result);
   return result;
 }

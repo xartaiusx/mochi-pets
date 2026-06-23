@@ -43,7 +43,17 @@ mergeInto(LibraryManager.library, {
         payload: payload
       };
 
-      if (typeof window !== "undefined" && window.parent) {
+      if (typeof window !== "undefined") {
+        window.__MOCHI_SOCIAL_UNITY_LAST_EVENT = message;
+        if (type === "MOCHI_SOCIAL_READY") {
+          window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY = true;
+        }
+        if (typeof window.dispatchEvent === "function" && typeof CustomEvent === "function") {
+          window.dispatchEvent(new CustomEvent("mochi-social-unity-event", { detail: message }));
+        }
+      }
+
+      if (typeof window !== "undefined" && window.parent && window.parent !== window) {
         var targetOrigin = MochiSocialBridgeRuntime.targetParentOrigin();
         if (targetOrigin) {
           window.parent.postMessage(message, targetOrigin);

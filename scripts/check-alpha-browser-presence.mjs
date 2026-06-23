@@ -143,6 +143,7 @@ async function installCrossTabPulseProbe(page) {
 async function inspectUnityTab(page, label) {
   const canvas = page.locator('canvas').first();
   await canvas.waitFor({ timeout: timeoutMs });
+  await page.waitForFunction(() => window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY === true, { timeout: timeoutMs });
   const box = await canvas.boundingBox({ timeout: timeoutMs });
   assert(box && box.width > 100 && box.height > 100, `${label} Unity canvas was not large enough.`);
   const screenshot = await canvas.screenshot({ timeout: timeoutMs });
@@ -157,7 +158,9 @@ async function inspectUnityTab(page, label) {
       height: Math.round(box.height),
       screenshotBytes: screenshot.length,
       screenshotSha256: createHash('sha256').update(screenshot).digest('hex')
-    }
+    },
+    unityRuntimeReady: await page.evaluate(() => window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY === true),
+    unityLastEventType: await page.evaluate(() => window.__MOCHI_SOCIAL_UNITY_LAST_EVENT?.type || '')
   };
 }
 
@@ -169,7 +172,9 @@ async function inspectBridgeSurface(page) {
       hasCreateUnityInstance: scripts.some((entry) => entry.includes('createUnityInstance')) || body.includes('createUnityInstance'),
       hasLoaderScript: scripts.some((entry) => /Build\/.+\.loader\.js/i.test(entry)),
       hasMochiBridgeObject: typeof window.MochiSocialBridge !== 'undefined',
-      hasUnityCanvas: Boolean(document.querySelector('canvas'))
+      hasUnityCanvas: Boolean(document.querySelector('canvas')),
+      unityRuntimeReady: window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY === true,
+      unityLastEventType: window.__MOCHI_SOCIAL_UNITY_LAST_EVENT?.type || ''
     };
   });
 }

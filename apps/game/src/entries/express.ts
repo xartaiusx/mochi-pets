@@ -1,5 +1,5 @@
 import express, { type Request } from 'express';
-import { createServer as createHttpServer } from 'node:http';
+import { createServer as createHttpServer, type ServerResponse } from 'node:http';
 import { existsSync } from 'node:fs';
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -323,7 +323,10 @@ app.use('/parties', async (req, res, next) => {
 
 app.use('/map', express.static(mapDistDir, { index: false }));
 if (unityWebglBuildPresent) {
-  app.use(express.static(unityWebglDir, { index: false }));
+  app.use(express.static(unityWebglDir, {
+    index: false,
+    setHeaders: setUnityWebglAssetHeaders
+  }));
   app.get(['/play', '/embed'], async (_req, res, next) => {
     try {
       res.type('html').send(await renderUnityIndexHtml());
@@ -357,6 +360,29 @@ app.get(/.*/, (_req, res) => {
 
 const httpServer = createHttpServer(app);
 const wsServer = new WebSocketServer({ noServer: true });
+
+function setUnityWebglAssetHeaders(res: ServerResponse, path: string) {
+  const normalizedPath = path.replace(/\\/g, '/').toLowerCase();
+  const uncompressedPath = normalizedPath.replace(/\.(br|gz)$/, '');
+
+  if (normalizedPath.endsWith('.br')) {
+    res.setHeader('Content-Encoding', 'br');
+    res.setHeader('Vary', 'Accept-Encoding');
+  } else if (normalizedPath.endsWith('.gz')) {
+    res.setHeader('Content-Encoding', 'gzip');
+    res.setHeader('Vary', 'Accept-Encoding');
+  }
+
+  if (uncompressedPath.endsWith('.wasm')) {
+    res.setHeader('Content-Type', 'application/wasm');
+  } else if (uncompressedPath.endsWith('.js')) {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  } else if (uncompressedPath.endsWith('.data') || normalizedPath.endsWith('.unityweb')) {
+    res.setHeader('Content-Type', 'application/octet-stream');
+  } else if (uncompressedPath.endsWith('.json')) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  }
+}
 
 httpServer.on('upgrade', (request, socket, head) => {
   void transport.handleUpgrade(wsServer, request, socket, head);

@@ -70,11 +70,36 @@ async function run() {
     };
 
     const page = await context.newPage();
+    const pageMessages = [];
+    const pageFailures = [];
+    page.on('console', (message) => {
+      pageMessages.push({
+        type: message.type(),
+        text: sanitize(message.text())
+      });
+    });
+    page.on('pageerror', (error) => {
+      pageFailures.push(sanitize(error.message));
+    });
     await page.goto(`${baseUrl}/play`, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
     const canvas = page.locator('canvas').first();
     await canvas.waitFor({ timeout: timeoutMs });
     await page.waitForFunction(() => Boolean(window.__mochiSocialUnityKeyGuard?.active), { timeout: timeoutMs });
-    await page.waitForTimeout(1000);
+    await page.waitForFunction(() => window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY === true, { timeout: timeoutMs });
+    await page.waitForTimeout(500);
+    const loaderDiagnostics = await page.evaluate(() => {
+      const text = document.body?.textContent || '';
+      return {
+        bodyTextSnippet: text.slice(0, 2000),
+        unityLoaderErrorPresent: /Unable to parse Build\/|Content-Encoding|Decompression Fallback|WebGL build may be compressed/i.test(text)
+      };
+    });
+    const loaderConsoleErrors = pageMessages.filter((entry) =>
+      /Unable to parse Build\/|Content-Encoding|Decompression Fallback|WebGL build may be compressed/i.test(entry.text)
+    );
+
+    assert(loaderDiagnostics.unityLoaderErrorPresent === false, 'Snapshot page must not show a Unity WebGL loader or compression error.');
+    assert(loaderConsoleErrors.length === 0, 'Snapshot console must not report a Unity WebGL loader or compression error.');
 
     const canvasBox = await canvas.boundingBox({ timeout: timeoutMs });
     assert(canvasBox && canvasBox.width >= 600 && canvasBox.height >= 400, 'Game canvas must be large enough for first-screen visual review.');
@@ -90,9 +115,12 @@ async function run() {
       hud: Boolean(document.querySelector('#mochi-social-hud')),
       canvas: Boolean(document.querySelector('canvas')),
       keyGuard: Boolean(window.__mochiSocialUnityKeyGuard?.active),
+      unityRuntimeReady: window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY === true,
+      unityLastEventType: window.__MOCHI_SOCIAL_UNITY_LAST_EVENT?.type || '',
       unityCanvasId: document.querySelector('canvas')?.id || '',
       unityBuildTitle: document.querySelector('#unity-build-title')?.textContent?.trim() || '',
       createUnityInstance: document.body.textContent?.includes('createUnityInstance') || false,
+      unityLoaderErrorPresent: /Unable to parse Build\/|Content-Encoding|Decompression Fallback|WebGL build may be compressed/i.test(document.body.textContent || ''),
       legacyHudSelectors: [
         '#mochi-social-hud',
         '[data-presence-label]',
@@ -106,6 +134,8 @@ async function run() {
     assert(dom.title.includes('Mochi Social'), 'Snapshot page title must identify Mochi Social.');
     assert(dom.canvas, 'Snapshot page must render the game canvas.');
     assert(dom.keyGuard, 'Snapshot page must install the Unity input guard.');
+    assert(dom.unityRuntimeReady, 'Snapshot page must wait for the Unity runtime ready marker.');
+    assert(dom.unityLastEventType === 'MOCHI_SOCIAL_READY', 'Snapshot page must record the Unity READY bridge event.');
     assert(dom.unityCanvasId === 'unity-canvas', 'Snapshot page must render the Unity canvas.');
     assert(dom.legacyHudSelectors.length === 0, 'Snapshot page must not expose legacy RPGJS HUD selectors.');
     assert(dom.futureEconomyTextPresent === false, 'Snapshot page must not expose future economy language.');
@@ -113,6 +143,11 @@ async function run() {
     assert(canvasPng.length > 1000, 'Canvas screenshot was unexpectedly small.');
 
     report.dom = dom;
+    report.loaderDiagnostics = {
+      bodyTextSnippet: sanitize(loaderDiagnostics.bodyTextSnippet),
+      consoleErrors: loaderConsoleErrors,
+      pageErrors: pageFailures
+    };
     report.canvasBox = canvasBox;
     report.screenshots = {
       page: {
@@ -185,4 +220,12 @@ async function writeReport() {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function sanitize(value) {
+  return String(value || '')
+    .replace(/\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{20,}\b/g, '<redacted-github-token>')
+    .replace(/\bsb_secret_[A-Za-z0-9_-]{8,}\b/g, '<redacted-supabase-secret>')
+    .replace(/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, '<redacted-jwt>')
+    .slice(0, 2000);
 }
