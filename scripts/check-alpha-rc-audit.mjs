@@ -384,54 +384,48 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_WALLET_DAEMON_REQUIRED',
     'sha256'
   ]);
-  requireFileIncludes('game.map-object-contract', 'Map-object contract test verifies stable town event IDs, prompts, save sources, habitat, and collision evidence.', 'apps/game/tests/map-object-contract.test.ts', [
-    'Mochi town map object contract',
-    'runtimeEventPlacements',
-    'welcome-npc',
-    'guild-seal-chest',
-    'care-shrine',
-    'expedition-gate',
-    'route-invitation-altar',
-    'technique-dojo',
-    'tactic-scroll-stand',
-    'guild-rank-bell',
-    'growth-moonwell',
-    'affinity-dais',
-    'market-board',
-    'trade-post',
-    'canary-shrine',
-    'no-real-value Enjin Canary certificate request',
-    'Jade Court Habitat Bond',
-    'Jade Court Research Folio',
-    'Jade Courtyard Rally',
-    'jade-courtyard-rally-knot',
-    'guild-social-rally',
-    'Jade Lantern Court',
-    '25 * 18'
+  requireFileIncludes('game.manifest-unity-contract-test', 'Manifest test proves the website iframe contract is Unity WebGL, single-room, Lirabao-only, curated, and free of market/trade/cashout exports.', 'apps/game/tests/manifest.test.ts', [
+    'publishes the Unity WebGL shared-room contract for the website iframe',
+    "engine: 'unity-webgl'",
+    "mode: 'single-shared-room'",
+    'capacity: 25',
+    "sharedPetKey: 'lirabao'",
+    "playerCharacterKey: 'character.v1'",
+    "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'",
+    "presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']",
+    'avatarUploads: false',
+    "not.toMatch(/\\b(?:market|trade|cashout)\\b/i)"
   ]);
-  requireFileIncludes('game.map-event-behavior', 'Map event behavior test executes NPC, chest, care, market, trade, and Canary event handlers with save/item/dialog assertions.', 'apps/game/tests/map-event-behavior.test.ts', [
-    'Mochi town event behavior',
-    'Welcome NPC dialog',
-    'Mochirii Guild Seal',
-    'spirit-care',
-    'bond 5/5',
-    'Jade Court Habitat Bond',
-    'Jade Court Research Folio',
-    'expedition-gate',
-    'route-invitation-altar',
-    'technique-dojo',
-    'tactic-scroll-stand',
-    'guild-rank-bell',
-    'growth-moonwell',
-    'affinity-dais',
-    'market-board',
-    'trade-post',
-    'Jade Courtyard Rally',
-    'jade-courtyard-rally-knot',
-    'guildSocialRally',
-    'mochiSocial.guild.rallyProof',
-    'no-real-value Enjin Canary certificate request',
-    'Wallet Daemon services'
+  requireFileIncludes('game.unity-editmode-tests', 'Unity EditMode tests prove JadeLanternRoom wiring, curated presets, bridge parsing, saved-state DTOs, and shared Lirabao states.', 'unity/Assets/MochiSocial/Tests/EditMode/MochiSocialContractTests.cs', [
+    'SharedRoomContractMatchesWebsitePlan',
+    'JadeLanternRoomSceneContainsAlphaRuntimeWiring',
+    'MochiAvatarPrefabIsNetworkedAndPlayerControllable',
+    'CharacterPresetCatalogAllowsOnlyCuratedPresets',
+    'BridgeParsesWebsiteNestedAuthPayload',
+    'UnityAuthEnvelopeMatchesSupabaseBrokerShape',
+    'SharedPetCareUsesCareReceivedState',
+    'SharedPetWaveUsesHappyState',
+    'SharedPetUnavailableStateIsValid',
+    'SharedPetStaleReloadStateIsValidAndKeepsRevision',
+    'SharedPetRejectsUnknownStateNames'
+  ]);
+  requireFileIncludes('game.unity-playmode-tests', 'Unity PlayMode tests prove Lirabao interactions stay authoritative, stale revisions reload cleanly, and avatars reject invalid preset state.', 'unity/Assets/MochiSocial/Tests/PlayMode/MochiSocialPlayModeTests.cs', [
+    'LirabaoCareInteractionRequestsCloudCodeWithoutMutatingState',
+    'LirabaoRejectsConflictingInteractionRevision',
+    'LirabaoRejectsInvalidInteractionIntent',
+    'LirabaoShowsUnavailableAndStaleReloadStates',
+    'AvatarAppliesCuratedCharacterAppearanceBeforeNetworkSpawn',
+    'AvatarRejectsInvalidCharacterPresetState'
+  ]);
+  requireFileIncludes('game.unity-verify-runner', 'Unity verifier runs EditMode, PlayMode, and WebGL build checks through the installed Unity editor.', 'scripts/run-unity.mjs', [
+    "['test-editmode'",
+    "['test-playmode'",
+    "['build-webgl'",
+    'runUnityTests',
+    'runBatch',
+    'BuildWebGL',
+    'result="Passed"',
+    'failed="0"'
   ]);
   requireFileIncludes('game.acceptance-docs', 'Alpha acceptance docs name every local and preview gate.', 'docs/alpha-acceptance.md', [
     'alpha:local-acceptance',
