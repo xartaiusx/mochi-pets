@@ -198,6 +198,7 @@ npm run lint
 npm test
 npm run build
 npm run alpha:built-server-smoke
+npm run alpha:unity-required-smoke
 npm run alpha:local-suite
 npm run alpha:local-evidence
 $env:MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD="<local-only-private-password>"; npm run alpha:local-site-iframe
@@ -207,6 +208,7 @@ npm run alpha:sync-approval
 npm run alpha:report-hygiene
 npm run alpha:preview-ready
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run smoke
+npm run alpha:unity-required-smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; $env:RPG_SAVE_DIR=".local/saves"; $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"; npm run alpha:load-smoke
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"; npm run alpha:browser-presence

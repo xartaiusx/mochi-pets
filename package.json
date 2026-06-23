@@ -45,6 +45,7 @@
     "alpha:wallet-daemon-check": "node scripts/check-wallet-daemon-local.mjs",
     "alpha:enjin-operator-smoke": "node scripts/check-enjin-operator-smoke.mjs",
     "alpha:built-server-smoke": "node scripts/check-built-server-smoke.mjs",
+    "alpha:unity-required-smoke": "node scripts/check-unity-required-smoke.mjs",
     "alpha:local-suite": "node scripts/check-alpha-local-suite.mjs",
     "alpha:local-evidence": "node scripts/check-alpha-local-evidence.mjs",
     "alpha:report-hygiene": "node scripts/check-alpha-report-hygiene.mjs",

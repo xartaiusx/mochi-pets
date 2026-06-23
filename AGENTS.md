@@ -30,6 +30,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Local Wallet Daemon binary metadata check: `npm run alpha:wallet-daemon-check`
 - Private Enjin operator route smoke against a running server: `npm run alpha:enjin-operator-smoke`
 - Local built Express server smoke after `npm run build`: `npm run alpha:built-server-smoke`
+- Local Unity-required release smoke after `npm run build:release`: `npm run alpha:unity-required-smoke`
 - Local no-cost full Alpha suite: `npm run alpha:local-suite`
 - Local no-secret evidence summary after the suite: `npm run alpha:local-evidence`
 - Local report/checklist hygiene after evidence: `npm run alpha:report-hygiene`

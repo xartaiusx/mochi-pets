@@ -35,6 +35,7 @@ In a second terminal:
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"
 $env:RPG_SAVE_DIR=".local/saves"
 npm run smoke
+npm run alpha:unity-required-smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
@@ -104,6 +105,8 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 ## Built Server Smoke
 
 `npm run alpha:built-server-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with throwaway server-token env, no Enjin live secrets, and no Supabase Edge forwarding. It verifies `/healthz`, `/play`, `/integration/game-manifest.json`, `/integration/alpha/status`, and the private Enjin operator route fail-closed path. This catches server bundle/runtime drift before any Fly deploy. The ignored `reports/built-server-smoke.json` report includes sanitized server stdout/stderr, Git state, exit code, exit signal, and stopped status even if the built server exits before readiness.
+
+`npm run alpha:unity-required-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`, then runs `npm run smoke` and the 25-tester `npm run alpha:load-smoke` against the correct local base URL. It writes ignored no-secret `reports/alpha-unity-required-smoke.json`, uses throwaway local tokens, and performs no provider mutations. Use it after `npm run build:release` when proving the deployable Unity WebGL artifact.
 
 The built server smoke and local suite use file-backed saves, so they are also the local guard for save durability regressions before Fly volume deployment. Save writes must remain per-player serialized and written through a temporary file before rename, so overlapping autosave and event-save writes cannot leave malformed JSON in the save directory.
 

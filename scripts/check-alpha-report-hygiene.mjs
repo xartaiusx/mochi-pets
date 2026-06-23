@@ -11,6 +11,7 @@ const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const files = [
   'reports/alpha-local-suite.json',
   'reports/built-server-smoke.json',
+  'reports/alpha-unity-required-smoke.json',
   'reports/alpha-local-acceptance.json',
   'reports/alpha-load-smoke.json',
   'reports/alpha-browser-presence.json',
