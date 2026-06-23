@@ -2200,6 +2200,42 @@ const unityPreviewReadinessChecks = [
     ]
   },
   {
+    file: 'docs/implementation-brief.md',
+    includes: [
+      'closed Mochirii playtest',
+      'one shared 3D guild room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'saved progress',
+      'The playtest has no real value',
+      'Jade Lantern Room',
+      'Three curated character presets',
+      'Tester password page first',
+      'Mochirii member sign-in for saved play',
+      'Keep the old runtime from opening when the Unity room is required',
+      'Verify with two browser sessions'
+    ]
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: [
+      'one shared 3D guild room',
+      'three curated characters',
+      'shared guild pet Lirabao',
+      'cozy Jade Lantern Room',
+      'moon gate',
+      'Keep Lirabao visible from the starting area',
+      'Use three curated character presets only',
+      'Do not add upload flows',
+      'Care received should feel warm and shared',
+      'playtest paused message',
+      'The room loads as the Unity 3D room',
+      'The old runtime does not appear',
+      'Player-facing copy stays simple'
+    ]
+  },
+  {
     file: 'apps/game/src/entries/express.ts',
     includes: [
       '/healthz',
@@ -2442,6 +2478,8 @@ const unityPreviewReadinessChecks = [
 
 const legacyFeatureParityFiles = new Set([
   'docs/alpha-preview-ready.md',
+  'docs/implementation-brief.md',
+  'docs/visual-polish-brief.md',
   'apps/game/src/entries/express.ts',
   'apps/game/tests/manifest.test.ts',
   'apps/game/scripts/smoke.mjs',
