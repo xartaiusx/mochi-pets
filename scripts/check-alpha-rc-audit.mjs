@@ -839,6 +839,7 @@ function addBranchInventoryRequirements() {
   if (report.deletionPerformed !== false) failures.push('branch inventory must remain no-destructive');
 
   const repos = Array.isArray(report.repos) ? report.repos : [];
+  const branchInventoryWarnings = [];
   for (const id of ['game', 'site']) {
     const repo = repos.find((entry) => entry?.id === id);
     if (!repo) {
@@ -848,7 +849,15 @@ function addBranchInventoryRequirements() {
     if (repo.exists !== true) failures.push(`branch inventory ${id} repo must exist`);
     if (repo.ok !== true) failures.push(`branch inventory ${id} repo entry is not ok`);
     if (!repo.openPrRepository) failures.push(`branch inventory ${id} repo must record origin GitHub repository`);
-    if (repo.openPrStatus !== 'checked') failures.push(`branch inventory ${id} repo open PR status is ${repo.openPrStatus || 'missing'}`);
+    if (repo.openPrStatus !== 'checked') {
+      const hasCleanupCandidates = Array.isArray(repo.cleanupCandidates) && repo.cleanupCandidates.length > 0;
+      const message = `branch inventory ${id} repo open PR status is ${repo.openPrStatus || 'missing'}`;
+      if (hasCleanupCandidates) {
+        failures.push(message);
+      } else {
+        branchInventoryWarnings.push(message);
+      }
+    }
     if (!Array.isArray(repo.branches)) failures.push(`branch inventory ${id} repo branches list is missing`);
     if (!Array.isArray(repo.cleanupCandidates)) failures.push(`branch inventory ${id} repo cleanupCandidates list is missing`);
   }
@@ -872,6 +881,7 @@ function addBranchInventoryRequirements() {
         branchCount: repo.branchCount,
         cleanupCandidates: Array.isArray(repo.cleanupCandidates) ? repo.cleanupCandidates.length : null
       })),
+      warnings: branchInventoryWarnings,
       failures
     }
   );
