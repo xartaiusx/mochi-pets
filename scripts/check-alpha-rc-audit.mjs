@@ -438,7 +438,7 @@ function addStaticRequirements() {
     'Alpha Preview Ready',
     'preview-live-gates',
     'funded-chain-gates',
-    'configured-preview-stub'
+    'Funded-chain work is deferred'
   ]);
   requireFileIncludes('game.alpha-preview-ready-docs', 'Alpha Preview docs describe the player-facing shared-room playtest and rollback behavior.', 'docs/alpha-preview-ready.md', [
     'Mochi Social Alpha Preview',
@@ -457,12 +457,12 @@ function addStaticRequirements() {
     'Alpha RC Ready',
     'preview-live-gates',
     'funded-chain-gates',
-    'configured-preview-stub',
+    'deferred and absent from the player-facing alpha',
     'Do not set dummy'
   ]);
-  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs allow preview embedding with a no-real-value chain stub and no dummy Enjin IDs.', 'docs/site-integration.md', [
+  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs allow preview embedding with funded-chain work deferred and no dummy Enjin IDs.', 'docs/site-integration.md', [
     'Alpha Preview Ready Contract',
-    'configured-preview-stub',
+    'funded-chain work remains deferred',
     'Do not set dummy',
     'preview-live-gates',
     'funded-chain-gates'

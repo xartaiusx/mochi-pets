@@ -4,14 +4,14 @@ This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It 
 
 ## Alpha Preview Ready
 
-Alpha Preview Ready is the live-on-site gate before full Alpha RC Ready. It is allowed to keep Enjin in `configured-preview-stub` mode.
+Alpha Preview Ready is the live-on-site gate before full Alpha RC Ready. Funded-chain work is deferred and absent from the player-facing alpha.
 
 Before inviting testers to the Mochirii Vercel Preview:
 
 - The Fly game URL is known and approved for hosted contract checks.
 - The Mochirii Vercel Preview route `/games/mochi-social` uses `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
 - Supabase allowlist, terms acknowledgement, feedback, admin audit, and `MOCHI_SOCIAL_AUTH` bridge checks pass.
-- The chain UI remains visible and no-real-value, and the Canary request, Jade Vault return preview, and Canary finality review explain `configured-preview-stub` with no inventory credit.
+- Player-facing copy has no market, trade, cashout, or funded-chain language.
 - `preview-live-gates` are green.
 - `funded-chain-gates` are documented as expected red until cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality smoke are approved.
 - No dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags are set.
@@ -89,7 +89,7 @@ The acceptance script verifies:
 - `spirit.lineage_register` records the no-real-value Jade Lineage Register payload with full Lirabao/Jintari/Aozhen roster, party, care, bond, kinship album, nursery grove, bloom ascendance, capture rite, care cycle, growth rite, raising milestone, training, spar, profile, guild, status, and chat proof. Chronicle and Ascension payloads preserve `lineageRegisterProof`, and the Jade Lineage Register Seal stays no-real-value.
 - `spirit.roster_cabinet` records the no-real-value Jade Roster Cabinet payload with full Lirabao/Jintari/Aozhen roster proof, three party slots, three reserve storage labels, Jade Court Roster Archive, Jade Court Spirit Compendium, Jade Nursery Grove, Jade Lineage Register, two-tester witness, and Jade Roster Cabinet Tag proof. Chronicle and Ascension payloads preserve `rosterCabinetProof`.
 - `spirit.blossom_cradle` records the no-real-value Jade Blossom Cradle payload with full Lirabao/Jintari/Aozhen roster proof, three party slots, three care IDs, three raising milestone labels, total bond 15, Jade Kinship Album, Jade Nursery Grove, Jade Bloom Ascendance, Jade Lineage Register, Jade Moonwell Nurture Rite, Moonwell Bloom Rite, Jade Court Care Cycle, two-tester witness, and Jade Blossom Cradle Ribbon proof. Chronicle and Ascension payloads preserve `blossomCradleProof`.
-- When Enjin secrets are not configured, alpha status and `chain.withdraw_request` / `chain.deposit_request` / `chain.operation_update` responses expose `configured-preview-stub` so testers know the Canary certificate, return, and finality review paths are staged but not externally submitted.
+- When Enjin secrets are not configured, private future-chain routes remain fail-closed for later Alpha RC validation. They must not appear as player-facing Preview Ready features or imply inventory credit.
 
 By default the script expects local fallback mode and checks `.local/saves/alpha-ledger.jsonl`. If testing a preview runtime with Supabase Edge Functions configured, set `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` to limit the script to endpoint and contract checks, then use the Mochirii admin audit views for authoritative ledger proof.
 
@@ -259,7 +259,7 @@ Keep the manual map-object check until a later RPGJS runtime-level automation ca
 
 ## Alpha RC Stop Point
 
-Alpha Preview Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved hosted preview contract checks, Mochirii preview allowlist/terms/feedback checks, rollback notes, tester guide, source/asset ledgers, and Enjin `configured-preview-stub` messaging are complete.
+Alpha Preview Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved hosted preview contract checks, Mochirii preview allowlist/terms/feedback checks, rollback notes, tester guide, source/asset ledgers, and player-facing no-real-value shared-room copy are complete.
 
 Alpha RC Ready means Alpha Preview Ready plus approved Enjin Canary collection, Fuel Tank, Wallet Daemon signing, finalized proof smoke, and funded-chain gate evidence are complete.
 

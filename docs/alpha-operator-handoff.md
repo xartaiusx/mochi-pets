@@ -8,7 +8,7 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 
 ## Stop Points
 
-- Alpha Preview Ready means the Fly game is embedded by the Mochirii Vercel Preview route, Supabase allowlist/terms/feedback gates work, and Enjin remains visible as `configured-preview-stub`.
+- Alpha Preview Ready means the Fly game is embedded by the Mochirii Vercel Preview route, Supabase allowlist/terms/feedback gates work, and funded-chain work is deferred and absent from the player-facing alpha.
 - Alpha RC Ready means Alpha Preview Ready plus funded Enjin Canary collection, Fuel Tank, Wallet Daemon signing, and finalized proof smoke.
 - `preview-live-gates` are the tester-entry lane. `funded-chain-gates` are expected red until cENJ, Fuel Tank, and chain transaction approval exists.
 - Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake readiness flags to clear funded-chain gates.
@@ -26,7 +26,7 @@ For no-cost operation rules, follow [`docs/no-cost-operations.md`](no-cost-opera
 
 1. Confirm both PRs are reviewed and the local verification commands in the game and website repos pass.
 2. Resolve GitHub Actions billing/budget blocks and require a green `Verify Mochi Social` check before merge, but do not rerun or trigger Actions without explicit approval.
-3. Complete Alpha Preview Ready first: verify the Fly game URL, bind the Mochirii Vercel Preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, confirm Supabase allowlist/terms/feedback, and confirm the visible Enjin state is `configured-preview-stub`.
+3. Complete Alpha Preview Ready first: verify the Fly game URL, bind the Mochirii Vercel Preview env `NEXT_PUBLIC_MOCHI_SOCIAL_URL`, confirm Supabase allowlist/terms/feedback, and confirm player-facing copy has no market, trade, cashout, or funded-chain language.
 4. Set Fly secrets for the preview game runtime:
    - `SUPABASE_URL`
    - `SUPABASE_PUBLISHABLE_KEY`
@@ -62,7 +62,7 @@ The generated files go to `C:\Users\xtyty\Desktop\Creds\mochi-social-alpha-opera
 - Fly billing is complete. Current no-secret external gate evidence says Fly app `mochi-social-game` and volume `mochi_social_data` exist, but the live game URL and hosted contract checks are not recorded yet. Treat hosted deploy/smoke as approval-gated until `npm run alpha:external-gates` records an approved `MOCHI_SOCIAL_GAME_URL`.
 - Enjin Wallet Daemon binary is downloaded locally and must be verified with `npm run alpha:wallet-daemon-check`; this only proves file hash/help metadata. Enjin Platform must still show daemon status online before continuing to collection and Fuel Tank work.
 - Remaining Enjin gates are the `Mochi Social Alpha` Canary collection, Canary Fuel Tank, and proof operations. These are `funded-chain-gates` and stay blocked until the user explicitly approves cost-bearing chain/provider actions.
-- For Alpha Preview Ready, Enjin may remain in `configured-preview-stub` and chain requests, including Jade Vault return previews and Canary finality reviews, are audit-only/no-real-value preview records. This is not a blocker for `preview-live-gates`.
+- For Alpha Preview Ready, Enjin/funded-chain work stays deferred and absent from player-facing copy. Private future-chain routes and reports may remain fail-closed for later Alpha RC validation, but they are not blockers for `preview-live-gates`.
 - The Enjin console account state and Platform settings are live dashboard truth; do not infer readiness from docs alone.
 
 ## Acceptance Commands
@@ -151,7 +151,7 @@ Manual gates:
 - Mochirii preview blocks non-testers.
 - Mochirii preview blocks allowlisted testers until alpha terms are acknowledged.
 - Feedback submission appears in the admin audit view.
-- For Alpha Preview Ready, Enjin chain UI is visible with `configured-preview-stub`, no dummy Enjin IDs are set, and certificate request, Jade Vault return, and Canary finality review rows are audit-only/no-real-value preview records with no inventory credit.
+- For Alpha Preview Ready, player-facing alpha has no Enjin chain UI, market, trade, cashout, or funded-chain copy. No dummy Enjin IDs are set, and private future-chain routes remain fail-closed with no inventory credit.
 - For Alpha RC Ready, Enjin Canary managed wallet, Fuel Tank sponsorship, Wallet Daemon signing, one hot-to-cold proof, one finalized cold-to-hot proof, and one fixed-listing proof are submitted through `POST /integration/alpha/enjin/submit` and recorded in the chain ledger.
 - `npm run alpha:preview-ready` proves the tester-entry lane after hosted preview checks are approved. It can pass while funded-chain gates are red, but it cannot pass with unsynced local branches or disabled hosted contract checks.
 - `npm run alpha:enjin-operator-smoke` proves the private Enjin route fails closed; live Canary smoke is operator-approved only and requires explicit smoke request/transaction IDs.
@@ -164,24 +164,14 @@ Manual gates:
 
 Tell testers:
 
-- This is a closed alpha preview for allowlisted 18+ testers only.
-- Assets, Mochi Spirits, currency, trades, listings, and Enjin Canary operations have no real value.
-- Do not buy, sell, cash out, or represent alpha assets as production assets.
+- This is a closed alpha playtest for approved guild members only.
+- The tester password opens the page; saved play also requires Mochirii member sign-in.
 - Use a desktop browser.
-- Sign in through Mochirii, open `/games/mochi-social`, accept the alpha terms, and wait for the iframe to load.
-- Try the town loop: move, meet one Mochi Spirit, scout Moonbridge and Cloudbell, invite the route spirits, record the Jade Cloudbell route mastery proof, record the Jade Court Habitat Bond proof, record the Jade Court Research Folio proof, seal the Jade Court Spirit Compendium proof, record the Jade Court Roster Archive proof, organize the Jade Roster Cabinet proof, record the Jade Blossom Cradle proof, record the Jade Court Market Receipt proof, stock the Jade Court Provision Satchel proof, record the Jade Provision Catalog proof, record the Jade Battle Kit proof, record the Jade Remedy Pouch proof, record the Jade Court Care Cycle proof, record the Jade Temperament Concord proof, record the Jade Field Almanac proof, record the Jade Route Ecology Survey proof, record the Jade Weather Veil proof, record the Jade Encounter Atlas proof, record the Jade Habitat Census proof, record the Jade Court Craft Writ proof, record the Jade Exchange Accord proof, activate the Jade Cloudbell Waystone proof, record the Jade Route Charter proof, seal the Jade Moonwell Nurture Rite proof, record the Jade Teahouse Recovery proof, record the Jade Kinship Album proof, record the Jade Nursery Grove proof, record the Jade Bloom Ascendance proof, record the Jade Capture Rite proof, record the Jade Lineage Register proof, complete the first quest-chain board postings, clear the Jade Dojo Ladder proof, clear the Jade Banner Tournament proof, clear the Jade Rival Circle proof, clear the Jade Sifu Council proof, clear the Jade Summit Circuit proof, record the Jade Court Commission Ledger proof, record the two-tester Jade Courtyard Rally proof, record the Jade Quest Ledger proof, record the Jade Scroll Story Chapter proof, seal the Jade Insignia Case proof, practice a technique, study a tactic scroll, prepare the Jade Step Loadout proof, seal the Jade Technique Codex proof, attune the Jade Heart Trait proof, weave the Jade Mirror Condition Weave proof, map the Jade Affinity Matrix proof, record the Jade Court rank proof, open the Moonwell Bloom growth proof, try the Jade Mirror affinity trial, form the three-spirit party, record Triune Jade Harmony, clear the Jade Echo Concord no-injury social battle proof, clear the Jade Mirror Team Match full-party spar proof, clear the Silk Banner Mentor Drill proof, care for it, view the profile status, add the local guild buddy proof, set the social status, inspect the HUD, send one local chat message, use one emote, create one test market listing, record one no-real-value Jade Court Market Receipt proof, create one direct trade proof, request the Canary certificate proof, stage the Jade Vault return preview, and review Canary finality as a no-credit preview.
-- Also record the Jade Encounter Rotation proof before the atlas; the local encounter-rotation report id should remain no-real-value and never imply settled inventory.
-- Also record the Jade Weather Veil proof before encounter rotation; the local weather-veil report id should remain no-real-value and never imply dynamic loot, scarcity, or settled inventory.
-- Also record the Jade Habitat Census proof after the atlas; the local habitat-census report id should remain no-real-value and never imply rarity, scarcity, settlement, or inventory credit.
-- Also record the Jade Provision Catalog proof after satchel/receipt/craft/recovery/care/census evidence; the local provision-catalog report id and seal should remain no-real-value and never imply recipe ownership, settlement, cashout, or inventory credit.
-- Also record the Jade Battle Kit proof after catalog/technique/condition/affinity/recovery and no-injury battle evidence; the local battle-kit report id and Jade Battle Kit Tag should remain no-real-value and never imply recipe ownership, settlement, cashout, inventory credit, or Enjin finality.
-- Also record the Jade Remedy Pouch proof after recovery tea, battle kit, care cycle, sanctuary, condition weave, and no-injury battle evidence; the local remedy-pouch report id and Jade Remedy Pouch Tag should remain no-real-value and never imply recipe ownership, settlement, cashout, inventory credit, or Enjin finality.
-- Also record the Jade Bond Gift Rite proof after market receipt, provision satchel, care cycle, gift item, profile/guild/status/chat, and two-tester evidence; the local bond-gift report id and Jade Bond Gift Ribbon should remain no-real-value and never imply settlement, cashout, inventory credit, or Enjin finality.
-- Also record the Jade Name Banner Rite proof after journal, compendium, roster archive, roster cabinet, bond gift, profile/guild/status/chat, and two-tester evidence; the local name-banner report id and Jade Name Banner Tag should remain no-real-value and never imply settlement, cashout, inventory credit, or Enjin finality.
-- Also record the Jade Battle Chronicle proof after the Jade Summit Circuit, Jade Technique Codex, Jade Mirror Condition Weave, Jade Affinity Matrix, Jade Remedy Pouch, no-injury battle transcript, and two-tester witness evidence. The local battle-chronicle report id and Jade Battle Chronicle Seal should remain no-real-value and never imply settlement, cashout, inventory credit, or Enjin finality.
-- Also record the Jade Quest Ledger proof after the first quest postings, market receipt, provision satchel, commission ledger, route patrol, and two-tester rally evidence, then record the Jade Dialogue Scroll proof before the Jade Scroll Story Chapter. The local quest-ledger and dialogue-scroll report ids, Jade Quest Ledger Seal, and Jade Dialogue Scroll Seal should remain no-real-value and never imply settlement, cashout, inventory credit, or Enjin finality.
-- Also record the Jade Route Charter proof after route mastery, route patrol, waystone, ecology, weather, encounter atlas, habitat census, provision satchel, craft writ, full-party, and two-tester evidence; the local route-charter report id and Jade Route Charter Slip should remain no-real-value and never imply settlement, cashout, inventory credit, or Enjin finality.
-- Report bugs through the Mochirii feedback form. Do not send secrets, wallet seed phrases, or personal payment details in feedback.
+- Enter the shared guild room, create a curated character, meet Lirabao, and care for the guild pet together.
+- Leave and return to confirm character progress and Lirabao progress are saved.
+- All progress has no real value.
+- Do not buy, sell, trade, cash out, or represent alpha progress as public-release value.
+- Report bugs through the Mochirii feedback form. Do not send secrets, wallet seed phrases, payment details, or one-time codes in feedback.
 
 ## Rollback
 

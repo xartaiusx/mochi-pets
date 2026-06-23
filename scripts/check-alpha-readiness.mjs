@@ -181,7 +181,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:responsive-gameplay', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Responsive Gameplay Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-responsive-gameplay.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:responsive-gameplay', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Responsive Gameplay Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-responsive-gameplay.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'Funded-chain work is deferred', 'No dummy']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -221,7 +221,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/external-ops.md', 'Current Private Gates']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'deferred and absent from the player-facing alpha', 'docs/external-ops.md', 'Current Private Gates']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -993,7 +993,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['preview-live-gates', 'funded-chain-gates', 'configured-preview-stub']
+    includes: ['preview-live-gates', 'funded-chain-gates', 'deferred and absent from player-facing copy']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -1033,7 +1033,7 @@ const checks = [
   },
   {
     file: 'docs/site-integration.md',
-    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
+    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'funded-chain work remains deferred', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
   },
   {
     file: 'docs/deployment.md',
@@ -2445,10 +2445,34 @@ const legacyFeatureParityFiles = new Set([
   'scripts/check-alpha-responsive-gameplay.mjs'
 ]);
 
+const legacyHandoffFeatureSnippets = [
+  'Jade Habitat Census proof',
+  'habitat-census',
+  'Jade Weather Veil proof',
+  'weather-veil',
+  'Jade Encounter Rotation proof',
+  'encounter-rotation',
+  'Jade Kinship Album proof',
+  'Jade Capture Rite proof',
+  'provision-catalog',
+  'record the Jade Provision Catalog proof',
+  'battle-kit',
+  'record the Jade Battle Kit proof',
+  'remedy-pouch',
+  'record the Jade Remedy Pouch proof',
+  'route-charter',
+  'record the Jade Route Charter proof'
+];
+
 const readinessChecks = [
-  ...checks.filter((check) => !legacyFeatureParityFiles.has(check.file)),
+  ...checks.filter((check) => !legacyFeatureParityFiles.has(check.file) && !isLegacyHandoffFeatureCheck(check)),
   ...unityPreviewReadinessChecks
 ];
+
+function isLegacyHandoffFeatureCheck(check) {
+  return check.file === 'docs/alpha-operator-handoff.md'
+    && check.includes.some((snippet) => legacyHandoffFeatureSnippets.includes(snippet));
+}
 
 function read(file) {
   const fullPath = path.join(root, file);

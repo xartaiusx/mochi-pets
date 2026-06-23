@@ -65,7 +65,9 @@ Unity shared-room manifests expose:
 - `avatarUploads=false`
 - `edgeFunctions.unityAuth="mochi-social-unity-auth"`
 
-Alpha RC manifests also include:
+Future Alpha RC planning must stay outside the Preview Ready player surface. The Unity shared-room manifest must not require or promote economy, market, trade, or funded-chain features for the closed alpha.
+
+Legacy rollback and future Alpha RC notes may still mention:
 
 - `alpha.allowlistRequired=true`
 - `alpha.termsRequired=true`
@@ -88,7 +90,7 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `alphaPreview.testerPasswordOwner="parent-website"`
 - `alphaPreview.providerMutationAllowedByDefault=false`
 - `alphaPreview.fundedChainRequiredForPreview=false`
-- `alphaPreview.enjinCanaryModeBeforeFunding="configured-preview-stub"`
+- `alphaPreview.fundedChainPlayerFacing=false`
 - `progress.authority="mochirii-edge"`
 - `progress.linkedAccount=true`
 - `progress.guestFallback=true`
@@ -112,7 +114,7 @@ Closed Alpha Preview manifests also expose machine-readable tester-entry contrac
 - `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
 - `playableContent.roleplay` catalogs the three-posting quest chain, quest ledger, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
 - `playableContent.roleplay` catalogs first-court quest, guild, habitat, story, census, waystone, and Jade Route Charter route-travel proof IDs for website readiness copy.
-- `playableContent.economyAndCanary` catalogs no-real-value provision, craft, market receipt, direct exchange accord, relic attunement, Lirabao Canary certificate preview, and Canary request/return action types
+- Future economy/chain catalogs stay private or rollback-only and are not part of the player-facing Unity shared-room alpha.
 - `playableContent.runtimeAssets` mirrors the 64px tile and 384x768 spritesheet runtime asset contract
 - `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
 
@@ -157,9 +159,11 @@ Signed-in Supabase mode is the account-persistent path. Tester-password mode rem
 - If account sync is unavailable, the HUD must show sync-unavailable copy and keep the local preview state no-real-value.
 - The parent website must not send progress snapshots, service-role keys, refresh tokens, or game server tokens through `postMessage`.
 
-## Chain Finality Contract
+## Future Chain Finality Contract
 
-The game backend may send `chain.withdraw_request`, `chain.deposit_request`, and `chain.operation_update` through `/integration/alpha/action`.
+This contract is deferred until after Alpha Preview Ready and is not part of the player-facing shared-room alpha. If future server-only chain routes remain in the codebase, they must stay fail-closed without real Enjin resources and must not appear in `/play`, `/embed`, tester-page copy, or public reports.
+
+The game backend may later send `chain.withdraw_request`, `chain.deposit_request`, and `chain.operation_update` through `/integration/alpha/action`.
 
 - `chain.withdraw_request` stages a no-real-value hot-to-cold Canary proof.
 - `chain.deposit_request` stages a no-real-value cold-to-hot Canary proof.
@@ -171,14 +175,14 @@ The game backend may send `chain.withdraw_request`, `chain.deposit_request`, and
 
 ## Alpha Preview Ready Contract
 
-The Mochirii Vercel Preview route may embed Mochi Social while Enjin is unfunded and the game reports `chainRuntime.mode="configured-preview-stub"`.
+The Mochirii Vercel Preview route may embed Mochi Social for the no-real-value shared-room playtest while funded-chain work remains deferred and absent from the player-facing alpha.
 
 - For the first live website pass, Mochirii may use a password-unlocked preview page before the stricter Supabase allowlist path is restored. The password gate is parent-site-only; the game should continue to support guest-first play when `SUPABASE_AUTH_REQUIRED=false`.
 - Parent site sends only `MOCHI_SOCIAL_AUTH` with a short-lived Supabase access token, plus `MOCHI_SOCIAL_SIGN_OUT` when needed.
-- Chain UI remains visible and clearly labeled no-real-value/test-only.
-- Chain requests may be recorded as audit-only preview rows, but they must not credit hot inventory, settle trades, settle listings, or imply production ownership.
+- Player-facing copy has no market, trade, cashout, or funded-chain language.
+- Private future-chain routes may remain fail-closed for later Alpha RC validation, but they must not credit hot inventory, settle trades, settle listings, or imply production ownership.
 - Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags for Preview Ready.
-- `preview-live-gates` cover Fly embed, Vercel Preview route, tester-password or Supabase tester entry, and the no-real-value chain stub.
+- `preview-live-gates` cover Fly embed, Vercel Preview route, tester-password or Supabase tester entry, Unity shared-room contract, member sign-in, allowlist, terms, feedback, and no-real-value copy.
 - `funded-chain-gates` cover real Canary collection, Fuel Tank, Wallet Daemon signing, and finality proof. They can remain red until funded-chain approval exists.
 - The Mochirii repo should prove its website tester-entry lane with `npm run check:mochi-social-preview-ready`; that audit is separate from funded-chain gates and remains no-secret.
 - The website should treat Alpha Preview Ready as a closed tester preview, not production launch.

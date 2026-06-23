@@ -59,7 +59,7 @@ Alpha RC server-only secrets and config:
 - `ENJIN_COLLECTION_ID`: Mochi Social Alpha collection id.
 - `ENJIN_FUEL_TANK_ID`: Canary Fuel Tank id used to sponsor test transactions.
 
-For Alpha Preview Ready, leave `ENJIN_COLLECTION_ID` and `ENJIN_FUEL_TANK_ID` unset until real Canary collection/Fuel Tank resources exist. Do not set dummy values. The runtime should stay in `configured-preview-stub` mode and visibly explain that chain requests are no-real-value preview records until funding and finality proof are approved.
+For Alpha Preview Ready, leave `ENJIN_COLLECTION_ID` and `ENJIN_FUEL_TANK_ID` unset until real Canary collection/Fuel Tank resources exist. Do not set dummy values. Funded-chain work stays deferred and absent from player-facing alpha copy; private future-chain routes may remain fail-closed for later Alpha RC validation.
 
 Add the future Vercel domain to `MOCHI_SOCIAL_ALLOWED_ORIGINS` before embedding in production. `RPG_ALLOWED_ORIGINS` may remain only for legacy rollback compatibility.
 

@@ -392,7 +392,7 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       action: 'Set funded-chain Fly secrets only after real Enjin Canary resources exist.',
       exactAction: `fly secrets set -a ${flyApp} ENJIN_PLATFORM_TOKEN=<private-enjin-platform-token> ENJIN_COLLECTION_ID=<private-enjin-collection-id> ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>`,
       costRisk: 'Fly secret changes can restart Machines, and real Enjin values should only be set after collection/Fuel Tank resources exist and funded-chain work is approved.',
-      noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so the runtime stays configured-preview-stub for Alpha Preview Ready.',
+      noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so funded-chain work stays deferred and absent from the player alpha.',
       approvalText: `I approve setting real funded-chain Fly secret names on ${flyApp} after Enjin Canary collection and Fuel Tank resources exist. I understand this may restart hosted resources or add usage.`
     },
     {
@@ -412,11 +412,11 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       provider: 'Enjin Canary',
       phase: 'Alpha RC later',
       currentlyRequired: false,
-      requirementReason: 'Not required for Alpha Preview Ready. Keep Enjin in configured-preview-stub until funding and transaction proof work is explicitly approved.',
+      requirementReason: 'Not required for Alpha Preview Ready. Keep funded-chain work deferred and absent from the player alpha until funding and transaction proof work is explicitly approved.',
       action: 'Create/fund Fuel Tank resources or submit Canary mint, burn, listing, transfer, or proof operations.',
       exactAction: 'Use Enjin Platform dashboard/API/Wallet Daemon only for the specific approved Canary collection, Fuel Tank, and transaction proof.',
       costRisk: 'Fuel Tank funding, sponsored transactions, cloud Wallet Daemon hosting, faucets, and live chain operations can consume account resources or sponsored balances.',
-      noCostAlternative: 'Keep Enjin readiness flags unset and use configured-preview-stub plus local fail-closed operator smoke.',
+      noCostAlternative: 'Keep Enjin readiness flags unset and use local fail-closed operator smoke only; keep funded-chain work absent from the player alpha.',
       approvalText: 'I approve the specific Enjin Canary action: <exact collection, Fuel Tank, Wallet Daemon, or transaction proof action>. I understand it may add usage, sponsored transaction cost, or cloud/resource charges.'
     },
     {

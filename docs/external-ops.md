@@ -52,12 +52,12 @@ Use [`docs/alpha-preview-ready.md`](alpha-preview-ready.md) for the next live-si
 
 Maintain preview-live-gates first. `funded-chain-gates` are expected red until the user explicitly approves cENJ/Fuel Tank/signing work. Do not set dummy Enjin IDs, dummy Fuel Tank IDs, or fake readiness flags to make Alpha RC pass.
 
-For Preview Ready, keep the Canary/certificate UI visible and make the runtime report `chainRuntime.mode="configured-preview-stub"`. Chain requests are audit-only preview records until real Enjin finality exists. Never credit inventory, settle trades, settle market value, or imply player value from a chain request unless the Enjin state is `FINALIZED`.
+For Preview Ready, keep funded-chain work deferred and absent from the player-facing alpha. Private future-chain routes may remain fail-closed for later Alpha RC validation, but the shared-room playtest must not show market, trade, cashout, or funded-chain copy.
 
 Use these request templates for future maintainer passes:
 
 ```text
-Build the next alpha feature against no-real-value Alpha Preview Ready. Keep Enjin visible as configured-preview-stub and do not clear funded-chain gates.
+Build the next alpha feature against no-real-value Alpha Preview Ready. Keep funded-chain work deferred and absent from the player alpha, and do not clear funded-chain gates.
 ```
 
 ```text

@@ -21,7 +21,7 @@ Allowed without extra approval:
 - Generate no-secret handoff files under `C:\Users\xtyty\Desktop\Creds`.
 - Generate `npm run alpha:sync-approval` before hosted smoke, deploy, provider mutation, funded-chain work, or any CI rerun that could create actual charges. The packet is not approval; it records the exact state, branch sync status, cost/usage risk, no-cost alternative, and provider approval text to review. Public-repo commits and pushes are allowed under the current user policy and should be followed by PR/CI verification.
 - Queue a verified milestone deploy request in `npm run alpha:operator-checklist`, `npm run alpha:provider-preflight`, or `npm run alpha:sync-approval`. The queue may name `fly-verified-milestone-deploy` and `vercel-verified-milestone-deploy`, but it does not authorize Fly or Vercel mutation by itself.
-- Implement local code/docs/tests for Alpha Preview Ready, including the visible Enjin `configured-preview-stub` path, as long as no provider state is mutated.
+- Implement local code/docs/tests for Alpha Preview Ready, including the deferred funded-chain guardrails, as long as no provider state is mutated.
 
 ## Stop And Ask First
 
@@ -57,7 +57,7 @@ Before a cost-bearing action, state:
 - Enjin Wallet Daemon local binary checks may inspect file metadata, SHA256, and `--help` output only. A downloaded binary is not proof that a signer is running or that Enjin Platform is connected.
 - Enjin Wallet Daemon may later run as a local or cloud operator process, but do not import wallets, print seeds, start a signer, submit live Enjin operations, or fund a Fuel Tank without approval and private operator handling.
 - Prefer local Alpha RC checks until the user explicitly authorizes any hosted preview, chain, paid/quota-bearing CI, or load-smoke step that can create actual charges.
-- Prefer Alpha Preview Ready work until the user explicitly authorizes funded-chain work. The funded-chain lane is expected red while Enjin remains `configured-preview-stub`.
+- Prefer Alpha Preview Ready work until the user explicitly authorizes funded-chain work. The funded-chain lane is expected red while funded-chain work remains deferred and absent from the player alpha.
 - `npm run alpha:external-gates` refuses hosted Fly/Vercel contract fetches unless `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` is set for an explicitly approved hosted verification run. Its ignored report records current Git state and `hostedChecksAllowed`, and `npm run alpha:rc-audit` rejects stale or pre-guard external gate evidence.
 - `npm run alpha:preview-ready` reads ignored no-secret reports and exits red until branches are synced and approved hosted preview contract checks are recorded. It does not submit Enjin work and does not require funded-chain gates.
 - Local no-cost commits that are not pushed can make `npm run alpha:rc-audit` fail at `github.local-branch-sync`. Under the current user policy, public-repo pushes are allowed; push the branch and verify PR/CI results afterward when branch sync is the remaining blocker.
