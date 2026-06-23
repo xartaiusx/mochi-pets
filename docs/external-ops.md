@@ -43,6 +43,11 @@ When a needed Alpha RC step may add charges, record the blocked gate and the no-
 
 `npm run alpha:external-gates` may read provider state, but hosted Fly/Vercel contract fetches require `MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true` for an explicitly approved hosted verification run. Leave that flag unset for local-only continuation work.
 
+Local CLI readiness is checked before provider reads:
+
+- Supabase CLI is a pinned project dev dependency. Run `npm install`, then `npm run alpha:external-gates`; the script prefers the local Supabase binary before any global `supabase` command. Supabase preview secret verification still requires private `supabase login` or `SUPABASE_ACCESS_TOKEN` handling.
+- Fly CLI may be placed at `.local/tools/flyctl/flyctl.exe` or supplied with `FLYCTL_PATH`. Installing or locating the CLI is local tooling only; `fly auth login`, hosted reads, deploys, secret changes, and resource mutations remain approval-gated by the no-cost rules.
+
 ## Alpha Preview Ready Lane
 
 Use [`docs/alpha-preview-ready.md`](alpha-preview-ready.md) for the next live-site target. Alpha Preview Ready is not the same as Alpha RC Ready:

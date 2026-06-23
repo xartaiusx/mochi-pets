@@ -223,7 +223,12 @@ function checkSupabasePreviewSecrets() {
 
   const result = command(report.tooling.supabaseCli.command, ['secrets', 'list', '--project-ref', supabasePreviewRef]);
   if (!result.ok) {
-    add('fail', 'Supabase preview secrets', 'Supabase preview secrets could not be listed by name/digest.', { stderr: result.stderr });
+    const authMissing = /Access token not provided|AuthRequired|supabase login|SUPABASE_ACCESS_TOKEN/i.test(`${result.stdout}\n${result.stderr}`);
+    add('fail', 'Supabase preview secrets', authMissing ? 'Supabase CLI is installed but not authenticated; run supabase login or set SUPABASE_ACCESS_TOKEN before preview secret verification.' : 'Supabase preview secrets could not be listed by name/digest.', {
+      status: result.status,
+      stdout: sanitizeMultiline(result.stdout),
+      stderr: sanitizeMultiline(result.stderr)
+    });
     return;
   }
 
@@ -424,7 +429,7 @@ function command(commandName, args, options = {}) {
     cwd: options.cwd || root,
     env: options.env || process.env,
     encoding: 'utf8',
-    shell: Boolean(options.shell)
+    shell: options.shell ?? shouldRunThroughShell(commandName)
   });
   return {
     ok: result.status === 0,
@@ -434,14 +439,43 @@ function command(commandName, args, options = {}) {
   };
 }
 
+function shouldRunThroughShell(commandName) {
+  return process.platform === 'win32' && /\.cmd$/i.test(String(commandName || ''));
+}
+
 function resolveFlyctl() {
   if (process.env.FLYCTL_PATH) return process.env.FLYCTL_PATH;
+  const projectLocal = resolve(root, '.local', 'tools', 'flyctl', process.platform === 'win32' ? 'flyctl.exe' : 'flyctl');
+  if (existsSync(projectLocal)) return projectLocal;
   const local = process.env.USERPROFILE ? resolve(process.env.USERPROFILE, '.fly/bin/flyctl.exe') : '';
   return local && existsSync(local) ? local : 'flyctl';
 }
 
 function resolveSupabaseCli() {
-  return process.env.SUPABASE_CLI_PATH || 'supabase';
+  if (process.env.SUPABASE_CLI_PATH) return process.env.SUPABASE_CLI_PATH;
+  const packagedBinary = resolveLocalSupabaseBinary();
+  if (packagedBinary) return packagedBinary;
+  const local = resolveLocalBin('supabase');
+  return local || 'supabase';
+}
+
+function resolveLocalSupabaseBinary() {
+  const packages = {
+    darwin: { arm64: 'cli-darwin-arm64', x64: 'cli-darwin-x64' },
+    linux: { arm64: 'cli-linux-arm64', x64: 'cli-linux-x64' },
+    win32: { arm64: 'cli-windows-arm64', x64: 'cli-windows-x64' }
+  };
+  const packageName = packages[process.platform]?.[process.arch];
+  if (!packageName) return '';
+  const executable = process.platform === 'win32' ? 'supabase.exe' : 'supabase';
+  const local = resolve(root, 'node_modules', '@supabase', packageName, 'bin', executable);
+  return existsSync(local) ? local : '';
+}
+
+function resolveLocalBin(name) {
+  const executable = process.platform === 'win32' ? `${name}.cmd` : name;
+  const local = resolve(root, 'node_modules', '.bin', executable);
+  return existsSync(local) ? local : '';
 }
 
 function detectCli(label, commandName, args) {
