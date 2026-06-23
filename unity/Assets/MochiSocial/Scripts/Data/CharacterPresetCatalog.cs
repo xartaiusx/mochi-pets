@@ -92,8 +92,8 @@ namespace MochiSocial.Data
                 body = preset.body,
                 hair = preset.hair,
                 outfit = preset.outfit,
-                primaryColor = ColorUtility.ToHtmlStringRGB(preset.primaryColor),
-                accentColor = ColorUtility.ToHtmlStringRGB(preset.accentColor),
+                primaryColor = ColorToHex(preset.primaryColor),
+                accentColor = ColorToHex(preset.accentColor),
                 displayNameReference = string.IsNullOrWhiteSpace(displayNameReference) ? "member-display-name" : displayNameReference,
                 lastSpawnPoint = spawnPoint,
                 revision = revision
@@ -113,8 +113,8 @@ namespace MochiSocial.Data
                 body = preset.body,
                 hair = preset.hair,
                 outfit = preset.outfit,
-                primaryColor = state.primaryColor,
-                accentColor = state.accentColor,
+                primaryColor = ColorToHex(preset.primaryColor),
+                accentColor = ColorToHex(preset.accentColor),
                 displayNameReference = state.displayNameReference,
                 lastSpawnPoint = spawnPoint,
                 revision = state.revision + 1
@@ -129,8 +129,15 @@ namespace MochiSocial.Data
                    string.Equals(state.body, preset.body, StringComparison.Ordinal) &&
                    string.Equals(state.hair, preset.hair, StringComparison.Ordinal) &&
                    string.Equals(state.outfit, preset.outfit, StringComparison.Ordinal) &&
+                   string.Equals(state.primaryColor, ColorToHex(preset.primaryColor), StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(state.accentColor, ColorToHex(preset.accentColor), StringComparison.OrdinalIgnoreCase) &&
                    !string.IsNullOrWhiteSpace(state.displayNameReference) &&
                    state.revision >= 0;
+        }
+
+        private static string ColorToHex(Color color)
+        {
+            return ColorUtility.ToHtmlStringRGB(color);
         }
     }
 }

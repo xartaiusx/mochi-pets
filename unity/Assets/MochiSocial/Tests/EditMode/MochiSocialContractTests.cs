@@ -90,8 +90,22 @@ namespace MochiSocial.Tests
 
             Assert.That(CharacterPresetCatalog.IsValid(updated), Is.True);
             Assert.That(updated.presetId, Is.EqualTo(state.presetId));
+            Assert.That(updated.primaryColor, Is.EqualTo(state.primaryColor));
+            Assert.That(updated.accentColor, Is.EqualTo(state.accentColor));
             Assert.That(updated.lastSpawnPoint, Is.EqualTo(spawn));
             Assert.That(updated.revision, Is.EqualTo(state.revision + 1));
+        }
+
+        [Test]
+        public void CharacterStateRejectsAlteredPresetColorSwatches()
+        {
+            var invalidPrimary = CharacterPresetCatalog.CreateDefault();
+            invalidPrimary.primaryColor = "FFFFFF";
+            Assert.That(CharacterPresetCatalog.IsValid(invalidPrimary), Is.False);
+
+            var invalidAccent = CharacterPresetCatalog.CreateDefault();
+            invalidAccent.accentColor = "000000";
+            Assert.That(CharacterPresetCatalog.IsValid(invalidAccent), Is.False);
         }
 
         [Test]
@@ -249,6 +263,18 @@ namespace MochiSocial.Tests
             pet.state = "custom_upload_state";
 
             Assert.That(pet.IsValid(), Is.False);
+        }
+
+        [Test]
+        public void SharedPetRejectsImpostorDisplayNameAndMood()
+        {
+            var renamed = SharedPetState.CreateDefault();
+            renamed.displayName = "Not Lirabao";
+            Assert.That(renamed.IsValid(), Is.False);
+
+            var invalidMood = SharedPetState.CreateDefault();
+            invalidMood.mood = "market-ready";
+            Assert.That(invalidMood.IsValid(), Is.False);
         }
 
         private static IReadOnlyList<Component> GetSceneComponents(Scene scene)

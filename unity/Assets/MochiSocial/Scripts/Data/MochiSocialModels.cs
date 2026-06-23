@@ -45,6 +45,15 @@ namespace MochiSocial.Data
             "unavailable"
         };
 
+        private static readonly HashSet<string> AllowedMoods = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "curious",
+            "resting",
+            "reloading",
+            "comforted",
+            "playful"
+        };
+
         public int version = 1;
         public string petId = MochiSocialConstants.SharedPetKey;
         public string displayName = MochiSocialConstants.SharedPetDisplayName;
@@ -105,7 +114,8 @@ namespace MochiSocial.Data
         {
             return version == 1 &&
                    petId == MochiSocialConstants.SharedPetKey &&
-                   !string.IsNullOrWhiteSpace(displayName) &&
+                   displayName == MochiSocialConstants.SharedPetDisplayName &&
+                   AllowedMoods.Contains(mood ?? string.Empty) &&
                    AllowedStates.Contains(state ?? string.Empty) &&
                    careMeter >= 0 &&
                    careMeter <= 100 &&

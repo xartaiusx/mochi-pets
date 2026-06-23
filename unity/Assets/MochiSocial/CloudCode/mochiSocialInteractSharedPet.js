@@ -3,11 +3,13 @@ const axios = require("axios-0.21");
 
 const ROOM_SESSION_ID = "jade-lantern-room-alpha";
 const SHARED_PET_KEY = "lirabao";
+const SHARED_PET_DISPLAY_NAME = "Lirabao";
 const CUSTOM_ITEM_ID = "room:jade-lantern-room";
 const SHARED_PET_ITEM_KEY = "sharedPet.v1";
 const FULL_STATE_KEY = "room:jade-lantern-room/sharedPet.v1";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ALLOWED_STATES = new Set(["idle", "approach", "happy", "care_received", "stale_revision_reload", "unavailable"]);
+const ALLOWED_MOODS = new Set(["curious", "resting", "reloading", "comforted", "playful"]);
 
 module.exports = async ({ params, context, logger, secretManager }) => {
   assertSharedRoomParams(params);
@@ -159,7 +161,8 @@ function isValidSharedPetState(state) {
     state &&
     state.version === 1 &&
     state.petId === SHARED_PET_KEY &&
-    typeof state.displayName === "string" &&
+    state.displayName === SHARED_PET_DISPLAY_NAME &&
+    ALLOWED_MOODS.has(state.mood) &&
     ALLOWED_STATES.has(state.state) &&
     Number.isInteger(state.careMeter) &&
     state.careMeter >= 0 &&

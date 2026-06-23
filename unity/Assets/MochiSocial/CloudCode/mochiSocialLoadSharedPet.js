@@ -3,10 +3,12 @@ const { DataApi } = require("@unity-services/cloud-save-1.4");
 const ROOM_SESSION_ID = "jade-lantern-room-alpha";
 const ROOM_MODE = "single-shared-room";
 const SHARED_PET_KEY = "lirabao";
+const SHARED_PET_DISPLAY_NAME = "Lirabao";
 const CUSTOM_ITEM_ID = "room:jade-lantern-room";
 const SHARED_PET_ITEM_KEY = "sharedPet.v1";
 const FULL_STATE_KEY = "room:jade-lantern-room/sharedPet.v1";
 const ALLOWED_STATES = new Set(["idle", "approach", "happy", "care_received", "stale_revision_reload", "unavailable"]);
+const ALLOWED_MOODS = new Set(["curious", "resting", "reloading", "comforted", "playful"]);
 
 module.exports = async ({ params, context, logger }) => {
   assertSharedRoomParams(params);
@@ -52,7 +54,7 @@ function defaultSharedPetState() {
   return {
     version: 1,
     petId: SHARED_PET_KEY,
-    displayName: "Lirabao",
+    displayName: SHARED_PET_DISPLAY_NAME,
     mood: "curious",
     state: "idle",
     careMeter: 50,
@@ -69,7 +71,8 @@ function isValidSharedPetState(state) {
     state &&
     state.version === 1 &&
     state.petId === SHARED_PET_KEY &&
-    typeof state.displayName === "string" &&
+    state.displayName === SHARED_PET_DISPLAY_NAME &&
+    ALLOWED_MOODS.has(state.mood) &&
     ALLOWED_STATES.has(state.state) &&
     Number.isInteger(state.careMeter) &&
     state.careMeter >= 0 &&

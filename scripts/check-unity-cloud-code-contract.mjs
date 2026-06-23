@@ -15,7 +15,9 @@ await run();
 
 async function run() {
   await verifiesLoadBootstrapsSharedLirabao();
+  await verifiesLoadReplacesInvalidSharedPetIdentity();
   await verifiesInteractAppliesAuthoritativeCare();
+  await verifiesInteractRejectsInvalidSharedPetIdentity();
   await verifiesRevisionConflictAndInvalidIntent();
   await verifiesSupabaseMirrorPayloadAndFailOpenBehavior();
   console.log('Mochi Social Unity Cloud Code contract check passed.');
@@ -46,6 +48,22 @@ async function verifiesLoadBootstrapsSharedLirabao() {
   assert(wrongRoom.message === 'invalid_unity_room_pet', 'load function must reject non-Jade Lantern room params.');
 }
 
+async function verifiesLoadReplacesInvalidSharedPetIdentity() {
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialLoadSharedPet.js');
+  harness.cloudSave.storeSharedPet({ ...defaultSharedPetState(), displayName: 'Other pet', mood: 'market-ready' });
+
+  const state = await harness.handler({
+    params: sharedRoomParams,
+    context: { projectId },
+    logger: harness.logger
+  });
+
+  assertValidSharedPetState(state, 'repaired shared pet');
+  assert(state.displayName === 'Lirabao', 'load function must replace impostor shared pet display names.');
+  assert(state.mood === 'curious', 'load function must replace non-curated shared pet moods.');
+  assert(harness.cloudSave.sets.length === 1, 'load function must persist the repaired shared pet state.');
+}
+
 async function verifiesInteractAppliesAuthoritativeCare() {
   const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
   harness.cloudSave.storeSharedPet(defaultSharedPetState());
@@ -68,6 +86,28 @@ async function verifiesInteractAppliesAuthoritativeCare() {
 
   const saved = harness.cloudSave.readSharedPet();
   assert(saved.revision === state.revision, 'care must save the next shared pet state.');
+}
+
+async function verifiesInteractRejectsInvalidSharedPetIdentity() {
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  harness.cloudSave.storeSharedPet({ ...defaultSharedPetState(), displayName: 'Other pet' });
+
+  const renamed = await expectRejects(() => harness.handler({
+    params: { ...sharedRoomParams, interactionType: 'care', expectedRevision: 0, actorId: validActorId },
+    context: { projectId, playerId: validActorId },
+    logger: harness.logger,
+    secretManager: null
+  }));
+  assert(renamed.message === 'invalid_shared_pet_state', 'interact function must reject impostor shared pet display names.');
+
+  harness.cloudSave.storeSharedPet({ ...defaultSharedPetState(), mood: 'market-ready' });
+  const invalidMood = await expectRejects(() => harness.handler({
+    params: { ...sharedRoomParams, interactionType: 'care', expectedRevision: 0, actorId: validActorId },
+    context: { projectId, playerId: validActorId },
+    logger: harness.logger,
+    secretManager: null
+  }));
+  assert(invalidMood.message === 'invalid_shared_pet_state', 'interact function must reject non-curated shared pet moods.');
 }
 
 async function verifiesRevisionConflictAndInvalidIntent() {
@@ -274,6 +314,8 @@ function assertValidSharedPetState(state, label) {
   assert(state && typeof state === 'object', `${label} must be an object.`);
   assert(state.version === 1, `${label} must use version 1.`);
   assert(state.petId === 'lirabao', `${label} must be Lirabao.`);
+  assert(state.displayName === 'Lirabao', `${label} must keep the shared pet display name.`);
+  assert(['curious', 'resting', 'reloading', 'comforted', 'playful'].includes(state.mood), `${label} has invalid mood ${state.mood}.`);
   assert(['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable'].includes(state.state), `${label} has invalid state ${state.state}.`);
   assert(Number.isInteger(state.careMeter) && state.careMeter >= 0 && state.careMeter <= 100, `${label} care meter must be 0-100.`);
   assert(Number.isInteger(state.bondTier) && state.bondTier >= 1 && state.bondTier <= 5, `${label} bond tier must be 1-5.`);
