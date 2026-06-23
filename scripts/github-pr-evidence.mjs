@@ -1,15 +1,20 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+const defaultEvidencePath = 'reports/github-pr-evidence.local.json';
+
 export function readLocalPullRequestEvidence(repo, selector, localHead = '') {
-  const evidencePath = process.env.MOCHI_SOCIAL_GITHUB_PR_EVIDENCE_FILE || '';
+  const evidencePath = process.env.MOCHI_SOCIAL_GITHUB_PR_EVIDENCE_FILE || defaultEvidencePath;
   if (!evidencePath) {
     return { ok: false, status: 'not-configured', message: 'MOCHI_SOCIAL_GITHUB_PR_EVIDENCE_FILE is not set.' };
   }
 
   const absolutePath = resolve(evidencePath);
   if (!existsSync(absolutePath)) {
-    return { ok: false, status: 'not-found', message: `GitHub PR evidence file was not found: ${absolutePath}` };
+    const label = process.env.MOCHI_SOCIAL_GITHUB_PR_EVIDENCE_FILE
+      ? 'GitHub PR evidence file'
+      : `Default GitHub PR evidence file (${defaultEvidencePath})`;
+    return { ok: false, status: 'not-found', message: `${label} was not found: ${absolutePath}` };
   }
 
   let parsed;

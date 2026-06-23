@@ -164,6 +164,8 @@ The smoke refuses to submit or poll live Enjin by default when the runtime repor
 
 `npm run alpha:external-gates` checks live Alpha RC gates without printing secret values. It verifies GitHub PR status, Supabase preview secret names, Fly authentication/app/volume/secret names, live game contract, Mochirii site contract, and operator-confirmed Enjin readiness flags.
 
+If local `gh` is unavailable and unauthenticated GitHub API checks are rate-limited, record connector-verified PR state in the ignored no-secret `reports/github-pr-evidence.local.json` file. The external-gates and RC audit scripts read that file by default before falling back to the public API.
+
 Read this report in two lanes while preparing the Vercel Preview:
 
 - `preview-live-gates`: game URL, site preview URL, Supabase preview secrets, hosted game/site contract, allowlist/terms/feedback browser checks.
