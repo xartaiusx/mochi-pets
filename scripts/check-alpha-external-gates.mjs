@@ -18,6 +18,8 @@ const gameUrl = (process.env.MOCHI_SOCIAL_GAME_URL || process.env.MOCHI_SOCIAL_B
 const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || previewEnv.sitePreviewUrl || '').replace(/\/+$/, '');
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const hostedChecksAllowed = process.env.MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS === 'true';
+const supabaseCliCommand = resolveSupabaseCli();
+const flyctlCommand = resolveFlyctl();
 
 const previewFlySecrets = [
   'SUPABASE_URL',
@@ -63,6 +65,10 @@ const report = {
   sitePreviewUrl: sitePreviewUrl || null,
   previewEnv,
   hostedChecksAllowed,
+  tooling: {
+    supabaseCli: detectCli('Supabase CLI', supabaseCliCommand, ['--version']),
+    flyctl: detectCli('Fly CLI', flyctlCommand, ['version'])
+  },
   lanes: null,
   git: readGitState(),
   checks: []
@@ -207,7 +213,15 @@ function readLocalGitState(cwd) {
 }
 
 function checkSupabasePreviewSecrets() {
-  const result = command('supabase', ['secrets', 'list', '--project-ref', supabasePreviewRef]);
+  if (!report.tooling.supabaseCli.available) {
+    add('fail', 'Supabase preview secrets', 'Supabase CLI is not available locally; install and authenticate the Supabase CLI before preview secret verification.', {
+      command: report.tooling.supabaseCli.command,
+      stderr: report.tooling.supabaseCli.stderr
+    });
+    return;
+  }
+
+  const result = command(report.tooling.supabaseCli.command, ['secrets', 'list', '--project-ref', supabasePreviewRef]);
   if (!result.ok) {
     add('fail', 'Supabase preview secrets', 'Supabase preview secrets could not be listed by name/digest.', { stderr: result.stderr });
     return;
@@ -221,14 +235,23 @@ function checkSupabasePreviewSecrets() {
 }
 
 function checkFly() {
-  const whoami = command(resolveFlyctl(), ['auth', 'whoami']);
+  if (!report.tooling.flyctl.available) {
+    add('fail', 'Fly authentication', 'flyctl is not available locally; install the Fly CLI before Fly auth, app, volume, and secret verification.', {
+      command: report.tooling.flyctl.command,
+      stderr: report.tooling.flyctl.stderr
+    });
+    return;
+  }
+
+  const flyctl = report.tooling.flyctl.command;
+  const whoami = command(flyctl, ['auth', 'whoami']);
   if (!whoami.ok) {
     add('fail', 'Fly authentication', 'flyctl is not authenticated.', { stderr: whoami.stderr });
     return;
   }
   add('pass', 'Fly authentication', 'flyctl is authenticated.', { account: sanitizeLine(whoami.stdout) });
 
-  const status = command(resolveFlyctl(), ['status', '-a', flyApp]);
+  const status = command(flyctl, ['status', '-a', flyApp]);
   if (!status.ok) {
     add('fail', 'Fly app', `${flyApp} is not available yet. If this mentions payment information, complete Fly billing privately before app creation.`, {
       stderr: sanitizeMultiline(status.stderr)
@@ -237,14 +260,14 @@ function checkFly() {
   }
   add('pass', 'Fly app', `${flyApp} exists and status can be read.`);
 
-  const volumes = command(resolveFlyctl(), ['volumes', 'list', '-a', flyApp]);
+  const volumes = command(flyctl, ['volumes', 'list', '-a', flyApp]);
   const volumePresent = volumes.ok && volumes.stdout.includes(flyVolume);
   add(volumePresent ? 'pass' : 'fail', 'Fly volume', volumePresent ? `${flyVolume} exists.` : `${flyVolume} is missing or could not be listed.`, {
     requiredVolume: flyVolume,
     stderr: sanitizeMultiline(volumes.stderr)
   });
 
-  const secrets = command(resolveFlyctl(), ['secrets', 'list', '-a', flyApp]);
+  const secrets = command(flyctl, ['secrets', 'list', '-a', flyApp]);
   const missingPreviewSecrets = previewFlySecrets.filter((name) => !secrets.stdout.includes(name));
   add(secrets.ok && missingPreviewSecrets.length === 0 ? 'pass' : 'fail', 'Fly preview secret names', missingPreviewSecrets.length ? `Missing Fly preview secret/config names: ${missingPreviewSecrets.join(', ')}.` : 'Required Fly preview secret/config names are present.', {
     lane: 'preview-live-gates',
@@ -415,6 +438,21 @@ function resolveFlyctl() {
   if (process.env.FLYCTL_PATH) return process.env.FLYCTL_PATH;
   const local = process.env.USERPROFILE ? resolve(process.env.USERPROFILE, '.fly/bin/flyctl.exe') : '';
   return local && existsSync(local) ? local : 'flyctl';
+}
+
+function resolveSupabaseCli() {
+  return process.env.SUPABASE_CLI_PATH || 'supabase';
+}
+
+function detectCli(label, commandName, args) {
+  const result = command(commandName, args);
+  return {
+    label,
+    command: commandName,
+    available: result.ok,
+    version: result.ok ? sanitizeLine(result.stdout || result.stderr) : '',
+    stderr: result.ok ? '' : sanitizeMultiline(result.stderr)
+  };
 }
 
 function parseJson(text) {
