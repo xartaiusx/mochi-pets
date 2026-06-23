@@ -70,16 +70,19 @@ const report = {
 try {
   await run();
   report.lanes = summarizeGateLanes();
-  report.ok = !report.checks.some((check) => check.status === 'fail');
+  report.ok = !report.checks.some((check) => check.status === 'fail' || check.status === 'unverified');
   await writeReport();
   if (!report.ok) {
     console.error('Mochi Social external Alpha RC gates are not complete:');
     if (report.lanes) {
-      console.error(`- preview-live-gates: ${report.lanes.previewLive.ok ? 'pass' : 'fail'} (${report.lanes.previewLive.failingChecks.join(', ') || 'none'})`);
-      console.error(`- funded-chain-gates: ${report.lanes.fundedChain.ok ? 'pass' : 'fail'} (${report.lanes.fundedChain.failingChecks.join(', ') || 'none'})`);
+      console.error(`- preview-live-gates: ${report.lanes.previewLive.ok ? 'pass' : 'fail'} (${formatLaneIssues(report.lanes.previewLive) || 'none'})`);
+      console.error(`- funded-chain-gates: ${report.lanes.fundedChain.ok ? 'pass' : 'fail'} (${formatLaneIssues(report.lanes.fundedChain) || 'none'})`);
     }
     for (const check of report.checks.filter((entry) => entry.status === 'fail')) {
       console.error(`- ${check.name}: ${check.message}`);
+    }
+    for (const check of report.checks.filter((entry) => entry.status === 'unverified')) {
+      console.error(`- ${check.name}: unverified - ${check.message}`);
     }
     console.error(`Report: ${reportPath}`);
     process.exit(1);
@@ -111,7 +114,7 @@ async function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   const selector = String(pr || '').trim();
   const query = selector || localState?.branch || '';
   if (!query) {
-    add('fail', name, 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
+    add('unverified', name, 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
     return;
   }
 
@@ -122,14 +125,19 @@ async function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
     ? null
     : await readPublicPullRequest(repo, query, localState?.localHead || '');
   if (!result.ok && !fallback?.ok) {
-    add('fail', name, 'GitHub PR state could not be read.', { repo, selector: query, stderr: result.stderr || fallback?.message || '' });
+    add('unverified', name, 'GitHub PR state could not be read from local tooling.', {
+      repo,
+      selector: query,
+      stderr: result.stderr || fallback?.message || '',
+      note: 'This is a local evidence limitation when gh is unavailable or unauthenticated GitHub REST is rate-limited; verify PR state through GitHub before deployment.'
+    });
     return;
   }
 
   const parsed = result.ok ? parseJson(result.stdout) : fallback.data;
   const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
-    add('fail', name, selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, {
+    add('unverified', name, selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, {
       repo,
       selector: query,
       localState
@@ -358,13 +366,22 @@ function summarizeGateLane(name, gateNames) {
   const checks = report.checks.filter((check) => gateNames.includes(check.name));
   const missingChecks = gateNames.filter((gateName) => !checks.some((check) => check.name === gateName));
   const failingChecks = checks.filter((check) => check.status === 'fail').map((check) => check.name);
+  const unverifiedChecks = checks.filter((check) => check.status === 'unverified').map((check) => check.name);
   return {
     name,
-    ok: checks.length > 0 && missingChecks.length === 0 && failingChecks.length === 0,
+    ok: checks.length > 0 && missingChecks.length === 0 && failingChecks.length === 0 && unverifiedChecks.length === 0,
     checks: checks.map((check) => ({ name: check.name, status: check.status })),
     missingChecks,
-    failingChecks
+    failingChecks,
+    unverifiedChecks
   };
+}
+
+function formatLaneIssues(lane) {
+  return [
+    ...(Array.isArray(lane?.failingChecks) ? lane.failingChecks : []),
+    ...(Array.isArray(lane?.unverifiedChecks) ? lane.unverifiedChecks.map((name) => `${name} unverified`) : [])
+  ].join(', ');
 }
 
 async function fetchJson(url) {

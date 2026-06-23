@@ -749,6 +749,9 @@ function addProviderGateRequirements() {
   const failures = Array.isArray(report.checks)
     ? report.checks.filter((check) => check.status === 'fail').map((check) => check.name)
     : ['checks array missing'];
+  const unverified = Array.isArray(report.checks)
+    ? report.checks.filter((check) => check.status === 'unverified').map((check) => check.name)
+    : [];
   failures.push(...currentGitStateFailures(report.git, 'external gate report'));
   if (typeof report.hostedChecksAllowed !== 'boolean') {
     failures.push('external gate report must include hostedChecksAllowed');
@@ -769,7 +772,8 @@ function addProviderGateRequirements() {
       checkedAt: report.checkedAt,
       hostedChecksAllowed: report.hostedChecksAllowed,
       reportHead: report.git?.localHead,
-      failingChecks: failures
+      failingChecks: failures,
+      unverifiedChecks: unverified
     });
 }
 
