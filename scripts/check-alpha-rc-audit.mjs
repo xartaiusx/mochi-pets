@@ -964,6 +964,7 @@ function addOperatorChecklistRequirements() {
   const failures = [];
   if (report.ok !== true) failures.push('operator checklist report is not ok');
   failures.push(...currentGitStateFailures(report.git, 'operator checklist report'));
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.siteGit, 'operator checklist site snapshot'));
   if (!String(report.markdownPath || '').includes('mochi-social-alpha-operator-next-steps.md')) {
     failures.push('operator checklist report must point to the generated Markdown checklist');
   }
@@ -999,6 +1000,7 @@ function addOperatorChecklistRequirements() {
       reportHead: report.git?.localHead,
       reportUpstream: report.git?.upstream,
       reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
+      reportSiteHead: report.siteGit?.localHead,
       externalGatePresent: report.externalGateSummary?.present,
       providerActionQueueIds: queue.map((item) => item?.id).filter(Boolean),
       failures
@@ -1018,6 +1020,8 @@ function addProviderPreflightRequirements() {
   const failures = [];
   if (report.ok !== true) failures.push('provider preflight report is not ok');
   failures.push(...currentGitStateFailures(report.git, 'provider preflight report'));
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.sources?.operatorChecklist?.siteGit, 'provider preflight operator checklist site snapshot'));
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.sources?.syncApproval?.siteGit, 'provider preflight sync approval site snapshot'));
   if (!String(report.markdownPath || '').includes('mochi-social-alpha-provider-preflight.md')) {
     failures.push('provider preflight report must point to the generated Markdown preflight');
   }
@@ -1046,6 +1050,8 @@ function addProviderPreflightRequirements() {
       generatedAt: report.generatedAt,
       markdownPath: report.markdownPath,
       reportHead: report.git?.localHead,
+      operatorChecklistSiteHead: report.sources?.operatorChecklist?.siteGit?.localHead,
+      syncApprovalSiteHead: report.sources?.syncApproval?.siteGit?.localHead,
       providerActionQueueIds: queue.map((item) => item?.id).filter(Boolean),
       missingExpectedPrivateInputFiles: report.missingExpectedPrivateInputFiles,
       failures
@@ -1156,6 +1162,7 @@ function addSyncApprovalRequirements() {
   if (head.ok && report.git?.localHead !== currentHead) failures.push('sync approval report localHead does not match current HEAD');
   if (upstream.ok && report.git?.upstream !== currentUpstream) failures.push('sync approval report upstream does not match current upstream');
   if (Array.isArray(report.git?.dirty) && report.git.dirty.length !== currentDirty.length) failures.push('sync approval report dirty state does not match current worktree');
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.siteGit, 'sync approval site snapshot'));
   failures.push(...currentGitStateFailures(report.audit?.git, 'sync approval audit snapshot'));
   failures.push(...syncExternalGateSnapshotFailures(report));
   if (!Array.isArray(report.approvalActions) || report.approvalActions.length < 5) failures.push('sync approval report must include provider approval actions');
@@ -1178,6 +1185,7 @@ function addSyncApprovalRequirements() {
       reportHead: report.git?.localHead,
       currentUpstream,
       reportUpstream: report.git?.upstream,
+      reportSiteHead: report.siteGit?.localHead,
       currentDirtyFiles: currentDirty.length,
       reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
       approvalActionCount: Array.isArray(report.approvalActions) ? report.approvalActions.length : 0,

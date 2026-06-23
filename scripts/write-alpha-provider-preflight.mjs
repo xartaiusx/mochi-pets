@@ -251,7 +251,9 @@ function summarizeSource(source, file) {
     path: pathForReport(resolve(root, file)),
     present: source.ok,
     checkedAt: source.data?.checkedAt || source.data?.generatedAt || null,
-    ok: source.data?.ok === true
+    ok: source.data?.ok === true,
+    git: source.data?.git || null,
+    siteGit: source.data?.siteGit || null
   };
 }
 
