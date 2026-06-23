@@ -33,6 +33,7 @@ Mochi Social is a standalone multiplayer browser RPG repo. Keep the game separat
 - Local Unity-required release smoke after `npm run build:release`: `npm run alpha:unity-required-smoke`
 - Local no-cost full Alpha suite: `npm run alpha:local-suite`
 - Local no-secret evidence summary after the suite: `npm run alpha:local-evidence`
+- Local evidence guard self-test: `npm run alpha:local-evidence-self-test`
 - Local report/checklist hygiene after evidence: `npm run alpha:report-hygiene`
 - Alpha Preview Ready tester-entry audit: `npm run alpha:preview-ready`
 - External Alpha RC gate audit: `npm run alpha:external-gates`

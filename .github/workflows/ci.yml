@@ -44,6 +44,9 @@ jobs:
       - name: Alpha sync approval self-test
         run: npm run alpha:sync-approval-self-test
 
+      - name: Alpha local evidence self-test
+        run: npm run alpha:local-evidence-self-test
+
       - name: Typecheck
         run: npm run typecheck
 

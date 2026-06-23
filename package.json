@@ -48,6 +48,7 @@
     "alpha:unity-required-smoke": "node scripts/check-unity-required-smoke.mjs",
     "alpha:local-suite": "node scripts/check-alpha-local-suite.mjs",
     "alpha:local-evidence": "node scripts/check-alpha-local-evidence.mjs",
+    "alpha:local-evidence-self-test": "node scripts/check-alpha-local-evidence-self-test.mjs",
     "alpha:report-hygiene": "node scripts/check-alpha-report-hygiene.mjs",
     "alpha:site-repo-path": "node scripts/check-alpha-site-repo-path.mjs",
     "alpha:gate-contracts": "node scripts/check-alpha-gate-contracts.mjs",

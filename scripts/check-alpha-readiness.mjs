@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:public-copy"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:unity-required-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"build:release"', '"unity:cloud-code-contract"', '"unity:verify"', '"dev:legacy"', '"smoke"']
+    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:public-copy"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:unity-required-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:local-evidence-self-test"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"build:release"', '"unity:cloud-code-contract"', '"unity:verify"', '"dev:legacy"', '"smoke"']
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
@@ -15,7 +15,7 @@ const checks = [
   },
   {
     file: '.github/workflows/ci.yml',
-    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:readiness', 'npm run unity:cloud-code-contract', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:readiness', 'npm run unity:cloud-code-contract', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run alpha:local-evidence-self-test', 'npm run build']
   },
   {
     file: 'scripts/check-unity-cloud-code-contract.mjs',
@@ -1974,6 +1974,10 @@ const checks = [
   {
     file: 'scripts/check-alpha-local-evidence.mjs',
     includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'alpha-unity-required-smoke.json', 'readGitState', 'localHead', 'same-suite evidence', 'built server smoke report', 'Unity-required smoke report', 'Unity-required release smoke starts the built server locally', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'responsive gameplay must cover the required nine-viewport matrix', 'responsive gameplay must cover /play and /embed', 'parent-iframe input ownership', 'Mochirii site iframe status', 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured', 'summarizeResponsiveInputOwnership', 'summarizeResponsiveSiteIframe', 'previewReadyEvidence', 'editable-input preservation', 'unhandled-key freedom', 'visual snapshot canvas PNG must be non-empty', 'visual review must keep rendered prompt interaction as a manual pre-RC gate', 'Wallet Daemon local check must stay no-cost and metadata-only', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+  },
+  {
+    file: 'scripts/check-alpha-local-evidence-self-test.mjs',
+    includes: ['Mochi Social local evidence self-test OK', 'alpha-unity-required-smoke.json', 'missing-unity-required-report', 'legacy-fallback-active', 'missing-load-smoke-proof', 'stale-unity-required-head', 'Unity-required smoke report unavailable', 'Unity-required smoke health must report legacy fallback inactive', 'Unity-required smoke must run npm smoke and the 25-tester load smoke successfully', 'Unity-required smoke report localHead must match current HEAD', 'reports/', 'no provider mutations']
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',
