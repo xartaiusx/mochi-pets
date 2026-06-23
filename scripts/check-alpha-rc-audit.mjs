@@ -520,17 +520,43 @@ function addSiteRequirements() {
     'mochi-social-alpha-admin',
     'submit-mochi-social-feedback'
   ]);
-  requireSiteFileIncludes('site.schema', 'Mochirii migration owns allowlist, terms, spirits, inventory, trades, market, feedback, chat, and chain ledger tables.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
+  requireSiteFileIncludes('site.schema', 'Mochirii migration owns member allowlist, terms, feedback, progress snapshots, and alpha audit rows for the closed shared-room playtest.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
     'mochi_social_alpha_testers',
     'mochi_social_terms_acknowledgements',
-    'mochi_social_spirits',
-    'mochi_social_inventory',
-    'mochi_social_market_listings',
-    'mochi_social_trades',
-    'mochi_social_chat_messages',
+    'mochi_social_profiles',
     'mochi_social_feedback',
-    'mochi_social_chain_operations',
-    'mochi_social_ledger_events'
+    'mochi_social_progress_snapshots',
+    'mochi_social_ledger_events',
+    'alter table public.mochi_social_alpha_testers enable row level security',
+    'mochi_social_alpha_testers_read_own',
+    'mochi_social_feedback_insert_own'
+  ]);
+  requireSiteFileIncludes('site.schema-grants', 'Mochirii migration makes alpha table access explicit for authenticated members and trusted Edge Functions without exposing future market or trade tables.', 'supabase/migrations/20260622204823_add_mochi_social_alpha_explicit_grants.sql', [
+    'grant select on table public.mochi_social_alpha_testers to authenticated',
+    'grant select on table public.mochi_social_terms_acknowledgements to authenticated',
+    'grant select, insert, update on table public.mochi_social_profiles to authenticated',
+    'grant select on table public.mochi_social_progress_snapshots to authenticated',
+    'grant insert on table public.mochi_social_feedback to authenticated',
+    'grant select, insert, update, delete on table public.mochi_social_alpha_testers to service_role',
+    'grant select, insert, update, delete on table public.mochi_social_ledger_events to service_role',
+    'grant select, insert, update, delete on table public.mochi_social_progress_snapshots to service_role',
+    'grant select, insert, update, delete on table public.mochi_social_feedback to service_role'
+  ]);
+  requireSiteFileIncludes('site.unity-schema', 'Mochirii migration owns Unity player mapping and the latest shared Lirabao audit mirror with explicit authenticated reads, service-role writes, and RLS policies.', 'supabase/migrations/20260621120000_add_mochi_social_unity_room.sql', [
+    'mochi_social_unity_players',
+    'mochi_social_shared_pet_snapshots',
+    "check (custom_id like 'mochirii:%')",
+    "check (room_key = 'jade-lantern-room-alpha')",
+    "check (pet_key = 'lirabao')",
+    "check (jsonb_typeof(state) = 'object')",
+    'alter table public.mochi_social_unity_players enable row level security',
+    'alter table public.mochi_social_shared_pet_snapshots enable row level security',
+    'grant select on public.mochi_social_unity_players to authenticated',
+    'grant select on public.mochi_social_shared_pet_snapshots to authenticated',
+    'grant select, insert, update, delete on public.mochi_social_unity_players to service_role',
+    'grant select, insert, update, delete on public.mochi_social_shared_pet_snapshots to service_role',
+    'mochi_social_unity_players_read_own',
+    'mochi_social_shared_pet_read_authenticated'
   ]);
   requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms, idempotent Unity actions, progress snapshots, and shared Lirabao mirrors.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
     'alphaAccess(adminClient, playerId)',
