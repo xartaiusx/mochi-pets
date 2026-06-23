@@ -772,15 +772,26 @@ function addProviderGateRequirements() {
     return;
   }
   const report = externalReport.data;
-  const failures = Array.isArray(report.checks)
-    ? report.checks.filter((check) => check.status === 'fail').map((check) => check.name)
-    : ['checks array missing'];
-  const unverified = Array.isArray(report.checks)
-    ? report.checks.filter((check) => check.status === 'unverified').map((check) => check.name)
+  const previewLane = report.lanes?.previewLive;
+  const fundedLane = report.lanes?.fundedChain;
+  const failures = Array.isArray(previewLane?.failingChecks)
+    ? [...previewLane.failingChecks]
+    : ['preview-live-gates summary missing'];
+  const unverified = Array.isArray(previewLane?.unverifiedChecks)
+    ? [...previewLane.unverifiedChecks]
+    : [];
+  const deferredFundedChain = Array.isArray(fundedLane?.failingChecks)
+    ? [...fundedLane.failingChecks]
+    : [];
+  const deferredFundedChainUnverified = Array.isArray(fundedLane?.unverifiedChecks)
+    ? [...fundedLane.unverifiedChecks]
     : [];
   failures.push(...currentGitStateFailures(report.git, 'external gate report'));
   if (typeof report.hostedChecksAllowed !== 'boolean') {
     failures.push('external gate report must include hostedChecksAllowed');
+  }
+  if (!report.lanes?.alphaPreviewReady || typeof report.lanes.alphaPreviewReady.ok !== 'boolean') {
+    failures.push('external gate report must include alphaPreviewReady lane status');
   }
   if (hasHostedUrl(report.gameUrl) && report.hostedChecksAllowed !== true && report.ok === true) {
     failures.push('hosted game contract cannot pass without explicit hosted-check approval');
@@ -789,17 +800,19 @@ function addProviderGateRequirements() {
     failures.push('hosted site contract cannot pass without explicit hosted-check approval');
   }
   add(report.ok === true ? 'provider.external-gates' : 'provider.external-gates',
-    report.ok === true && failures.length === 0 ? 'pass' : 'fail',
-    report.ok === true && failures.length === 0
-      ? 'Fly, live game/site contract, Supabase, GitHub, and Enjin readiness gates passed.'
-      : `External gates still incomplete: ${failures.join(', ')}.`,
+    report.lanes?.alphaPreviewReady?.ok === true && failures.length === 0 ? 'pass' : 'fail',
+    report.lanes?.alphaPreviewReady?.ok === true && failures.length === 0
+      ? 'Preview live gates passed; funded-chain gates remain deferred for the no-real-value alpha.'
+      : `Preview live gates still incomplete: ${failures.join(', ')}.`,
     {
       reportPath: externalReportPath,
       checkedAt: report.checkedAt,
       hostedChecksAllowed: report.hostedChecksAllowed,
       reportHead: report.git?.localHead,
       failingChecks: failures,
-      unverifiedChecks: unverified
+      unverifiedChecks: unverified,
+      deferredFundedChainChecks: deferredFundedChain,
+      deferredFundedChainUnverified
     });
 }
 
