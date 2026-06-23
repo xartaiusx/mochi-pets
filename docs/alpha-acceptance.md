@@ -1,6 +1,6 @@
 # Alpha Acceptance
 
-This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, a static map-object contract test, and the final manual map-object visual check that still needs human eyes.
+This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, Unity WebGL shared-room evidence, and the final manual Unity prompt review that still needs human eyes.
 
 ## Alpha Preview Ready
 
@@ -118,7 +118,7 @@ Run `npm run alpha:local-evidence` after the local suite to validate the ignored
 ## Manual Prompt Review Gate
 
 `npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable Unity WebGL game locally, focuses the Unity canvas, creates or loads a curated character, confirms Lirabao's `E Care | Q Wave` prompt, cares for Lirabao, and verifies reload/logout/login returns with saved character and shared Lirabao progress. The report stays no-secret and records the Unity source files, screenshot evidence, shared room contract, browser, reviewer, and explicit confirmation env vars.
-The generated manual prompt report records the Unity review route for character creation, Lirabao care, and saved progress, so the operator can follow the current shared-room flow without referring back to the older map-object coordinate system.
+The generated manual prompt report records the Unity review route for character creation, Lirabao care, and saved progress, so the operator can follow the current shared-room flow without referring back to the older map-object coordinate system. Do not set the completion env vars from screenshots, the tester password wall, the legacy runtime, or a static/mock token path. The saved-progress check requires a signed-in allowlisted tester path with Unity auth tokens and the shared Lirabao authority path available.
 
 The pending report includes source-tied Unity evidence for the bootstrap, Lirabao prompt, Lirabao controller, state store, and shared-room constants. It also records the review steps, source SHA-256 hashes, visual screenshot bundle, shared room and shared pet contract, and visual-review gate reason so the final human review can be tied to the exact current runtime sources and screenshots.
 
@@ -134,7 +134,7 @@ $env:MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK="true"
 npm run alpha:manual-prompt-review
 ```
 
-Hosted prompt review requires explicit hosted-preview approval first, then `MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true`. `npm run alpha:rc-audit` rejects a missing, stale, pending, or hosted-without-approval manual prompt review report.
+Hosted prompt review requires explicit hosted-preview approval first, then `MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true`. `npm run alpha:rc-audit` rejects a missing, stale, pending, static/mock, password-only, or hosted-without-approval manual prompt review report.
 
 ## Wallet Daemon Local Check
 
@@ -253,9 +253,9 @@ Those tests prove the event contract and behavior. The remaining human visual ch
 2. Confirm the game canvas, HUD, and town scene are visually coherent.
 3. Complete the Unity manual prompt path in at least one tab: focus the Unity canvas, create or load a curated character, move near Lirabao, confirm `E Care | Q Wave`, care for Lirabao, then reload/logout/login to verify saved character and shared Lirabao progress.
 4. Confirm the prompts and notifications match the alpha no-real-value scope.
-5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
+5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual Unity prompt result in the PR or release checklist.
 
-Keep the manual map-object check until a later RPGJS runtime-level automation can interact with NPC, chest, habitat, and dialog state directly inside the canvas.
+Keep the manual Unity prompt review until later automation can create a curated character, care for Lirabao, and verify saved progress through the signed-in tester path inside the Unity WebGL canvas.
 
 ## Alpha RC Stop Point
 

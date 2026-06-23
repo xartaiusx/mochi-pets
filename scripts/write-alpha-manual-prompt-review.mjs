@@ -74,6 +74,7 @@ const reviewer = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER || '')
 const browser = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER || '');
 const reviewUrl = (process.env.MOCHI_SOCIAL_MANUAL_PROMPT_URL || visualReview.data?.baseUrl || '').replace(/\/+$/, '');
 const notes = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_NOTES || '');
+const reviewContext = buildReviewContext(reviewUrl, hostedAllowed);
 const gitState = readGitState();
 const failures = [];
 
@@ -97,7 +98,7 @@ const reviewTargets = [
     label: 'Curated character creation',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK),
-    expectedEvidence: 'The Unity panel lets a signed-in tester choose only one curated Mochirii preset, saves it, and joins Jade Lantern Room.',
+    expectedEvidence: 'The Unity panel lets a signed-in tester choose only one curated Mochirii preset, saves it through the Unity player state path, and joins Jade Lantern Room.',
     sourceIds: ['bootstrap', 'stateStore', 'constants'],
     steps: [
       'Sign in as a valid alpha tester through the website bridge.',
@@ -111,7 +112,7 @@ const reviewTargets = [
     label: 'Shared Lirabao care prompt',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK),
-    expectedEvidence: 'Lirabao is visible or reachable in the shared room, the E Care / Q Wave prompt appears in range, and care updates the shared pet through the Unity state path.',
+    expectedEvidence: 'Lirabao is visible or reachable in the shared room, the E Care / Q Wave prompt appears in range, and care updates the shared pet through the Unity shared-pet state path.',
     sourceIds: ['bootstrap', 'lirabaoPrompt', 'lirabaoPet', 'stateStore', 'constants'],
     steps: [
       'Move the tester avatar near Lirabao in JadeLanternRoom.',
@@ -125,7 +126,7 @@ const reviewTargets = [
     label: 'Saved character and shared pet progress',
     env: 'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK',
     ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK),
-    expectedEvidence: 'After logout, reload, and login, the tester returns with the saved curated character and current shared Lirabao state.',
+    expectedEvidence: 'After logout, reload, and login with the signed-in tester path, the tester returns with the saved curated character and current shared Lirabao state.',
     sourceIds: ['bootstrap', 'stateStore', 'constants'],
     steps: [
       'Create or load a tester character.',
@@ -183,6 +184,7 @@ const report = {
     hostedAllowed,
     notes: notes || null
   },
+  reviewContext,
   visualReview: visualReview.ok
     ? {
         path: pathForReport(visualReviewPath),
@@ -203,6 +205,7 @@ const report = {
   instructions: {
     localUrl: reviewUrl ? reviewPlayUrl(reviewUrl) : '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
     actionInput: 'Focus the Unity canvas, use desktop movement controls, choose a curated character, then use the Lirabao prompt with E/Return for care and Q for wave.',
+    completionPreconditions: reviewContext.completionPreconditions,
     requiredEnv: reviewTargets.map((check) => `${check.env}=true`),
     completionCommand: 'Set the required env vars plus MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER and MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER, then run npm run alpha:manual-prompt-review.'
   },
@@ -386,6 +389,34 @@ function isHostedUrl(value) {
   }
 }
 
+function buildReviewContext(url, allowHosted) {
+  const hosted = isHostedUrl(url);
+  return {
+    reviewKind: hosted ? 'approved-hosted-signed-in-tester' : 'local-signed-in-tester-or-approved-local-provider',
+    requiresSignedInTester: true,
+    passwordOnlyIsInsufficient: true,
+    requiresUnityAuthTokens: true,
+    requiresSharedPetAuthorityPath: true,
+    localVisualOnlyIsInsufficient: true,
+    hostedUrl: hosted,
+    hostedAllowed: allowHosted,
+    completionPreconditions: [
+      'Open the Unity WebGL room through the current /play or website iframe path.',
+      'Authenticate as an allowlisted tester who has accepted terms.',
+      'Confirm the character save/load path is backed by Unity player state for character.v1.',
+      'Confirm Lirabao care is written through the shared pet authority path for room:jade-lantern-room/sharedPet.v1.',
+      'Only set completion env vars after the signed-in tester reload/logout/login path proves saved character and shared Lirabao progress.'
+    ],
+    cannotBeCompletedBy: [
+      'visual screenshots alone',
+      'the password wall alone',
+      'the legacy runtime',
+      'a static/mock token path',
+      'a hosted URL without explicit hosted-preview approval'
+    ]
+  };
+}
+
 function currentGitStateFailures(state, label) {
   const failuresForState = [];
   const head = git(['rev-parse', 'HEAD']);
@@ -473,6 +504,8 @@ function renderMarkdown(summary) {
     : '- None recorded';
   const failuresText = summary.failures.length ? summary.failures.map((failure) => `- ${failure}`).join('\n') : '- None';
   const pendingText = summary.pendingChecks.length ? summary.pendingChecks.map((id) => `- ${id}`).join('\n') : '- None';
+  const preconditionText = summary.reviewContext.completionPreconditions.map((item) => `- ${item}`).join('\n');
+  const insufficientText = summary.reviewContext.cannotBeCompletedBy.map((item) => `- ${item}`).join('\n');
 
   return `# Mochi Social Manual Prompt Review
 
@@ -490,6 +523,23 @@ Input note: focus the Unity canvas, create or load a curated character, move nea
 - Browser: ${summary.review.browser || 'not recorded'}
 - URL: ${summary.review.url || 'not recorded'}
 - Hosted approval: ${summary.review.hostedAllowed ? 'yes' : 'no'}
+
+## Review Context
+
+- Review kind: ${summary.reviewContext.reviewKind}
+- Requires signed-in tester: ${summary.reviewContext.requiresSignedInTester ? 'yes' : 'no'}
+- Password wall alone is enough: ${summary.reviewContext.passwordOnlyIsInsufficient ? 'no' : 'yes'}
+- Requires Unity auth tokens: ${summary.reviewContext.requiresUnityAuthTokens ? 'yes' : 'no'}
+- Requires shared Lirabao authority path: ${summary.reviewContext.requiresSharedPetAuthorityPath ? 'yes' : 'no'}
+- Local visual-only evidence is enough: ${summary.reviewContext.localVisualOnlyIsInsufficient ? 'no' : 'yes'}
+
+Completion preconditions:
+
+${preconditionText}
+
+This review cannot be completed by:
+
+${insufficientText}
 
 ## Visual Review Evidence Bundle
 
