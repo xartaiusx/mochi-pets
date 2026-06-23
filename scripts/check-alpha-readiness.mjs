@@ -185,39 +185,39 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['Jade Scroll Story Chapter proof', 'story-chapter', 'story, chronicle']
+    includes: ['playable Unity WebGL game', 'creates or loads a curated character', "Lirabao's `E Care | Q Wave` prompt", 'saved character and shared Lirabao progress']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.technique_codex', 'Jade Technique Codex', 'Jade Technique Codex Seal', 'techniqueCodexProof']
+    includes: ['MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.lineage_register', 'Jade Lineage Register', 'Jade Lineage Register Seal', 'lineageRegisterProof']
+    includes: ['Unity source files', 'screenshot evidence', 'shared room contract', 'browser', 'reviewer']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.roster_cabinet', 'Jade Roster Cabinet', 'Jade Roster Cabinet Tag', 'rosterCabinetProof']
+    includes: ['bootstrap', 'Lirabao prompt', 'Lirabao controller', 'state store', 'shared-room constants']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.blossom_cradle', 'Jade Blossom Cradle', 'Jade Blossom Cradle Ribbon', 'blossomCradleProof']
+    includes: ['Unity canvas evidence', 'two-tab room evidence', 'Lirabao contract', 'input guard evidence']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.dojo_ladder', 'Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'dojoLadderProof']
+    includes: ['pending-human-review', 'character creation', 'Lirabao care', 'saved-progress confirmation']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.rival_circle', 'Jade Rival Circle proof', 'rival-circle']
+    includes: ['absence of market/trade/cashout/funded-chain copy', 'no-real-value']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.sifu_council', 'Jade Sifu Council', 'Jade Sifu Council Crest', 'sifuCouncilProof']
+    includes: ['reload/logout/login', 'shared Lirabao progress']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.summit_circuit', 'Jade Summit Circuit', 'Jade Summit Circuit Laurel', 'summitCircuitProof']
+    includes: ['Hosted prompt review requires explicit hosted-preview approval first', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -225,39 +225,39 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Scroll Story Chapter proof', 'story-chapter']
+    includes: ['two-tab Unity canvas movement signatures', 'observer-side shared-room evidence']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['technique-codex', 'seal the Jade Technique Codex proof']
+    includes: ['character creation', 'Lirabao care', 'saved-progress prompts']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['lineage-register', 'record the Jade Lineage Register proof']
+    includes: ['character creation', 'E/Return for care', 'Q for wave']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['roster-cabinet', 'organize the Jade Roster Cabinet proof']
+    includes: ['reload/logout/login', 'saved progress']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['blossom-cradle', 'record the Jade Blossom Cradle proof']
+    includes: ['Unity source files', 'visual-review screenshots']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['sifu-council', 'clear the Jade Sifu Council proof']
+    includes: ['shared room contract', 'exact env vars']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['summit-circuit', 'clear the Jade Summit Circuit proof']
+    includes: ['Unity canvas evidence', 'two-tab shared-room evidence']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['dojo-ladder', 'clear the Jade Dojo Ladder proof']
+    includes: ['Lirabao contract', 'input guard evidence']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Rival Circle proof', 'tournament-bracket/rival-circle']
+    includes: ['absence of legacy player UI/future-economy copy', 'pending human review gate']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -465,11 +465,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Insignia Case proof', 'guild-insignia-case']
+    includes: ['Unity source files', 'visual-review screenshots']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Encounter Atlas proof', 'encounter-atlas']
+    includes: ['shared room contract', 'exact env vars']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -601,11 +601,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.recovery_tea', 'Jade Teahouse Recovery proof', 'nurture-rite/recovery-tea']
+    includes: ['Unity WebGL game locally', 'character creation', 'Lirabao care', 'saved progress']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Teahouse Recovery proof', 'recovery-tea']
+    includes: ['Unity canvas evidence', 'two-tab shared-room evidence']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -641,11 +641,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
+    includes: ['source-tied Unity evidence', 'bootstrap', 'Lirabao prompt', 'state store']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Nursery Grove proof', 'nursery-grove']
+    includes: ['Lirabao contract', 'input guard evidence']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -681,11 +681,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.bloom_ascendance', 'Jade Bloom Ascendance proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
+    includes: ['review steps', 'source SHA-256 hashes', 'visual screenshot bundle']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Bloom Ascendance proof', 'bloom-ascendance']
+    includes: ['absence of legacy player UI/future-economy copy', 'pending human review gate']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -721,7 +721,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
+    includes: ['shared room and shared pet contract', 'visual-review gate reason']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -781,7 +781,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['affinity-matrix', 'map the Jade Affinity Matrix proof']
+    includes: ['character creation', 'Lirabao care', 'saved-progress prompts']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -813,7 +813,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['market-receipt', 'record the Jade Court Market Receipt proof']
+    includes: ['no-real-value', 'no inventory credit', 'Do not deploy, scale, run hosted load smoke, create provider resources']
   },
   {
     file: 'AGENTS.md',
@@ -993,7 +993,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['exchange-accord', 'record the Jade Exchange Accord proof']
+    includes: ['preview-live-gates', 'funded-chain-gates', 'configured-preview-stub']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -1981,7 +1981,7 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-manual-prompt-review.mjs',
-    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED', 'interactionContract', 'reviewTargets', 'visualArtifacts', 'Visual Review Evidence Bundle', 'alpha-visual-page.png', 'alpha-visual-canvas.png', 'setAlphaInteractable', 'spirit-lirabao', 'Source-Tied Target Checklist', 'worldPx', 'logicalTile', 'adjacentWorldPx']
+    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED', 'interactionContract', 'reviewTargets', 'visualArtifacts', 'Visual Review Evidence Bundle', 'alpha-visual-page.png', 'alpha-visual-canvas.png', 'Unity WebGL', 'JadeLanternRoom', 'Create your character', 'E Care  |  Q Wave', 'character.v1', 'room:jade-lantern-room/sharedPet.v1']
   },
   {
     file: 'scripts/check-wallet-daemon-local.mjs',

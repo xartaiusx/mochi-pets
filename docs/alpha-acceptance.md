@@ -117,10 +117,10 @@ Run `npm run alpha:local-evidence` after the local suite to validate the ignored
 
 ## Manual Prompt Review Gate
 
-`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, focuses the game canvas, stands within one 64px logical tile of the map object, faces that object, presses Space/Action for about 200ms, confirms the rendered welcome NPC dialog, guild seal chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars. The prompt-critical town entities use 64px action hitboxes so the review can be done from normal tile-adjacent RPG positioning.
-The generated manual prompt report includes both 64px logical tile coordinates and world-pixel positions for each target plus adjacent action positions, so the operator can line up the welcome NPC, guild seal chest, care shrine, and Lirabao setup interaction without guessing which coordinate system is being shown.
+`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable Unity WebGL game locally, focuses the Unity canvas, creates or loads a curated character, confirms Lirabao's `E Care | Q Wave` prompt, cares for Lirabao, and verifies reload/logout/login returns with saved character and shared Lirabao progress. The report stays no-secret and records the Unity source files, screenshot evidence, shared room contract, browser, reviewer, and explicit confirmation env vars.
+The generated manual prompt report records the Unity review route for character creation, Lirabao care, and saved progress, so the operator can follow the current shared-room flow without referring back to the older map-object coordinate system.
 
-The pending report includes a source-tied target checklist with current map coordinates, setup prerequisites, expected rendered phrases, graphics, and save sources for the welcome NPC, guild seal chest, Lirabao setup interaction, and care shrine. It also records a step-by-step review route, adjacent action tiles, source SHA-256 hashes, line anchors for placements, rendered phrases, notifications, and save-source calls, plus a visual review evidence bundle with `reports/alpha-visual-page.png`, `reports/alpha-visual-canvas.png`, dimensions, hashes, map-object coverage, and visual-review gate reason so the final human review can be tied to the exact current runtime sources and screenshots.
+The pending report includes source-tied Unity evidence for the bootstrap, Lirabao prompt, Lirabao controller, state store, and shared-room constants. It also records the review steps, source SHA-256 hashes, visual screenshot bundle, shared room and shared pet contract, and visual-review gate reason so the final human review can be tied to the exact current runtime sources and screenshots.
 
 Local completion example:
 
@@ -128,9 +128,9 @@ Local completion example:
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER="<operator name>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER="<browser and version>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_URL="http://localhost:3100/play"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK="true"
 npm run alpha:manual-prompt-review
 ```
 
@@ -229,7 +229,7 @@ For the real Mochirii page leg, set `MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL` or `
 
 Use the PNGs for local visual review of the town composition. The snapshot proves the first screen is renderable and reviewable; browser presence and map-object contract tests still provide the movement, HUD action, event ID, prompt, save-source, habitat, and collision evidence.
 
-`npm run alpha:visual-review` reads `reports/alpha-visual-snapshot.json`, `reports/alpha-browser-presence.json`, the PNGs, and the first-town map-object sources, then writes ignored no-secret `reports/alpha-visual-review.json` and `reports/alpha-visual-review.md`. It verifies screenshot dimensions and hashes, HUD/presence evidence, observer movement, HUD spirit invitation/journal/field-expedition/field-accord/route-invitation/route-mastery/habitat-bond/sanctuary-rite/spirit-research/spirit-compendium/roster-archive/market-receipt/provision-satchel/care-cycle/temperament-concord/field-almanac/route-ecology/encounter-atlas/habitat-census/craft-writ/route-waystone/route-charter/nurture-rite/recovery-tea/kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite/tournament-bracket/rival-circle/summit-circuit/guild-commission/social-rally/quest-ledger/story-chapter/guild-insignia-case/wayfarer-chronicle/guild-ascension-trial/technique/tactic/loadout/technique-codex/trait/condition-weave/rank/growth-rite/affinity-trial/party/harmony/concord/team-match/mentor/spar/battle-round/training/quest/market/trade/Canary actions, required map-object IDs, and Jade Lantern Court habitat coverage. It keeps rendered NPC/guild-seal-chest/habitat care and bond-milestone prompt interaction as `pending-human-review`; it is a durable local review bundle, not a fake replacement for the manual prompt check.
+`npm run alpha:visual-review` reads `reports/alpha-visual-snapshot.json`, `reports/alpha-browser-presence.json`, and the PNGs, then writes ignored no-secret `reports/alpha-visual-review.json` and `reports/alpha-visual-review.md`. It verifies screenshot dimensions and hashes, Unity canvas evidence, two-tab room evidence, Lirabao contract, input guard evidence, absence of legacy player UI, and absence of market/trade/cashout/funded-chain copy. It keeps character creation, Lirabao care, and saved-progress confirmation as `pending-human-review`; it is a durable local review bundle, not a fake replacement for the manual prompt check.
 Visual review includes Jade Court Market Receipt static and browser evidence: `resolveMarketGuildReceipt`, `market-guild-receipt`, `data-alpha-action="market.guild_receipt"`, `marketReceiptProof`, `marketReceiptClaimed`, and the no-real-value Jade Market Receipt.
 Visual review includes Jade Exchange Accord static and browser evidence: `resolveTradeExchangeAccord`, `trade-exchange-accord`, `data-alpha-action="trade.exchange_accord"`, `data-exchange-accord-label`, `exchangeAccordProof`, and the no-real-value Jade Exchange Accord Tally.
 Visual review includes Jade Route Charter static and browser evidence: `resolveSpiritRouteCharter`, `world-route-charter`, `data-alpha-action="world.route_charter"`, `data-route-charter-label`, `routeCharterProof`, and the no-real-value Jade Route Charter Slip.
@@ -251,7 +251,7 @@ Those tests prove the event contract and behavior. The remaining human visual ch
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm the game canvas, HUD, and town scene are visually coherent.
-3. Interact with the NPC, chest, and habitat/care loop in at least one tab. Focus the canvas, stand adjacent to the object, hold the relevant facing direction toward it, and press Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+3. Complete the Unity manual prompt path in at least one tab: focus the Unity canvas, create or load a curated character, move near Lirabao, confirm `E Care | Q Wave`, care for Lirabao, then reload/logout/login to verify saved character and shared Lirabao progress.
 4. Confirm the prompts and notifications match the alpha no-real-value scope.
 5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
 

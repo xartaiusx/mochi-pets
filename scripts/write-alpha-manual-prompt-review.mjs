@@ -8,11 +8,66 @@ const root = process.cwd();
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_JSON || 'reports/alpha-manual-prompt-review.json');
 const reportMdPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_MD || 'reports/alpha-manual-prompt-review.md');
 const visualReviewPath = resolve(root, process.env.MOCHI_SOCIAL_VISUAL_REVIEW_JSON || 'reports/alpha-visual-review.json');
-const mapEventSourcePath = resolve(root, 'apps/game/src/modules/main/event.ts');
-const mapServerSourcePath = resolve(root, 'apps/game/src/modules/main/server.ts');
+
+const unitySources = [
+  {
+    id: 'bootstrap',
+    path: 'unity/Assets/MochiSocial/Scripts/Runtime/MochiSocialBootstrap.cs',
+    snippets: [
+      'Create your character',
+      'Choose your character.',
+      'Saved play uses one of these curated Mochirii presets.',
+      'Joined Jade Lantern Room as',
+      'LoadCharacterAsync',
+      'SaveCharacterAsync',
+      'LoadSharedPetOrDefaultAsync',
+      'InteractWithSharedPetAsync'
+    ]
+  },
+  {
+    id: 'lirabaoPrompt',
+    path: 'unity/Assets/MochiSocial/Scripts/Runtime/LirabaoInteractionPrompt.cs',
+    snippets: [
+      'E Care  |  Q Wave',
+      'InteractWithLirabao("approach")',
+      'InteractWithLirabao("care")',
+      'InteractWithLirabao("wave")'
+    ]
+  },
+  {
+    id: 'lirabaoPet',
+    path: 'unity/Assets/MochiSocial/Scripts/Runtime/LirabaoPetController.cs',
+    snippets: [
+      'ShowStaleRevisionReload',
+      'ShowUnavailable',
+      'TryRequestInteraction',
+      'shared_pet_revision_conflict'
+    ]
+  },
+  {
+    id: 'stateStore',
+    path: 'unity/Assets/MochiSocial/Scripts/Services/MochiSocialUgsStateStore.cs',
+    snippets: [
+      'MochiSocialConstants.CharacterSaveKey',
+      'MochiSocialConstants.SharedPetSaveKey',
+      'CloudSaveService.Instance.Data.Player',
+      'CloudCodeService.Instance.CallEndpointAsync<SharedPetState>'
+    ]
+  },
+  {
+    id: 'constants',
+    path: 'unity/Assets/MochiSocial/Scripts/Core/MochiSocialConstants.cs',
+    snippets: [
+      'jade-lantern-room-alpha',
+      'single-shared-room',
+      'lirabao',
+      'character.v1',
+      'room:jade-lantern-room/sharedPet.v1'
+    ]
+  }
+];
+
 const visualReview = readJson(visualReviewPath);
-const mapEventSource = readText(mapEventSourcePath);
-const mapServerSource = readText(mapServerSourcePath);
 const visualArtifacts = buildVisualArtifactEvidence(visualReview);
 const hostedAllowed = process.env.MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED === 'true';
 const reviewer = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER || '');
@@ -21,75 +76,63 @@ const reviewUrl = (process.env.MOCHI_SOCIAL_MANUAL_PROMPT_URL || visualReview.da
 const notes = sanitize(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_NOTES || '');
 const gitState = readGitState();
 const failures = [];
-const logicalTileSizePx = 64;
 
 const interactionContract = {
-  source: pathForReport(mapEventSourcePath),
-  helper: 'setAlphaInteractable',
-  tileSizePx: logicalTileSizePx,
-  actionHitbox: { width: 64, height: 64 },
-  actionInput: 'Focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms.'
+  runtime: 'Unity WebGL',
+  scene: 'JadeLanternRoom',
+  roomSessionId: 'jade-lantern-room-alpha',
+  sharedPetKey: 'lirabao',
+  keyboardReviewInputs: [
+    'Choose one curated character preset in the Create your character panel.',
+    'Move near Lirabao until the prompt reads E Care | Q Wave.',
+    'Press E or Return to care for Lirabao.',
+    'Press Q to wave to Lirabao.',
+    'Use sign out, reload, and sign in again to confirm saved character and shared Lirabao progress.'
+  ]
 };
 
 const reviewTargets = [
   {
-    id: 'welcome-npc',
-    label: 'Welcome NPC dialog',
-    position: eventPlacement(mapServerSource, 'welcome-npc'),
-    setup: 'No setup required after the player spawns in Jade Lantern Court.',
-    graphic: 'sifu-narao',
-    expectedRenderedPhrases: ['Welcome to Mochi Social', 'no-real-value', 'Canary-only'],
-    expectedNotification: 'Guild spark found',
-    saveSource: null
+    id: 'character-creation',
+    label: 'Curated character creation',
+    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK',
+    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK),
+    expectedEvidence: 'The Unity panel lets a signed-in tester choose only one curated Mochirii preset, saves it, and joins Jade Lantern Room.',
+    sourceIds: ['bootstrap', 'stateStore', 'constants'],
+    steps: [
+      'Sign in as a valid alpha tester through the website bridge.',
+      'Confirm the Unity canvas shows Create your character.',
+      'Confirm exactly the curated preset buttons are available and no avatar upload appears.',
+      'Choose a preset and confirm the bridge state becomes signed-in for Jade Lantern Room.'
+    ]
   },
   {
-    id: 'guild-seal-chest',
-    label: 'Guild seal chest prompt and save feedback',
-    position: eventPlacement(mapServerSource, 'guild-seal-chest'),
-    setup: 'Use a fresh local save or confirm the repeat prompt says the Mochirii Guild Seal is already tucked away.',
-    graphic: 'chest',
-    expectedRenderedPhrases: ['Mochirii Guild Seal', 'server saved'],
-    expectedNotification: 'Guild Seal added',
-    saveSource: 'guild-seal-chest'
+    id: 'lirabao-care',
+    label: 'Shared Lirabao care prompt',
+    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK',
+    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK),
+    expectedEvidence: 'Lirabao is visible or reachable in the shared room, the E Care / Q Wave prompt appears in range, and care updates the shared pet through the Unity state path.',
+    sourceIds: ['bootstrap', 'lirabaoPrompt', 'lirabaoPet', 'stateStore', 'constants'],
+    steps: [
+      'Move the tester avatar near Lirabao in JadeLanternRoom.',
+      'Confirm the prompt text reads E Care | Q Wave.',
+      'Press E or Return and confirm Lirabao accepts care or reloads cleanly on a stale revision.',
+      'Confirm the message stays friendly and no-real-value.'
+    ]
   },
   {
-    id: 'care-shrine',
-    label: 'Habitat care loop prompt',
-    position: eventPlacement(mapServerSource, 'care-shrine'),
-    setup: 'First bond with Lirabao at spirit-lirabao, then interact with the care shrine.',
-    setupTarget: {
-      id: 'spirit-lirabao',
-      position: eventPlacement(mapServerSource, 'spirit-lirabao'),
-      expectedRenderedPhrases: ['joined your Mochirii spirit journal']
-    },
-    graphic: 'sifu-narao',
-    expectedRenderedPhrases: ['Care complete', 'growth with bond'],
-    expectedNotification: 'Spirit bond',
-    saveSource: 'spirit-care'
-  }
-];
-
-const checks = [
-  {
-    id: 'welcome-npc',
-    label: 'Welcome NPC dialog',
-    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
-    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK),
-    expectedEvidence: 'Rendered dialog says the closed alpha town is no-real-value and Canary-only after holding the Action key briefly.'
-  },
-  {
-    id: 'guild-seal-chest',
-    label: 'Guild seal chest prompt and save feedback',
-    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK',
-    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK),
-    expectedEvidence: 'Rendered prompt/notification confirms Mochirii Guild Seal pickup and server save feedback after holding the Action key briefly.'
-  },
-  {
-    id: 'care-shrine',
-    label: 'Habitat care loop prompt',
-    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
-    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK),
-    expectedEvidence: 'Rendered prompt/status confirms companion care, bond, growth, and the current/next bond milestone after holding the Action key briefly.'
+    id: 'saved-progress',
+    label: 'Saved character and shared pet progress',
+    env: 'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK',
+    ok: parseBool(process.env.MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK),
+    expectedEvidence: 'After logout, reload, and login, the tester returns with the saved curated character and current shared Lirabao state.',
+    sourceIds: ['bootstrap', 'stateStore', 'constants'],
+    steps: [
+      'Create or load a tester character.',
+      'Care for Lirabao once.',
+      'Sign out, reload the page, sign in again, and confirm the tester character returns.',
+      'Confirm Lirabao state reloads from the shared room state instead of resetting silently.'
+    ]
   }
 ];
 
@@ -104,31 +147,14 @@ if (!visualReview.ok) {
   failures.push(...visualArtifactFailures(visualArtifacts));
 }
 
-for (const snippet of [
-  'ALPHA_INTERACTABLE_HITBOX = { width: 64, height: 64 }',
-  "setAlphaInteractable(this, 'sifu-narao')",
-  'setAlphaInteractable(this, spirit.sprite)',
-  "setAlphaInteractable(this, 'chest')"
-]) {
-  if (!mapEventSource.includes(snippet)) failures.push(`Manual prompt review source contract missing snippet: ${snippet}`);
-}
-
-for (const target of reviewTargets) {
-  if (!target.position) failures.push(`Manual prompt review target placement missing: ${target.id}`);
-  for (const phrase of target.expectedRenderedPhrases) {
-    if (!mapEventSource.includes(phrase)) failures.push(`Manual prompt review target ${target.id} missing expected phrase in source: ${phrase}`);
+const sourceEvidence = buildSourceEvidence();
+for (const source of sourceEvidence.files) {
+  if (source.exists !== true) {
+    failures.push(`Manual prompt Unity source missing: ${source.path}`);
+    continue;
   }
-  if (target.expectedNotification && !mapEventSource.includes(target.expectedNotification)) {
-    failures.push(`Manual prompt review target ${target.id} missing expected notification in source: ${target.expectedNotification}`);
-  }
-  if (target.saveSource && !mapEventSource.includes(`source: '${target.saveSource}'`)) {
-    failures.push(`Manual prompt review target ${target.id} missing save source in source: ${target.saveSource}`);
-  }
-  if (target.setupTarget) {
-    if (!target.setupTarget.position) failures.push(`Manual prompt review setup target placement missing: ${target.setupTarget.id}`);
-    for (const phrase of target.setupTarget.expectedRenderedPhrases) {
-      if (!mapEventSource.includes(phrase)) failures.push(`Manual prompt review setup target ${target.setupTarget.id} missing expected phrase in source: ${phrase}`);
-    }
+  for (const missing of source.missingSnippets) {
+    failures.push(`Manual prompt Unity source ${source.path} missing snippet: ${missing}`);
   }
 }
 
@@ -137,10 +163,8 @@ if (reviewUrl && isHostedUrl(reviewUrl) && !hostedAllowed) {
   failures.push('Manual prompt review URL is hosted; set MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true only after explicit hosted-preview approval.');
 }
 
-const completedChecks = checks.filter((check) => check.ok);
-const pendingChecks = checks.filter((check) => !check.ok);
-const sourceEvidence = buildSourceEvidence();
-const reviewRoute = buildReviewRoute();
+const completedChecks = reviewTargets.filter((check) => check.ok);
+const pendingChecks = reviewTargets.filter((check) => !check.ok);
 if (pendingChecks.length === 0) {
   if (!reviewer) failures.push('Completed manual prompt review requires MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER.');
   if (!browser) failures.push('Completed manual prompt review requires MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER.');
@@ -149,7 +173,7 @@ if (pendingChecks.length === 0) {
 const report = {
   ok: failures.length === 0 && pendingChecks.length === 0,
   checkedAt: new Date().toISOString(),
-  scope: 'No-secret Alpha RC manual prompt review gate. This records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts; it does not contain credentials or hosted-provider proof.',
+  scope: 'No-secret Alpha RC manual prompt review gate for the Unity shared-room alpha. This records operator confirmation for character creation, Lirabao care, and saved progress; it does not contain credentials or hosted-provider proof.',
   git: gitState,
   review: {
     status: pendingChecks.length === 0 ? 'completed' : 'pending-human-review',
@@ -175,16 +199,15 @@ const report = {
         message: visualReview.message
       },
   visualArtifacts,
-  checks,
+  checks: reviewTargets.map(({ id, label, env, ok, expectedEvidence }) => ({ id, label, env, ok, expectedEvidence })),
   instructions: {
     localUrl: reviewUrl ? reviewPlayUrl(reviewUrl) : '${MOCHI_SOCIAL_BASE_URL}/play or the local suite base URL from reports/alpha-visual-review.json',
-    actionInput: 'Focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.',
-    requiredEnv: checks.map((check) => `${check.env}=true`),
+    actionInput: 'Focus the Unity canvas, use desktop movement controls, choose a curated character, then use the Lirabao prompt with E/Return for care and Q for wave.',
+    requiredEnv: reviewTargets.map((check) => `${check.env}=true`),
     completionCommand: 'Set the required env vars plus MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER and MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER, then run npm run alpha:manual-prompt-review.'
   },
   interactionContract,
   reviewTargets,
-  reviewRoute,
   sourceEvidence,
   completedChecks: completedChecks.map((check) => check.id),
   pendingChecks: pendingChecks.map((check) => check.id),
@@ -197,7 +220,7 @@ await writeFile(reportMdPath, renderMarkdown(report), 'utf8');
 
 if (!report.ok) {
   console.error('Mochi Social manual prompt review is not complete:');
-  for (const failure of [...failures, ...pendingChecks.map((check) => `${check.id} not confirmed; set ${check.env}=true after local visual review.`)]) {
+  for (const failure of [...failures, ...pendingChecks.map((check) => `${check.id} not confirmed; set ${check.env}=true after local Unity review.`)]) {
     console.error(`- ${failure}`);
   }
   console.error(`Report: ${reportJsonPath}`);
@@ -228,6 +251,9 @@ function readText(file) {
 function buildVisualArtifactEvidence(source) {
   const data = source.ok ? source.data : null;
   const screenshots = data?.evidence?.screenshots || {};
+  const sharedRoom = data?.evidence?.sharedRoom || {};
+  const sharedPet = data?.evidence?.sharedPet || {};
+  const machineReview = data?.machineReview || {};
   return {
     visualReviewReport: {
       path: pathForReport(visualReviewPath),
@@ -251,8 +277,26 @@ function buildVisualArtifactEvidence(source) {
       page: normalizeScreenshotEvidence(screenshots.page, 'reports/alpha-visual-page.png'),
       canvas: normalizeScreenshotEvidence(screenshots.canvas, 'reports/alpha-visual-canvas.png')
     },
-    mapObjects: Array.isArray(data?.evidence?.mapObjects) ? data.evidence.mapObjects.map(sanitize) : [],
-    habitat: sanitize(data?.evidence?.habitat || ''),
+    sharedRoom: {
+      key: sanitize(sharedRoom.key || ''),
+      name: sanitize(sharedRoom.name || ''),
+      scene: sanitize(sharedRoom.scene || ''),
+      mode: sanitize(sharedRoom.mode || ''),
+      capacity: Number(sharedRoom.capacity) || 0
+    },
+    sharedPet: {
+      key: sanitize(sharedPet.key || ''),
+      name: sanitize(sharedPet.name || '')
+    },
+    machineReview: {
+      firstScreenRenderable: machineReview.firstScreenRenderable === true,
+      unityCanvasRenderable: machineReview.unityCanvasRenderable === true,
+      twoTabPresence: machineReview.twoTabPresence === true,
+      observerMovement: machineReview.observerMovement === true,
+      legacyHudAbsent: machineReview.legacyHudAbsent === true,
+      inputGuardPresent: machineReview.inputGuardPresent === true,
+      noFutureEconomyCopy: machineReview.noFutureEconomyCopy === true
+    },
     manualPromptGate: {
       status: sanitize(data?.manualPromptGate?.status || ''),
       reason: sanitize(data?.manualPromptGate?.reason || ''),
@@ -285,26 +329,31 @@ function visualArtifactFailures(artifacts) {
     if (!screenshot.sha256) artifactFailures.push(`Manual prompt visual artifact ${label} screenshot hash is missing.`);
     if (!screenshot.width || !screenshot.height) artifactFailures.push(`Manual prompt visual artifact ${label} screenshot dimensions are missing.`);
   }
-  if (!artifacts.mapObjects.includes('welcome-npc')) artifactFailures.push('Manual prompt visual artifact map-object list missing welcome-npc.');
-  if (!artifacts.mapObjects.includes('guild-seal-chest')) artifactFailures.push('Manual prompt visual artifact map-object list missing guild-seal-chest.');
-  if (!artifacts.mapObjects.includes('care-shrine')) artifactFailures.push('Manual prompt visual artifact map-object list missing care-shrine.');
-  if (artifacts.habitat !== 'Jade Lantern Court') artifactFailures.push('Manual prompt visual artifact habitat must be Jade Lantern Court.');
+  if (artifacts.sharedRoom.key !== 'jade-lantern-room-alpha') artifactFailures.push('Manual prompt visual artifact room key must be jade-lantern-room-alpha.');
+  if (artifacts.sharedRoom.mode !== 'single-shared-room') artifactFailures.push('Manual prompt visual artifact room mode must be single-shared-room.');
+  if (artifacts.sharedRoom.scene !== 'JadeLanternRoom') artifactFailures.push('Manual prompt visual artifact scene must be JadeLanternRoom.');
+  if (artifacts.sharedPet.key !== 'lirabao') artifactFailures.push('Manual prompt visual artifact shared pet must be Lirabao.');
+  for (const [key, value] of Object.entries(artifacts.machineReview)) {
+    if (value !== true) artifactFailures.push(`Manual prompt machine visual evidence missing ${key}.`);
+  }
   return artifactFailures;
 }
 
-function eventPlacement(source, id) {
-  const pattern = new RegExp(`id:\\s*'${escapeRegExp(id)}',\\s*x:\\s*(\\d+),\\s*y:\\s*(\\d+),`);
-  const match = source.match(pattern);
-  if (!match) return null;
-  const worldPx = {
-    x: Number(match[1]),
-    y: Number(match[2])
-  };
+function buildSourceEvidence() {
   return {
-    ...worldPx,
-    unit: 'world-px',
-    worldPx,
-    logicalTile: worldToLogicalTile(worldPx)
+    files: unitySources.map((source) => {
+      const absolutePath = resolve(root, source.path);
+      const text = readText(absolutePath);
+      const missingSnippets = source.snippets.filter((snippet) => !text.includes(snippet));
+      return {
+        id: source.id,
+        path: source.path,
+        exists: Boolean(text),
+        sha256: text ? sha256Text(text) : '',
+        snippets: source.snippets,
+        missingSnippets
+      };
+    })
   };
 }
 
@@ -320,111 +369,8 @@ function reviewPlayUrl(value) {
   }
 }
 
-function buildReviewRoute() {
-  return reviewTargets.map((target, index) => {
-    const position = target.position;
-    const setupPosition = target.setupTarget?.position || null;
-    const adjacentLogicalTiles = position ? adjacentTiles(position.logicalTile) : [];
-    return {
-      step: index + 1,
-      id: target.id,
-      label: target.label,
-      position,
-      approach: position
-        ? {
-            adjacentLogicalTiles,
-            adjacentWorldPx: adjacentLogicalTiles.map((tile) => ({
-              ...tile,
-              worldPx: logicalTileToWorld(tile)
-            })),
-            actionInput: interactionContract.actionInput
-          }
-        : null,
-      setupTarget: target.setupTarget
-        ? {
-            id: target.setupTarget.id,
-            position: setupPosition,
-            expectedRenderedPhrases: target.setupTarget.expectedRenderedPhrases
-          }
-        : null,
-      expectedRenderedPhrases: target.expectedRenderedPhrases,
-      expectedNotification: target.expectedNotification,
-      saveSource: target.saveSource
-    };
-  });
-}
-
-function worldToLogicalTile(position) {
-  return {
-    x: Math.round(position.x / logicalTileSizePx),
-    y: Math.round(position.y / logicalTileSizePx)
-  };
-}
-
-function logicalTileToWorld(tile) {
-  return {
-    x: tile.x * logicalTileSizePx,
-    y: tile.y * logicalTileSizePx
-  };
-}
-
-function adjacentTiles(tile) {
-  return [
-    { x: tile.x, y: Math.max(0, tile.y - 1), face: 'down' },
-    { x: Math.max(0, tile.x - 1), y: tile.y, face: 'right' },
-    { x: tile.x + 1, y: tile.y, face: 'left' },
-    { x: tile.x, y: tile.y + 1, face: 'up' }
-  ];
-}
-
-function buildSourceEvidence() {
-  return {
-    eventSource: {
-      path: pathForReport(mapEventSourcePath),
-      sha256: sha256Text(mapEventSource),
-      targets: Object.fromEntries(reviewTargets.map((target) => [target.id, sourceTargetEvidence(target, mapEventSource, mapServerSource)]))
-    },
-    mapServerSource: {
-      path: pathForReport(mapServerSourcePath),
-      sha256: sha256Text(mapServerSource)
-    }
-  };
-}
-
-function sourceTargetEvidence(target, eventSource, serverSource) {
-  const sourcePhrases = Object.fromEntries(
-    target.expectedRenderedPhrases.map((phrase) => [phrase, sourceLineNumber(eventSource, phrase)])
-  );
-  const setupPhrases = target.setupTarget
-    ? Object.fromEntries(target.setupTarget.expectedRenderedPhrases.map((phrase) => [phrase, sourceLineNumber(eventSource, phrase)]))
-    : {};
-  return {
-    placementLine: sourceLineNumber(serverSource, `id: '${target.id}'`),
-    expectedPhraseLines: sourcePhrases,
-    expectedNotificationLine: target.expectedNotification ? sourceLineNumber(eventSource, target.expectedNotification) : null,
-    saveSourceLine: target.saveSource ? sourceLineNumber(eventSource, `source: '${target.saveSource}'`) : null,
-    setupTarget: target.setupTarget
-      ? {
-          id: target.setupTarget.id,
-          placementLine: sourceLineNumber(serverSource, `id: '${target.setupTarget.id}'`),
-          expectedPhraseLines: setupPhrases
-        }
-      : null
-  };
-}
-
-function sourceLineNumber(source, snippet) {
-  const index = source.indexOf(snippet);
-  if (index < 0) return null;
-  return source.slice(0, index).split(/\r?\n/).length;
-}
-
 function sha256Text(value) {
   return createHash('sha256').update(String(value || '')).digest('hex');
-}
-
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function parseBool(value) {
@@ -514,50 +460,27 @@ function renderMarkdown(summary) {
     .map((check) => `| ${check.id} | ${check.ok ? 'pass' : 'pending'} | ${check.env} | ${check.expectedEvidence} |`)
     .join('\n');
   const targetRows = summary.reviewTargets
-    .map((target) => {
-      const position = formatPosition(target.position);
-      const setupPosition = target.setupTarget?.position ? ` Setup ${target.setupTarget.id}: ${formatPosition(target.setupTarget.position)}.` : '';
-      return `| ${target.id} | ${position} | ${target.graphic} | ${target.expectedRenderedPhrases.join('; ')} | ${target.setup}${setupPosition} |`;
-    })
+    .map((target) => `| ${target.id} | ${target.sourceIds.join(', ')} | ${target.steps.join('<br>')} |`)
     .join('\n');
-  const routeRows = summary.reviewRoute
-    .map((target) => {
-      const position = formatPosition(target.position);
-      const approach = target.approach?.adjacentWorldPx
-        ?.map((tile) => `tile ${tile.x},${tile.y} / px ${tile.worldPx.x},${tile.worldPx.y} face ${tile.face}`)
-        .join('; ') || 'missing';
-      const setup = target.setupTarget?.position ? `${target.setupTarget.id} at ${formatPosition(target.setupTarget.position)}` : 'none';
-      return `| ${target.step} | ${target.id} | ${position} | ${approach} | ${setup} |`;
-    })
+  const sourceRows = summary.sourceEvidence.files
+    .map((source) => `| ${source.id} | ${source.path} | ${source.exists ? 'yes' : 'no'} | ${source.sha256 || 'missing'} | ${source.missingSnippets.length ? source.missingSnippets.join('; ') : 'none'} |`)
     .join('\n');
-  const sourceRows = summary.reviewTargets
-    .map((target) => {
-      const evidence = summary.sourceEvidence.eventSource.targets[target.id] || {};
-      const phraseLines = Object.entries(evidence.expectedPhraseLines || {})
-        .map(([phrase, line]) => `${phrase}: ${line || 'missing'}`)
-        .join('; ');
-      return `| ${target.id} | ${evidence.placementLine || 'missing'} | ${phraseLines || 'missing'} | ${evidence.expectedNotificationLine || 'n/a'} | ${evidence.saveSourceLine || 'n/a'} |`;
-    })
-    .join('\n');
-  const failuresText = summary.failures.length ? summary.failures.map((failure) => `- ${failure}`).join('\n') : '- None';
-  const pendingText = summary.pendingChecks.length ? summary.pendingChecks.map((id) => `- ${id}`).join('\n') : '- None';
   const screenshotRows = Object.entries(summary.visualArtifacts.screenshots)
     .map(([label, screenshot]) => `| ${label} | ${screenshot.path} | ${screenshot.width}x${screenshot.height} | ${screenshot.bytes} | ${screenshot.sha256 || 'missing'} |`)
     .join('\n');
-  const visualMapObjects = summary.visualArtifacts.mapObjects.length
-    ? summary.visualArtifacts.mapObjects.join(', ')
-    : 'none recorded';
   const manualGateChecks = summary.visualArtifacts.manualPromptGate.requiredChecks.length
     ? summary.visualArtifacts.manualPromptGate.requiredChecks.map((check) => `- ${check}`).join('\n')
     : '- None recorded';
+  const failuresText = summary.failures.length ? summary.failures.map((failure) => `- ${failure}`).join('\n') : '- None';
+  const pendingText = summary.pendingChecks.length ? summary.pendingChecks.map((id) => `- ${id}`).join('\n') : '- None';
 
   return `# Mochi Social Manual Prompt Review
 
 Generated: ${summary.checkedAt}
 
-This file is intentionally no-secret. It records the Alpha RC operator/human review for rendered in-canvas NPC, guild seal chest, and habitat/care prompts.
+This file is intentionally no-secret. It records the Alpha RC operator/human review for the Unity shared-room alpha: character creation, Lirabao care, and saved progress.
 
-Input note: focus the game canvas, stand within one 64px logical tile of the map object, face it, and hold Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+Input note: focus the Unity canvas, create or load a curated character, move near Lirabao, use E/Return for care and Q for wave, then reload/logout/login to confirm saved progress.
 
 ## Status
 
@@ -574,8 +497,8 @@ Input note: focus the game canvas, stand within one 64px logical tile of the map
 - Visual snapshot report: ${summary.visualArtifacts.visualSnapshotReport.path} (${summary.visualArtifacts.visualSnapshotReport.ok ? 'pass' : 'not passing'}, ${summary.visualArtifacts.visualSnapshotReport.checkedAt || 'not recorded'})
 - Browser presence report: ${summary.visualArtifacts.browserPresenceReport.path} (${summary.visualArtifacts.browserPresenceReport.ok ? 'pass' : 'not passing'}, ${summary.visualArtifacts.browserPresenceReport.checkedAt || 'not recorded'})
 - Review base URL: ${summary.visualArtifacts.visualReviewReport.baseUrl || summary.visualArtifacts.visualSnapshotReport.baseUrl || summary.visualArtifacts.browserPresenceReport.baseUrl || 'not recorded'}
-- Habitat: ${summary.visualArtifacts.habitat || 'not recorded'}
-- Map objects covered: ${visualMapObjects}
+- Shared room: ${summary.visualArtifacts.sharedRoom.name || 'not recorded'} (${summary.visualArtifacts.sharedRoom.key || 'not recorded'}, ${summary.visualArtifacts.sharedRoom.mode || 'not recorded'})
+- Shared pet: ${summary.visualArtifacts.sharedPet.name || 'not recorded'} (${summary.visualArtifacts.sharedPet.key || 'not recorded'})
 - Manual gate status from visual review: ${summary.visualArtifacts.manualPromptGate.status || 'not recorded'}
 - Manual gate reason: ${summary.visualArtifacts.manualPromptGate.reason || 'not recorded'}
 
@@ -595,30 +518,15 @@ ${manualGateChecks}
 | --- | --- | --- | --- |
 ${checkRows}
 
-## Source-Tied Target Checklist
+## Unity Review Route
 
-- Action hitbox: ${summary.interactionContract.actionHitbox.width}x${summary.interactionContract.actionHitbox.height}px
-- Logical tile size: ${summary.interactionContract.tileSizePx}px
-- Source helper: ${summary.interactionContract.source} / ${summary.interactionContract.helper}
-
-| Target | Position | Graphic | Confirm Rendered Phrases | Setup |
-| --- | --- | --- | --- | --- |
+| Target | Source Evidence | Steps |
+| --- | --- | --- |
 ${targetRows}
-
-## Review Route
-
-| Step | Target | Target Position | Adjacent Action Positions | Setup Target |
-| --- | --- | --- | --- | --- |
-${routeRows}
 
 ## Source Evidence
 
-- Event source: ${summary.sourceEvidence.eventSource.path}
-- Event source SHA-256: ${summary.sourceEvidence.eventSource.sha256}
-- Map server source: ${summary.sourceEvidence.mapServerSource.path}
-- Map server source SHA-256: ${summary.sourceEvidence.mapServerSource.sha256}
-
-| Target | Placement Line | Expected Phrase Lines | Notification Line | Save Source Line |
+| Source | Path | Exists | SHA-256 | Missing Snippets |
 | --- | --- | --- | --- | --- |
 ${sourceRows}
 
@@ -632,9 +540,9 @@ ${pendingText}
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER="<operator name>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER="<browser and version>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_URL="<local game /play URL>"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK="true"
 npm run alpha:manual-prompt-review
 \`\`\`
 
@@ -644,11 +552,4 @@ Use a hosted URL only after explicit hosted-preview approval and set \`MOCHI_SOC
 
 ${failuresText}
 `;
-}
-
-function formatPosition(position) {
-  if (!position) return 'missing';
-  const world = position.worldPx || position;
-  const tile = position.logicalTile || worldToLogicalTile(world);
-  return `tile ${tile.x},${tile.y} / px ${world.x},${world.y}`;
 }

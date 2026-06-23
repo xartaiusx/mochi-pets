@@ -351,16 +351,22 @@ function addStaticRequirements() {
     'legacyFallback?.active === false',
     'No future economy copy'
   ]);
-  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
+  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for Unity character creation, Lirabao care, and saved progress prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
     'alpha-manual-prompt-review.json',
     'alpha-manual-prompt-review.md',
     'pending-human-review',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED',
+    'Unity WebGL',
+    'JadeLanternRoom',
+    'Create your character',
+    'E Care  |  Q Wave',
+    'character.v1',
+    'room:jade-lantern-room/sharedPet.v1',
     'visualArtifacts',
     'Visual Review Evidence Bundle',
     'alpha-visual-page.png',
@@ -1125,7 +1131,7 @@ function addManualPromptReviewRequirements() {
   const promptReportPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_JSON || 'reports/alpha-manual-prompt-review.json');
   const promptReport = readJson(promptReportPath);
   if (!promptReport.ok) {
-    add('local.manual-prompt-review', 'fail', `Manual prompt review report is missing or invalid: ${promptReport.message}. Run npm run alpha:manual-prompt-review after local NPC/chest/habitat prompt review.`, { path: promptReportPath });
+    add('local.manual-prompt-review', 'fail', `Manual prompt review report is missing or invalid: ${promptReport.message}. Run npm run alpha:manual-prompt-review after local Unity character, Lirabao, and saved-progress review.`, { path: promptReportPath });
     return;
   }
 
@@ -1144,7 +1150,7 @@ function addManualPromptReviewRequirements() {
     failures.push('hosted manual prompt review requires explicit hosted approval flag');
   }
   const checks = Array.isArray(report.checks) ? report.checks : [];
-  for (const id of ['welcome-npc', 'guild-seal-chest', 'care-shrine']) {
+  for (const id of ['character-creation', 'lirabao-care', 'saved-progress']) {
     const check = checks.find((entry) => entry.id === id);
     if (!check?.ok) failures.push(`manual prompt review missing confirmation for ${id}`);
   }
@@ -1156,8 +1162,8 @@ function addManualPromptReviewRequirements() {
     'local.manual-prompt-review',
     failures.length ? 'fail' : 'pass',
     failures.length
-      ? `Manual rendered prompt review is incomplete: ${failures.join(', ')}.`
-      : 'Manual rendered NPC, chest, and habitat/care prompt review is complete and current.',
+      ? `Manual Unity prompt review is incomplete: ${failures.join(', ')}.`
+      : 'Manual Unity character, Lirabao care, and saved-progress review is complete and current.',
     {
       reportPath: promptReportPath,
       checkedAt: report.checkedAt,
@@ -1173,18 +1179,24 @@ function addManualPromptReviewRequirements() {
 }
 
 function manualPromptSourceEvidence(report) {
-  const expected = [
-    {
-      label: 'eventSource',
-      path: resolve(root, 'apps/game/src/modules/main/event.ts'),
-      expectedHash: report?.sourceEvidence?.eventSource?.sha256
-    },
-    {
-      label: 'mapServerSource',
-      path: resolve(root, 'apps/game/src/modules/main/server.ts'),
-      expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
-    }
-  ];
+  const expected = Array.isArray(report?.sourceEvidence?.files)
+    ? report.sourceEvidence.files.map((entry) => ({
+        label: entry.id || entry.path,
+        path: resolve(root, entry.path || ''),
+        expectedHash: entry.sha256
+      }))
+    : [
+        {
+          label: 'eventSource',
+          path: resolve(root, 'apps/game/src/modules/main/event.ts'),
+          expectedHash: report?.sourceEvidence?.eventSource?.sha256
+        },
+        {
+          label: 'mapServerSource',
+          path: resolve(root, 'apps/game/src/modules/main/server.ts'),
+          expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
+        }
+      ];
   const failures = [];
   const files = expected.map((entry) => {
     const currentHash = fileSha256(entry.path);

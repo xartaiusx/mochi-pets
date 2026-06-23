@@ -502,7 +502,7 @@ ${rows}
 - Browser and visual evidence stayed localhost-only.
 - Responsive gameplay proves /play, /embed, and parent-iframe input ownership across the required viewport matrix with screenshots and DOM rectangles.
 - Responsive input evidence records per-key gameplay prevention, unhandled-key freedom, editable-input preservation, Tab focus behavior, and parent/iframe scroll stability. The real Mochirii site iframe leg must be checked, not skipped, before Alpha Preview Ready.
-- Rendered NPC/chest/habitat prompt interaction remains an explicit manual gate before Alpha RC Ready.
+- Unity character creation, Lirabao care, and saved-progress interaction remain explicit manual browser gates before Alpha RC Ready.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 
 ## Failures
