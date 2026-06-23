@@ -60,16 +60,20 @@ function addStaticRequirements() {
     '/integration/game-manifest.json',
     '/integration/alpha/status',
     '/integration/alpha/progress',
-    '/integration/alpha/action',
-    '/integration/alpha/enjin/submit'
+    '/integration/alpha/action'
   ]);
-  requireFileIncludes('game.no-real-value', 'Game manifest and alpha status keep Canary/no-real-value scope.', 'apps/game/src/integration/alpha-contract.ts', [
+  requireFileIncludes('game.no-real-value', 'Game manifest and alpha status keep Preview Ready no-real-value shared-room scope.', 'apps/game/src/integration/alpha-contract.ts', [
     'noRealValue: true',
-    "network: 'CANARY'",
-    'cashout: false',
+    "stopPoint: 'alpha-preview-ready'",
+    'sharedRoom: true',
+    'lirabaoCare: true',
+    'staleRevisionReload: true',
+    'avatarUploads: false',
+    'multipleRooms: false',
+    'mobileSpecificUi: false',
     "ugc: 'curated'",
-    'socialRallies: true',
-    "'guild.social_rally'"
+    "'unity.pet.interaction'",
+    "'unity.pet.state_saved'"
   ]);
   requireFileIncludes('game.bridge-protocol', 'Bridge protocol declares Supabase access-token auth and sign-out events.', 'apps/game/src/integration/protocol.ts', [
     'MOCHI_SOCIAL_AUTH',
@@ -78,15 +82,15 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_AUTH_STATE',
     'MOCHI_SOCIAL_ERROR'
   ]);
-  requireFileIncludes('game.bridge-runtime', 'Browser bridge consumes auth/sign-out protocol and stores only the access token state.', 'apps/game/src/integration/browser-bridge.ts', [
-    'BRIDGE_EVENTS.auth',
-    'BRIDGE_EVENTS.signOut',
+  requireFileIncludes('game.bridge-runtime', 'Unity WebGL wrapper consumes auth/sign-out protocol, validates parent origins, and injects browser-safe endpoint config.', 'apps/game/src/entries/express.ts', [
+    'data-mochi-social-unity-bridge-config',
+    'allowedParentOrigins',
+    'MOCHI_SOCIAL_AUTH',
+    'MOCHI_SOCIAL_SIGN_OUT',
     'accessToken',
-    'configured-preview-stub',
-    'data-alpha-action="guild.social_rally"',
-    'data-rally-label',
-    'guildSocialRally',
-    'rallyProof'
+    'unityAuthUrl',
+    'mochi-social-unity-auth',
+    'event.stopImmediatePropagation()'
   ]);
   requireFileIncludes('game.supabase-edge-bridge', 'Supabase Edge bridge uses the scoped game server token header and keeps service-role secrets out of game requests.', 'apps/game/src/integration/supabase-edge-client.ts', [
     'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
@@ -105,38 +109,29 @@ function addStaticRequirements() {
     'mochi-social-alpha-action',
     'mochi-social-alpha-progress'
   ]);
-  requireFileIncludes('game.enjin-finality', 'Enjin helper enforces Canary, Fuel Tank, idempotency, and finality before hot credit.', 'apps/game/src/integration/enjin-canary.ts', [
-    "network: 'CANARY'",
-    'fuelTank: config.fuelTankId',
-    'idempotencyKey: input.requestId',
-    'canCreditHotInventory',
-    "state === 'FINALIZED'"
+  requireFileIncludes('game.no-future-economy-exports', 'Release-facing manifest and status reject future economy keys for the Unity shared-room alpha.', 'apps/game/src/entries/express.ts', [
+    "assertNoFutureSystemKeys(manifest, 'game manifest')",
+    "assertNoFutureSystemKeys(status, 'alpha status')",
+    'must not publish future economy keys',
+    'market|trade|cashout'
   ]);
-  requireFileIncludes('game.local-acceptance', 'Local acceptance covers spirit, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
-    'spirit.bond',
-    'spirit.care',
-    'spirit.habitat_bond',
-    'jade-court-habitat-bond',
-    'spirit.research',
-    'jade-court-research-folio',
-    'spirit.compendium_complete',
-    'jade-court-spirit-compendium',
-    'item.provision_satchel',
-    'jade-court-provision-satchel',
-    'guild.commission_complete',
-    'jade-court-commission-ledger',
-    'guild.social_rally',
-    'jade-courtyard-rally',
-    'market.fixed_list',
-    'trade.direct_offer',
-    'chain.withdraw_request',
-    'chain.deposit_request',
-    'confirmNoCreditUntilFinalized',
+  requireFileIncludes('game.local-acceptance', 'Local acceptance covers the Unity shared-room manifest, routes, character actions, Lirabao actions, and no-real-value ledger fallback.', 'scripts/check-local-alpha-acceptance.mjs', [
+    'Unity WebGL Alpha Preview Ready contract acceptance',
+    'jade-lantern-room-alpha',
+    'JadeLanternRoom',
+    'single-shared-room',
+    'lirabao',
+    'character.v1',
+    'room:jade-lantern-room/sharedPet.v1',
+    'unity.room.joined',
+    'unity.character.created',
+    'unity.character.updated',
+    'unity.pet.interaction',
+    'unity.pet.state_saved',
+    'unity.room.left',
     'ledgerVersion=1',
-    'alphaStopPoint',
-    'chainNetwork',
-    '/integration/alpha/enjin/submit',
-    'invalid_game_server_token'
+    'alpha-preview-ready',
+    'must not expose future asset network state'
   ]);
   requireFileIncludes('game.local-suite', 'Local Alpha suite builds, starts the built runtime, runs localhost smokes, strips live provider env, and writes one no-secret report.', 'scripts/check-alpha-local-suite.mjs', [
     'No-cost localhost Alpha RC suite',
@@ -178,7 +173,7 @@ function addStaticRequirements() {
     'visual snapshot canvas PNG must be non-empty',
     'visual review must keep rendered prompt interaction as a manual pre-RC gate',
     'Wallet Daemon local check must stay no-cost and metadata-only',
-    'built server smoke must prove tokened Enjin route fails closed',
+    'built server smoke must not activate the legacy fallback',
     'local-only'
   ]);
   requireFileIncludes('game.report-hygiene-script', 'Report hygiene scans ignored local reports and generated no-secret handoff artifacts for accidental secret leakage.', 'scripts/check-alpha-report-hygiene.mjs', [
@@ -263,87 +258,32 @@ function addStaticRequirements() {
     'requiresHostedApproval',
     'Hosted game contract checks require explicit approval'
   ]);
-  requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
+  requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Preview Ready scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
     "source: 'local-alpha-ledger'",
-    "alphaStopPoint: 'alpha-rc-ready'",
-    "chainNetwork: 'CANARY'",
+    "alphaStopPoint: 'alpha-preview-ready'",
     'noRealValue: true',
     'receivedAt: new Date().toISOString()'
   ]);
-  requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, movement signatures, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
-    'Nearby: 2 testers',
-    'data-presence-label',
-    'data-alpha-action="spirit.care"',
-    'data-alpha-local-action="profile.view"',
-    'profileViewed',
-    'data-alpha-local-action="guild.buddy"',
-    'guildBuddyProof',
-    'data-alpha-local-action="status.set"',
-    'statusMood',
-    'data-alpha-local-action="spirit.inspect"',
-    'lastInspectedSpiritId',
-    'data-alpha-action="world.expedition"',
-    'expeditionProof',
-    'data-alpha-action="spirit.route_invite"',
-    'routeInviteProof',
-    'data-alpha-action="world.route_mastery"',
-    'routeMasteryProof',
-    'data-alpha-action="spirit.habitat_bond"',
-    'habitatBondProof',
-    'data-alpha-action="spirit.research"',
-    'researchProof',
-    'jade-court-research-folio',
-    'data-alpha-action="spirit.compendium_complete"',
-    'compendiumProof',
-    'jade-court-spirit-compendium',
-    'data-alpha-action="item.provision_satchel"',
-    'provisionProof',
-    'jade-court-provision-satchel',
-    'data-alpha-action="guild.commission_complete"',
-    'commissionProof',
-    'jade-court-commission-ledger',
-    'data-alpha-action="guild.social_rally"',
-    'rallyProof',
-    'emoteProof',
-    'Jade Courtyard Rally',
-    'data-alpha-action="party.harmony_form"',
-    'harmonyFormProof',
-    'data-alpha-action="battle.harmony_trial"',
-    'harmonyTrialProof',
-    'data-alpha-action="battle.team_spar_match"',
-    'teamSparMatchProof',
-    'data-alpha-action="battle.mentor_challenge"',
-    'mentorChallengeProof',
-    'silk-banner-mentor-drill',
-    'data-alpha-action="spirit.technique_loadout"',
-    'techniqueLoadoutProof',
-    'jade-step-loadout',
-    'data-alpha-action="spirit.trait_attune"',
-    'traitAttunementProof',
-    'jade-heart-trait',
-    'data-alpha-action="battle.condition_weave"',
-    'conditionWeaveProof',
-    'jade-mirror-condition-weave',
-    'data-alpha-action="battle.tactic_scroll"',
-    'tacticProof',
-    'data-alpha-action="guild.rank_trial"',
-    'guildRankProof',
-    'data-alpha-action="spirit.growth_rite"',
-    'growthRiteProof',
-    'data-alpha-action="battle.affinity_trial"',
-    'affinityProof',
-    'chain.withdraw_request',
-    'chain.deposit_request',
-    'canaryReturnRequested',
-    'Jade Vault Return Proof staged',
-    'mochiSocial.alphaState',
+  requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies the Unity canvas, bridge surface, legacy HUD absence, and shared-room pulse.', 'scripts/check-alpha-browser-presence.mjs', [
+    'Unity WebGL two-tab room smoke',
+    'single-shared-room',
+    "sharedPetKey === 'lirabao'",
+    'unityWebglBuild?.present === true',
+    'legacyFallback?.active === false',
+    'inspectBridgeSurface',
+    'hasCreateUnityInstance',
+    'hasUnityCanvas',
+    'assertLegacyHudAbsent',
+    'data-alpha-action="market.fixed_list"',
+    'data-alpha-action="trade.direct_offer"',
+    'data-alpha-action^="chain."',
+    'Second tab did not observe the local two-tab movement pulse.',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'reports/alpha-browser-presence.json',
     'canvasMovement',
     'changedAfterFirstTabMove',
     'ArrowLeft',
-    'ArrowDown',
     'createHash',
     'canvas'
   ]);
@@ -384,63 +324,31 @@ function addStaticRequirements() {
     'Enter',
     'Spacebar',
     'horizontalOverflow',
-    'panelOverlaps',
-    'safeRectObstructions',
     'criticalRects',
-    'actionButtonRects',
+    'legacyHits',
+    'legacy RPGJS HUD selectors are present',
     'parentBefore',
     'parentAfter',
-    'textOverflow',
     'assertScrollUnchanged',
-    'verifyLegacyInteractionKeyOwnership',
-    'verifyEditableInputKeepsText'
+    'verifyInputOwnership',
+    'legacy interaction key',
+    'editable element'
   ]);
-  requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab presence, HUD action proof, map-object coverage, and manual prompt limitations to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
+  requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab room evidence, Lirabao contract, and absence of legacy player UI to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
     'alpha-visual-review.json',
     'alpha-visual-review.md',
     'readGitState',
     'manualPromptGate',
     'pending-human-review',
     'observerMovement',
-    'guild-seal-chest',
-    'technique-dojo',
-    'tactic-scroll-stand',
-    'guild-rank-bell',
-    'growth-moonwell',
-    'expedition-gate',
-    'route-invitation-altar',
-    'fieldExpedition',
-    'routeInvitation',
-    'habitatBond',
-    'spiritResearch',
-    'researchProof',
-    'spiritCompendium',
-    'compendiumProof',
-    'provisionSatchel',
-    'provisionProof',
-    'guildCommission',
-    'commissionProof',
-    'socialRally',
-    'guildSocialRally',
-    'rallyProof',
-    'emoteProof',
-    'affinity-dais',
-    'techniqueMastery',
-    'battleTactic',
-    'techniqueLoadout',
-    'techniqueLoadoutProof',
-    'spiritTrait',
-    'traitAttunementProof',
-    'battleConditionWeave',
-    'conditionWeaveProof',
-    'canaryReturnPreview',
-    'canaryReturnRequested',
-    'guildRank',
-    'growthRite',
-    'affinityTrial',
-    'mentorChallenge',
-    'mentorChallengeProof',
-    'Jade Lantern Court'
+    'Unity shared-room alpha',
+    'legacyHudAbsent',
+    'futureEconomyTextPresent === false',
+    'single-shared-room',
+    'lirabao',
+    'Lirabao',
+    'legacyFallback?.active === false',
+    'No future economy copy'
   ]);
   requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
     'alpha-manual-prompt-review.json',
@@ -531,16 +439,17 @@ function addStaticRequirements() {
     'funded-chain-gates',
     'configured-preview-stub'
   ]);
-  requireFileIncludes('game.alpha-preview-ready-docs', 'Alpha Preview Ready docs split preview-live gates from funded-chain gates without faking Enjin readiness.', 'docs/alpha-preview-ready.md', [
-    'Alpha Preview Ready',
-    'Mochirii Vercel Preview',
-    'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
-    'preview-live-gates',
-    'funded-chain-gates',
-    'configured-preview-stub',
-    'Do not set dummy',
-    'Never credit inventory',
-    'MOCHI_SOCIAL_AUTH'
+  requireFileIncludes('game.alpha-preview-ready-docs', 'Alpha Preview docs describe the player-facing shared-room playtest and rollback behavior.', 'docs/alpha-preview-ready.md', [
+    'Mochi Social Alpha Preview',
+    'shared Mochirii room',
+    'create a curated character',
+    'meet Lirabao',
+    'care for the guild pet together',
+    'tester password',
+    'Mochirii member sign-in',
+    'All progress has no real value',
+    'There is only one shared room',
+    'old room should not silently open'
   ]);
   requireFileIncludes('game.preview-live-ops-docs', 'Operator docs prioritize Preview Ready and leave funded-chain gates red until real Canary funding/proof approval.', 'docs/alpha-operator-handoff.md', [
     'Alpha Preview Ready',
@@ -622,23 +531,32 @@ function addSiteRequirements() {
     'mochi_social_chain_operations',
     'mochi_social_ledger_events'
   ]);
-  requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms and finality-aware chain updates.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
+  requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms, idempotent Unity actions, progress snapshots, and shared Lirabao mirrors.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
     'alphaAccess(adminClient, playerId)',
     'upsertAlphaProgressSnapshot(adminClient',
     'alpha_terms_required',
-    'chain.operation_update',
-    'chain_request_missing',
-    'nextStatus === "finalized"',
-    'location: "hot"'
+    '"unity.character.created"',
+    '"unity.character.updated"',
+    '"unity.pet.interaction"',
+    '"unity.pet.state_saved"',
+    '"unity.room.joined"',
+    '"unity.room.left"',
+    'recordSharedPetState',
+    'upsertSharedPetSnapshot(adminClient',
+    'noRealValue: true'
   ]);
   requireSiteFileIncludes('site.edge-authority-check', 'Mochirii repo has a local authority guard for the alpha action Edge Function.', 'scripts/check-mochi-social-edge-authority.mjs', [
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
     'x-mochi-social-server-token',
     'mochi_social_ledger_events',
     'noRealValue: true',
-    'chainNetwork: "CANARY"',
-    'finalityRequired: true',
-    'applyFinalizedChainInventory',
+    'unity.pet.state_saved',
+    '"market.fixed_list"',
+    'must not accept ${forbiddenAction}',
+    'UNITY_ROOM_KEY = "jade-lantern-room-alpha"',
+    'UNITY_SHARED_PET_KEY = "lirabao"',
+    'upsertSharedPetSnapshot',
+    'invalid_unity_custom_id',
     'Mochi Social Edge authority check passed'
   ]);
   requireSiteFileIncludes('site.progress-authority', 'Mochirii progress Edge Function loads account-linked alpha snapshots behind the game server token.', 'supabase/functions/mochi-social-alpha-progress/index.ts', [
@@ -742,27 +660,33 @@ function addSiteRequirements() {
     'No secret values were printed',
     'Wallet seed file reference'
   ]);
-  requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
-    'Alpha Preview Ready',
-    'configured-preview-stub',
-    'preview-live-gates',
-    'funded-chain-gates',
-    'Do not set dummy',
-    'prepare:mochi-social-browser-gates',
-    'check:mochi-social-report-hygiene',
-    'mochi-social-browser-gates.md',
-    'check:mochi-social-preview-ready'
+  requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs use player-facing shared-room wording for the closed playtest.', 'docs/mochi-social-alpha.md', [
+    'closed Mochirii playtest',
+    'one shared 3D guild room',
+    'create a curated',
+    'meet Lirabao',
+    'care for the guild pet together',
+    'tester password',
+    'Saved play requires Mochirii member sign-in',
+    'All alpha progress has no real value',
+    'Avatar uploads, multiple rooms',
+    'mobile-specific play are not part',
+    'Do not open the page publicly during alpha'
   ]);
-  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii maintainer ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-maintainer-ops.md', [
+  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii maintainer ops runbook keeps website/Supabase work focused on the password-gated Unity shared-room alpha and no-cost boundaries.', 'docs/mochi-social-alpha-maintainer-ops.md', [
     'Alpha Preview Ready Lane',
-    'configured-preview-stub',
-    'preview-live-gates',
-    'funded-chain-gates',
-    'Do not set dummy',
+    'tester password wall',
+    'one shared room',
+    'curated character presets',
+    'Lirabao pet',
+    'no market',
+    'no trade',
+    'no paid assets',
+    'Do not set dummy IDs or fake readiness flags',
     'prepare:mochi-social-browser-gates',
     'check:mochi-social-report-hygiene',
-    'mochi-social-browser-gates.md',
-    'check:mochi-social-preview-ready'
+    'check:mochi-social-game-contract',
+    'check:mochi-social-tester-password-gate'
   ]);
 }
 
