@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readLocalPullRequestEvidence } from './github-pr-evidence.mjs';
 import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
@@ -1433,14 +1434,20 @@ async function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
   const result = selector
     ? command(resolveGh(), ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
     : command(resolveGh(), ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
+  const localEvidence = result.ok
+    ? null
+    : readLocalPullRequestEvidence(repo, query, localState?.localHead || '');
   const fallback = result.ok
     ? null
-    : await readPublicPullRequest(repo, query, localState?.localHead || '');
+    : localEvidence?.ok
+      ? localEvidence
+      : await readPublicPullRequest(repo, query, localState?.localHead || '');
   if (!result.ok && !fallback?.ok) {
     add(id, 'unverified', 'GitHub PR state could not be read from this shell or the public GitHub API.', {
       repo,
       selector: query,
       stderr: sanitize(result.stderr),
+      localEvidenceError: sanitize(localEvidence?.message || ''),
       fallbackError: sanitize(fallback?.message || '')
     });
     return;
@@ -1486,7 +1493,7 @@ async function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
     mergeStateStatus: data.mergeStateStatus,
     checks: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean),
-    source: result.ok ? 'gh' : 'github-public-api'
+    source: result.ok ? 'gh' : data.evidenceSource || 'github-public-api'
   });
 }
 

@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readLocalPullRequestEvidence } from './github-pr-evidence.mjs';
 import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
@@ -121,14 +122,19 @@ async function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   const result = selector
     ? command('gh', ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
     : command('gh', ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
+  const localEvidence = result.ok
+    ? null
+    : readLocalPullRequestEvidence(repo, query, localState?.localHead || '');
   const fallback = result.ok
     ? null
-    : await readPublicPullRequest(repo, query, localState?.localHead || '');
+    : localEvidence?.ok
+      ? localEvidence
+      : await readPublicPullRequest(repo, query, localState?.localHead || '');
   if (!result.ok && !fallback?.ok) {
     add('unverified', name, 'GitHub PR state could not be read from local tooling.', {
       repo,
       selector: query,
-      stderr: result.stderr || fallback?.message || '',
+      stderr: result.stderr || localEvidence?.message || fallback?.message || '',
       note: 'This is a local evidence limitation when gh is unavailable or unauthenticated GitHub REST is rate-limited; verify PR state through GitHub before deployment.'
     });
     return;
@@ -186,7 +192,7 @@ async function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
     mergeStateStatus: data.mergeStateStatus,
     checkNames: checks.map((check) => check.name || check.context).filter(Boolean),
     failingChecks: failing.map((check) => check.name || check.context).filter(Boolean),
-    source: result.ok ? 'gh' : 'github-public-api'
+    source: result.ok ? 'gh' : fallback.data?.evidenceSource || 'github-public-api'
   });
 }
 
