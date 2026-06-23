@@ -31,7 +31,7 @@ assertSnippets('external gates', externalGates, [
   "const fundedChainGateNames = [",
   "'Fly funded-chain secret names'",
   "'Enjin Canary operator readiness'",
-  "Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while Enjin is configured-preview-stub.",
+  "Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while funded-chain work is deferred and absent from the player alpha.",
   "Alpha RC Ready requires both preview-live-gates and funded-chain-gates."
 ]);
 
@@ -39,7 +39,7 @@ assertSnippets('sync approval', syncApproval, [
   "id: 'fly-funded-chain-secret-update'",
   "currentlyRequired: false",
   "Not required for Alpha Preview Ready",
-  "noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so the runtime stays configured-preview-stub for Alpha Preview Ready.'",
+  "noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so funded-chain work stays deferred and absent from the player alpha.'",
   "id: 'fly-live-game-contract'",
   "MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=\"true\"",
   "Hosted contract checks fetch the Fly runtime"
