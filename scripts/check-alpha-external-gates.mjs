@@ -247,7 +247,7 @@ function checkFly() {
   });
 
   const missingFundedChainSecrets = fundedChainFlySecrets.filter((name) => !secrets.stdout.includes(name));
-  add(secrets.ok && missingFundedChainSecrets.length === 0 ? 'pass' : 'fail', 'Fly funded-chain secret names', missingFundedChainSecrets.length ? `Missing funded-chain Fly secret names: ${missingFundedChainSecrets.join(', ')}. Leave these unset for Alpha Preview Ready when Enjin is configured-preview-stub; set only real Canary values for Alpha RC Ready.` : 'Required funded-chain Fly secret names are present.', {
+  add(secrets.ok && missingFundedChainSecrets.length === 0 ? 'pass' : 'fail', 'Fly funded-chain secret names', missingFundedChainSecrets.length ? `Missing funded-chain Fly secret names: ${missingFundedChainSecrets.join(', ')}. Leave these unset for Alpha Preview Ready while funded-chain work is deferred and absent from the player alpha; set only real Canary values for Alpha RC Ready.` : 'Required funded-chain Fly secret names are present.', {
     lane: 'funded-chain-gates',
     requiredFlySecrets: fundedChainFlySecrets,
     missingSecrets: missingFundedChainSecrets,
@@ -340,7 +340,7 @@ function checkEnjinOperatorInputs() {
     MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY: process.env.MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY === 'true'
   };
   const missing = Object.entries(fields).filter(([, value]) => !value).map(([key]) => key);
-  add(missing.length ? 'fail' : 'pass', 'Enjin Canary operator readiness', missing.length ? `Missing operator-confirmed Enjin readiness flags/secrets: ${missing.join(', ')}. This is expected red for Alpha Preview Ready while Enjin remains configured-preview-stub.` : 'Enjin Canary operator inputs are present for live proof smoke.', {
+  add(missing.length ? 'fail' : 'pass', 'Enjin Canary operator readiness', missing.length ? `Missing operator-confirmed Enjin readiness flags/secrets: ${missing.join(', ')}. This is expected red for Alpha Preview Ready while funded-chain work is deferred and absent from the player alpha.` : 'Enjin Canary operator inputs are present for live proof smoke.', {
     lane: 'funded-chain-gates',
     requiredFlags: Object.keys(fields),
     missing
@@ -353,7 +353,7 @@ function summarizeGateLanes() {
     fundedChain: summarizeGateLane('funded-chain-gates', fundedChainGateNames),
     alphaPreviewReady: {
       ok: summarizeGateLane('preview-live-gates', previewLiveGateNames).ok,
-      note: 'Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while Enjin is configured-preview-stub.'
+      note: 'Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while funded-chain work is deferred and absent from the player alpha.'
     },
     alphaRcReady: {
       ok: !report.checks.some((check) => check.status === 'fail'),
