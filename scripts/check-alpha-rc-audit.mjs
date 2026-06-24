@@ -461,12 +461,19 @@ function addStaticRequirements() {
     'deferred and absent from the player-facing alpha',
     'Do not set dummy'
   ]);
-  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs allow preview embedding with funded-chain work deferred and no dummy Enjin IDs.', 'docs/site-integration.md', [
-    'Alpha Preview Ready Contract',
-    'funded-chain work remains deferred',
-    'Do not set dummy',
-    'preview-live-gates',
-    'funded-chain-gates'
+  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs describe the live password-gated Unity doorway and saved-play contract.', 'docs/site-integration.md', [
+    'https://mochirii.com/games/mochi-social',
+    'Tester password unlocks the page shell',
+    'Mochirii member sign-in is required for saved play',
+    'Release builds must run with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`',
+    'engine="unity-webgl"',
+    'room.mode="single-shared-room"',
+    'room.sharedPetKey="lirabao"',
+    'legacyFallback.active=false',
+    'MOCHI_SOCIAL_AUTH',
+    'Player character data: `character.v1`',
+    'Shared Lirabao data: `room:jade-lantern-room/sharedPet.v1`',
+    'old room'
   ]);
 }
 
