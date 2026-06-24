@@ -1033,7 +1033,29 @@ const checks = [
   },
   {
     file: 'docs/site-integration.md',
-    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'funded-chain work remains deferred', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
+    includes: [
+      'https://mochirii.com/games/mochi-social',
+      'Tester password unlocks the page shell',
+      'Mochirii member sign-in is required for saved play',
+      'Release builds must run with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`',
+      '/integration/game-manifest.json',
+      '/integration/alpha/status',
+      'engine="unity-webgl"',
+      'activeRuntime="unity-webgl"',
+      'room.mode="single-shared-room"',
+      'room.capacity=25',
+      'room.sharedPetKey="lirabao"',
+      'unityWebglBuild.present=true',
+      'legacyFallback.active=false',
+      'MOCHI_SOCIAL_AUTH',
+      'MOCHI_SOCIAL_SIGN_OUT',
+      'MOCHI_SOCIAL_READY',
+      'MOCHI_SOCIAL_AUTH_STATE',
+      'MOCHI_SOCIAL_ERROR',
+      'Player character data: `character.v1`',
+      'Shared Lirabao data: `room:jade-lantern-room/sharedPet.v1`',
+      'old room'
+    ]
   },
   {
     file: 'docs/deployment.md',
@@ -2236,6 +2258,29 @@ const unityPreviewReadinessChecks = [
     ]
   },
   {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: [
+      'Mochi Social Alpha Preview Ready Production Goal',
+      'approved guild members enter one shared 3D room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'Mochirii member sign-in is required for saved play',
+      'Unity WebGL is the active game runtime',
+      'There is one shared room',
+      'There is one universal shared starter pet',
+      'All alpha progress has no real value',
+      'Release builds require `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`',
+      'legacyFallback.active=false',
+      'The old runtime must not silently open',
+      'Do not add avatar uploads',
+      'Character save key: `character.v1`',
+      'Shared Lirabao save key: `room:jade-lantern-room/sharedPet.v1`',
+      'Logout and login preserve the member character and shared Lirabao progress',
+      'No new provider resources or costs are introduced'
+    ]
+  },
+  {
     file: 'apps/game/src/entries/express.ts',
     includes: [
       '/healthz',
@@ -2480,6 +2525,7 @@ const legacyFeatureParityFiles = new Set([
   'docs/alpha-preview-ready.md',
   'docs/implementation-brief.md',
   'docs/visual-polish-brief.md',
+  'docs/goals/mochi-social-alpha-rc.md',
   'apps/game/src/entries/express.ts',
   'apps/game/tests/manifest.test.ts',
   'apps/game/scripts/smoke.mjs',

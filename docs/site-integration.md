@@ -1,134 +1,62 @@
 # Website Integration Contract
 
-The future Vercel/Supabase website should stay in its own repo. It only needs the deployed Mochi Social URL.
+Mochi Social stays in this game repo. The Mochirii website stays in its own repo and opens the game through the public game URL.
+
+## Live Doorway
+
+The live player path is:
+
+1. Member opens `https://mochirii.com/games/mochi-social`.
+2. Tester password unlocks the page shell.
+3. Mochirii member sign-in is required for saved play.
+4. The website sends the signed-in member access token to the game iframe.
+5. The Unity room loads only when the shared-room build is available.
+
+The password does not prove saved play by itself. Signed-out visitors, non-testers, and testers who have not accepted the playtest terms must be blocked before saved play.
 
 ## Website Env Vars
 
-- Next.js: `NEXT_PUBLIC_MOCHI_SOCIAL_URL`
-- Vite/other: `VITE_MOCHI_SOCIAL_URL`
+- `NEXT_PUBLIC_MOCHI_SOCIAL_URL`: production game origin.
+- `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password`: keeps the tester password wall first.
+- `MOCHI_SOCIAL_TESTER_PASSWORD`: server-only tester password.
 
-The current Mochirii website pass may also place the page behind a parent-owned tester password. That gate belongs to the website repo, not the game runtime:
+Never expose the tester password, Supabase service-role keys, Unity service credentials, Discord tokens, game server tokens, or wallet material through browser env vars, iframe messages, logs, public docs, or PR text.
 
-- `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password`
-- `MOCHI_SOCIAL_TESTER_PASSWORD`
+## Stable Game Routes
 
-Do not expose a tester password through a `NEXT_PUBLIC_*` or `VITE_*` variable. The website should verify it server-side with a slow password KDF and an HttpOnly route-scoped cookie.
+The website can rely on these routes:
 
-## Embed
+- `/embed`
+- `/play`
+- `/healthz`
+- `/integration/game-manifest.json`
+- `/integration/alpha/status`
 
-```html
-<iframe
-  title="Mochi Social"
-  src="https://mochi-social-game.fly.dev/embed"
-  allow="fullscreen"
-  referrerpolicy="strict-origin-when-cross-origin"
-></iframe>
-```
+Release builds must run with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`. If the Unity build is missing, the game routes must fail clearly or show a playtest paused state; they must not silently open the old room.
 
-## Manifest
+## Runtime Contract
 
-Fetch:
-
-```text
-GET /integration/game-manifest.json
-```
-
-The manifest includes name, version, play URL, embed URL, origin, bridge protocol version, auth mode, and the Unity shared-room runtime contract.
-
-Unity shared-room manifests expose:
+The manifest and alpha status must report:
 
 - `engine="unity-webgl"`
+- `activeRuntime="unity-webgl"`
 - `room.key="jade-lantern-room-alpha"`
 - `room.scene="JadeLanternRoom"`
 - `room.mode="single-shared-room"`
 - `room.capacity=25`
 - `room.sharedPetKey="lirabao"`
-- `runtime.realtimeAuthority="ugs-distributed-authority"`
-- `runtime.sessionService="unity-multiplayer-services"`
-- `runtime.authentication="unity-authentication-custom-id"`
-- `runtime.stateAuthority="ugs-cloud-save"`
-- `runtime.playerState="ugs-cloud-save-player-data"`
-- `runtime.sharedState="ugs-cloud-code-cloud-save-game-data"`
-- `runtime.multiplayerHosting="not-used-v1"`
-- `activeRuntime="unity-webgl"`
-- `unityWebglBuild.present=true` for release/deploy checks
-- `unityWebglBuild.required=true` when `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`
-- `legacyFallback.active=false` for release/deploy checks
-- `state.playerCharacterKey="character.v1"`
-- `state.sharedPetKey="room:jade-lantern-room/sharedPet.v1"`
+- `unityWebglBuild.present=true`
+- `legacyFallback.active=false`
 - `characterPresets.mode="curated-presets"`
 - `characterPresets.count=3`
 - `characterPresets.avatarUploads=false`
 - `sharedPet.key="lirabao"`
 - `sharedPet.universalStarter=true`
-- `market.enabled=false`
-- `avatarUploads=false`
-- `edgeFunctions.unityAuth="mochi-social-unity-auth"`
-
-Future Alpha RC planning must stay outside the Preview Ready player surface. The Unity shared-room manifest must not require or promote economy, market, trade, or funded-chain features for the closed alpha.
-
-Legacy rollback and future Alpha RC notes may still mention:
-
-- `alpha.allowlistRequired=true`
-- `alpha.termsRequired=true`
 - `alpha.noRealValue=true`
-- `economy.mode="test-soft-currency"`
-- `chain.provider="enjin"`
-- `chain.network="CANARY"`
-- `market.enabled=false`
-- `market.fixedPrice=false`
-- `market.directTrade=false`
-- `market.auctions=false`
-- `ugc="curated"`
 
-Closed Alpha Preview manifests also expose machine-readable tester-entry contracts for the Mochirii website:
+The closed playtest includes one shared room, three curated character presets, desktop browser controls, simple social signals, and one shared Lirabao pet.
 
-- `routes.public=["/healthz","/play","/embed","/integration/game-manifest.json"]`
-- `alphaPreview.stopPoint="alpha-preview-ready"`
-- `alphaPreview.websiteEntryPath="/games/mochi-social"`
-- `alphaPreview.accessGateOwner="parent-website"`
-- `alphaPreview.testerPasswordOwner="parent-website"`
-- `alphaPreview.providerMutationAllowedByDefault=false`
-- `alphaPreview.fundedChainRequiredForPreview=false`
-- `alphaPreview.fundedChainPlayerFacing=false`
-- `progress.authority="mochirii-edge"`
-- `progress.linkedAccount=true`
-- `progress.guestFallback=true`
-- `progress.snapshotEndpoint="/integration/alpha/progress"`
-- `cleanRoom.restrictedSourceReferences=false`
-- `cleanRoom.copiedRestrictedSourceNames=false`
-- `cleanRoom.copiedRestrictedSourceAssets=false`
-- `cleanRoom.restrictedSourceVisualDerivatives=false`
-- `brand.world="Mochirii"`
-- `brand.town="Jade Lantern Court"`
-- `brand.artDirection="Mochirii High-Fidelity Wuxia"`
-- `runtimeArt.pixelArt=false`
-- `runtimeArt.retro=false`
-- `runtimeArt.tileSizePx=64`
-- `runtimeArt.eventSpritesheet={ width: 384, height: 768, columns: 3, rows: 4, frameWidth: 128, frameHeight: 192 }`
-- `spirits.system="Mochi Spirits"`
-- `spirits.roster` contains exactly `lirabao`, `jintari`, and `aozhen`
-- `playableContent.contentPolicy="original-mochirii-feature-parity"`
-- `playableContent.capture` catalogs the first-court spirit roster, starter vow, route scouting, field accords, route mastery, route patrol, and Jade Capture Rite IDs
-- `playableContent.raising` catalogs care actions, raising needs, 9 bond milestones, growth rite, care cycle, nurture, recovery, kinship, nursery, bloom ascendance, lineage register, and blossom cradle IDs
-- `playableContent.battle` catalogs original move, tactic, loadout, codex, trait, condition, affinity, harmony, mentor, dojo, spar, tournament, rival, sifu council, and summit circuit IDs
-- `playableContent.roleplay` catalogs the three-posting quest chain, quest ledger, story chapter, guild rank, commission, rally, chronicle, ascension, habitat, research, journal, ecology, weather veil, encounter rotation, encounter atlas, and route IDs
-- `playableContent.roleplay` catalogs first-court quest, guild, habitat, story, census, waystone, and Jade Route Charter route-travel proof IDs for website readiness copy.
-- Future economy/chain catalogs stay private or rollback-only and are not part of the player-facing Unity shared-room alpha.
-- `playableContent.runtimeAssets` mirrors the 64px tile and 384x768 spritesheet runtime asset contract
-- `manualReview.requiredTargets` contains `welcome-npc`, `guild-seal-chest`, and `care-shrine`
-
-The website may use these fields for no-secret preflight display and tester-entry checks. It must not treat them as hosted-provider proof, manual prompt completion, Supabase allowlist proof, or funded Enjin readiness.
-
-If `activeRuntime` is `unity-webgl-missing` or `unityWebglBuild.present=false` during a release check, the build is not deployable. Local development may leave `legacyFallback.active=true` only for rollback/reference inspection.
-
-The Unity shared-room alpha action lane also allows no-real-value audit events: `unity.character.created`, `unity.character.updated`, `unity.pet.interaction`, `unity.pet.state_saved`, `unity.room.joined`, and `unity.room.left`. These events are audit rows only; UGS remains the runtime authority for Unity character/player data and shared Lirabao state.
-
-The legacy `quest.ledger_record` alpha action is a no-real-value roleplay proof retained for the rollback/reference runtime. It records the Jade Quest Ledger Seal after first-court quest postings, journal, route, market, provision, commission, and two-tester rally readiness; it does not change bridge event names, settle inventory, or require provider mutation.
-
-## Supabase Bridge v1
-
-The parent website owns Supabase session refresh. It may send short-lived access tokens to the iframe. Never send refresh tokens or service-role keys.
+## Bridge Protocol
 
 Parent to game:
 
@@ -141,61 +69,58 @@ Game to parent:
 - `MOCHI_SOCIAL_AUTH_STATE`
 - `MOCHI_SOCIAL_ERROR`
 
-Recommended website flow:
+The website owns Supabase session refresh. It may send a short-lived Supabase access token to the iframe. It must never send refresh tokens, service-role keys, tester passwords, Discord tokens, Unity service credentials, or game server tokens.
 
-1. Subscribe to Supabase `onAuthStateChange`.
-2. When a signed-in session exists, send `{ type: "MOCHI_SOCIAL_AUTH", protocolVersion: 1, payload: { accessToken, expiresAt, functionsUrl } }`.
-3. On sign-out, send `{ type: "MOCHI_SOCIAL_SIGN_OUT", protocolVersion: 1 }`.
-4. Treat `MOCHI_SOCIAL_AUTH_STATE` as display/status only; the game server remains authoritative.
+## Saved Play
 
-## Account Progress Contract
+Supabase is the member authority for tester allowlist, terms, audit, feedback, Unity player mapping, and the latest Lirabao audit mirror.
 
-Signed-in Supabase mode is the account-persistent path. Tester-password mode remains guest-only.
+Unity services own runtime saves:
 
-- The game calls `GET /integration/alpha/progress` with `Authorization: Bearer <access token>`.
-- The game server validates the token with Supabase `getUser(jwt)` and forwards only the derived user id to Mochirii Edge with the scoped game server token.
-- Mochirii Edge returns the latest `mochi_social_progress_snapshots` row for that tester after allowlist and terms checks.
-- The HUD adopts the remote snapshot only when its revision/timestamp is newer than local browser state.
-- If account sync is unavailable, the HUD must show sync-unavailable copy and keep the local preview state no-real-value.
-- The parent website must not send progress snapshots, service-role keys, refresh tokens, or game server tokens through `postMessage`.
+- Player character data: `character.v1`.
+- Shared Lirabao data: `room:jade-lantern-room/sharedPet.v1`.
 
-## Future Chain Finality Contract
+The Unity client sends care intent for Lirabao. Shared pet writes must go through the server-side authority path, and stale revisions should reload the latest Lirabao state instead of overwriting it.
 
-This contract is deferred until after Alpha Preview Ready and is not part of the player-facing shared-room alpha. If future server-only chain routes remain in the codebase, they must stay fail-closed without real Enjin resources and must not appear in `/play`, `/embed`, tester-page copy, or public reports.
+Live avatar movement, camera state, emotes, and moment-to-moment transforms are session state only.
 
-The game backend may later send `chain.withdraw_request`, `chain.deposit_request`, and `chain.operation_update` through `/integration/alpha/action`.
+## Player-Facing Copy
 
-- `chain.withdraw_request` stages a no-real-value hot-to-cold Canary proof.
-- `chain.deposit_request` stages a no-real-value cold-to-hot Canary proof.
-- `chain.operation_update` records the Enjin transaction UUID, optional listing ID, state, and finality evidence for an existing request.
-- The Mochirii Edge Function must reject finality updates without a matching request id.
-- Hot inventory can only be credited after the Enjin state is `FINALIZED`.
-- Game-side Enjin helpers create or find the tester managed wallet, submit Fuel Tank sponsored Canary transactions with an `idempotencyKey`, create fixed-price listing proofs through `CreateTransaction(transaction: { createListing: ... })`, then forward `chain.operation_update` through the same server-token Edge bridge.
-- Private Enjin submissions use `POST /integration/alpha/enjin/submit` with `x-mochi-social-server-token`; this endpoint is an operator/backend route, not a website iframe route.
+Public page and game UI copy should stay simple:
 
-## Alpha Preview Ready Contract
+- shared guild room
+- create your character
+- meet Lirabao
+- care for the guild pet together
+- closed alpha playtest
+- no real value
 
-The Mochirii Vercel Preview route may embed Mochi Social for the no-real-value shared-room playtest while funded-chain work remains deferred and absent from the player-facing alpha.
+Do not show implementation names, provider setup details, future asset systems, internal reports, secret names, or readiness gate jargon to testers.
 
-- For the first live website pass, Mochirii may use a password-unlocked preview page before the stricter Supabase allowlist path is restored. The password gate is parent-site-only; the game should continue to support guest-first play when `SUPABASE_AUTH_REQUIRED=false`.
-- Parent site sends only `MOCHI_SOCIAL_AUTH` with a short-lived Supabase access token, plus `MOCHI_SOCIAL_SIGN_OUT` when needed.
-- Player-facing copy has no market, trade, cashout, or funded-chain language.
-- Private future-chain routes may remain fail-closed for later Alpha RC validation, but they must not credit hot inventory, settle trades, settle listings, or imply production ownership.
-- Do not set dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags for Preview Ready.
-- `preview-live-gates` cover Fly embed, Vercel Preview route, tester-password or Supabase tester entry, Unity shared-room contract, member sign-in, allowlist, terms, feedback, and no-real-value copy.
-- `funded-chain-gates` cover real Canary collection, Fuel Tank, Wallet Daemon signing, and finality proof. They can remain red until funded-chain approval exists.
-- The Mochirii repo should prove its website tester-entry lane with `npm run check:mochi-social-preview-ready`; that audit is separate from funded-chain gates and remains no-secret.
-- The website should treat Alpha Preview Ready as a closed tester preview, not production launch.
+## Not In This Playtest
 
-## Closed Alpha Route
+- Avatar uploads.
+- Multiple rooms.
+- Mobile-specific UI.
+- Opening the playtest beyond approved testers.
+- Real-value features.
+- Player-facing future asset systems.
 
-The Mochirii website should expose the closed alpha at `/games/mochi-social` and read `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
+If future server-only provider code remains for later work, it must stay inactive, fail closed, and absent from tester-facing copy.
 
-Before rendering the iframe, the page should:
+## Website Verification
 
-1. Require either the parent-site tester password session or a signed-in Supabase session, depending on the chosen website access mode.
-2. In tester-password mode, verify the password server-side and set an HttpOnly cookie before loading the iframe.
-3. In Supabase mode, call the Mochi Social alpha session Edge Function.
-4. In Supabase mode, require an active alpha allowlist row.
-5. In Supabase mode, require explicit acknowledgement that alpha assets are test-only, no-real-value, Enjin Canary assets.
-6. Forward only the short-lived Supabase access token to the iframe when Supabase mode is active; send no refresh token, service-role key, Discord token, Enjin token, or password material.
+Before the live tester page is considered ready:
+
+- Password wall blocks the page before unlock.
+- Correct password unlocks the page shell.
+- Signed-in valid tester reaches the Unity room.
+- Signed-out, non-tester, and terms-missing states are blocked.
+- The iframe uses the Unity shared-room runtime.
+- Two testers can see distinct characters in one room.
+- Both testers can interact with the same Lirabao state.
+- Character and Lirabao progress return after reload and sign-in.
+- Invalid character preset IDs are rejected.
+- The page is `noindex`.
+- The page shows a playtest paused message if the room is unavailable.
+- Public copy stays Mochirii-branded and no-real-value.
