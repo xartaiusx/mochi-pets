@@ -19,7 +19,7 @@ const checks = [
   },
   {
     file: 'scripts/check-unity-cloud-code-contract.mjs',
-    includes: ['mochiSocialLoadSharedPet.js', 'mochiSocialInteractSharedPet.js', 'shared_pet_revision_conflict', 'invalid_pet_interaction', 'unity.pet.interaction', 'unity.pet.state_saved', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'Supabase mirror failure must not block the UGS primary save']
+    includes: ['mochiSocialLoadSharedPet.js', 'mochiSocialInteractSharedPet.js', 'shared_pet_revision_conflict', 'invalid_pet_interaction', 'invalid_pet_actor', 'unity.pet.interaction', 'unity.pet.state_saved', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'Supabase mirror failure must not block the UGS primary save']
   },
   {
     file: 'Dockerfile',

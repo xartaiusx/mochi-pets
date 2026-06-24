@@ -13,6 +13,7 @@ const ALLOWED_MOODS = new Set(["curious", "resting", "reloading", "comforted", "
 
 module.exports = async ({ params, context, logger, secretManager }) => {
   assertSharedRoomParams(params);
+  const actorId = requireSupabaseActorId(params.actorId);
 
   const cloudSaveApi = new DataApi(context);
   const current = await loadSharedPetState(cloudSaveApi, context.projectId);
@@ -27,7 +28,7 @@ module.exports = async ({ params, context, logger, secretManager }) => {
     throw error;
   }
 
-  const next = applyInteraction(current, String(params.interactionType || ""), String(params.actorId || context.playerId || "unknown-player"));
+  const next = applyInteraction(current, String(params.interactionType || ""), actorId);
   await saveSharedPetState(cloudSaveApi, context.projectId, next);
   await mirrorToSupabaseIfConfigured({ params, logger, secretManager }, current, next);
   return next;
@@ -154,6 +155,15 @@ function assertSharedRoomParams(params) {
   if (params.roomSessionId !== ROOM_SESSION_ID || params.sharedPetKey !== SHARED_PET_KEY || params.stateKey !== FULL_STATE_KEY) {
     throw Error("invalid_unity_room_pet");
   }
+}
+
+function requireSupabaseActorId(actorId) {
+  const normalized = String(actorId || "").trim().toLowerCase();
+  if (!UUID_RE.test(normalized)) {
+    throw Error("invalid_pet_actor");
+  }
+
+  return normalized;
 }
 
 function isValidSharedPetState(state) {

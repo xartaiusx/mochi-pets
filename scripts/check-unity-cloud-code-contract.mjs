@@ -18,6 +18,7 @@ async function run() {
   await verifiesLoadReplacesInvalidSharedPetIdentity();
   await verifiesInteractAppliesAuthoritativeCare();
   await verifiesInteractRejectsInvalidSharedPetIdentity();
+  await verifiesInteractRejectsInvalidActorId();
   await verifiesRevisionConflictAndInvalidIntent();
   await verifiesSupabaseMirrorPayloadAndFailOpenBehavior();
   console.log('Mochi Social Unity Cloud Code contract check passed.');
@@ -108,6 +109,24 @@ async function verifiesInteractRejectsInvalidSharedPetIdentity() {
     secretManager: null
   }));
   assert(invalidMood.message === 'invalid_shared_pet_state', 'interact function must reject non-curated shared pet moods.');
+}
+
+async function verifiesInteractRejectsInvalidActorId() {
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  harness.cloudSave.storeSharedPet(defaultSharedPetState());
+  harness.secretManager.set('MOCHI_SOCIAL_ALPHA_ACTION_URL', 'https://example.functions.supabase.co/mochi-social-alpha-action');
+  harness.secretManager.set('MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'local-server-token');
+
+  const invalidActor = await expectRejects(() => harness.handler({
+    params: { ...sharedRoomParams, interactionType: 'care', expectedRevision: 0, actorId: 'unity-player-id' },
+    context: { projectId, playerId: 'unity-player-id' },
+    logger: harness.logger,
+    secretManager: harness.secretManager
+  }));
+
+  assert(invalidActor.message === 'invalid_pet_actor', 'interact function must reject unauditable shared pet actor ids.');
+  assert(harness.cloudSave.sets.length === 0, 'invalid actor ids must not mutate shared Lirabao state.');
+  assert(harness.axios.posts.length === 0, 'invalid actor ids must not write audit mirror events.');
 }
 
 async function verifiesRevisionConflictAndInvalidIntent() {
