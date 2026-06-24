@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using MochiSocial.Core;
 using UnityEngine;
 
@@ -53,6 +54,10 @@ namespace MochiSocial.Data
             "comforted",
             "playful"
         };
+
+        private static readonly Regex SupabaseUserIdPattern = new Regex(
+            "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            RegexOptions.IgnoreCase);
 
         public int version = 1;
         public string petId = MochiSocialConstants.SharedPetKey;
@@ -147,8 +152,14 @@ namespace MochiSocial.Data
                 return false;
             }
 
+            if (!TryNormalizeActorId(actorId, out var normalizedActorId))
+            {
+                error = "invalid_pet_actor";
+                return false;
+            }
+
             var next = current.Clone();
-            next.lastInteractionBy = string.IsNullOrWhiteSpace(actorId) ? "unknown-player" : actorId;
+            next.lastInteractionBy = normalizedActorId;
             next.lastInteractionUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             next.revision += 1;
 
@@ -179,6 +190,12 @@ namespace MochiSocial.Data
             next.bondTier = Mathf.Clamp(1 + next.careMeter / 25, 1, 5);
             updated = next;
             return true;
+        }
+
+        public static bool TryNormalizeActorId(string actorId, out string normalizedActorId)
+        {
+            normalizedActorId = (actorId ?? string.Empty).Trim().ToLowerInvariant();
+            return SupabaseUserIdPattern.IsMatch(normalizedActorId);
         }
 
         public static bool TryNormalizeInteraction(string interactionType, out string normalizedInteraction, out string error)

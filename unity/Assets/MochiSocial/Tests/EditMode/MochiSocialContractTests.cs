@@ -15,6 +15,7 @@ namespace MochiSocial.Tests
     {
         private const string JadeLanternRoomPath = "Assets/MochiSocial/Scenes/JadeLanternRoom.unity";
         private const string AvatarPrefabPath = "Assets/MochiSocial/Prefabs/MochiAvatar.prefab";
+        private const string ValidActorId = "00000000-0000-4000-8000-000000000010";
 
         [Test]
         public void SharedRoomContractMatchesWebsitePlan()
@@ -178,7 +179,7 @@ namespace MochiSocial.Tests
             var ok = SharedPetState.TryApplyInteraction(
                 pet,
                 "care",
-                "tester-a",
+                ValidActorId,
                 pet.revision,
                 out var updated,
                 out var error);
@@ -187,6 +188,7 @@ namespace MochiSocial.Tests
             Assert.That(updated.state, Is.EqualTo("care_received"));
             Assert.That(updated.mood, Is.EqualTo("comforted"));
             Assert.That(updated.careMeter, Is.GreaterThan(pet.careMeter));
+            Assert.That(updated.lastInteractionBy, Is.EqualTo(ValidActorId));
             Assert.That(updated.revision, Is.EqualTo(pet.revision + 1));
         }
 
@@ -198,7 +200,7 @@ namespace MochiSocial.Tests
             var ok = SharedPetState.TryApplyInteraction(
                 pet,
                 "approach",
-                "tester-a",
+                ValidActorId,
                 pet.revision,
                 out var updated,
                 out var error);
@@ -217,7 +219,7 @@ namespace MochiSocial.Tests
             var ok = SharedPetState.TryApplyInteraction(
                 pet,
                 "wave",
-                "tester-a",
+                ValidActorId,
                 pet.revision,
                 out var updated,
                 out var error);
@@ -226,6 +228,34 @@ namespace MochiSocial.Tests
             Assert.That(updated.state, Is.EqualTo("happy"));
             Assert.That(updated.mood, Is.EqualTo("playful"));
             Assert.That(updated.careMeter, Is.GreaterThan(pet.careMeter));
+        }
+
+        [Test]
+        public void SharedPetRejectsUnauditableActorIds()
+        {
+            var pet = SharedPetState.CreateDefault();
+
+            var ok = SharedPetState.TryApplyInteraction(
+                pet,
+                "care",
+                "unity-player-id",
+                pet.revision,
+                out var updated,
+                out var error);
+
+            Assert.That(ok, Is.False);
+            Assert.That(updated, Is.Null);
+            Assert.That(error, Is.EqualTo("invalid_pet_actor"));
+        }
+
+        [Test]
+        public void SharedPetNormalizesActorIdsForAudit()
+        {
+            Assert.That(SharedPetState.TryNormalizeActorId(
+                "00000000-0000-4000-8000-0000000000AA",
+                out var actorId), Is.True);
+
+            Assert.That(actorId, Is.EqualTo("00000000-0000-4000-8000-0000000000aa"));
         }
 
         [Test]

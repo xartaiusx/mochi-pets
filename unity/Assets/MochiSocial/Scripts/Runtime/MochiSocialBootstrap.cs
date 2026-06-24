@@ -89,8 +89,13 @@ namespace MochiSocial.Runtime
                 return;
             }
 
-            var playerId = AuthenticationService.Instance.PlayerId;
-            if (!lirabao.TryRequestInteraction(interactionType, playerId, lirabao.CurrentState.revision, out var error))
+            if (!SharedPetState.TryNormalizeActorId(alphaUserId, out var actorId))
+            {
+                bridge.EmitError("shared_pet_actor_unverified", "Sign in again before caring for Lirabao.");
+                return;
+            }
+
+            if (!lirabao.TryRequestInteraction(interactionType, actorId, lirabao.CurrentState.revision, out var error))
             {
                 bridge.EmitError(error, "Lirabao did not accept that interaction.");
                 return;
@@ -308,7 +313,12 @@ namespace MochiSocial.Runtime
 
             try
             {
-                var actorId = string.IsNullOrWhiteSpace(alphaUserId) ? AuthenticationService.Instance.PlayerId : alphaUserId;
+                if (!SharedPetState.TryNormalizeActorId(alphaUserId, out var actorId))
+                {
+                    bridge.EmitError("shared_pet_actor_unverified", "Sign in again before caring for Lirabao.");
+                    return;
+                }
+
                 var updated = await stateStore.InteractWithSharedPetAsync(state, interactionType, actorId);
                 lirabao.SetState(updated);
                 RecordAcceptedPetInteraction(interactionType);

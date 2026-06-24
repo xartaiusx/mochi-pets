@@ -1599,7 +1599,7 @@ const checks = [
   },
   {
     file: 'unity/Assets/MochiSocial/Tests/EditMode/MochiSocialContractTests.cs',
-    includes: ['SharedRoomContractMatchesWebsitePlan', 'JadeLanternRoomSceneContainsAlphaRuntimeWiring', 'MochiAvatarPrefabIsNetworkedAndPlayerControllable', 'CharacterPresetCatalogAllowsOnlyCuratedPresets', 'BridgeParsesWebsiteNestedAuthPayload', 'UnityAuthEnvelopeMatchesSupabaseBrokerShape', 'SharedPetCareUsesCareReceivedState', 'SharedPetWaveUsesHappyState', 'SharedPetUnavailableStateIsValid', 'SharedPetStaleReloadStateIsValidAndKeepsRevision', 'SharedPetRejectsUnknownStateNames']
+    includes: ['SharedRoomContractMatchesWebsitePlan', 'JadeLanternRoomSceneContainsAlphaRuntimeWiring', 'MochiAvatarPrefabIsNetworkedAndPlayerControllable', 'CharacterPresetCatalogAllowsOnlyCuratedPresets', 'BridgeParsesWebsiteNestedAuthPayload', 'UnityAuthEnvelopeMatchesSupabaseBrokerShape', 'SharedPetCareUsesCareReceivedState', 'SharedPetWaveUsesHappyState', 'SharedPetRejectsUnauditableActorIds', 'SharedPetNormalizesActorIdsForAudit', 'SharedPetUnavailableStateIsValid', 'SharedPetStaleReloadStateIsValidAndKeepsRevision', 'SharedPetRejectsUnknownStateNames']
   },
   {
     file: 'unity/Assets/MochiSocial/Tests/PlayMode/MochiSocialPlayModeTests.cs',

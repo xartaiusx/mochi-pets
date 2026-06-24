@@ -9,6 +9,8 @@ namespace MochiSocial.Tests
 {
     public sealed class MochiSocialPlayModeTests
     {
+        private const string ValidActorId = "00000000-0000-4000-8000-000000000010";
+
         [UnityTest]
         public IEnumerator LirabaoCareInteractionRequestsCloudCodeWithoutMutatingState()
         {
@@ -26,7 +28,7 @@ namespace MochiSocial.Tests
                 requestedInteraction = interactionType;
             };
 
-            var accepted = pet.TryRequestInteraction("care", "tester", before.revision, out var error);
+            var accepted = pet.TryRequestInteraction("care", ValidActorId, before.revision, out var error);
 
             Assert.That(accepted, Is.True, error);
             Assert.That(requested, Is.True);
@@ -46,7 +48,7 @@ namespace MochiSocial.Tests
             var pet = petObject.AddComponent<LirabaoPetController>();
             pet.SetState(SharedPetState.CreateDefault());
 
-            var accepted = pet.TryRequestInteraction("care", "tester", 99, out var error);
+            var accepted = pet.TryRequestInteraction("care", ValidActorId, 99, out var error);
 
             Assert.That(accepted, Is.False);
             Assert.That(error, Is.EqualTo("shared_pet_revision_conflict"));
@@ -63,7 +65,7 @@ namespace MochiSocial.Tests
             var requested = false;
             pet.LocalInteractionRequested += (_, _) => requested = true;
 
-            var accepted = pet.TryRequestInteraction("upload-avatar", "tester", pet.CurrentState.revision, out var error);
+            var accepted = pet.TryRequestInteraction("upload-avatar", ValidActorId, pet.CurrentState.revision, out var error);
 
             Assert.That(accepted, Is.False);
             Assert.That(error, Is.EqualTo("invalid_pet_interaction"));
