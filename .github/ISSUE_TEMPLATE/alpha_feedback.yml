@@ -1,0 +1,37 @@
+name: Alpha feedback
+description: Share feedback about the shared guild room playtest.
+title: "[Feedback]: "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please keep feedback focused on the closed playtest. Do not include tester passwords, tokens, private member data, or anything with real-world value.
+  - type: textarea
+    id: moment
+    attributes:
+      label: What did you try?
+      description: Describe the room, character, or Lirabao interaction you tested.
+    validations:
+      required: true
+  - type: textarea
+    id: feeling
+    attributes:
+      label: What felt good or confusing?
+    validations:
+      required: true
+  - type: textarea
+    id: improvement
+    attributes:
+      label: What would make the shared room clearer or more fun?
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Impact
+      options:
+        - Blocks play
+        - Confusing
+        - Nice improvement
+        - Tiny polish
+    validations:
+      required: true
