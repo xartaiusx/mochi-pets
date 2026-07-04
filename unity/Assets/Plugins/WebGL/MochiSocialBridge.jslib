@@ -1,30 +1,30 @@
 mergeInto(LibraryManager.library, {
-  $MochiSocialBridgeRuntime: {
+  $MochiPetsBridgeRuntime: {
     installed: false,
     config: function () {
-      if (typeof window === "undefined" || !window.__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG) {
+      if (typeof window === "undefined" || !window.__MOCHI_PETS_UNITY_BRIDGE_CONFIG) {
         return {};
       }
 
-      return window.__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG;
+      return window.__MOCHI_PETS_UNITY_BRIDGE_CONFIG;
     },
     normalizeUrl: function (value) {
       return typeof value === "string" ? value.trim().replace(/\/+$/, "") : "";
     },
     allowedParentOrigins: function () {
-      var config = MochiSocialBridgeRuntime.config();
+      var config = MochiPetsBridgeRuntime.config();
       return Array.isArray(config.allowedParentOrigins) ? config.allowedParentOrigins : [];
     },
     isAllowedParentOrigin: function (origin) {
-      var allowed = MochiSocialBridgeRuntime.allowedParentOrigins();
+      var allowed = MochiPetsBridgeRuntime.allowedParentOrigins();
       return allowed.indexOf(origin) !== -1;
     },
     targetParentOrigin: function () {
-      var config = MochiSocialBridgeRuntime.config();
+      var config = MochiPetsBridgeRuntime.config();
       var target = typeof config.targetParentOrigin === "string" ? config.targetParentOrigin.trim() : "";
       if (target) return target;
 
-      var allowed = MochiSocialBridgeRuntime.allowedParentOrigins();
+      var allowed = MochiPetsBridgeRuntime.allowedParentOrigins();
       return allowed.length ? allowed[0] : "";
     },
     post: function (type, payloadPtr) {
@@ -44,48 +44,48 @@ mergeInto(LibraryManager.library, {
       };
 
       if (typeof window !== "undefined") {
-        window.__MOCHI_SOCIAL_UNITY_LAST_EVENT = message;
-        if (type === "MOCHI_SOCIAL_READY") {
-          window.__MOCHI_SOCIAL_UNITY_RUNTIME_READY = true;
+        window.__MOCHI_PETS_UNITY_LAST_EVENT = message;
+        if (type === "MOCHI_PETS_READY") {
+          window.__MOCHI_PETS_UNITY_RUNTIME_READY = true;
         }
         if (typeof window.dispatchEvent === "function" && typeof CustomEvent === "function") {
-          window.dispatchEvent(new CustomEvent("mochi-social-unity-event", { detail: message }));
+          window.dispatchEvent(new CustomEvent("mochi-pets-unity-event", { detail: message }));
         }
       }
 
       if (typeof window !== "undefined" && window.parent && window.parent !== window) {
-        var targetOrigin = MochiSocialBridgeRuntime.targetParentOrigin();
+        var targetOrigin = MochiPetsBridgeRuntime.targetParentOrigin();
         if (targetOrigin) {
           window.parent.postMessage(message, targetOrigin);
         }
       }
     },
     install: function () {
-      if (typeof window === "undefined" || MochiSocialBridgeRuntime.installed) {
+      if (typeof window === "undefined" || MochiPetsBridgeRuntime.installed) {
         return;
       }
 
-      MochiSocialBridgeRuntime.installed = true;
+      MochiPetsBridgeRuntime.installed = true;
       window.addEventListener("message", function (event) {
         var data = event.data || {};
-        if (data.type !== "MOCHI_SOCIAL_AUTH" && data.type !== "MOCHI_SOCIAL_SIGN_OUT") {
+        if (data.type !== "MOCHI_PETS_AUTH" && data.type !== "MOCHI_PETS_SIGN_OUT") {
           return;
         }
 
-        if (!MochiSocialBridgeRuntime.isAllowedParentOrigin(event.origin)) {
+        if (!MochiPetsBridgeRuntime.isAllowedParentOrigin(event.origin)) {
           return;
         }
 
-        var config = MochiSocialBridgeRuntime.config();
+        var config = MochiPetsBridgeRuntime.config();
         var payload = data.payload || {};
         var normalized = {
           type: data.type,
           protocolVersion: data.protocolVersion || 1,
           accessToken: payload.accessToken || data.accessToken || "",
           expiresAt: payload.expiresAt || data.expiresAt || "",
-          functionsUrl: MochiSocialBridgeRuntime.normalizeUrl(config.functionsUrl),
-          unityAuthUrl: MochiSocialBridgeRuntime.normalizeUrl(config.unityAuthUrl),
-          supabaseUrl: MochiSocialBridgeRuntime.normalizeUrl(config.supabaseUrl)
+          functionsUrl: MochiPetsBridgeRuntime.normalizeUrl(config.functionsUrl),
+          unityAuthUrl: MochiPetsBridgeRuntime.normalizeUrl(config.unityAuthUrl),
+          supabaseUrl: MochiPetsBridgeRuntime.normalizeUrl(config.supabaseUrl)
         };
 
         var json = JSON.stringify(normalized);
@@ -95,19 +95,19 @@ mergeInto(LibraryManager.library, {
       });
     }
   },
-  MochiSocialBridgeReady__deps: ["$MochiSocialBridgeRuntime"],
-  MochiSocialBridgeReady: function (payloadPtr) {
-    MochiSocialBridgeRuntime.install();
-    MochiSocialBridgeRuntime.post("MOCHI_SOCIAL_READY", payloadPtr);
+  MochiPetsBridgeReady__deps: ["$MochiPetsBridgeRuntime"],
+  MochiPetsBridgeReady: function (payloadPtr) {
+    MochiPetsBridgeRuntime.install();
+    MochiPetsBridgeRuntime.post("MOCHI_PETS_READY", payloadPtr);
   },
-  MochiSocialBridgeAuthState__deps: ["$MochiSocialBridgeRuntime"],
-  MochiSocialBridgeAuthState: function (payloadPtr) {
-    MochiSocialBridgeRuntime.install();
-    MochiSocialBridgeRuntime.post("MOCHI_SOCIAL_AUTH_STATE", payloadPtr);
+  MochiPetsBridgeAuthState__deps: ["$MochiPetsBridgeRuntime"],
+  MochiPetsBridgeAuthState: function (payloadPtr) {
+    MochiPetsBridgeRuntime.install();
+    MochiPetsBridgeRuntime.post("MOCHI_PETS_AUTH_STATE", payloadPtr);
   },
-  MochiSocialBridgeError__deps: ["$MochiSocialBridgeRuntime"],
-  MochiSocialBridgeError: function (payloadPtr) {
-    MochiSocialBridgeRuntime.install();
-    MochiSocialBridgeRuntime.post("MOCHI_SOCIAL_ERROR", payloadPtr);
+  MochiPetsBridgeError__deps: ["$MochiPetsBridgeRuntime"],
+  MochiPetsBridgeError: function (payloadPtr) {
+    MochiPetsBridgeRuntime.install();
+    MochiPetsBridgeRuntime.post("MOCHI_PETS_ERROR", payloadPtr);
   }
 });

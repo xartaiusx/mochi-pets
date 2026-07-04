@@ -10,13 +10,13 @@ namespace MochiSocial.Bridge
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")]
-        private static extern void MochiSocialBridgeReady(string payloadJson);
+        private static extern void MochiPetsBridgeReady(string payloadJson);
 
         [DllImport("__Internal")]
-        private static extern void MochiSocialBridgeAuthState(string payloadJson);
+        private static extern void MochiPetsBridgeAuthState(string payloadJson);
 
         [DllImport("__Internal")]
-        private static extern void MochiSocialBridgeError(string payloadJson);
+        private static extern void MochiPetsBridgeError(string payloadJson);
 #endif
 
         public event Action<BridgeIncomingMessage> MessageReceived;
@@ -25,9 +25,9 @@ namespace MochiSocial.Bridge
         {
             var payload = JsonUtility.ToJson(new BridgeReadyPayload());
 #if UNITY_WEBGL && !UNITY_EDITOR
-            MochiSocialBridgeReady(payload);
+            MochiPetsBridgeReady(payload);
 #else
-            Debug.Log($"[Mochi Social Bridge] READY {payload}");
+            Debug.Log($"[Mochi Pets Bridge] READY {payload}");
 #endif
         }
 
@@ -42,9 +42,9 @@ namespace MochiSocial.Bridge
                 sharedPetKey = MochiSocialConstants.SharedPetKey
             });
 #if UNITY_WEBGL && !UNITY_EDITOR
-            MochiSocialBridgeAuthState(payload);
+            MochiPetsBridgeAuthState(payload);
 #else
-            Debug.Log($"[Mochi Social Bridge] AUTH_STATE {payload}");
+            Debug.Log($"[Mochi Pets Bridge] AUTH_STATE {payload}");
 #endif
         }
 
@@ -56,9 +56,9 @@ namespace MochiSocial.Bridge
                 message = message
             });
 #if UNITY_WEBGL && !UNITY_EDITOR
-            MochiSocialBridgeError(payload);
+            MochiPetsBridgeError(payload);
 #else
-            Debug.LogWarning($"[Mochi Social Bridge] ERROR {payload}");
+            Debug.LogWarning($"[Mochi Pets Bridge] ERROR {payload}");
 #endif
         }
 

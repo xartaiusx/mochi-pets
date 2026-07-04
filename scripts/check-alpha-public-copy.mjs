@@ -80,14 +80,14 @@ const checks = [
     file: 'apps/game/src/entries/express.ts',
     includes: [
       'Playtest temporarily paused',
-      'The Mochi Social room is not available right now.',
+      'The Mochi Pets room is not available right now.',
       'saved play will resume when the room is ready.',
       'Saved play could not be reached right now. Please try again soon.',
       'Playtest action recorded locally. Sign in through Mochirii for saved play.',
       'Saved play is not connected for this room yet.'
     ],
     forbidden: [
-      /Mochi Social Unity build missing/i,
+      /Mochi Pets Unity build missing/i,
       /Unity WebGL build is required/i,
       /npm run unity:build:webgl/i,
       /Supabase alpha Edge Function/i,
@@ -107,9 +107,9 @@ const checks = [
       'Status:',
       '1 Settling in  |  2 Caring  |  3 Waving',
       'Your latest room spot could not be saved.',
-      'Signing into Mochi Social.',
+      'Signing into Mochi Pets.',
       'Sign-in failed.',
-      'Signed out of Mochi Social.',
+      'Signed out of Mochi Pets.',
       'Shared Lirabao state could not be loaded',
       'Lirabao is resting. Try again soon.',
       "Another tester cared for Lirabao first. The room refreshed Lirabao's latest mood."
@@ -155,11 +155,11 @@ const checks = [
   {
     file: 'unity/Assets/Plugins/WebGL/MochiSocialBridge.jslib',
     includes: [
-      'MOCHI_SOCIAL_READY',
-      'MOCHI_SOCIAL_AUTH_STATE',
-      'MOCHI_SOCIAL_ERROR',
-      'MOCHI_SOCIAL_AUTH',
-      'MOCHI_SOCIAL_SIGN_OUT'
+      'MOCHI_PETS_READY',
+      'MOCHI_PETS_AUTH_STATE',
+      'MOCHI_PETS_ERROR',
+      'MOCHI_PETS_AUTH',
+      'MOCHI_PETS_SIGN_OUT'
     ],
     forbidden: [
       blockedToolReferencePattern,
@@ -190,9 +190,9 @@ for (const check of checks) {
 }
 
 if (failures.length) {
-  console.error('Mochi Social public copy check failed:');
+  console.error('Mochi Pets public copy check failed:');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log('Mochi Social public copy check passed.');
+console.log('Mochi Pets public copy check passed.');

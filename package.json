@@ -1,8 +1,8 @@
 {
-  "name": "mochi-social",
+  "name": "mochi-pets",
   "version": "0.1.0",
   "private": true,
-  "description": "Mochi Social Unity WebGL shared-room runtime kept separate from its future Vercel/Supabase website.",
+  "description": "Mochi Pets Unity WebGL shared-room runtime kept separate from the Vercel/Supabase website.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -15,9 +15,9 @@
     "prepare-assets": "node apps/game/scripts/generate-assets.mjs",
     "dev:game": "npm run dev:unity",
     "dev:unity": "npm run unity:open",
-    "dev:legacy": "npm run prepare-assets && npm --workspace @mochi-social/game run dev",
+    "dev:legacy": "npm run prepare-assets && npm --workspace @mochi-pets/game run dev",
     "build": "npm run build:server",
-    "build:server": "npm run prepare-assets && npm --workspace @mochi-social/game run build",
+    "build:server": "npm run prepare-assets && npm --workspace @mochi-pets/game run build",
     "build:release": "npm run build:server && npm run unity:build:webgl",
     "unity:open": "node scripts/run-unity.mjs open",
     "unity:bootstrap": "node scripts/run-unity.mjs bootstrap",
@@ -26,7 +26,7 @@
     "unity:build:webgl": "node scripts/run-unity.mjs build-webgl",
     "unity:cloud-code-contract": "node scripts/check-unity-cloud-code-contract.mjs",
     "unity:verify": "node scripts/run-unity.mjs verify",
-    "start": "npm --workspace @mochi-social/game run start",
+    "start": "npm --workspace @mochi-pets/game run start",
     "clean-room-scan": "node scripts/check-clean-room-literals.mjs",
     "secret-scan": "node scripts/check-secrets.mjs",
     "alpha:public-copy": "node scripts/check-alpha-public-copy.mjs",
@@ -60,10 +60,10 @@
     "alpha:sync-approval-self-test": "node scripts/check-alpha-sync-approval-self-test.mjs",
     "alpha:branch-inventory": "node scripts/check-alpha-branch-inventory.mjs",
     "alpha:rc-audit": "node scripts/check-alpha-rc-audit.mjs",
-    "typecheck": "npm --workspace @mochi-social/game run typecheck",
-    "lint": "npm --workspace @mochi-social/game run lint",
-    "test": "npm --workspace @mochi-social/game run test",
-    "smoke": "npm --workspace @mochi-social/game run smoke"
+    "typecheck": "npm --workspace @mochi-pets/game run typecheck",
+    "lint": "npm --workspace @mochi-pets/game run lint",
+    "test": "npm --workspace @mochi-pets/game run test",
+    "smoke": "npm --workspace @mochi-pets/game run smoke"
   },
   "devDependencies": {
     "playwright-core": "^1.60.0",

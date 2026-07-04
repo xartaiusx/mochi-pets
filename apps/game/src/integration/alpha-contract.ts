@@ -26,17 +26,17 @@ export const ALPHA_FEATURES = {
 } as const;
 
 export const ALPHA_EDGE_FUNCTIONS = {
-  session: 'mochi-social-alpha-session',
-  action: 'mochi-social-alpha-action',
-  progress: 'mochi-social-alpha-progress',
-  admin: 'mochi-social-alpha-admin',
-  feedback: 'submit-mochi-social-feedback',
-  unityAuth: 'mochi-social-unity-auth'
+  session: 'mochi-pets-alpha-session',
+  action: 'mochi-pets-alpha-action',
+  progress: 'mochi-pets-alpha-progress',
+  admin: 'mochi-pets-alpha-admin',
+  feedback: 'submit-mochi-pets-feedback',
+  unityAuth: 'mochi-pets-unity-auth'
 } as const;
 
 export const SERVER_ENV_CONTRACT = [
-  'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
-  'MOCHI_SOCIAL_GAME_SERVER_TOKEN'
+  'MOCHI_PETS_SUPABASE_FUNCTIONS_URL',
+  'MOCHI_PETS_GAME_SERVER_TOKEN'
 ] as const;
 
 export const ALPHA_ACTION_TYPES = [

@@ -33,8 +33,8 @@ export default {
               on?: (event: string, callback: (patch: AlphaWorldStatePatch) => void) => void;
             }
           ) {
-            socket?.off?.('mochi-social-alpha-state', applyAlphaWorldState);
-            socket?.on?.('mochi-social-alpha-state', applyAlphaWorldState);
+            socket?.off?.('mochi-pets-alpha-state', applyAlphaWorldState);
+            socket?.on?.('mochi-pets-alpha-state', applyAlphaWorldState);
           }
         }
       },

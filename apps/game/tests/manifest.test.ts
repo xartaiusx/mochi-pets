@@ -3,20 +3,20 @@ import { createGameManifest } from '../src/integration/manifest';
 
 describe('game manifest', () => {
   it('publishes the Unity WebGL shared-room contract for the website iframe', () => {
-    const manifest = createGameManifest('https://mochi-social-game.fly.dev/');
+    const manifest = createGameManifest('https://mochi-pets-game.fly.dev/');
 
     expect(manifest).toMatchObject({
-      name: 'Mochi Social',
-      slug: 'mochi-social',
+      name: 'Mochi Pets',
+      slug: 'mochi-pets',
       engine: 'unity-webgl',
-      origin: 'https://mochi-social-game.fly.dev',
-      playUrl: 'https://mochi-social-game.fly.dev/play',
-      embedUrl: 'https://mochi-social-game.fly.dev/embed',
+      origin: 'https://mochi-pets-game.fly.dev',
+      playUrl: 'https://mochi-pets-game.fly.dev/play',
+      embedUrl: 'https://mochi-pets-game.fly.dev/embed',
       bridge: {
         protocolVersion: 1,
-        namespace: 'MOCHI_SOCIAL',
-        parentToGame: ['MOCHI_SOCIAL_AUTH', 'MOCHI_SOCIAL_SIGN_OUT'],
-        gameToParent: ['MOCHI_SOCIAL_READY', 'MOCHI_SOCIAL_AUTH_STATE', 'MOCHI_SOCIAL_ERROR']
+        namespace: 'MOCHI_PETS',
+        parentToGame: ['MOCHI_PETS_AUTH', 'MOCHI_PETS_SIGN_OUT'],
+        gameToParent: ['MOCHI_PETS_READY', 'MOCHI_PETS_AUTH_STATE', 'MOCHI_PETS_ERROR']
       },
       auth: {
         provider: 'supabase',
@@ -56,7 +56,7 @@ describe('game manifest', () => {
         stateAuthority: 'cloud-code-authoritative-save'
       },
       edgeFunctions: {
-        unityAuth: 'mochi-social-unity-auth'
+        unityAuth: 'mochi-pets-unity-auth'
       },
       avatarUploads: false,
       alpha: {

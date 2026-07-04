@@ -37,12 +37,12 @@ const ALPHA_FEATURES = {
 } as const;
 
 const ALPHA_EDGE_FUNCTIONS = {
-  session: 'mochi-social-alpha-session',
-  action: 'mochi-social-alpha-action',
-  progress: 'mochi-social-alpha-progress',
-  admin: 'mochi-social-alpha-admin',
-  feedback: 'submit-mochi-social-feedback',
-  unityAuth: 'mochi-social-unity-auth'
+  session: 'mochi-pets-alpha-session',
+  action: 'mochi-pets-alpha-action',
+  progress: 'mochi-pets-alpha-progress',
+  admin: 'mochi-pets-alpha-admin',
+  feedback: 'submit-mochi-pets-feedback',
+  unityAuth: 'mochi-pets-unity-auth'
 } as const;
 
 const MANIFEST_CONTRACTS = {
@@ -61,7 +61,7 @@ const MANIFEST_CONTRACTS = {
   alphaPreview: {
     status: 'closed-preview',
     stopPoint: 'alpha-preview-ready',
-    websiteEntryPath: '/games/mochi-social',
+    websiteEntryPath: '/games/mochi-pets',
     accessGateOwner: 'parent-website',
     testerPasswordOwner: 'parent-website',
     authBridgeTokenPolicy: 'short-lived-access-token-only',
@@ -143,10 +143,10 @@ const UNITY_SHARED_ROOM_CONTRACT = {
     stateAuthority: 'cloud-code-authoritative-save'
   },
   edgeFunctions: {
-    unityAuth: 'mochi-social-unity-auth',
-    action: 'mochi-social-alpha-action',
-    progress: 'mochi-social-alpha-progress',
-    feedback: 'submit-mochi-social-feedback'
+    unityAuth: 'mochi-pets-unity-auth',
+    action: 'mochi-pets-alpha-action',
+    progress: 'mochi-pets-alpha-progress',
+    feedback: 'submit-mochi-pets-feedback'
   },
   avatarUploads: false
 } as const;
@@ -176,13 +176,15 @@ const repoRootDir = resolve(currentDir, '../../../..');
 const clientDistDir = resolve(currentDir, '../client');
 const mapDistDir = resolve(clientDistDir, 'assets/data');
 const indexHtml = resolve(clientDistDir, 'index.html');
-const unityWebglDir = process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR
-  ? resolve(process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR)
+const unityWebglDirEnv = readEnv('MOCHI_PETS_UNITY_WEBGL_DIR');
+const unityWebglDir = unityWebglDirEnv
+  ? resolve(unityWebglDirEnv)
   : resolve(repoRootDir, 'unity/Builds/WebGL');
 const unityIndexHtml = resolve(unityWebglDir, 'index.html');
 const unityWebglBuildPresent = existsSync(unityIndexHtml);
-const unityWebglRequired = process.env.MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL === 'true' ||
-  (process.env.MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL !== 'false' && process.env.NODE_ENV === 'production');
+const unityWebglRequiredFlag = readEnv('MOCHI_PETS_REQUIRE_UNITY_WEBGL');
+const unityWebglRequired = unityWebglRequiredFlag === 'true' ||
+  (unityWebglRequiredFlag !== 'false' && process.env.NODE_ENV === 'production');
 const port = Number(process.env.PORT ?? 3000);
 const app = express();
 const transport = createRpgServerTransport(startServer, {
@@ -201,7 +203,7 @@ app.use((req, res, next) => {
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-mochi-social-server-token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-mochi-pets-server-token');
   next();
 });
 
@@ -214,7 +216,7 @@ app.get('/healthz', (_req, res) => {
   const ok = !unityWebglRequired || unityWebglBuildPresent;
   res.status(ok ? 200 : 503).json({
     ok,
-    name: 'Mochi Social',
+    name: 'Mochi Pets',
     version: process.env.npm_package_version ?? '0.1.0',
     activeRuntime: unityServing.activeRuntime,
     unityWebglBuild: unityServing.unityWebglBuild,
@@ -236,7 +238,7 @@ app.get('/integration/alpha/status', (_req, res) => {
 
   const status = {
     ok: true,
-    name: 'Mochi Social',
+    name: 'Mochi Pets',
     alpha: ALPHA_FEATURES.alpha,
     gameplay: ALPHA_FEATURES.gameplay,
     ugc: ALPHA_FEATURES.ugc,
@@ -338,11 +340,11 @@ if (unityWebglBuildPresent) {
   app.get(['/play', '/embed'], (_req, res) => {
     res.status(503).type('html').send(`<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Mochi Social playtest paused</title></head>
+<head><meta charset="utf-8"><title>Mochi Pets playtest paused</title></head>
 <body>
 <main>
 <h1>Playtest temporarily paused</h1>
-<p>The Mochi Social room is not available right now. The tester page can stay open, and saved play will resume when the room is ready.</p>
+<p>The Mochi Pets room is not available right now. The tester page can stay open, and saved play will resume when the room is ready.</p>
 </main>
 </body>
 </html>`);
@@ -389,12 +391,13 @@ httpServer.on('upgrade', (request, socket, head) => {
 });
 
 httpServer.listen(port, () => {
-  console.log(`Mochi Social listening on ${port}`);
+  console.log(`Mochi Pets listening on ${port}`);
 });
 
 function getPublicOrigin(req: Request) {
-  if (process.env.MOCHI_SOCIAL_PUBLIC_ORIGIN) {
-    return process.env.MOCHI_SOCIAL_PUBLIC_ORIGIN;
+  const publicOrigin = readEnv('MOCHI_PETS_PUBLIC_ORIGIN');
+  if (publicOrigin) {
+    return publicOrigin;
   }
 
   const forwardedProto = req.headers['x-forwarded-proto'];
@@ -413,8 +416,8 @@ function getAllowedOrigins() {
   ];
   const configured = [
     ...(process.env.RPG_ALLOWED_ORIGINS?.split(',') ?? []),
-    ...(process.env.MOCHI_SOCIAL_ALLOWED_ORIGINS?.split(',') ?? []),
-    process.env.MOCHI_SOCIAL_SITE_ORIGIN ?? ''
+    ...(process.env.MOCHI_PETS_ALLOWED_ORIGINS?.split(',') ?? []),
+    process.env.MOCHI_PETS_SITE_ORIGIN ?? '',
   ].map((origin) => origin.trim());
   return new Set([...defaults, ...configured].filter(Boolean));
 }
@@ -429,7 +432,7 @@ function getUnityServingStatus() {
     unityWebglBuild: {
       present: unityWebglBuildPresent,
       required: unityWebglRequired,
-      source: process.env.MOCHI_SOCIAL_UNITY_WEBGL_DIR ? 'MOCHI_SOCIAL_UNITY_WEBGL_DIR' : 'unity/Builds/WebGL'
+      source: unityWebglDirEnv ? 'MOCHI_PETS_UNITY_WEBGL_DIR' : 'unity/Builds/WebGL'
     },
     legacyFallback: {
       available: true,
@@ -440,12 +443,12 @@ function getUnityServingStatus() {
 
 async function renderUnityIndexHtml() {
   const html = await readFile(unityIndexHtml, 'utf8');
-  if (html.includes('data-mochi-social-unity-key-guard')) {
+  if (html.includes('data-mochi-pets-unity-key-guard')) {
     return html;
   }
 
   const bridgeConfigJson = escapeScriptJson(getUnityBridgeConfig());
-  const injection = `<style data-mochi-social-unity-frame-style>
+  const injection = `<style data-mochi-pets-unity-frame-style>
 html,
 body {
   width: 100%;
@@ -483,7 +486,7 @@ body {
   z-index: 4;
 }
 </style>
-<script data-mochi-social-unity-bridge-config>
+<script data-mochi-pets-unity-bridge-config>
 (() => {
   const config = ${bridgeConfigJson};
   const allowedParentOrigins = new Set(config.allowedParentOrigins || []);
@@ -496,7 +499,7 @@ body {
   }
 
   function isBridgeAuthMessage(data) {
-    return data && (data.type === 'MOCHI_SOCIAL_AUTH' || data.type === 'MOCHI_SOCIAL_SIGN_OUT');
+    return data && (data.type === 'MOCHI_PETS_AUTH' || data.type === 'MOCHI_PETS_SIGN_OUT');
   }
 
   function sanitizeAuthMessage(data) {
@@ -520,7 +523,7 @@ body {
     data.supabaseUrl = fixedSupabaseUrl;
   }
 
-  window.__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG = Object.freeze({
+  window.__MOCHI_PETS_UNITY_BRIDGE_CONFIG = Object.freeze({
     allowedParentOrigins: Array.from(allowedParentOrigins),
     functionsUrl: fixedFunctionsUrl,
     unityAuthUrl: fixedUnityAuthUrl,
@@ -542,7 +545,7 @@ body {
   }, true);
 })();
 </script>
-<script data-mochi-social-unity-key-guard>
+<script data-mochi-pets-unity-key-guard>
 (() => {
   const gameplayKeys = new Set(['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D', 'Enter', 'Space', ' ', 'Spacebar']);
   function prepareCanvas() {
@@ -562,7 +565,7 @@ body {
     if (isEditable(event.target) || isEditable(document.activeElement)) return;
     if (gameplayKeys.has(event.key) || gameplayKeys.has(event.code)) event.preventDefault();
   }
-  window.__mochiSocialUnityKeyGuard = { active: true };
+  window.__mochiPetsUnityKeyGuard = { active: true };
   window.addEventListener('keydown', preventGameplayKey, true);
   document.addEventListener('keydown', preventGameplayKey, true);
 })();
@@ -574,10 +577,10 @@ body {
 }
 
 function getUnityBridgeConfig() {
-  const functionsUrl = trimTrailingSlash(process.env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL ?? '');
-  const supabaseUrl = trimTrailingSlash(process.env.MOCHI_SOCIAL_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '');
+  const functionsUrl = trimTrailingSlash(readEnv('MOCHI_PETS_SUPABASE_FUNCTIONS_URL') ?? '');
+  const supabaseUrl = trimTrailingSlash(readEnv('MOCHI_PETS_SUPABASE_URL', 'SUPABASE_URL') ?? '');
   const allowedParentOrigins = Array.from(getAllowedOrigins());
-  const targetParentOrigin = process.env.MOCHI_SOCIAL_SITE_ORIGIN?.trim() ||
+  const targetParentOrigin = readEnv('MOCHI_PETS_SITE_ORIGIN')?.trim() ||
     allowedParentOrigins.find((origin) => !/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::|$)/i.test(origin)) ||
     allowedParentOrigins[0] ||
     '';
@@ -615,8 +618,8 @@ function createGameManifestForExpress(origin: string, version: string) {
   const base = origin.replace(/\/+$/, '');
 
   return {
-    name: 'Mochi Social',
-    slug: 'mochi-social',
+    name: 'Mochi Pets',
+    slug: 'mochi-pets',
     version,
     origin: base,
     playUrl: `${base}/play`,
@@ -624,9 +627,9 @@ function createGameManifestForExpress(origin: string, version: string) {
     healthUrl: `${base}/healthz`,
     bridge: {
       protocolVersion: 1,
-      namespace: 'MOCHI_SOCIAL',
-      parentToGame: ['MOCHI_SOCIAL_AUTH', 'MOCHI_SOCIAL_SIGN_OUT'],
-      gameToParent: ['MOCHI_SOCIAL_READY', 'MOCHI_SOCIAL_AUTH_STATE', 'MOCHI_SOCIAL_ERROR']
+      namespace: 'MOCHI_PETS',
+      parentToGame: ['MOCHI_PETS_AUTH', 'MOCHI_PETS_SIGN_OUT'],
+      gameToParent: ['MOCHI_PETS_READY', 'MOCHI_PETS_AUTH_STATE', 'MOCHI_PETS_ERROR']
     },
     auth: {
       provider: 'supabase',
@@ -769,8 +772,8 @@ function isAlphaActionEnvelope(value: unknown): value is AlphaActionEnvelope {
 
 function getSupabaseEdgeConfig() {
   return {
-    functionsUrl: process.env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL,
-    serverToken: process.env.MOCHI_SOCIAL_GAME_SERVER_TOKEN
+    functionsUrl: readEnv('MOCHI_PETS_SUPABASE_FUNCTIONS_URL'),
+    serverToken: readEnv('MOCHI_PETS_GAME_SERVER_TOKEN')
   };
 }
 
@@ -784,7 +787,7 @@ function buildAlphaActionRequest(action: AlphaActionEnvelope) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-mochi-social-server-token': config.serverToken
+        'x-mochi-pets-server-token': config.serverToken
       },
       body: JSON.stringify(action)
     }
@@ -801,9 +804,17 @@ function buildAlphaProgressRequest(playerId: string) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-mochi-social-server-token': config.serverToken
+        'x-mochi-pets-server-token': config.serverToken
       },
       body: JSON.stringify({ playerId })
     }
   };
+}
+
+function readEnv(...names: string[]) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return undefined;
 }

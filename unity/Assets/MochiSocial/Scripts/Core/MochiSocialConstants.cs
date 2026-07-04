@@ -11,9 +11,9 @@ namespace MochiSocial.Core
         public const string SharedPetDisplayName = "Lirabao";
         public const string CharacterSaveKey = "character.v1";
         public const string SharedPetSaveKey = "room:jade-lantern-room/sharedPet.v1";
-        public const string UnityAuthFunctionName = "mochi-social-unity-auth";
-        public const string SharedPetLoadFunction = "mochiSocialLoadSharedPet";
-        public const string SharedPetInteractFunction = "mochiSocialInteractSharedPet";
+        public const string UnityAuthFunctionName = "mochi-pets-unity-auth";
+        public const string SharedPetLoadFunction = "mochiPetsLoadSharedPet";
+        public const string SharedPetInteractFunction = "mochiPetsInteractSharedPet";
         public const string BootstrapObjectName = "MochiSocialBootstrap";
     }
 }

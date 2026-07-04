@@ -40,7 +40,7 @@ export const player: RpgPlayerHooks = {
   async onConnected(player: RpgPlayer) {
     player.name = getGuestName(player);
     player.setGraphic('wayfarer');
-    player.setVariable('mochiSocial.connectedAt', new Date().toISOString());
+    player.setVariable('mochiPets.connectedAt', new Date().toISOString());
     await player.changeMap('mochi-town', getSpawn(player));
     await player.load('auto', { reason: 'load', source: 'connect' }, { changeMap: false }).catch(() => null);
   },

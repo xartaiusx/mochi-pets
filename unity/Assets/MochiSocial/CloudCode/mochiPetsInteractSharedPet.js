@@ -84,8 +84,8 @@ async function mirrorToSupabaseIfConfigured({ params, logger, secretManager }, p
     return;
   }
 
-  const actionUrlSecret = await readSecret(secretManager, "MOCHI_SOCIAL_ALPHA_ACTION_URL");
-  const tokenSecret = await readSecret(secretManager, "MOCHI_SOCIAL_GAME_SERVER_TOKEN");
+  const actionUrlSecret = await readSecret(secretManager, "MOCHI_PETS_ALPHA_ACTION_URL");
+  const tokenSecret = await readSecret(secretManager, "MOCHI_PETS_GAME_SERVER_TOKEN");
   if (!actionUrlSecret || !tokenSecret) {
     return;
   }
@@ -94,7 +94,7 @@ async function mirrorToSupabaseIfConfigured({ params, logger, secretManager }, p
   const timestamp = state.lastInteractionUnixSeconds;
   const headers = {
     "Content-Type": "application/json",
-    "x-mochi-social-server-token": tokenSecret,
+    "x-mochi-pets-server-token": tokenSecret,
   };
 
   await postAuditEvent(logger, actionUrl, headers, {
