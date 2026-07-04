@@ -11,6 +11,7 @@ primary_region = "sjc"
   ENJIN_NETWORK = "CANARY"
   ENJIN_PLATFORM_URL = "https://platform.canary.enjin.io/graphql"
   MOCHI_PETS_PUBLIC_ORIGIN = "https://mochi-pets-game.fly.dev"
+  MOCHI_PETS_SITE_ORIGIN = "https://mochirii.com"
 
 [[services]]
   protocol = "tcp"
