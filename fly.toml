@@ -12,10 +12,6 @@ primary_region = "sjc"
   ENJIN_PLATFORM_URL = "https://platform.canary.enjin.io/graphql"
   MOCHI_PETS_PUBLIC_ORIGIN = "https://mochi-pets-game.fly.dev"
 
-[mounts]
-  source = "mochi_pets_data"
-  destination = "/data"
-
 [[services]]
   protocol = "tcp"
   internal_port = 8080
