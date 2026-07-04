@@ -14,7 +14,7 @@ FROM node:24.17.0-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
-ENV MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true
+ENV MOCHI_PETS_REQUIRE_UNITY_WEBGL=true
 ENV RPG_SAVE_DIR=/data/saves
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/apps/game/package.json ./apps/game/package.json

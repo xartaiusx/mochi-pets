@@ -19,11 +19,11 @@ const checks = [
   },
   {
     file: 'scripts/check-unity-cloud-code-contract.mjs',
-    includes: ['mochiSocialLoadSharedPet.js', 'mochiSocialInteractSharedPet.js', 'shared_pet_revision_conflict', 'invalid_pet_interaction', 'invalid_pet_actor', 'unity.pet.interaction', 'unity.pet.state_saved', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'Supabase mirror failure must not block the UGS primary save']
+    includes: ['mochiPetsLoadSharedPet.js', 'mochiPetsInteractSharedPet.js', 'shared_pet_revision_conflict', 'invalid_pet_interaction', 'invalid_pet_actor', 'unity.pet.interaction', 'unity.pet.state_saved', 'MOCHI_PETS_GAME_SERVER_TOKEN', 'Supabase mirror failure must not block the UGS primary save']
   },
   {
     file: 'Dockerfile',
-    includes: ['FROM node:24.17.0-slim', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true', 'unity/Builds/WebGL']
+    includes: ['FROM node:24.17.0-slim', 'MOCHI_PETS_REQUIRE_UNITY_WEBGL=true', 'unity/Builds/WebGL']
   },
   {
     file: 'AGENTS.md',
@@ -1395,7 +1395,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/supabase-edge-client.ts',
-    includes: ['MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'x-mochi-social-server-token', 'ALPHA_EDGE_FUNCTIONS.action', 'ALPHA_EDGE_FUNCTIONS.progress', 'buildAlphaProgressRequest', 'JSON.stringify(action)', 'JSON.stringify({ playerId })']
+    includes: ['MOCHI_PETS_SUPABASE_FUNCTIONS_URL', 'MOCHI_PETS_GAME_SERVER_TOKEN', 'x-mochi-pets-server-token', 'ALPHA_EDGE_FUNCTIONS.action', 'ALPHA_EDGE_FUNCTIONS.progress', 'buildAlphaProgressRequest', 'JSON.stringify(action)', 'JSON.stringify({ playerId })']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1627,7 +1627,7 @@ const checks = [
   },
   {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
-    includes: ['scoped server token in a header only', 'authoritative progress snapshot request', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action', 'mochi-social-alpha-progress']
+    includes: ['scoped server token in a header only', 'authoritative progress snapshot request', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-pets-alpha-action', 'mochi-pets-alpha-progress']
   },
   {
     file: 'apps/game/scripts/smoke.mjs',
@@ -1983,7 +1983,7 @@ const checks = [
   },
   {
     file: 'scripts/check-built-server-smoke.mjs',
-    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'brotliDecompressSync', 'MochiSocialBridgeRuntime', '__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG', 'isAllowedParentOrigin', 'targetParentOrigin', 'Built server /embed must install the Unity bridge origin and auth endpoint guard', 'Built server manifest must not expose legacy playable content catalog', 'Built server alpha status must not expose future chain runtime state', 'Local-only built Express server smoke']
+    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'brotliDecompressSync', 'MochiPetsBridgeRuntime', '__MOCHI_PETS_UNITY_BRIDGE_CONFIG', 'isAllowedParentOrigin', 'targetParentOrigin', 'Built server /embed must install the Unity bridge origin and auth endpoint guard', 'Built server manifest must not expose legacy playable content catalog', 'Built server alpha status must not expose future chain runtime state', 'Local-only built Express server smoke']
   },
   {
     file: 'scripts/check-unity-required-smoke.mjs',
@@ -2339,12 +2339,12 @@ const unityPreviewReadinessChecks = [
   {
     file: 'apps/game/scripts/smoke.mjs',
     includes: [
-      'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL',
+      'MOCHI_PETS_REQUIRE_UNITY_WEBGL',
       "manifest.activeRuntime !== 'unity-webgl'",
       'Release smoke requires a present Unity WebGL build',
       '/embed did not serve a Unity WebGL page',
-      'data-mochi-social-unity-bridge-config',
-      '__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG',
+      'data-mochi-pets-unity-bridge-config',
+      '__MOCHI_PETS_UNITY_BRIDGE_CONFIG',
       'allowedParentOrigins.has(event.origin)',
       'sanitizeAuthMessage(event.data)',
       '/embed did not install the Unity bridge origin and auth endpoint guard',
