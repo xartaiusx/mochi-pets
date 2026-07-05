@@ -27,7 +27,7 @@
     "@rpgjs/vite": "5.0.0-beta.17",
     "@signe/di": "^3.1.0",
     "@supabase/supabase-js": "^2.90.0",
-    "canvasengine": "2.0.0-rc.4",
+    "canvasengine": "2.0.1",
     "express": "^5.2.1",
     "pixi.js": "^8.19.0",
     "ws": "^8.19.0"
