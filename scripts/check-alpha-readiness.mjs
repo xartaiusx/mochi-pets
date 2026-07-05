@@ -119,7 +119,7 @@ const checks = [
   },
   {
     file: 'docs/no-cost-operations.md',
-    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:local-site-iframe', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_PETS_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL', 'MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:local-site-iframe', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
     file: 'docs/external-ops.md',
@@ -1034,10 +1034,10 @@ const checks = [
   {
     file: 'docs/site-integration.md',
     includes: [
-      'https://mochirii.com/games/mochi-social',
+      'https://mochirii.com/games/mochi-pets',
       'Tester password unlocks the page shell',
       'Mochirii member sign-in is required for saved play',
-      'Release builds must run with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`',
+      'Release builds must run with `MOCHI_PETS_REQUIRE_UNITY_WEBGL=true`',
       '/integration/game-manifest.json',
       '/integration/alpha/status',
       'engine="unity-webgl"',
@@ -1047,11 +1047,11 @@ const checks = [
       'room.sharedPetKey="lirabao"',
       'unityWebglBuild.present=true',
       'legacyFallback.active=false',
-      'MOCHI_SOCIAL_AUTH',
-      'MOCHI_SOCIAL_SIGN_OUT',
-      'MOCHI_SOCIAL_READY',
-      'MOCHI_SOCIAL_AUTH_STATE',
-      'MOCHI_SOCIAL_ERROR',
+      'MOCHI_PETS_AUTH',
+      'MOCHI_PETS_SIGN_OUT',
+      'MOCHI_PETS_READY',
+      'MOCHI_PETS_AUTH_STATE',
+      'MOCHI_PETS_ERROR',
       'Player character data: `character.v1`',
       'Shared Lirabao data: `room:jade-lantern-room/sharedPet.v1`',
       'old room'
@@ -1059,7 +1059,7 @@ const checks = [
   },
   {
     file: 'docs/deployment.md',
-    includes: ['Node 24 LTS hosting wrapper plus the Unity WebGL shared-room runtime', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true', 'MOCHI_SOCIAL_ALLOWED_ORIGINS', 'npm run build:release', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
+    includes: ['Node 24 LTS hosting wrapper plus the Unity WebGL shared-room runtime', 'MOCHI_PETS_REQUIRE_UNITY_WEBGL=true', 'MOCHI_PETS_ALLOWED_ORIGINS', 'npm run build:release', 'MOCHI_PETS_GAME_SERVER_TOKEN', 'MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
     file: 'docs/enjin-canary-alpha.md',
@@ -1971,11 +1971,11 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-responsive-gameplay.mjs',
-    includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'unhandledKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyGameplayKeyOwnership', 'verifyUnhandledKeyOwnership', 'verifyEditableInputKeepsText', 'verifyInputSurfaceStyles', 'touchAction', 'overscrollBehaviorY', 'preventedKeyCount']
+    includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL', 'MOCHI_PETS_TESTER_PASSWORD', 'MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-pets', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'unhandledKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyGameplayKeyOwnership', 'verifyUnhandledKeyOwnership', 'verifyEditableInputKeepsText', 'verifyInputSurfaceStyles', 'touchAction', 'overscrollBehaviorY', 'preventedKeyCount']
   },
   {
     file: 'scripts/check-alpha-local-site-iframe.mjs',
-    includes: ['Local-only Mochirii site iframe proof', 'resolveMochiSocialSiteRepoPath', 'apps/web', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL', 'MOCHI_SOCIAL_ALPHA_ACCESS_MODE', 'tester-password', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD', 'alpha-site-iframe-responsive.json', 'reports/responsive-site-iframe', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'siteIframeResults', 'taskkill', 'delete env.SUPABASE_SERVICE_ROLE_KEY', 'delete env.ENJIN_PLATFORM_TOKEN', 'redacted-tester-password']
+    includes: ['Local-only Mochirii site iframe proof', 'resolveMochiSocialSiteRepoPath', 'apps/web', 'NEXT_PUBLIC_MOCHI_PETS_URL', 'MOCHI_PETS_ALPHA_ACCESS_MODE', 'tester-password', 'MOCHI_PETS_TESTER_PASSWORD', 'MOCHI_PETS_LOCAL_SITE_IFRAME_PASSWORD', 'alpha-site-iframe-responsive.json', 'reports/responsive-site-iframe', 'MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-pets', 'siteIframeResults', 'taskkill', 'delete env.SUPABASE_SERVICE_ROLE_KEY', 'delete env.ENJIN_PLATFORM_TOKEN', 'redacted-tester-password']
   },
   {
     file: 'scripts/check-enjin-operator-smoke.mjs',
@@ -2011,11 +2011,11 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-site-repo-path.mjs',
-    includes: ['Mochi Social site repo path resolver self-test OK', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', '../custom-site']
+    includes: ['Mochi Pets site repo path resolver self-test OK', 'MOCHI_PETS_SITE_REPO_PATH', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', '../custom-site']
   },
   {
     file: 'scripts/check-alpha-gate-contracts.mjs',
-    includes: ['Mochi Social alpha gate contract checks passed', 'previewLiveGateNames', 'fundedChainGateNames', 'previewFlySecrets', 'Live game contract', 'Site preview contract', 'Fly funded-chain secret names', 'Enjin Canary operator readiness', 'requiresHostedApproval(gameUrl)', 'fetchJson(`${gameUrl}/healthz`)', 'fundedChainRequiredForPreview: false']
+    includes: ['Mochi Pets alpha gate contract checks passed', 'previewLiveGateNames', 'fundedChainGateNames', 'previewFlySecrets', 'Live game contract', 'Site preview contract', 'Fly funded-chain secret names', 'Enjin Canary operator readiness', 'requiresHostedApproval(gameUrl)', 'fetchJson(`${gameUrl}/healthz`)', 'fundedChainRequiredForPreview: false']
   },
   {
     file: 'scripts/write-alpha-manual-prompt-review.mjs',
@@ -2489,11 +2489,11 @@ const unityPreviewReadinessChecks = [
       'Local Unity WebGL responsive gameplay and input-scroll guard',
       'alpha-responsive-gameplay.json',
       'reports/responsive-gameplay',
-      'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE',
-      'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL',
-      'MOCHI_SOCIAL_TESTER_PASSWORD',
-      'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME',
-      '/games/mochi-social',
+      'MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE',
+      'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL',
+      'MOCHI_PETS_TESTER_PASSWORD',
+      'MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME',
+      '/games/mochi-pets',
       'local-only by default',
       'viewports',
       '1920',
@@ -2595,9 +2595,9 @@ if (packageJson.engines?.node !== '>=24.17.0 <25') {
 }
 
 if (failures.length) {
-  console.error('Mochi Social alpha readiness failed:');
+  console.error('Mochi Pets alpha readiness failed:');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log('Mochi Social alpha readiness checks passed.');
+console.log('Mochi Pets alpha readiness checks passed.');

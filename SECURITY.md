@@ -28,6 +28,6 @@ Do not include real secrets, tokens, private member data, or exploit payloads be
 
 - Unity service credentials and Supabase service-role keys must stay server-side.
 - The browser and Unity WebGL build must receive only player-scoped runtime tokens.
-- `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true` makes deployable routes fail clearly when the Unity WebGL build is missing.
+- `MOCHI_PETS_REQUIRE_UNITY_WEBGL=true` makes deployable routes fail clearly when the Unity WebGL build is missing.
 - Hosted checks, provider mutations, deployments, new paid resources, and live load tests require explicit approval before running.
 - Run `npm run secret-scan` before security-sensitive changes.

@@ -1,12 +1,12 @@
 # Website Integration Contract
 
-Mochi Social stays in this game repo. The Mochirii website stays in its own repo and opens the game through the public game URL.
+Mochi Pets stays in this game repo. The Mochirii website stays in its own repo and opens the game through the public game URL. Mochirii Social is the separate Pixelfed/fediverse platform and is not this game.
 
 ## Live Doorway
 
 The live player path is:
 
-1. Member opens `https://mochirii.com/games/mochi-social`.
+1. Member opens `https://mochirii.com/games/mochi-pets`.
 2. Tester password unlocks the page shell.
 3. Mochirii member sign-in is required for saved play.
 4. The website sends the signed-in member access token to the game iframe.
@@ -16,9 +16,9 @@ The password does not prove saved play by itself. Signed-out visitors, non-teste
 
 ## Website Env Vars
 
-- `NEXT_PUBLIC_MOCHI_SOCIAL_URL`: production game origin.
-- `MOCHI_SOCIAL_ALPHA_ACCESS_MODE=tester-password`: keeps the tester password wall first.
-- `MOCHI_SOCIAL_TESTER_PASSWORD`: server-only tester password.
+- `NEXT_PUBLIC_MOCHI_PETS_URL`: production game origin.
+- `MOCHI_PETS_ALPHA_ACCESS_MODE=tester-password`: keeps the tester password wall first.
+- `MOCHI_PETS_TESTER_PASSWORD`: server-only tester password.
 
 Never expose the tester password, Supabase service-role keys, Unity service credentials, Discord tokens, game server tokens, or wallet material through browser env vars, iframe messages, logs, public docs, or PR text.
 
@@ -32,7 +32,7 @@ The website can rely on these routes:
 - `/integration/game-manifest.json`
 - `/integration/alpha/status`
 
-Release builds must run with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`. If the Unity build is missing, the game routes must fail clearly or show a playtest paused state; they must not silently open the old room.
+Release builds must run with `MOCHI_PETS_REQUIRE_UNITY_WEBGL=true`. If the Unity build is missing, the game routes must fail clearly or show a playtest paused state; they must not silently open the old room.
 
 ## Runtime Contract
 
@@ -60,16 +60,18 @@ The closed playtest includes one shared room, three curated character presets, d
 
 Parent to game:
 
-- `MOCHI_SOCIAL_AUTH`
-- `MOCHI_SOCIAL_SIGN_OUT`
+- `MOCHI_PETS_AUTH`
+- `MOCHI_PETS_SIGN_OUT`
 
 Game to parent:
 
-- `MOCHI_SOCIAL_READY`
-- `MOCHI_SOCIAL_AUTH_STATE`
-- `MOCHI_SOCIAL_ERROR`
+- `MOCHI_PETS_READY`
+- `MOCHI_PETS_AUTH_STATE`
+- `MOCHI_PETS_ERROR`
 
 The website owns Supabase session refresh. It may send a short-lived Supabase access token to the iframe. It must never send refresh tokens, service-role keys, tester passwords, Discord tokens, Unity service credentials, or game server tokens.
+
+Legacy `MOCHI_SOCIAL_*` bridge names remain compatibility debt only when explicitly called out by tests or older reports. New website/game work should use `MOCHI_PETS_*`.
 
 ## Saved Play
 

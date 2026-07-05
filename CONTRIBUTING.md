@@ -1,11 +1,11 @@
 # Contributing
 
-Mochi Social is the Unity WebGL shared guild room for Mochirii's closed playtest. Contributions should preserve the one-room, shared-Lirabao, no-real-value alpha scope unless a task explicitly says otherwise.
+Mochi Pets is the Unity WebGL shared guild room game for Mochirii's closed playtest. Contributions should preserve the one-room, shared-Lirabao, no-real-value alpha scope unless a task explicitly says otherwise.
 
 ## Workflow
 
 - Work on a scoped branch; do not commit directly to `main`.
-- Keep this game repo separate from the Mochirii website repo.
+- Keep this game repo separate from the Mochirii website repo and from Mochirii Social, the Pixelfed/fediverse platform.
 - Keep Unity WebGL as the active alpha runtime.
 - Keep the old browser runtime as rollback/reference material only.
 - Do not add avatar uploads, market, trade, funded-chain behavior, multiple rooms, mobile-specific scope, or public-launch claims unless the alpha scope changes.

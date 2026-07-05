@@ -9,6 +9,8 @@ These are the credible sources used for the initial architecture.
 - Fly.io Docs: Dockerfile deployment and persistent Fly Volumes for runtime save storage.
 - Supabase Docs: browser auth sessions, JWT/access-token handling, `onAuthStateChange`, and server-side `getUser(jwt)` token validation.
 - Unity Docs: Web builds, browser bridge scripting, Authentication, Cloud Save, Cloud Code, and Multiplayer Services for the shared-room runtime.
+- Enjin Docs: Canary-only platform and Fuel Tank work stays no-real-value and approval-gated until funded-chain readiness is explicitly approved.
+- DigitalOcean, Cloudflare, Pixelfed, and ActivityPub docs: these govern Mochirii Social, not the Mochi Pets runtime, and are cross-boundary references only for this repo.
 
 ## Implementation Rule
 

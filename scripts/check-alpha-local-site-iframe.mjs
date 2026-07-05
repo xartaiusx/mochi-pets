@@ -9,26 +9,30 @@ const root = process.cwd();
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const siteWebPath = resolve(siteRepoPath, 'apps/web');
 const runId = `local-site-iframe-${Date.now().toString(36)}`;
-const reportPath = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_REPORT || 'reports/alpha-local-site-iframe.json');
-const responsiveReportPath = resolve(root, process.env.MOCHI_SOCIAL_SITE_IFRAME_RESPONSIVE_JSON || 'reports/alpha-site-iframe-responsive.json');
-const screenshotDir = resolve(root, process.env.MOCHI_SOCIAL_SITE_IFRAME_SCREENSHOT_DIR || 'reports/responsive-site-iframe');
-const gamePort = Number(process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_GAME_PORT || await findFreePort());
-const sitePort = Number(process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_SITE_PORT || await findFreePort());
+const reportPath = resolve(root, readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_REPORT', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_REPORT') || 'reports/alpha-local-site-iframe.json');
+const responsiveReportPath = resolve(root, readEnv('MOCHI_PETS_SITE_IFRAME_RESPONSIVE_JSON', 'MOCHI_SOCIAL_SITE_IFRAME_RESPONSIVE_JSON') || 'reports/alpha-site-iframe-responsive.json');
+const screenshotDir = resolve(root, readEnv('MOCHI_PETS_SITE_IFRAME_SCREENSHOT_DIR', 'MOCHI_SOCIAL_SITE_IFRAME_SCREENSHOT_DIR') || 'reports/responsive-site-iframe');
+const gamePort = Number(readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_GAME_PORT', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_GAME_PORT') || await findFreePort());
+const sitePort = Number(readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_SITE_PORT', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_SITE_PORT') || await findFreePort());
 const gameBaseUrl = `http://localhost:${gamePort}`;
 const siteBaseUrl = `http://localhost:${sitePort}`;
-const testerPassword = process.env.MOCHI_SOCIAL_TESTER_PASSWORD
-  || process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_PASSWORD
-  || process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD
-  || '';
+const testerPassword = readEnv(
+  'MOCHI_PETS_TESTER_PASSWORD',
+  'MOCHI_PETS_RESPONSIVE_SITE_PASSWORD',
+  'MOCHI_PETS_LOCAL_SITE_IFRAME_PASSWORD',
+  'MOCHI_SOCIAL_TESTER_PASSWORD',
+  'MOCHI_SOCIAL_RESPONSIVE_SITE_PASSWORD',
+  'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD'
+);
 const serverToken = `local-site-iframe-token-${Date.now().toString(36)}`;
-const saveDir = resolve(root, process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_SAVE_DIR || `.local/site-iframe/${runId}/saves`);
-const startupTimeoutMs = Number(process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_STARTUP_TIMEOUT_MS || 90000);
-const commandTimeoutMs = Number(process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_COMMAND_TIMEOUT_MS || 300000);
+const saveDir = resolve(root, readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_SAVE_DIR', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_SAVE_DIR') || `.local/site-iframe/${runId}/saves`);
+const startupTimeoutMs = Number(readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_STARTUP_TIMEOUT_MS', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_STARTUP_TIMEOUT_MS') || 90000);
+const commandTimeoutMs = Number(readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_COMMAND_TIMEOUT_MS', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_COMMAND_TIMEOUT_MS') || 300000);
 
 const report = {
   ok: false,
   checkedAt: new Date().toISOString(),
-  scope: 'Local-only Mochirii site iframe proof. Starts the built game and local Mochirii Next page, unlocks tester-password mode, runs responsive gameplay with the real /games/mochi-social iframe, and writes no-secret evidence.',
+  scope: 'Local-only Mochirii site iframe proof. Starts the built game and local Mochirii Next page, unlocks tester-password mode, runs responsive gameplay with the real /games/mochi-pets iframe, and writes no-secret evidence.',
   runId,
   gameBaseUrl,
   siteBaseUrl,
@@ -66,10 +70,10 @@ try {
   recordServerOutput();
   await writeReport();
   if (report.ok) {
-    console.log(`Mochi Social local site iframe proof passed for ${siteBaseUrl}/games/mochi-social`);
+    console.log(`Mochi Pets local site iframe proof passed for ${siteBaseUrl}/games/mochi-pets`);
     console.log(`Report: ${reportPath}`);
   } else {
-    console.error('Mochi Social local site iframe proof failed:');
+    console.error('Mochi Pets local site iframe proof failed:');
     console.error(report.error);
     console.error(`Report: ${reportPath}`);
   }
@@ -79,9 +83,9 @@ try {
 async function run() {
   assert(existsSync(resolve(siteRepoPath, 'package.json')), `Mochirii site repo was not found at ${siteRepoPath}.`);
   assert(existsSync(resolve(siteWebPath, 'package.json')), `Mochirii apps/web package was not found at ${siteWebPath}.`);
-  assert(Boolean(testerPassword), 'MOCHI_SOCIAL_TESTER_PASSWORD or MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD is required for the local tester-password iframe proof.');
+  assert(Boolean(testerPassword), 'MOCHI_PETS_TESTER_PASSWORD or MOCHI_PETS_LOCAL_SITE_IFRAME_PASSWORD is required for the local tester-password iframe proof.');
 
-  if (process.env.MOCHI_SOCIAL_LOCAL_SITE_IFRAME_SKIP_BUILD !== 'true') {
+  if (readEnv('MOCHI_PETS_LOCAL_SITE_IFRAME_SKIP_BUILD', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_SKIP_BUILD') !== 'true') {
     await runCommand('build', npmCommand(), ['run', 'build'], root, process.env);
   }
 
@@ -92,7 +96,7 @@ async function run() {
   await startGameServer();
   await waitForUrl(`${gameBaseUrl}/healthz`, 'game health');
   await startSiteServer();
-  await waitForUrl(`${siteBaseUrl}/games/mochi-social`, 'Mochirii site game page');
+  await waitForUrl(`${siteBaseUrl}/games/mochi-pets`, 'Mochirii site game page');
   await runCommand('alpha:responsive-gameplay site iframe', process.execPath, ['scripts/check-alpha-responsive-gameplay.mjs'], root, responsiveEnv());
   verifyResponsiveSiteIframeReport();
 }
@@ -129,6 +133,8 @@ async function startSiteServer() {
 function gameServerEnv() {
   const env = localEnv();
   env.PORT = String(gamePort);
+  env.MOCHI_PETS_PUBLIC_ORIGIN = gameBaseUrl;
+  env.MOCHI_PETS_GAME_SERVER_TOKEN = serverToken;
   env.MOCHI_SOCIAL_PUBLIC_ORIGIN = gameBaseUrl;
   env.MOCHI_SOCIAL_GAME_SERVER_TOKEN = serverToken;
   env.RPG_ALLOWED_ORIGINS = siteBaseUrl;
@@ -139,23 +145,36 @@ function siteServerEnv() {
   return {
     ...process.env,
     PORT: String(sitePort),
+    NEXT_PUBLIC_MOCHI_PETS_URL: gameBaseUrl,
     NEXT_PUBLIC_MOCHI_SOCIAL_URL: gameBaseUrl,
+    MOCHI_PETS_ALPHA_ACCESS_MODE: 'tester-password',
     MOCHI_SOCIAL_ALPHA_ACCESS_MODE: 'tester-password',
+    MOCHI_PETS_TESTER_PASSWORD: testerPassword,
     MOCHI_SOCIAL_TESTER_PASSWORD: testerPassword,
+    MOCHI_PETS_SITE_ORIGIN: siteBaseUrl,
     MOCHI_SOCIAL_SITE_ORIGIN: siteBaseUrl,
+    MOCHI_PETS_GAME_CONTRACT_URL: gameBaseUrl,
     MOCHI_SOCIAL_GAME_CONTRACT_URL: gameBaseUrl
   };
 }
 
 function responsiveEnv() {
   const env = localEnv();
+  env.MOCHI_PETS_BASE_URL = gameBaseUrl;
   env.MOCHI_SOCIAL_BASE_URL = gameBaseUrl;
+  env.MOCHI_PETS_RESPONSIVE_SITE_BASE_URL = siteBaseUrl;
   env.MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL = siteBaseUrl;
+  env.MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME = 'true';
   env.MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME = 'true';
+  env.MOCHI_PETS_TESTER_PASSWORD = testerPassword;
   env.MOCHI_SOCIAL_TESTER_PASSWORD = testerPassword;
+  env.MOCHI_PETS_RESPONSIVE_REPORT = responsiveReportPath;
   env.MOCHI_SOCIAL_RESPONSIVE_REPORT = responsiveReportPath;
+  env.MOCHI_PETS_RESPONSIVE_SCREENSHOT_DIR = screenshotDir;
   env.MOCHI_SOCIAL_RESPONSIVE_SCREENSHOT_DIR = screenshotDir;
-  env.MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS = String(Number(process.env.MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS || 40000));
+  const timeout = String(Number(readEnv('MOCHI_PETS_RESPONSIVE_TIMEOUT_MS', 'MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS') || 40000));
+  env.MOCHI_PETS_RESPONSIVE_TIMEOUT_MS = timeout;
+  env.MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS = timeout;
   return env;
 }
 
@@ -163,12 +182,16 @@ function localEnv() {
   const env = {
     ...process.env,
     RPG_SAVE_DIR: saveDir,
+    MOCHI_PETS_ALPHA_LEDGER_PATH: resolve(saveDir, 'alpha-ledger.jsonl'),
     MOCHI_SOCIAL_ALPHA_LEDGER_PATH: resolve(saveDir, 'alpha-ledger.jsonl'),
     SUPABASE_AUTH_REQUIRED: 'false',
+    MOCHI_PETS_BROWSER_ALLOW_HOSTED_SMOKE: 'false',
     MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE: 'false',
+    MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE: 'false',
     MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE: 'false'
   };
 
+  delete env.MOCHI_PETS_SUPABASE_FUNCTIONS_URL;
   delete env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL;
   delete env.SUPABASE_URL;
   delete env.SUPABASE_PUBLISHABLE_KEY;
@@ -176,6 +199,9 @@ function localEnv() {
   delete env.ENJIN_PLATFORM_TOKEN;
   delete env.ENJIN_COLLECTION_ID;
   delete env.ENJIN_FUEL_TANK_ID;
+  delete env.MOCHI_PETS_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE;
+  delete env.MOCHI_PETS_ENJIN_OPERATOR_SMOKE_REQUEST_ID;
+  delete env.MOCHI_PETS_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID;
   delete env.MOCHI_SOCIAL_ENJIN_OPERATOR_ALLOW_LIVE_SMOKE;
   delete env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_REQUEST_ID;
   delete env.MOCHI_SOCIAL_ENJIN_OPERATOR_SMOKE_TRANSACTION_UUID;
@@ -266,7 +292,7 @@ function verifyResponsiveSiteIframeReport() {
   assert(responsive.site?.configured === true, 'Responsive site iframe report must record configured=true.');
   assert(responsive.site?.required === true, 'Responsive site iframe report must record required=true.');
   assert(responsive.site?.status === 'checked', 'Responsive site iframe report must record site.status=checked.');
-  assert(responsive.site?.entryPath === '/games/mochi-social', 'Responsive site iframe report must target /games/mochi-social.');
+  assert(responsive.site?.entryPath === '/games/mochi-pets', 'Responsive site iframe report must target /games/mochi-pets.');
   assert(siteResults.length === 9, `Responsive site iframe report must cover all nine viewports, found ${siteResults.length}.`);
   assert(siteResults.every((result) => result.screenshot?.bytes > 1000), 'Responsive site iframe screenshots must be non-empty.');
   assert(siteResults.every((result) => result.inputOwnership?.gameplay?.checks?.length === responsive.gameplayKeys?.length), 'Responsive site iframe report must include per-key gameplay input proof for every viewport.');
@@ -339,6 +365,14 @@ function delay(ms) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function readEnv(...names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return '';
 }
 
 function npmCommand() {

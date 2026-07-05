@@ -1,6 +1,6 @@
-# Mochi Social
+# Mochi Pets
 
-Mochi Social is the shared guild room for Mochirii's closed playtest.
+Mochi Pets is the shared guild room game for Mochirii's closed playtest.
 
 Approved members enter one 3D room, create a curated character, meet Lirabao, care for the guild pet together, and return later with saved progress. The playtest has no real value and is only for closed testing.
 
@@ -18,7 +18,8 @@ Not included in this playtest: avatar uploads, multiple rooms, paid item value, 
 ## Local Development
 
 ```powershell
-npm install
+fnm use 24.17.0
+npm ci
 npm run unity:verify
 npm run build:release
 ```
@@ -26,10 +27,12 @@ npm run build:release
 The release build uses the shared 3D room and the Node host together. Deployable builds should run with:
 
 ```powershell
-$env:MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL='true'
+$env:MOCHI_PETS_REQUIRE_UNITY_WEBGL='true'
 ```
 
 If the Unity build is missing while that setting is enabled, the room routes fail clearly instead of opening the old fallback.
+
+Unity `6000.5.0f1` with WebGL Build Support is required for the real playtest build. A contract-only WebGL bundle may satisfy endpoint checks, but it is not alpha gameplay readiness.
 
 ## Local Checks
 
@@ -51,7 +54,7 @@ Hosted checks, provider settings, deployments, new paid resources, and live load
 
 ## Live Site Contract
 
-The website opens Mochi Social through stable room routes:
+The website opens Mochi Pets through stable room routes:
 
 - `/embed`
 - `/play`
@@ -59,4 +62,8 @@ The website opens Mochi Social through stable room routes:
 - `/integration/game-manifest.json`
 - `/integration/alpha/status`
 
-The live page stays behind the tester password wall. The password opens the page shell; saved play requires a signed-in approved Mochirii member account.
+The website doorway is `/games/mochi-pets`. The old `/games/mochi-social` route is retired and should not redirect. The live page stays behind the tester password wall. The password opens the page shell; saved play requires a signed-in approved Mochirii member account.
+
+## Local Workstation Readiness
+
+Use [`docs/workstation-readiness.md`](docs/workstation-readiness.md) before claiming this machine is ready for continued game development. It records the current toolchain, Unity/Docker blockers, PR merge order, and no-cost provider rules.
