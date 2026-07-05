@@ -8,12 +8,12 @@ import { brotliDecompressSync } from 'node:zlib';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(currentDir, '..');
-const reportPath = resolve(root, process.env.MOCHI_SOCIAL_BUILT_SERVER_REPORT || 'reports/built-server-smoke.json');
+const reportPath = resolve(root, process.env.MOCHI_PETS_BUILT_SERVER_REPORT || 'reports/built-server-smoke.json');
 const unityFrameworkPath = resolve(root, 'unity/Builds/WebGL/Build/WebGL.framework.js.br');
-const port = Number(process.env.MOCHI_SOCIAL_BUILT_SERVER_PORT || await findFreePort());
+const port = Number(process.env.MOCHI_PETS_BUILT_SERVER_PORT || await findFreePort());
 const baseUrl = `http://localhost:${port}`;
 const token = 'local-built-server-smoke-token';
-const timeoutMs = Number(process.env.MOCHI_SOCIAL_BUILT_SERVER_TIMEOUT_MS || 20000);
+const timeoutMs = Number(process.env.MOCHI_PETS_BUILT_SERVER_TIMEOUT_MS || 20000);
 
 const report = {
   ok: false,
@@ -40,10 +40,10 @@ try {
   recordServerOutput();
   await writeReport();
   if (report.ok) {
-    console.log(`Mochi Social built server smoke passed for ${baseUrl}`);
+    console.log(`Mochi Pets built server smoke passed for ${baseUrl}`);
     console.log(`Report: ${reportPath}`);
   } else {
-    console.error('Mochi Social built server smoke failed:');
+    console.error('Mochi Pets built server smoke failed:');
     console.error(report.error);
     console.error(`Report: ${reportPath}`);
   }
@@ -69,14 +69,14 @@ async function run() {
   await waitForHealth(child);
 
   const health = await getJson('/healthz', 'health');
-  assert(health.body.ok === true && health.body.name === 'Mochi Social', 'Built server health check must identify Mochi Social.');
+  assert(health.body.ok === true && health.body.name === 'Mochi Pets', 'Built server health check must identify Mochi Pets.');
   assert(health.body.activeRuntime === 'unity-webgl', 'Built server health check must serve Unity WebGL when required.');
   assert(health.body.unityWebglBuild?.present === true, 'Built server health check must see the local Unity WebGL build.');
   assert(health.body.unityWebglBuild?.required === true, 'Built server health check must require Unity WebGL for release smoke.');
   assert(health.body.legacyFallback?.active === false, 'Built server health check must report legacy fallback inactive.');
 
   const manifest = await getJson('/integration/game-manifest.json', 'manifest');
-  assert(manifest.body.name === 'Mochi Social', 'Built server manifest must identify Mochi Social.');
+  assert(manifest.body.name === 'Mochi Pets', 'Built server manifest must identify Mochi Pets.');
   assert(manifest.body.engine === 'unity-webgl', 'Built server manifest must expose Unity WebGL as the engine.');
   assert(manifest.body.activeRuntime === 'unity-webgl', 'Built server manifest must report Unity WebGL as the active runtime.');
   assert(manifest.body.unityWebglBuild?.present === true, 'Built server manifest must report a present Unity WebGL build.');
@@ -111,7 +111,7 @@ async function run() {
   assertNoFutureSystemKeys(alpha.body, 'Built server alpha status');
   assert(!('chainRuntime' in alpha.body), 'Built server alpha status must not expose future chain runtime state.');
   assert(!('enjinCanaryConfigured' in alpha.body), 'Built server alpha status must not expose future chain provider state.');
-  assert(alpha.body.edgeFunctions?.progress === 'mochi-social-alpha-progress', 'Built server alpha status must expose the progress Edge Function name.');
+  assert(alpha.body.edgeFunctions?.progress === 'mochi-pets-alpha-progress', 'Built server alpha status must expose the progress Edge Function name.');
 
   const progress = await getJson('/integration/alpha/progress', 'guest progress');
   assert(progress.body.ok === true, 'Guest progress endpoint must stay playable without Supabase auth.');
@@ -138,10 +138,10 @@ async function run() {
 
 function verifyUnityBridgeBuild() {
   const framework = brotliDecompressSync(readFileSync(unityFrameworkPath)).toString('utf8');
-  assert(framework.includes('MochiSocialBridgeRuntime'), 'Unity WebGL framework must include the Mochi Social bridge runtime helper.');
-  assert(framework.includes('__MOCHI_SOCIAL_UNITY_RUNTIME_READY'), 'Unity WebGL framework must publish a browser runtime-ready marker after C# bootstrap.');
-  assert(framework.includes('__MOCHI_SOCIAL_UNITY_LAST_EVENT'), 'Unity WebGL framework must publish the latest browser bridge event for local evidence.');
-  assert(framework.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG'), 'Unity WebGL framework must read the served bridge config.');
+  assert(framework.includes('MochiPetsBridgeRuntime'), 'Unity WebGL framework must include the Mochi Pets bridge runtime helper.');
+  assert(framework.includes('__MOCHI_PETS_UNITY_RUNTIME_READY'), 'Unity WebGL framework must publish a browser runtime-ready marker after C# bootstrap.');
+  assert(framework.includes('__MOCHI_PETS_UNITY_LAST_EVENT'), 'Unity WebGL framework must publish the latest browser bridge event for local evidence.');
+  assert(framework.includes('__MOCHI_PETS_UNITY_BRIDGE_CONFIG'), 'Unity WebGL framework must read the served bridge config.');
   assert(framework.includes('isAllowedParentOrigin'), 'Unity WebGL framework must check parent origins before accepting auth messages.');
   assert(framework.includes('targetParentOrigin'), 'Unity WebGL framework must target a configured parent origin for replies.');
   assert(!framework.includes('payload.functionsUrl || payload.supabaseFunctionsUrl'), 'Unity WebGL framework must not trust parent-supplied Supabase function URLs.');
@@ -155,16 +155,16 @@ function buildServerEnv() {
     ...process.env,
     PORT: String(port),
     SUPABASE_AUTH_REQUIRED: 'false',
-    MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL: 'true',
-    MOCHI_SOCIAL_GAME_SERVER_TOKEN: token,
-    MOCHI_SOCIAL_PUBLIC_ORIGIN: baseUrl,
+    MOCHI_PETS_REQUIRE_UNITY_WEBGL: 'true',
+    MOCHI_PETS_GAME_SERVER_TOKEN: token,
+    MOCHI_PETS_PUBLIC_ORIGIN: baseUrl,
     RPG_SAVE_DIR: resolve(root, '.local/built-server-smoke/saves')
   };
 
   delete env.ENJIN_PLATFORM_TOKEN;
   delete env.ENJIN_COLLECTION_ID;
   delete env.ENJIN_FUEL_TANK_ID;
-  delete env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL;
+  delete env.MOCHI_PETS_SUPABASE_FUNCTIONS_URL;
   return env;
 }
 
@@ -260,8 +260,8 @@ function isUnityWebglHtml(value) {
 
 function hasUnityBridgeGuard(value) {
   const html = String(value || '');
-  return html.includes('data-mochi-social-unity-bridge-config') &&
-    html.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG') &&
+  return html.includes('data-mochi-pets-unity-bridge-config') &&
+    html.includes('__MOCHI_PETS_UNITY_BRIDGE_CONFIG') &&
     html.includes('allowedParentOrigins.has(event.origin)') &&
     html.includes('sanitizeAuthMessage(event.data)');
 }

@@ -194,10 +194,10 @@ describe('alpha contract', () => {
   });
 
   it('documents server-only environment names without service-role keys', () => {
-    expect(SERVER_ENV_CONTRACT).toContain('MOCHI_SOCIAL_GAME_SERVER_TOKEN');
+    expect(SERVER_ENV_CONTRACT).toContain('MOCHI_PETS_GAME_SERVER_TOKEN');
     expect(SERVER_ENV_CONTRACT.some((name) => name.includes('SERVICE_ROLE'))).toBe(false);
-    expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-social-alpha-progress');
-    expect(ALPHA_EDGE_FUNCTIONS.unityAuth).toBe('mochi-social-unity-auth');
+    expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-pets-alpha-progress');
+    expect(ALPHA_EDGE_FUNCTIONS.unityAuth).toBe('mochi-pets-unity-auth');
   });
 
   it('validates alpha action envelopes', () => {

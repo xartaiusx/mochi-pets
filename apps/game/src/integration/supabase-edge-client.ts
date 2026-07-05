@@ -7,8 +7,8 @@ export interface SupabaseEdgeConfig {
 
 export function getSupabaseEdgeConfig(env = process.env): SupabaseEdgeConfig {
   return {
-    functionsUrl: env.MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL,
-    serverToken: env.MOCHI_SOCIAL_GAME_SERVER_TOKEN
+    functionsUrl: env.MOCHI_PETS_SUPABASE_FUNCTIONS_URL,
+    serverToken: env.MOCHI_PETS_GAME_SERVER_TOKEN
   };
 }
 
@@ -25,7 +25,7 @@ export function buildAlphaActionRequest(action: AlphaActionEnvelope, config = ge
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-mochi-social-server-token': config.serverToken!
+        'x-mochi-pets-server-token': config.serverToken!
       },
       body: JSON.stringify(action)
     }
@@ -41,7 +41,7 @@ export function buildAlphaProgressRequest(playerId: string, config = getSupabase
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-mochi-social-server-token': config.serverToken!
+        'x-mochi-pets-server-token': config.serverToken!
       },
       body: JSON.stringify({ playerId })
     }

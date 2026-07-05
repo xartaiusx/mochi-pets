@@ -3,10 +3,10 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
-const unityProjectPath = resolve(process.env.MOCHI_SOCIAL_UNITY_PROJECT_PATH || 'unity');
+const unityProjectPath = resolve(readEnv('MOCHI_PETS_UNITY_PROJECT_PATH', 'MOCHI_SOCIAL_UNITY_PROJECT_PATH') || 'unity');
 const unityEditorPath = process.env.UNITY_EDITOR_PATH ||
   'C:\\Program Files\\Unity\\Hub\\Editor\\6000.5.0f1\\Editor\\Unity.exe';
-const localDir = resolve(process.env.MOCHI_SOCIAL_UNITY_REPORT_DIR || 'unity/Logs/MochiSocialLocal');
+const localDir = resolve(readEnv('MOCHI_PETS_UNITY_REPORT_DIR', 'MOCHI_SOCIAL_UNITY_REPORT_DIR') || 'unity/Logs/MochiPetsLocal');
 
 const command = process.argv[2] || '';
 const commands = new Map([
@@ -140,6 +140,14 @@ function freshFile(file, startedAt) {
 function getDefaultUnityTestResultsPath() {
   if (!process.env.USERPROFILE) return '';
   return resolve(process.env.USERPROFILE, 'AppData/LocalLow/Mochirii/Mochi Social/TestResults.xml');
+}
+
+function readEnv(...names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return '';
 }
 
 function normalizeUnityYaml() {

@@ -5,17 +5,27 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
-const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL || 'http://localhost:3100').replace(/\/+$/, '');
-const timeoutMs = Number(process.env.MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS || 30000);
-const headless = process.env.MOCHI_SOCIAL_RESPONSIVE_HEADFUL !== 'true';
-const hostedAllowed = process.env.MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE === 'true';
+const baseUrl = (readEnv('MOCHI_PETS_BASE_URL', 'MOCHI_SOCIAL_BASE_URL') || 'http://localhost:3100').replace(/\/+$/, '');
+const timeoutMs = Number(readEnv('MOCHI_PETS_RESPONSIVE_TIMEOUT_MS', 'MOCHI_SOCIAL_RESPONSIVE_TIMEOUT_MS') || 30000);
+const headless = readEnv('MOCHI_PETS_RESPONSIVE_HEADFUL', 'MOCHI_SOCIAL_RESPONSIVE_HEADFUL') !== 'true';
+const hostedAllowed = readEnv('MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE') === 'true';
 const localBaseUrl = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(baseUrl);
-const siteBaseUrl = normalizeOptionalUrl(process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL || process.env.MOCHI_SOCIAL_SITE_BASE_URL);
-const siteEntryPath = process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_ENTRY_PATH || '/games/mochi-social';
-const sitePassword = process.env.MOCHI_SOCIAL_TESTER_PASSWORD || process.env.MOCHI_SOCIAL_RESPONSIVE_SITE_PASSWORD || '';
-const requireSiteIframe = process.env.MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME === 'true';
-const reportPath = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_REPORT || 'reports/alpha-responsive-gameplay.json');
-const screenshotDir = resolve(root, process.env.MOCHI_SOCIAL_RESPONSIVE_SCREENSHOT_DIR || 'reports/responsive-gameplay');
+const siteBaseUrl = normalizeOptionalUrl(readEnv(
+  'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL',
+  'MOCHI_PETS_SITE_BASE_URL',
+  'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL',
+  'MOCHI_SOCIAL_SITE_BASE_URL'
+));
+const siteEntryPath = readEnv('MOCHI_PETS_RESPONSIVE_SITE_ENTRY_PATH', 'MOCHI_SOCIAL_RESPONSIVE_SITE_ENTRY_PATH') || '/games/mochi-pets';
+const sitePassword = readEnv(
+  'MOCHI_PETS_TESTER_PASSWORD',
+  'MOCHI_PETS_RESPONSIVE_SITE_PASSWORD',
+  'MOCHI_SOCIAL_TESTER_PASSWORD',
+  'MOCHI_SOCIAL_RESPONSIVE_SITE_PASSWORD'
+);
+const requireSiteIframe = readEnv('MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME') === 'true';
+const reportPath = resolve(root, readEnv('MOCHI_PETS_RESPONSIVE_REPORT', 'MOCHI_SOCIAL_RESPONSIVE_REPORT') || 'reports/alpha-responsive-gameplay.json');
+const screenshotDir = resolve(root, readEnv('MOCHI_PETS_RESPONSIVE_SCREENSHOT_DIR', 'MOCHI_SOCIAL_RESPONSIVE_SCREENSHOT_DIR') || 'reports/responsive-gameplay');
 const movementKeys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'w', 'a', 's', 'd'];
 const interactionKeys = ['Space', 'Enter'];
 const legacyInteractionKeys = ['Spacebar'];
@@ -38,7 +48,7 @@ const failures = [];
 const report = {
   ok: false,
   checkedAt: new Date().toISOString(),
-  scope: 'Local Unity WebGL responsive gameplay and input-scroll guard. Verifies /play, /embed, synthetic parent iframe, and optional Mochirii /games/mochi-social iframe across the alpha viewport matrix.',
+  scope: 'Local Unity WebGL responsive gameplay and input-scroll guard. Verifies /play, /embed, synthetic parent iframe, and optional Mochirii /games/mochi-pets iframe across the alpha viewport matrix.',
   baseUrl,
   site: {
     configured: Boolean(siteBaseUrl),
@@ -69,18 +79,18 @@ try {
   report.ok = failures.length === 0;
   await writeReport();
   if (!report.ok) {
-    console.error('Mochi Social Unity responsive gameplay smoke failed:');
+    console.error('Mochi Pets Unity responsive gameplay smoke failed:');
     for (const failure of failures) console.error(`- ${failure}`);
     console.error(`Report: ${reportPath}`);
     process.exit(1);
   }
-  console.log(`Mochi Social Unity responsive gameplay smoke passed for ${baseUrl}`);
+  console.log(`Mochi Pets Unity responsive gameplay smoke passed for ${baseUrl}`);
   console.log(`Report: ${reportPath}`);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
   report.ok = false;
   await writeReport();
-  console.error('Mochi Social Unity responsive gameplay smoke failed:');
+  console.error('Mochi Pets Unity responsive gameplay smoke failed:');
   for (const failure of failures) console.error(`- ${failure}`);
   console.error(`Report: ${reportPath}`);
   process.exit(1);
@@ -180,7 +190,7 @@ async function inspectParentIframe(browser, viewport) {
 async function inspectMochiriiSiteIframeIfConfigured(browser) {
   if (!siteBaseUrl) {
     report.site.status = requireSiteIframe ? 'missing-site-url' : 'skipped';
-    if (requireSiteIframe) failures.push('Mochirii site iframe smoke requires MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL or MOCHI_SOCIAL_SITE_BASE_URL.');
+    if (requireSiteIframe) failures.push('Mochirii site iframe smoke requires MOCHI_PETS_RESPONSIVE_SITE_BASE_URL or MOCHI_PETS_SITE_BASE_URL.');
     return;
   }
 
@@ -213,7 +223,7 @@ async function unlockTesterGateIfPresent(page, label) {
   const visible = await passwordInput.isVisible({ timeout: 1500 }).catch(() => false);
   if (!visible) return { gateDetected: false, passwordProvided: Boolean(sitePassword), submitted: false };
   if (!sitePassword) {
-    failures.push(`${label}: tester password gate is visible but MOCHI_SOCIAL_TESTER_PASSWORD was not provided.`);
+    failures.push(`${label}: tester password gate is visible but MOCHI_PETS_TESTER_PASSWORD was not provided.`);
     return { gateDetected: true, passwordProvided: false, submitted: false };
   }
   await passwordInput.fill(sitePassword);
@@ -234,7 +244,7 @@ async function findGameFrame(page, label) {
     }
     await page.waitForTimeout(250);
   }
-  throw new Error(`${label}: Mochi Social iframe was not found on ${siteEntryPath}.`);
+  throw new Error(`${label}: Mochi Pets iframe was not found on ${siteEntryPath}.`);
 }
 
 async function waitForGame(pageOrFrame) {
@@ -537,10 +547,11 @@ async function captureScreenshot(pageOrFrame, label) {
 
 async function launchBrowser() {
   const commonOptions = { headless, args: ['--no-sandbox'] };
-  if (process.env.MOCHI_SOCIAL_BROWSER_EXECUTABLE) {
-    return chromium.launch({ ...commonOptions, executablePath: process.env.MOCHI_SOCIAL_BROWSER_EXECUTABLE });
+  const browserExecutable = readEnv('MOCHI_PETS_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE');
+  if (browserExecutable) {
+    return chromium.launch({ ...commonOptions, executablePath: browserExecutable });
   }
-  const channel = process.env.MOCHI_SOCIAL_BROWSER_CHANNEL || 'chrome';
+  const channel = readEnv('MOCHI_PETS_BROWSER_CHANNEL', 'MOCHI_SOCIAL_BROWSER_CHANNEL') || 'chrome';
   try {
     return await chromium.launch({ ...commonOptions, channel });
   } catch (error) {
@@ -548,7 +559,7 @@ async function launchBrowser() {
       return await chromium.launch(commonOptions);
     } catch {
       const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`Could not launch a browser for responsive gameplay smoke. Install Chrome, set MOCHI_SOCIAL_BROWSER_EXECUTABLE, or install Playwright browsers. First launch error: ${detail}`);
+      throw new Error(`Could not launch a browser for responsive gameplay smoke. Install Chrome, set MOCHI_PETS_BROWSER_EXECUTABLE, or install Playwright browsers. First launch error: ${detail}`);
     }
   }
 }
@@ -563,7 +574,15 @@ function verifyInputSurfaceStyles(surface, label) {
 
 function assertNoHostedSmokeWithoutApproval() {
   if (localBaseUrl || hostedAllowed) return;
-  throw new Error('Responsive gameplay smoke is local-only by default. Set MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE=true only after explicit hosted approval.');
+  throw new Error('Responsive gameplay smoke is local-only by default. Set MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE=true only after explicit hosted approval.');
+}
+
+function readEnv(...names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return '';
 }
 
 function normalizeOptionalUrl(value) {

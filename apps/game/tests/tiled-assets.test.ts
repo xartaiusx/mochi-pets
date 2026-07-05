@@ -121,8 +121,8 @@ describe('runtime asset paths', () => {
   it('uses storage-safe multiplayer guest connection ids for embeds', () => {
     const clientEntry = readFileSync('src/client.ts', 'utf8');
 
-    expect(clientEntry).toContain("const CONNECTION_ID_KEY = 'mochiSocial.connectionId';");
-    expect(clientEntry).toContain('connectionId: resolveMochiSocialConnectionId()');
+    expect(clientEntry).toContain("const CONNECTION_ID_KEY = 'mochiPets.connectionId';");
+    expect(clientEntry).toContain('connectionId: resolveMochiPetsConnectionId()');
     expect(clientEntry).toContain('fallbackConnectionId');
     expect(clientEntry).not.toContain("connectionIdScope: 'session'");
   });

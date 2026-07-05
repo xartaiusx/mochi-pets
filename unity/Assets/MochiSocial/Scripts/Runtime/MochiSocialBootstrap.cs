@@ -132,10 +132,10 @@ namespace MochiSocial.Runtime
         {
             switch (message.type)
             {
-                case "MOCHI_SOCIAL_AUTH":
+                case "MOCHI_PETS_AUTH":
                     _ = HandleAuthAsync(message);
                     break;
-                case "MOCHI_SOCIAL_SIGN_OUT":
+                case "MOCHI_PETS_SIGN_OUT":
                     _ = HandleSignOutAsync();
                     break;
                 default:
@@ -152,7 +152,7 @@ namespace MochiSocial.Runtime
             }
 
             authInFlight = true;
-            bridge.EmitAuthState("authenticating", "Signing into Mochi Social.");
+            bridge.EmitAuthState("authenticating", "Signing into Mochi Pets.");
 
             try
             {
@@ -205,7 +205,7 @@ namespace MochiSocial.Runtime
             characterCreationRequired = false;
             characterCreationBusy = false;
             networkAvatarAdopted = false;
-            bridge.EmitAuthState("signed-out", "Signed out of Mochi Social.");
+            bridge.EmitAuthState("signed-out", "Signed out of Mochi Pets.");
         }
 
         private async Task SaveCurrentCharacterSpawnAsync()
@@ -298,7 +298,7 @@ namespace MochiSocial.Runtime
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[Mochi Social] Shared Lirabao state could not be loaded: {ex.Message}");
+                Debug.LogWarning($"[Mochi Pets] Shared Lirabao state could not be loaded: {ex.Message}");
                 lirabao.ShowUnavailable();
                 bridge.EmitError("shared_pet_unavailable", "Lirabao is resting. Try again soon.");
             }

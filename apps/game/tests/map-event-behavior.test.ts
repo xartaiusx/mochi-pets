@@ -92,7 +92,7 @@ describe('Mochi town event behavior', () => {
 
     expect(context.graphic).toBe('sifu-narao');
     expect(context.hitbox).toEqual({ width: 64, height: 64 });
-    expect(player.texts.at(-1)).toContain('Welcome to Mochi Social');
+    expect(player.texts.at(-1)).toContain('Welcome to Mochi Pets');
     expect(player.texts.at(-1)).toContain('no-real-value');
     expect(player.texts.at(-1)).toContain('Canary-only');
     expect(player.notifications.at(-1)?.message).toBe('Guild spark found');
@@ -155,7 +155,7 @@ describe('Mochi town event behavior', () => {
     expect(opened).toHaveLength(1);
     expect(opened[0].guiId).toBe('rpg-dialog');
     expect(opened[0].data).toMatchObject({
-      message: expect.stringContaining('Welcome to Mochi Social'),
+      message: expect.stringContaining('Welcome to Mochi Pets'),
       choices: [],
       autoClose: true,
       fullWidth: false,
@@ -186,10 +186,10 @@ describe('Mochi town event behavior', () => {
 
     expect(player.items).toHaveLength(1);
     expect(player.items[0].item.id).toBe('mochirii-guild-seal');
-    expect(player.variables.get('mochiSocial.guildSealClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.guildSealClaimed')).toBe(true);
     expect(player.notifications[0].message).toBe('Guild Seal added');
     expect(player.emitted[0]).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: { sealClaimed: true }
     });
     expect(player.saves[0].options.source).toBe('guild-seal-chest');
@@ -203,13 +203,13 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Bond with a Mochi Spirit first');
 
     await runAction(SpiritEvent(SPIRITS[0]), player);
-    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao']);
-    expect(player.variables.get('mochiSocial.spirits.active')).toBe('lirabao');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(1);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('seed');
+    expect(player.variables.get('mochiPets.spirits.bonded')).toEqual(['lirabao']);
+    expect(player.variables.get('mochiPets.spirits.active')).toBe('lirabao');
+    expect(player.variables.get('mochiPets.spirit.lirabao.bond')).toBe(1);
+    expect(player.variables.get('mochiPets.spirit.lirabao.growth')).toBe('seed');
     expect(player.saves.at(-1)?.options.source).toBe('spirit-bond');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: { spirit: { id: 'lirabao', bond: 1, growth: 'seed' } }
     });
     expect(player.texts.at(-1)).toContain('Mochirii spirit journal');
@@ -218,16 +218,16 @@ describe('Mochi town event behavior', () => {
       await runAction(CareShrine(), player);
     }
 
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(5);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('glow');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.careStreak')).toBe(4);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.lastCareNeed')).toBe('mooncake-share');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.nextCareNeed')).toBe('jade-brush-groom');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bondMilestone')).toBe('lirabao-moonwell-glow');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.nextBondMilestone')).toBe('lirabao-moonwell-glow');
+    expect(player.variables.get('mochiPets.spirit.lirabao.bond')).toBe(5);
+    expect(player.variables.get('mochiPets.spirit.lirabao.growth')).toBe('glow');
+    expect(player.variables.get('mochiPets.spirit.lirabao.careStreak')).toBe(4);
+    expect(player.variables.get('mochiPets.spirit.lirabao.lastCareNeed')).toBe('mooncake-share');
+    expect(player.variables.get('mochiPets.spirit.lirabao.nextCareNeed')).toBe('jade-brush-groom');
+    expect(player.variables.get('mochiPets.spirit.lirabao.bondMilestone')).toBe('lirabao-moonwell-glow');
+    expect(player.variables.get('mochiPets.spirit.lirabao.nextBondMilestone')).toBe('lirabao-moonwell-glow');
     expect(player.saves.filter((save) => save.options.source === 'spirit-care')).toHaveLength(4);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         raising: {
           careStreak: 4,
@@ -260,22 +260,22 @@ describe('Mochi town event behavior', () => {
     await runAction(SpiritEvent(SPIRITS[0]), player);
     await runAction(TrainingRing(), player);
 
-    expect(player.variables.get('mochiSocial.spirit.lirabao.trainingXp')).toBe(3);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.trainingVictories')).toBe(1);
-    expect(player.variables.get('mochiSocial.battle.sparLadderXp')).toBe(2);
-    expect(player.variables.get('mochiSocial.battle.sparLadderWins')).toBe(0);
-    expect(player.variables.get('mochiSocial.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
-    expect(player.variables.get('mochiSocial.battle.lastRound')).toBe('jade-echo-apprentice-round-1');
-    expect(player.variables.get('mochiSocial.battle.lastRoundFocusScore')).toBe(13);
-    expect(player.variables.get('mochiSocial.battle.lastRoundOpponentScore')).toBe(17);
-    expect(player.variables.get('mochiSocial.battle.lastRoundVictory')).toBe(false);
-    expect(player.variables.get('mochiSocial.battle.lastRoundNoInjury')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.lastRoundParty')).toEqual(['lirabao']);
-    expect(player.variables.get('mochiSocial.battle.lastRoundTranscript')).toEqual(['Lirabao:Lantern Pulse:13']);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(2);
+    expect(player.variables.get('mochiPets.spirit.lirabao.trainingXp')).toBe(3);
+    expect(player.variables.get('mochiPets.spirit.lirabao.trainingVictories')).toBe(1);
+    expect(player.variables.get('mochiPets.battle.sparLadderXp')).toBe(2);
+    expect(player.variables.get('mochiPets.battle.sparLadderWins')).toBe(0);
+    expect(player.variables.get('mochiPets.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
+    expect(player.variables.get('mochiPets.battle.lastRound')).toBe('jade-echo-apprentice-round-1');
+    expect(player.variables.get('mochiPets.battle.lastRoundFocusScore')).toBe(13);
+    expect(player.variables.get('mochiPets.battle.lastRoundOpponentScore')).toBe(17);
+    expect(player.variables.get('mochiPets.battle.lastRoundVictory')).toBe(false);
+    expect(player.variables.get('mochiPets.battle.lastRoundNoInjury')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.lastRoundParty')).toEqual(['lirabao']);
+    expect(player.variables.get('mochiPets.battle.lastRoundTranscript')).toEqual(['Lirabao:Lantern Pulse:13']);
+    expect(player.variables.get('mochiPets.spirit.lirabao.bond')).toBe(2);
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         spirit: { id: 'lirabao', bond: 2, growth: 'seed' },
         training: {
@@ -309,13 +309,13 @@ describe('Mochi town event behavior', () => {
     await runAction(QuestBoard(), player);
     await runAction(QuestBoard(), player);
 
-    expect(player.variables.get('mochiSocial.quest.active')).toBe('first-lantern-vow');
-    expect(player.variables.get('mochiSocial.quest.first-lantern-vow.steps')).toEqual(['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    expect(player.variables.get('mochiSocial.quest.first-lantern-vow.rewardClaimed')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(3);
+    expect(player.variables.get('mochiPets.quest.active')).toBe('first-lantern-vow');
+    expect(player.variables.get('mochiPets.quest.first-lantern-vow.steps')).toEqual(['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    expect(player.variables.get('mochiPets.quest.first-lantern-vow.rewardClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.lirabao.bond')).toBe(3);
     expect(player.saves.filter((save) => save.options.source === 'quest-board')).toHaveLength(3);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         quest: {
           id: 'first-lantern-vow',
@@ -343,17 +343,17 @@ describe('Mochi town event behavior', () => {
       await runAction(QuestBoard(), player);
     }
 
-    expect(player.variables.get('mochiSocial.quest.active')).toBe('skybell-spar');
-    expect(player.variables.get('mochiSocial.quest.first-lantern-vow.steps')).toEqual(['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    expect(player.variables.get('mochiSocial.quest.silk-market-kindness.steps')).toEqual(['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    expect(player.variables.get('mochiSocial.quest.skybell-spar.steps')).toEqual(['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
-    expect(player.variables.get('mochiSocial.quest.completed')).toEqual(['first-lantern-vow', 'silk-market-kindness', 'skybell-spar']);
-    expect(player.variables.get('mochiSocial.quest.skybell-spar.rewardClaimed')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirit.aozhen.bond')).toBe(3);
-    expect(player.variables.get('mochiSocial.spirit.aozhen.growth')).toBe('sprout');
+    expect(player.variables.get('mochiPets.quest.active')).toBe('skybell-spar');
+    expect(player.variables.get('mochiPets.quest.first-lantern-vow.steps')).toEqual(['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    expect(player.variables.get('mochiPets.quest.silk-market-kindness.steps')).toEqual(['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    expect(player.variables.get('mochiPets.quest.skybell-spar.steps')).toEqual(['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    expect(player.variables.get('mochiPets.quest.completed')).toEqual(['first-lantern-vow', 'silk-market-kindness', 'skybell-spar']);
+    expect(player.variables.get('mochiPets.quest.skybell-spar.rewardClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.aozhen.bond')).toBe(3);
+    expect(player.variables.get('mochiPets.spirit.aozhen.growth')).toBe('sprout');
     expect(player.saves.filter((save) => save.options.source === 'quest-board')).toHaveLength(9);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         quest: {
           id: 'skybell-spar',
@@ -381,14 +381,14 @@ describe('Mochi town event behavior', () => {
     await runAction(HabitatGrove(), player);
     await runAction(PartyBanner(), player);
 
-    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari', 'aozhen']);
-    expect(player.variables.get('mochiSocial.spirits.active')).toBe('aozhen');
-    expect(player.variables.get('mochiSocial.spirits.party')).toEqual(['aozhen', 'lirabao', 'jintari']);
-    expect(player.variables.get('mochiSocial.spirits.support')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.spirits.bonded')).toEqual(['lirabao', 'jintari', 'aozhen']);
+    expect(player.variables.get('mochiPets.spirits.active')).toBe('aozhen');
+    expect(player.variables.get('mochiPets.spirits.party')).toEqual(['aozhen', 'lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.spirits.support')).toEqual(['lirabao', 'jintari']);
     expect(player.notifications.at(-1)?.message).toBe('Party formed');
     expect(player.saves.at(-1)?.options.source).toBe('party-banner');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         party: {
           activeSpiritId: 'aozhen',
@@ -402,22 +402,22 @@ describe('Mochi town event behavior', () => {
 
     await runAction(TrainingRing(), player);
 
-    expect(player.variables.get('mochiSocial.battle.sparLadderXp')).toBe(5);
-    expect(player.variables.get('mochiSocial.battle.sparLadderWins')).toBe(1);
-    expect(player.variables.get('mochiSocial.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
-    expect(player.variables.get('mochiSocial.battle.lastRound')).toBe('jade-echo-apprentice-round-1');
-    expect(player.variables.get('mochiSocial.battle.lastRoundFocusScore')).toBe(35);
-    expect(player.variables.get('mochiSocial.battle.lastRoundOpponentScore')).toBe(19);
-    expect(player.variables.get('mochiSocial.battle.lastRoundVictory')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.lastRoundNoInjury')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.lastRoundParty')).toEqual(['aozhen', 'lirabao', 'jintari']);
-    expect(player.variables.get('mochiSocial.battle.lastRoundTranscript')).toEqual([
+    expect(player.variables.get('mochiPets.battle.sparLadderXp')).toBe(5);
+    expect(player.variables.get('mochiPets.battle.sparLadderWins')).toBe(1);
+    expect(player.variables.get('mochiPets.battle.lastSparOpponent')).toBe('jade-echo-apprentice');
+    expect(player.variables.get('mochiPets.battle.lastRound')).toBe('jade-echo-apprentice-round-1');
+    expect(player.variables.get('mochiPets.battle.lastRoundFocusScore')).toBe(35);
+    expect(player.variables.get('mochiPets.battle.lastRoundOpponentScore')).toBe(19);
+    expect(player.variables.get('mochiPets.battle.lastRoundVictory')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.lastRoundNoInjury')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.lastRoundParty')).toEqual(['aozhen', 'lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.battle.lastRoundTranscript')).toEqual([
       'Aozhen:Skybell Guard:14',
       'Lirabao:Lantern Pulse:11',
       'Jintari:Goldleaf Feint:10'
     ]);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         spirit: { id: 'aozhen', bond: 2, growth: 'seed' },
         training: {
@@ -450,31 +450,31 @@ describe('Mochi town event behavior', () => {
 
   it('records Triune Jade Harmony from the party banner after mastery and growth proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'aozhen');
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.world.routeMastery', 'jade-cloudbell-circuit');
-    player.variables.set('mochiSocial.spirit.aozhen.growthRiteProof', true);
-    player.variables.set('mochiSocial.spirit.aozhen.growthRite', 'moonwell-bloom-rite');
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
-    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
-    player.variables.set('mochiSocial.battle.sparLadderXp', 5);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'aozhen');
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.world.routeMastery', 'jade-cloudbell-circuit');
+    player.variables.set('mochiPets.spirit.aozhen.growthRiteProof', true);
+    player.variables.set('mochiPets.spirit.aozhen.growthRite', 'moonwell-bloom-rite');
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.affinityTrialWins', 1);
+    player.variables.set('mochiPets.spirit.aozhen.trainingXp', 3);
+    player.variables.set('mochiPets.battle.sparLadderXp', 5);
 
     await runAction(PartyBanner(), player);
 
-    expect(player.variables.get('mochiSocial.spirits.party')).toEqual(['aozhen', 'lirabao', 'jintari']);
-    expect(player.variables.get('mochiSocial.spirits.harmonyFormProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.harmonyForm')).toBe('triune-jade-harmony');
-    expect(player.variables.get('mochiSocial.spirits.harmonyName')).toBe('Triune Jade Harmony');
-    expect(player.variables.get('mochiSocial.spirits.harmonyScore')).toBe(27);
-    expect(player.variables.get('mochiSocial.spirits.harmonySashClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.party')).toEqual(['aozhen', 'lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.spirits.harmonyFormProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.harmonyForm')).toBe('triune-jade-harmony');
+    expect(player.variables.get('mochiPets.spirits.harmonyName')).toBe('Triune Jade Harmony');
+    expect(player.variables.get('mochiPets.spirits.harmonyScore')).toBe(27);
+    expect(player.variables.get('mochiPets.spirits.harmonySashClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('triune-jade-sash');
     expect(player.notifications.at(-1)?.message).toBe('Harmony formed');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit party harmony formed' });
     expect(player.saves.at(-1)?.options.source).toBe('party-banner');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         party: {
           activeSpiritId: 'aozhen',
@@ -500,33 +500,33 @@ describe('Mochi town event behavior', () => {
 
   it('records the Jade Echo Concord trial from the affinity dais after harmony and social proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'lirabao');
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.harmonyFormProof', true);
-    player.variables.set('mochiSocial.spirits.harmonyForm', 'triune-jade-harmony');
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
-    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
-    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 7);
-    player.variables.set('mochiSocial.social.profileViewed', true);
-    player.variables.set('mochiSocial.social.guildBuddyProof', true);
-    player.variables.set('mochiSocial.social.statusMood', 'cozy');
-    player.variables.set('mochiSocial.social.chatLines', ['Ready for concord.']);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'lirabao');
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.harmonyFormProof', true);
+    player.variables.set('mochiPets.spirits.harmonyForm', 'triune-jade-harmony');
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.sparLadderWins', 1);
+    player.variables.set('mochiPets.spirit.lirabao.bond', 5);
+    player.variables.set('mochiPets.spirit.lirabao.technique.lantern-pulse.xp', 7);
+    player.variables.set('mochiPets.social.profileViewed', true);
+    player.variables.set('mochiPets.social.guildBuddyProof', true);
+    player.variables.set('mochiPets.social.statusMood', 'cozy');
+    player.variables.set('mochiPets.social.chatLines', ['Ready for concord.']);
 
     await runAction(AffinityDais(), player);
 
-    expect(player.variables.get('mochiSocial.battle.harmonyTrialProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.harmonyTrial')).toBe('jade-echo-concord');
-    expect(player.variables.get('mochiSocial.battle.harmonyTrialName')).toBe('Jade Echo Concord Trial');
-    expect(player.variables.get('mochiSocial.battle.harmonyTrialScore')).toBe(24);
-    expect(player.variables.get('mochiSocial.battle.concordTallyClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.harmonyTrialProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.harmonyTrial')).toBe('jade-echo-concord');
+    expect(player.variables.get('mochiPets.battle.harmonyTrialName')).toBe('Jade Echo Concord Trial');
+    expect(player.variables.get('mochiPets.battle.harmonyTrialScore')).toBe(24);
+    expect(player.variables.get('mochiPets.battle.concordTallyClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('jade-echo-concord-tally');
     expect(player.notifications.at(-1)?.message).toBe('Concord trial cleared');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit harmony trial' });
     expect(player.saves.at(-1)?.options.source).toBe('affinity-dais');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         harmonyTrial: {
           trialId: 'jade-echo-concord',
@@ -546,36 +546,36 @@ describe('Mochi town event behavior', () => {
 
   it('records the Jade Mirror team match from the training ring after concord proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'lirabao');
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
-    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
-    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
-    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
-    player.variables.set('mochiSocial.social.chatLines', ['Ready for the team match.']);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'lirabao');
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirit.lirabao.bond', 5);
+    player.variables.set('mochiPets.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.spirits.growthRiteProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrialProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiPets.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiPets.battle.sparLadderWins', 1);
+    player.variables.set('mochiPets.social.chatLines', ['Ready for the team match.']);
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiPets.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiPets.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
 
     await runAction(TrainingRing(), player);
 
-    expect(player.variables.get('mochiSocial.battle.teamSparMatchProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.teamSparMatch')).toBe('jade-mirror-team-match');
-    expect(player.variables.get('mochiSocial.battle.teamSparMatchName')).toBe('Jade Mirror Team Match');
-    expect(player.variables.get('mochiSocial.battle.teamSparMatchScore')).toBe(32);
-    expect(player.variables.get('mochiSocial.battle.teamMatchRibbonClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.teamSparMatchProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.teamSparMatch')).toBe('jade-mirror-team-match');
+    expect(player.variables.get('mochiPets.battle.teamSparMatchName')).toBe('Jade Mirror Team Match');
+    expect(player.variables.get('mochiPets.battle.teamSparMatchScore')).toBe(32);
+    expect(player.variables.get('mochiPets.battle.teamMatchRibbonClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('jade-mirror-match-ribbon');
     expect(player.notifications.at(-1)?.message).toBe('Team match cleared');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit team match' });
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         teamSparMatch: {
           matchId: 'jade-mirror-team-match',
@@ -596,42 +596,42 @@ describe('Mochi town event behavior', () => {
 
   it('records the Silk Banner mentor drill from the training ring after full party readiness proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'lirabao');
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
-    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
-    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 17);
-    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.tacticMasteryXp', 14);
-    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
-    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
-    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
-    player.variables.set('mochiSocial.social.profileViewed', true);
-    player.variables.set('mochiSocial.social.guildBuddyProof', true);
-    player.variables.set('mochiSocial.social.chatLines', ['Ready for the mentor drill.']);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'lirabao');
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirit.lirabao.bond', 5);
+    player.variables.set('mochiPets.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiPets.spirit.lirabao.technique.lantern-pulse.xp', 17);
+    player.variables.set('mochiPets.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.tacticMasteryXp', 14);
+    player.variables.set('mochiPets.spirits.growthRiteProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrialProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiPets.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiPets.battle.sparLadderWins', 1);
+    player.variables.set('mochiPets.social.profileViewed', true);
+    player.variables.set('mochiPets.social.guildBuddyProof', true);
+    player.variables.set('mochiPets.social.chatLines', ['Ready for the mentor drill.']);
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiPets.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiPets.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
 
     await runAction(TrainingRing(), player);
 
-    expect(player.variables.get('mochiSocial.battle.teamSparMatchProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.mentorChallengeProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.mentorChallenge')).toBe('silk-banner-mentor-drill');
-    expect(player.variables.get('mochiSocial.battle.mentorChallengeName')).toBe('Silk Banner Mentor Drill');
-    expect(player.variables.get('mochiSocial.battle.mentorChallengeScore')).toBe(28);
-    expect(player.variables.get('mochiSocial.battle.mentorSealClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.teamSparMatchProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.mentorChallengeProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.mentorChallenge')).toBe('silk-banner-mentor-drill');
+    expect(player.variables.get('mochiPets.battle.mentorChallengeName')).toBe('Silk Banner Mentor Drill');
+    expect(player.variables.get('mochiPets.battle.mentorChallengeScore')).toBe(28);
+    expect(player.variables.get('mochiPets.battle.mentorSealClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('silk-banner-mentor-seal');
     expect(player.notifications.at(-1)?.message).toBe('Mentor challenge cleared');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit mentor challenge' });
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         mentorChallenge: {
           challengeId: 'silk-banner-mentor-drill',
@@ -653,48 +653,48 @@ describe('Mochi town event behavior', () => {
 
   it('attunes the Jade Heart trait from the training ring after mentor, loadout, growth, and care proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'lirabao');
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
-    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
-    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 17);
-    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
-    player.variables.set('mochiSocial.spirits.journalProof', true);
-    player.variables.set('mochiSocial.spirits.journalCount', 3);
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.tacticMasteryXp', 14);
-    player.variables.set('mochiSocial.battle.techniqueLoadoutProof', true);
-    player.variables.set('mochiSocial.battle.techniqueLoadout', 'jade-step-loadout');
-    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
-    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
-    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
-    player.variables.set('mochiSocial.social.profileViewed', true);
-    player.variables.set('mochiSocial.social.guildBuddyProof', true);
-    player.variables.set('mochiSocial.social.chatLines', ['Ready for the trait rite.']);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'lirabao');
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirit.lirabao.bond', 5);
+    player.variables.set('mochiPets.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiPets.spirit.lirabao.technique.lantern-pulse.xp', 17);
+    player.variables.set('mochiPets.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiPets.spirits.journalProof', true);
+    player.variables.set('mochiPets.spirits.journalCount', 3);
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.tacticMasteryXp', 14);
+    player.variables.set('mochiPets.battle.techniqueLoadoutProof', true);
+    player.variables.set('mochiPets.battle.techniqueLoadout', 'jade-step-loadout');
+    player.variables.set('mochiPets.spirits.growthRiteProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrialProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiPets.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiPets.battle.sparLadderWins', 1);
+    player.variables.set('mochiPets.social.profileViewed', true);
+    player.variables.set('mochiPets.social.guildBuddyProof', true);
+    player.variables.set('mochiPets.social.chatLines', ['Ready for the trait rite.']);
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiPets.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiPets.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
 
     await runAction(TrainingRing(), player);
 
-    expect(player.variables.get('mochiSocial.battle.mentorChallengeProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.traitAttunementProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.traitAttunement')).toBe('jade-heart-trait');
-    expect(player.variables.get('mochiSocial.spirits.traitAttunementName')).toBe('Jade Heart Trait Attunement');
-    expect(player.variables.get('mochiSocial.spirits.traitAttunementScore')).toBe(35);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.traitProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.trait')).toBe('Lanternhearted Guard');
-    expect(player.variables.get('mochiSocial.spirits.traitThreadClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.mentorChallengeProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.traitAttunementProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.traitAttunement')).toBe('jade-heart-trait');
+    expect(player.variables.get('mochiPets.spirits.traitAttunementName')).toBe('Jade Heart Trait Attunement');
+    expect(player.variables.get('mochiPets.spirits.traitAttunementScore')).toBe(35);
+    expect(player.variables.get('mochiPets.spirit.lirabao.traitProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.lirabao.trait')).toBe('Lanternhearted Guard');
+    expect(player.variables.get('mochiPets.spirits.traitThreadClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('jade-heart-trait-thread');
     expect(player.notifications.at(-1)?.message).toBe('Trait attuned');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit trait attunement' });
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         traitAttunement: {
           activeSpiritId: 'lirabao',
@@ -718,49 +718,49 @@ describe('Mochi town event behavior', () => {
 
   it('weaves the Jade Mirror battle conditions from the training ring after trait and social proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'lirabao');
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
-    player.variables.set('mochiSocial.spirit.lirabao.trainingXp', 3);
-    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 17);
-    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
-    player.variables.set('mochiSocial.spirits.journalProof', true);
-    player.variables.set('mochiSocial.spirits.journalCount', 3);
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.tacticMasteryXp', 14);
-    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
-    player.variables.set('mochiSocial.battle.techniqueLoadoutProof', true);
-    player.variables.set('mochiSocial.battle.techniqueLoadout', 'jade-step-loadout');
-    player.variables.set('mochiSocial.spirits.growthRiteProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrial', 'jade-echo-concord');
-    player.variables.set('mochiSocial.battle.harmonyTrialScore', 24);
-    player.variables.set('mochiSocial.battle.sparLadderWins', 1);
-    player.variables.set('mochiSocial.social.profileViewed', true);
-    player.variables.set('mochiSocial.social.guildBuddyProof', true);
-    player.variables.set('mochiSocial.social.statusMood', 'cozy');
-    player.variables.set('mochiSocial.social.chatLines', ['Ready for the condition weave.']);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'lirabao');
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirit.lirabao.bond', 5);
+    player.variables.set('mochiPets.spirit.lirabao.trainingXp', 3);
+    player.variables.set('mochiPets.spirit.lirabao.technique.lantern-pulse.xp', 17);
+    player.variables.set('mochiPets.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiPets.spirits.journalProof', true);
+    player.variables.set('mochiPets.spirits.journalCount', 3);
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.tacticMasteryXp', 14);
+    player.variables.set('mochiPets.battle.affinityTrialWins', 1);
+    player.variables.set('mochiPets.battle.techniqueLoadoutProof', true);
+    player.variables.set('mochiPets.battle.techniqueLoadout', 'jade-step-loadout');
+    player.variables.set('mochiPets.spirits.growthRiteProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrialProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrial', 'jade-echo-concord');
+    player.variables.set('mochiPets.battle.harmonyTrialScore', 24);
+    player.variables.set('mochiPets.battle.sparLadderWins', 1);
+    player.variables.set('mochiPets.social.profileViewed', true);
+    player.variables.set('mochiPets.social.guildBuddyProof', true);
+    player.variables.set('mochiPets.social.statusMood', 'cozy');
+    player.variables.set('mochiPets.social.chatLines', ['Ready for the condition weave.']);
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiPets.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiPets.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
 
     await runAction(TrainingRing(), player);
 
-    expect(player.variables.get('mochiSocial.spirits.traitAttunementProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.conditionWeaveProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.conditionWeave')).toBe('jade-mirror-condition-weave');
-    expect(player.variables.get('mochiSocial.battle.conditionWeaveName')).toBe('Jade Mirror Condition Weave');
-    expect(player.variables.get('mochiSocial.battle.conditionWeaveScore')).toBe(49);
-    expect(player.variables.get('mochiSocial.battle.conditionIds')).toEqual(['lantern-ward', 'goldleaf-tempo', 'skybell-guard']);
-    expect(player.variables.get('mochiSocial.battle.conditionCharmClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.traitAttunementProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.conditionWeaveProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.conditionWeave')).toBe('jade-mirror-condition-weave');
+    expect(player.variables.get('mochiPets.battle.conditionWeaveName')).toBe('Jade Mirror Condition Weave');
+    expect(player.variables.get('mochiPets.battle.conditionWeaveScore')).toBe(49);
+    expect(player.variables.get('mochiPets.battle.conditionIds')).toEqual(['lantern-ward', 'goldleaf-tempo', 'skybell-guard']);
+    expect(player.variables.get('mochiPets.battle.conditionCharmClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('jade-mirror-condition-charm');
     expect(player.notifications.at(-1)?.message).toBe('Condition weave complete');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit condition weave' });
     expect(player.saves.at(-1)?.options.source).toBe('training-ring');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         conditionWeave: {
           weaveId: 'jade-mirror-condition-weave',
@@ -788,13 +788,13 @@ describe('Mochi town event behavior', () => {
     await runAction(HabitatGrove(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('lantern-harmony-tea');
-    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao']);
-    expect(player.variables.get('mochiSocial.spirits.active')).toBe('lirabao');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.captureEncounter')).toBe('court-habitat-lirabao');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.captureRarity')).toBe('common');
+    expect(player.variables.get('mochiPets.spirits.bonded')).toEqual(['lirabao']);
+    expect(player.variables.get('mochiPets.spirits.active')).toBe('lirabao');
+    expect(player.variables.get('mochiPets.spirit.lirabao.captureEncounter')).toBe('court-habitat-lirabao');
+    expect(player.variables.get('mochiPets.spirit.lirabao.captureRarity')).toBe('common');
     expect(player.saves.at(-1)?.options.source).toBe('habitat-grove');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         capture: {
           spiritId: 'lirabao',
@@ -808,36 +808,36 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('no-real-value alpha capture loop');
 
     await runAction(HabitatGrove(), player);
-    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari']);
-    expect(player.variables.get('mochiSocial.spirit.jintari.captureRarity')).toBe('uncommon');
+    expect(player.variables.get('mochiPets.spirits.bonded')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.spirit.jintari.captureRarity')).toBe('uncommon');
     expect(player.items.filter((entry) => entry.item.id === 'lantern-harmony-tea')).toHaveLength(1);
   });
 
   it('records the Jade Court Habitat Bond after roster, journal, care, and local social proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'aozhen');
-    player.variables.set('mochiSocial.spirits.journalCount', 3);
-    player.variables.set('mochiSocial.spirit.aozhen.raisingProof', true);
-    player.variables.set('mochiSocial.spirit.aozhen.bond', 3);
-    player.variables.set('mochiSocial.spirit.aozhen.growth', 'sprout');
-    player.variables.set('mochiSocial.social.profileViewed', true);
-    player.variables.set('mochiSocial.social.guildBuddyProof', true);
-    player.variables.set('mochiSocial.social.statusMood', 'cozy');
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'aozhen');
+    player.variables.set('mochiPets.spirits.journalCount', 3);
+    player.variables.set('mochiPets.spirit.aozhen.raisingProof', true);
+    player.variables.set('mochiPets.spirit.aozhen.bond', 3);
+    player.variables.set('mochiPets.spirit.aozhen.growth', 'sprout');
+    player.variables.set('mochiPets.social.profileViewed', true);
+    player.variables.set('mochiPets.social.guildBuddyProof', true);
+    player.variables.set('mochiPets.social.statusMood', 'cozy');
 
     await runAction(HabitatGrove(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('jade-court-habitat-tassel');
-    expect(player.variables.get('mochiSocial.spirits.habitatBondProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.habitatBond')).toBe('jade-court-habitat-bond');
-    expect(player.variables.get('mochiSocial.spirits.habitatBondName')).toBe('Jade Court Habitat Bond');
-    expect(player.variables.get('mochiSocial.spirits.habitatBondScore')).toBe(18);
-    expect(player.variables.get('mochiSocial.spirits.habitatTasselClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.habitatBondProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.habitatBond')).toBe('jade-court-habitat-bond');
+    expect(player.variables.get('mochiPets.spirits.habitatBondName')).toBe('Jade Court Habitat Bond');
+    expect(player.variables.get('mochiPets.spirits.habitatBondScore')).toBe(18);
+    expect(player.variables.get('mochiPets.spirits.habitatTasselClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Habitat bond recorded');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit habitat bond' });
     expect(player.saves.at(-1)?.options.source).toBe('habitat-grove');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         habitatBond: {
           bondId: 'jade-court-habitat-bond',
@@ -867,13 +867,13 @@ describe('Mochi town event behavior', () => {
     await runAction(HabitatGrove(), player);
     await runAction(JournalPavilion(), player);
 
-    expect(player.variables.get('mochiSocial.spirits.journalViewed')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.journalDiscovered')).toEqual(['lirabao', 'jintari']);
-    expect(player.variables.get('mochiSocial.spirits.journalCount')).toBe(2);
+    expect(player.variables.get('mochiPets.spirits.journalViewed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.journalDiscovered')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.spirits.journalCount')).toBe(2);
     expect(player.notifications.at(-1)?.message).toBe('Journal updated');
     expect(player.saves.at(-1)?.options.source).toBe('journal-pavilion');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         journal: {
           activeSpiritId: 'jintari',
@@ -890,32 +890,32 @@ describe('Mochi town event behavior', () => {
 
   it('records the Jade Court Research Folio from the journal pavilion after field and battle proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'aozhen');
-    player.variables.set('mochiSocial.spirit.aozhen.bond', 3);
-    player.variables.set('mochiSocial.spirit.aozhen.growth', 'sprout');
-    player.variables.set('mochiSocial.world.discoveredRoutes', ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
-    player.variables.set('mochiSocial.spirits.habitatBondProof', true);
-    player.variables.set('mochiSocial.spirits.habitatBond', 'jade-court-habitat-bond');
-    player.variables.set('mochiSocial.spirit.aozhen.technique.lastMove', 'skybell-guard');
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
-    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'aozhen');
+    player.variables.set('mochiPets.spirit.aozhen.bond', 3);
+    player.variables.set('mochiPets.spirit.aozhen.growth', 'sprout');
+    player.variables.set('mochiPets.world.discoveredRoutes', ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
+    player.variables.set('mochiPets.spirits.habitatBondProof', true);
+    player.variables.set('mochiPets.spirits.habitatBond', 'jade-court-habitat-bond');
+    player.variables.set('mochiPets.spirit.aozhen.technique.lastMove', 'skybell-guard');
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.affinityTrialWins', 1);
+    player.variables.set('mochiPets.spirit.aozhen.trainingXp', 3);
 
     await runAction(JournalPavilion(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('jade-court-research-folio');
-    expect(player.variables.get('mochiSocial.spirits.journalCount')).toBe(3);
-    expect(player.variables.get('mochiSocial.spirits.researchProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.researchFolio')).toBe('jade-court-research-folio');
-    expect(player.variables.get('mochiSocial.spirits.researchFolioName')).toBe('Jade Court Research Folio');
-    expect(player.variables.get('mochiSocial.spirits.researchScore')).toBe(20);
-    expect(player.variables.get('mochiSocial.spirits.researchFolioClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.journalCount')).toBe(3);
+    expect(player.variables.get('mochiPets.spirits.researchProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.researchFolio')).toBe('jade-court-research-folio');
+    expect(player.variables.get('mochiPets.spirits.researchFolioName')).toBe('Jade Court Research Folio');
+    expect(player.variables.get('mochiPets.spirits.researchScore')).toBe(20);
+    expect(player.variables.get('mochiPets.spirits.researchFolioClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Journal updated');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit research folio recorded' });
     expect(player.saves.at(-1)?.options.source).toBe('journal-pavilion');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         journal: {
           activeSpiritId: 'aozhen',
@@ -945,32 +945,32 @@ describe('Mochi town event behavior', () => {
 
   it('seals the Jade Court Spirit Compendium from the journal pavilion after collection proof', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'aozhen');
-    player.variables.set('mochiSocial.spirit.aozhen.bond', 3);
-    player.variables.set('mochiSocial.spirit.aozhen.growth', 'sprout');
-    player.variables.set('mochiSocial.world.discoveredRoutes', ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.spirits.habitatBondProof', true);
-    player.variables.set('mochiSocial.spirits.habitatBond', 'jade-court-habitat-bond');
-    player.variables.set('mochiSocial.spirit.aozhen.technique.lastMove', 'skybell-guard');
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
-    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'aozhen');
+    player.variables.set('mochiPets.spirit.aozhen.bond', 3);
+    player.variables.set('mochiPets.spirit.aozhen.growth', 'sprout');
+    player.variables.set('mochiPets.world.discoveredRoutes', ['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.spirits.habitatBondProof', true);
+    player.variables.set('mochiPets.spirits.habitatBond', 'jade-court-habitat-bond');
+    player.variables.set('mochiPets.spirit.aozhen.technique.lastMove', 'skybell-guard');
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.affinityTrialWins', 1);
+    player.variables.set('mochiPets.spirit.aozhen.trainingXp', 3);
 
     await runAction(JournalPavilion(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('jade-court-compendium-seal');
-    expect(player.variables.get('mochiSocial.spirits.researchProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.compendiumProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirits.compendium')).toBe('jade-court-spirit-compendium');
-    expect(player.variables.get('mochiSocial.spirits.compendiumName')).toBe('Jade Court Spirit Compendium');
-    expect(player.variables.get('mochiSocial.spirits.compendiumScore')).toBe(29);
-    expect(player.variables.get('mochiSocial.spirits.compendiumSealClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.researchProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.compendiumProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.compendium')).toBe('jade-court-spirit-compendium');
+    expect(player.variables.get('mochiPets.spirits.compendiumName')).toBe('Jade Court Spirit Compendium');
+    expect(player.variables.get('mochiPets.spirits.compendiumScore')).toBe(29);
+    expect(player.variables.get('mochiPets.spirits.compendiumSealClaimed')).toBe(true);
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit compendium sealed' });
     expect(player.saves.at(-1)?.options.source).toBe('journal-pavilion');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         compendium: {
           compendiumId: 'jade-court-spirit-compendium',
@@ -1001,16 +1001,16 @@ describe('Mochi town event behavior', () => {
     await runAction(ExpeditionGate(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('moonbridge-field-ribbon');
-    expect(player.variables.get('mochiSocial.world.lastExpeditionRoute')).toBe('moonbridge-bamboo-trail');
-    expect(player.variables.get('mochiSocial.world.lastExpeditionEncounter')).toBe('jintari');
-    expect(player.variables.get('mochiSocial.world.discoveredRoutes')).toEqual(['moonbridge-bamboo-trail']);
-    expect(player.variables.get('mochiSocial.world.expeditionCount')).toBe(1);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.lastExpeditionRoute')).toBe('moonbridge-bamboo-trail');
-    expect(player.variables.get('mochiSocial.world.trailRibbonClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.world.lastExpeditionRoute')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiPets.world.lastExpeditionEncounter')).toBe('jintari');
+    expect(player.variables.get('mochiPets.world.discoveredRoutes')).toEqual(['moonbridge-bamboo-trail']);
+    expect(player.variables.get('mochiPets.world.expeditionCount')).toBe(1);
+    expect(player.variables.get('mochiPets.spirit.lirabao.lastExpeditionRoute')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiPets.world.trailRibbonClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Route scouted');
     expect(player.saves.at(-1)?.options.source).toBe('expedition-gate');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         expedition: {
           routeId: 'moonbridge-bamboo-trail',
@@ -1039,26 +1039,26 @@ describe('Mochi town event behavior', () => {
     await runAction(ExpeditionGate(), player);
     await runAction(RouteInvitationAltar(), player);
 
-    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari']);
-    expect(player.variables.get('mochiSocial.spirits.active')).toBe('jintari');
-    expect(player.variables.get('mochiSocial.spirit.jintari.bond')).toBe(1);
-    expect(player.variables.get('mochiSocial.spirit.jintari.growth')).toBe('seed');
-    expect(player.variables.get('mochiSocial.spirit.jintari.journalUnlocked')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirit.jintari.captureEncounter')).toBe('moonbridge-bamboo-trail-route-invitation');
-    expect(player.variables.get('mochiSocial.spirit.jintari.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
-    expect(player.variables.get('mochiSocial.world.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
-    expect(player.variables.get('mochiSocial.world.lastRouteInvitationSpirit')).toBe('jintari');
-    expect(player.variables.get('mochiSocial.world.routeInvitationProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.world.fieldAccordProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.world.lastFieldAccord')).toBe('moonbridge-goldleaf-accord');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccordRoute')).toBe('moonbridge-bamboo-trail');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccordSpirit')).toBe('jintari');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccordScore')).toBe(7);
-    expect(player.variables.get('mochiSocial.world.fieldAccordTalismanClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirits.bonded')).toEqual(['lirabao', 'jintari']);
+    expect(player.variables.get('mochiPets.spirits.active')).toBe('jintari');
+    expect(player.variables.get('mochiPets.spirit.jintari.bond')).toBe(1);
+    expect(player.variables.get('mochiPets.spirit.jintari.growth')).toBe('seed');
+    expect(player.variables.get('mochiPets.spirit.jintari.journalUnlocked')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.jintari.captureEncounter')).toBe('moonbridge-bamboo-trail-route-invitation');
+    expect(player.variables.get('mochiPets.spirit.jintari.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiPets.world.lastRouteInvitation')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiPets.world.lastRouteInvitationSpirit')).toBe('jintari');
+    expect(player.variables.get('mochiPets.world.routeInvitationProof')).toBe(true);
+    expect(player.variables.get('mochiPets.world.fieldAccordProof')).toBe(true);
+    expect(player.variables.get('mochiPets.world.lastFieldAccord')).toBe('moonbridge-goldleaf-accord');
+    expect(player.variables.get('mochiPets.world.lastFieldAccordRoute')).toBe('moonbridge-bamboo-trail');
+    expect(player.variables.get('mochiPets.world.lastFieldAccordSpirit')).toBe('jintari');
+    expect(player.variables.get('mochiPets.world.lastFieldAccordScore')).toBe(7);
+    expect(player.variables.get('mochiPets.world.fieldAccordTalismanClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Route spirit invited');
     expect(player.saves.at(-1)?.options.source).toBe('route-invitation-altar');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         fieldAccord: {
           accordId: 'moonbridge-goldleaf-accord',
@@ -1099,12 +1099,12 @@ describe('Mochi town event behavior', () => {
     await runAction(CareShrine(), player);
     await runAction(ExpeditionGate(), player);
 
-    expect(player.variables.get('mochiSocial.world.lastExpeditionRoute')).toBe('cloudbell-reed-bank');
-    expect(player.variables.get('mochiSocial.world.lastExpeditionEncounter')).toBe('aozhen');
-    expect(player.variables.get('mochiSocial.world.discoveredRoutes')).toEqual(['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
-    expect(player.variables.get('mochiSocial.world.expeditionCount')).toBe(2);
+    expect(player.variables.get('mochiPets.world.lastExpeditionRoute')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiPets.world.lastExpeditionEncounter')).toBe('aozhen');
+    expect(player.variables.get('mochiPets.world.discoveredRoutes')).toEqual(['moonbridge-bamboo-trail', 'cloudbell-reed-bank']);
+    expect(player.variables.get('mochiPets.world.expeditionCount')).toBe(2);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         expedition: {
           routeId: 'cloudbell-reed-bank',
@@ -1122,18 +1122,18 @@ describe('Mochi town event behavior', () => {
 
     await runAction(RouteInvitationAltar(), player);
 
-    expect(player.variables.get('mochiSocial.spirits.bonded')).toEqual(['lirabao', 'jintari', 'aozhen']);
-    expect(player.variables.get('mochiSocial.spirits.active')).toBe('aozhen');
-    expect(player.variables.get('mochiSocial.spirit.aozhen.captureEncounter')).toBe('cloudbell-reed-bank-route-invitation');
-    expect(player.variables.get('mochiSocial.spirit.aozhen.lastRouteInvitation')).toBe('cloudbell-reed-bank');
-    expect(player.variables.get('mochiSocial.world.lastRouteInvitation')).toBe('cloudbell-reed-bank');
-    expect(player.variables.get('mochiSocial.world.lastRouteInvitationSpirit')).toBe('aozhen');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccord')).toBe('cloudbell-skyvow-accord');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccordRoute')).toBe('cloudbell-reed-bank');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccordSpirit')).toBe('aozhen');
-    expect(player.variables.get('mochiSocial.world.lastFieldAccordScore')).toBe(15);
+    expect(player.variables.get('mochiPets.spirits.bonded')).toEqual(['lirabao', 'jintari', 'aozhen']);
+    expect(player.variables.get('mochiPets.spirits.active')).toBe('aozhen');
+    expect(player.variables.get('mochiPets.spirit.aozhen.captureEncounter')).toBe('cloudbell-reed-bank-route-invitation');
+    expect(player.variables.get('mochiPets.spirit.aozhen.lastRouteInvitation')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiPets.world.lastRouteInvitation')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiPets.world.lastRouteInvitationSpirit')).toBe('aozhen');
+    expect(player.variables.get('mochiPets.world.lastFieldAccord')).toBe('cloudbell-skyvow-accord');
+    expect(player.variables.get('mochiPets.world.lastFieldAccordRoute')).toBe('cloudbell-reed-bank');
+    expect(player.variables.get('mochiPets.world.lastFieldAccordSpirit')).toBe('aozhen');
+    expect(player.variables.get('mochiPets.world.lastFieldAccordScore')).toBe(15);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         fieldAccord: {
           accordId: 'cloudbell-skyvow-accord',
@@ -1180,27 +1180,27 @@ describe('Mochi town event behavior', () => {
     await runAction(ExpeditionGate(), player);
     await runAction(ExpeditionGate(), player);
 
-    expect(player.variables.get('mochiSocial.world.routeMasteryProof')).toBeUndefined();
+    expect(player.variables.get('mochiPets.world.routeMasteryProof')).toBeUndefined();
     expect(player.texts.at(-1)).toContain('Jade Cloudbell Circuit needs');
 
     await runAction(JournalPavilion(), player);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
-    player.variables.set('mochiSocial.guild.rankTrialProof', true);
-    player.variables.set('mochiSocial.guild.rankTrial', 'jade-court-initiate');
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiPets.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiPets.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiPets.guild.rankTrialProof', true);
+    player.variables.set('mochiPets.guild.rankTrial', 'jade-court-initiate');
     await runAction(ExpeditionGate(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('cloudbell-route-knot');
-    expect(player.variables.get('mochiSocial.world.routeMasteryProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.world.routeMastery')).toBe('jade-cloudbell-circuit');
-    expect(player.variables.get('mochiSocial.world.routeMasteryTitle')).toBe('Jade Cloudbell Circuit');
-    expect(player.variables.get('mochiSocial.world.routeMasteryScore')).toBe(21);
-    expect(player.variables.get('mochiSocial.world.routeMasteryKnotClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.world.routeMasteryProof')).toBe(true);
+    expect(player.variables.get('mochiPets.world.routeMastery')).toBe('jade-cloudbell-circuit');
+    expect(player.variables.get('mochiPets.world.routeMasteryTitle')).toBe('Jade Cloudbell Circuit');
+    expect(player.variables.get('mochiPets.world.routeMasteryScore')).toBe(21);
+    expect(player.variables.get('mochiPets.world.routeMasteryKnotClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Route circuit mastered');
     expect(player.saves.at(-1)?.options.source).toBe('expedition-gate');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         routeMastery: {
           masteryId: 'jade-cloudbell-circuit',
@@ -1226,14 +1226,14 @@ describe('Mochi town event behavior', () => {
     await runAction(CareShrine(), player);
     await runAction(TechniqueDojo(), player);
 
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp')).toBe(7);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.level')).toBe('practiced');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lastMove')).toBe('lantern-pulse');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.focusScore')).toBe(11);
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lantern-pulse.xp')).toBe(7);
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lantern-pulse.level')).toBe('practiced');
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lastMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.focusScore')).toBe(11);
     expect(player.notifications.at(-1)?.message).toBe('Technique refined');
     expect(player.saves.at(-1)?.options.source).toBe('technique-dojo');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         technique: {
           spiritId: 'lirabao',
@@ -1252,35 +1252,35 @@ describe('Mochi town event behavior', () => {
 
   it('records the Jade Step technique loadout at the Mochirii dojo after party preparation', async () => {
     const player = createFakePlayer();
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'lirabao');
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirit.lirabao.bond', 5);
-    player.variables.set('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp', 10);
-    player.variables.set('mochiSocial.spirits.journalProof', true);
-    player.variables.set('mochiSocial.spirits.journalCount', 3);
-    player.variables.set('mochiSocial.world.routeMasteryProof', true);
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.lastTacticScroll', 'goldleaf-opening');
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'lirabao');
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirit.lirabao.bond', 5);
+    player.variables.set('mochiPets.spirit.lirabao.technique.lantern-pulse.xp', 10);
+    player.variables.set('mochiPets.spirits.journalProof', true);
+    player.variables.set('mochiPets.spirits.journalCount', 3);
+    player.variables.set('mochiPets.world.routeMasteryProof', true);
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.lastTacticScroll', 'goldleaf-opening');
 
     await runAction(TechniqueDojo(), player);
 
-    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.battle.techniqueLoadout')).toBe('jade-step-loadout');
-    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutName')).toBe('Jade Step Loadout');
-    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutScore')).toBe(25);
-    expect(player.variables.get('mochiSocial.battle.techniqueLoadoutMoves')).toEqual([
+    expect(player.variables.get('mochiPets.battle.techniqueLoadoutProof')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.techniqueLoadout')).toBe('jade-step-loadout');
+    expect(player.variables.get('mochiPets.battle.techniqueLoadoutName')).toBe('Jade Step Loadout');
+    expect(player.variables.get('mochiPets.battle.techniqueLoadoutScore')).toBe(25);
+    expect(player.variables.get('mochiPets.battle.techniqueLoadoutMoves')).toEqual([
       'lirabao:lantern-pulse',
       'jintari:goldleaf-feint',
       'aozhen:skybell-guard'
     ]);
-    expect(player.variables.get('mochiSocial.battle.loadoutSlipClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.battle.loadoutSlipClaimed')).toBe(true);
     expect(player.items.at(-1)?.item.id).toBe('jade-step-loadout-slip');
     expect(player.notifications.at(-1)?.message).toBe('Loadout prepared');
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Mochi Spirit technique loadout' });
     expect(player.saves.at(-1)?.options.source).toBe('technique-dojo');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         techniqueLoadout: {
           loadoutId: 'jade-step-loadout',
@@ -1312,21 +1312,21 @@ describe('Mochi town event behavior', () => {
     await runAction(TechniqueDojo(), player);
     await runAction(TacticScrollStand(), player);
 
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp')).toBe(15);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.level')).toBe('practiced');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lastMove')).toBe('lantern-pulse');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.last')).toBe('lantern-anchor');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.lastMove')).toBe('lantern-pulse');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.stance')).toBe('anchor');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.tactic.focusScore')).toBe(16);
-    expect(player.variables.get('mochiSocial.battle.lastTacticScroll')).toBe('lantern-anchor');
-    expect(player.variables.get('mochiSocial.battle.tacticScrollProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(4);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('sprout');
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lantern-pulse.xp')).toBe(15);
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lantern-pulse.level')).toBe('practiced');
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lastMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiPets.spirit.lirabao.tactic.last')).toBe('lantern-anchor');
+    expect(player.variables.get('mochiPets.spirit.lirabao.tactic.lastMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiPets.spirit.lirabao.tactic.stance')).toBe('anchor');
+    expect(player.variables.get('mochiPets.spirit.lirabao.tactic.focusScore')).toBe(16);
+    expect(player.variables.get('mochiPets.battle.lastTacticScroll')).toBe('lantern-anchor');
+    expect(player.variables.get('mochiPets.battle.tacticScrollProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.lirabao.bond')).toBe(4);
+    expect(player.variables.get('mochiPets.spirit.lirabao.growth')).toBe('sprout');
     expect(player.notifications.at(-1)?.message).toBe('Tactic scroll studied');
     expect(player.saves.at(-1)?.options.source).toBe('tactic-scroll-stand');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         tactic: {
           spiritId: 'lirabao',
@@ -1354,23 +1354,23 @@ describe('Mochi town event behavior', () => {
 
     await runAction(SpiritEvent(SPIRITS[0]), player);
     await runAction(HabitatGrove(), player);
-    player.variables.set('mochiSocial.spirit.jintari.bond', 3);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit']);
-    player.variables.set('mochiSocial.battle.tacticScrollProof', true);
-    player.variables.set('mochiSocial.battle.affinityTrialWins', 1);
-    player.variables.set('mochiSocial.spirits.journalCount', 2);
+    player.variables.set('mochiPets.spirit.jintari.bond', 3);
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit']);
+    player.variables.set('mochiPets.battle.tacticScrollProof', true);
+    player.variables.set('mochiPets.battle.affinityTrialWins', 1);
+    player.variables.set('mochiPets.spirits.journalCount', 2);
     await runAction(GuildRankBell(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('jade-court-rank-seal');
-    expect(player.variables.get('mochiSocial.guild.rankTrialProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.guild.rankTrial')).toBe('jade-court-initiate');
-    expect(player.variables.get('mochiSocial.guild.rankTitle')).toBe('Jade Court Initiate');
-    expect(player.variables.get('mochiSocial.guild.rankScore')).toBe(14);
-    expect(player.variables.get('mochiSocial.guild.rankSealClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.guild.rankTrialProof')).toBe(true);
+    expect(player.variables.get('mochiPets.guild.rankTrial')).toBe('jade-court-initiate');
+    expect(player.variables.get('mochiPets.guild.rankTitle')).toBe('Jade Court Initiate');
+    expect(player.variables.get('mochiPets.guild.rankScore')).toBe(14);
+    expect(player.variables.get('mochiPets.guild.rankSealClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Guild rank recorded');
     expect(player.saves.at(-1)?.options.source).toBe('guild-rank-bell');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         rank: {
           trialId: 'jade-court-initiate',
@@ -1396,23 +1396,23 @@ describe('Mochi town event behavior', () => {
     await runAction(GrowthMoonwell(), player);
     expect(player.texts.at(-1)).toContain('Moonwell Bloom Rite needs');
 
-    player.variables.set('mochiSocial.spirit.jintari.bond', 5);
-    player.variables.set('mochiSocial.spirit.jintari.growth', 'glow');
-    player.variables.set('mochiSocial.spirit.jintari.trainingXp', 3);
-    player.variables.set('mochiSocial.spirit.jintari.raisingProof', true);
-    player.variables.set('mochiSocial.guild.rankTrialProof', true);
-    player.variables.set('mochiSocial.guild.rankTrial', 'jade-court-initiate');
+    player.variables.set('mochiPets.spirit.jintari.bond', 5);
+    player.variables.set('mochiPets.spirit.jintari.growth', 'glow');
+    player.variables.set('mochiPets.spirit.jintari.trainingXp', 3);
+    player.variables.set('mochiPets.spirit.jintari.raisingProof', true);
+    player.variables.set('mochiPets.guild.rankTrialProof', true);
+    player.variables.set('mochiPets.guild.rankTrial', 'jade-court-initiate');
     await runAction(GrowthMoonwell(), player);
 
     expect(player.items.at(-1)?.item.id).toBe('moonwell-bloom-sigil');
-    expect(player.variables.get('mochiSocial.spirit.jintari.growthRiteProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.spirit.jintari.growthRite')).toBe('moonwell-bloom-rite');
-    expect(player.variables.get('mochiSocial.spirit.jintari.growthForm')).toBe('Moonwell Bloom Form');
-    expect(player.variables.get('mochiSocial.spirit.jintari.growthSigilClaimed')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.jintari.growthRiteProof')).toBe(true);
+    expect(player.variables.get('mochiPets.spirit.jintari.growthRite')).toBe('moonwell-bloom-rite');
+    expect(player.variables.get('mochiPets.spirit.jintari.growthForm')).toBe('Moonwell Bloom Form');
+    expect(player.variables.get('mochiPets.spirit.jintari.growthSigilClaimed')).toBe(true);
     expect(player.notifications.at(-1)?.message).toBe('Growth rite opened');
     expect(player.saves.at(-1)?.options.source).toBe('growth-moonwell');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         growthRite: {
           riteId: 'moonwell-bloom-rite',
@@ -1441,16 +1441,16 @@ describe('Mochi town event behavior', () => {
     await runAction(TechniqueDojo(), player);
     await runAction(AffinityDais(), player);
 
-    expect(player.variables.get('mochiSocial.battle.lastAffinityTrial')).toBe('jade-mirror-trial');
-    expect(player.variables.get('mochiSocial.battle.affinityTrialWins')).toBe(1);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.lastAffinityTrialMove')).toBe('lantern-pulse');
-    expect(player.variables.get('mochiSocial.spirit.lirabao.technique.lantern-pulse.xp')).toBe(11);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.bond')).toBe(4);
-    expect(player.variables.get('mochiSocial.spirit.lirabao.growth')).toBe('sprout');
+    expect(player.variables.get('mochiPets.battle.lastAffinityTrial')).toBe('jade-mirror-trial');
+    expect(player.variables.get('mochiPets.battle.affinityTrialWins')).toBe(1);
+    expect(player.variables.get('mochiPets.spirit.lirabao.lastAffinityTrialMove')).toBe('lantern-pulse');
+    expect(player.variables.get('mochiPets.spirit.lirabao.technique.lantern-pulse.xp')).toBe(11);
+    expect(player.variables.get('mochiPets.spirit.lirabao.bond')).toBe(4);
+    expect(player.variables.get('mochiPets.spirit.lirabao.growth')).toBe('sprout');
     expect(player.notifications.at(-1)?.message).toBe('Affinity trial cleared');
     expect(player.saves.at(-1)?.options.source).toBe('affinity-dais');
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         affinity: {
           spiritId: 'lirabao',
@@ -1478,18 +1478,18 @@ describe('Mochi town event behavior', () => {
 
     await runAction(MarketBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('jade-thread-charm');
-    expect(player.variables.get('mochiSocial.alpha.charmListed')).toBe(true);
+    expect(player.variables.get('mochiPets.alpha.charmListed')).toBe(true);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: { charmListed: true }
     });
     expect(player.saves.at(-1)?.options.source).toBe('market-board');
     expect(player.texts.at(-1)).toContain('without real value');
 
     await runAction(TradePost(), player);
-    expect(player.variables.get('mochiSocial.alpha.tradeProof')).toBe(true);
+    expect(player.variables.get('mochiPets.alpha.tradeProof')).toBe(true);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: { tradeProof: true }
     });
     expect(player.saves.at(-1)?.options.source).toBe('trade-post');
@@ -1498,24 +1498,24 @@ describe('Mochi town event behavior', () => {
     await runAction(CanaryShrine(), player);
     expect(player.texts.at(-1)).toContain('Bond with Lirabao');
 
-    player.variables.set('mochiSocial.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.spirits.active', 'aozhen');
-    player.variables.set('mochiSocial.spirits.journalCount', 3);
-    player.variables.set('mochiSocial.world.routeInvitationProof', true);
-    player.variables.set('mochiSocial.spirit.lirabao.careStreak', 1);
-    player.variables.set('mochiSocial.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
-    player.variables.set('mochiSocial.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
-    player.variables.set('mochiSocial.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
+    player.variables.set('mochiPets.spirits.bonded', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.spirits.active', 'aozhen');
+    player.variables.set('mochiPets.spirits.journalCount', 3);
+    player.variables.set('mochiPets.world.routeInvitationProof', true);
+    player.variables.set('mochiPets.spirit.lirabao.careStreak', 1);
+    player.variables.set('mochiPets.quest.first-lantern-vow.steps', ['attune-spirit', 'greet-sifu-narao', 'open-journal']);
+    player.variables.set('mochiPets.quest.silk-market-kindness.steps', ['list-jade-thread-charm', 'offer-direct-trade', 'thank-local-buddy']);
+    player.variables.set('mochiPets.quest.skybell-spar.steps', ['choose-training-move', 'finish-training-bout', 'complete-raising-care']);
 
     await runAction(MarketBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('jade-market-receipt');
-    expect(player.variables.get('mochiSocial.alpha.marketReceiptProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.alpha.marketReceipt')).toBe('jade-court-market-receipt');
-    expect(player.variables.get('mochiSocial.alpha.marketReceiptName')).toBe('Jade Court Market Receipt');
-    expect(player.variables.get('mochiSocial.alpha.marketReceiptScore')).toBe(16);
-    expect(player.variables.get('mochiSocial.alpha.marketReceiptItemId')).toBe('jade-thread-charm');
+    expect(player.variables.get('mochiPets.alpha.marketReceiptProof')).toBe(true);
+    expect(player.variables.get('mochiPets.alpha.marketReceipt')).toBe('jade-court-market-receipt');
+    expect(player.variables.get('mochiPets.alpha.marketReceiptName')).toBe('Jade Court Market Receipt');
+    expect(player.variables.get('mochiPets.alpha.marketReceiptScore')).toBe(16);
+    expect(player.variables.get('mochiPets.alpha.marketReceiptItemId')).toBe('jade-thread-charm');
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         marketReceipt: {
           receiptId: 'jade-court-market-receipt',
@@ -1539,16 +1539,16 @@ describe('Mochi town event behavior', () => {
 
     await runAction(MarketBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('jade-court-provision-satchel');
-    expect(player.variables.get('mochiSocial.alpha.provisionSatchelProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.alpha.provisionSatchel')).toBe('jade-court-provision-satchel');
-    expect(player.variables.get('mochiSocial.alpha.provisionScore')).toBe(33);
-    expect(player.variables.get('mochiSocial.alpha.provisionStockItems')).toEqual([
+    expect(player.variables.get('mochiPets.alpha.provisionSatchelProof')).toBe(true);
+    expect(player.variables.get('mochiPets.alpha.provisionSatchel')).toBe('jade-court-provision-satchel');
+    expect(player.variables.get('mochiPets.alpha.provisionScore')).toBe(33);
+    expect(player.variables.get('mochiPets.alpha.provisionStockItems')).toEqual([
       'jade-thread-charm',
       'lantern-harmony-tea',
       'jade-mooncake-box'
     ]);
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         provisionSatchel: {
           satchelId: 'jade-court-provision-satchel',
@@ -1570,24 +1570,24 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Jade Court Provision Satchel stocked');
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha item preparation proof');
 
-    player.variables.set('mochiSocial.spirit.aozhen.trainingXp', 3);
-    player.variables.set('mochiSocial.social.profileViewed', true);
-    player.variables.set('mochiSocial.social.guildBuddyProof', true);
-    player.variables.set('mochiSocial.social.statusMood', 'cozy');
+    player.variables.set('mochiPets.spirit.aozhen.trainingXp', 3);
+    player.variables.set('mochiPets.social.profileViewed', true);
+    player.variables.set('mochiPets.social.guildBuddyProof', true);
+    player.variables.set('mochiPets.social.statusMood', 'cozy');
 
     await runAction(QuestBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('jade-court-commission-knot');
-    expect(player.variables.get('mochiSocial.guild.commissionProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.guild.commission')).toBe('jade-court-commission-ledger');
-    expect(player.variables.get('mochiSocial.guild.commissionName')).toBe('Jade Court Commission Ledger');
-    expect(player.variables.get('mochiSocial.guild.commissionScore')).toBe(31);
-    expect(player.variables.get('mochiSocial.guild.commissionCompletedQuests')).toEqual([
+    expect(player.variables.get('mochiPets.guild.commissionProof')).toBe(true);
+    expect(player.variables.get('mochiPets.guild.commission')).toBe('jade-court-commission-ledger');
+    expect(player.variables.get('mochiPets.guild.commissionName')).toBe('Jade Court Commission Ledger');
+    expect(player.variables.get('mochiPets.guild.commissionScore')).toBe(31);
+    expect(player.variables.get('mochiPets.guild.commissionCompletedQuests')).toEqual([
       'first-lantern-vow',
       'silk-market-kindness',
       'skybell-spar'
     ]);
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         guildCommission: {
           commissionId: 'jade-court-commission-ledger',
@@ -1608,24 +1608,24 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Jade Court Commission Ledger complete');
     expect(player.texts.at(-1)).toContain('no-real-value closed-alpha guild reputation proof');
 
-    player.variables.set('mochiSocial.spirits.party', ['lirabao', 'jintari', 'aozhen']);
-    player.variables.set('mochiSocial.social.localPresenceCount', 2);
-    player.variables.set('mochiSocial.social.chatLines', ['Ready for the first guild rally.']);
-    player.variables.set('mochiSocial.social.emoteProof', true);
-    player.variables.set('mochiSocial.party.harmonyFormProof', true);
-    player.variables.set('mochiSocial.battle.harmonyTrialProof', true);
-    player.variables.set('mochiSocial.battle.teamSparMatchProof', true);
+    player.variables.set('mochiPets.spirits.party', ['lirabao', 'jintari', 'aozhen']);
+    player.variables.set('mochiPets.social.localPresenceCount', 2);
+    player.variables.set('mochiPets.social.chatLines', ['Ready for the first guild rally.']);
+    player.variables.set('mochiPets.social.emoteProof', true);
+    player.variables.set('mochiPets.party.harmonyFormProof', true);
+    player.variables.set('mochiPets.battle.harmonyTrialProof', true);
+    player.variables.set('mochiPets.battle.teamSparMatchProof', true);
 
     await runAction(QuestBoard(), player);
     expect(player.items.at(-1)?.item.id).toBe('jade-courtyard-rally-knot');
-    expect(player.variables.get('mochiSocial.guild.rallyProof')).toBe(true);
-    expect(player.variables.get('mochiSocial.guild.rally')).toBe('jade-courtyard-rally');
-    expect(player.variables.get('mochiSocial.guild.rallyName')).toBe('Jade Courtyard Rally');
-    expect(player.variables.get('mochiSocial.guild.rallyScore')).toBe(30);
-    expect(player.variables.get('mochiSocial.guild.rallyPresenceCount')).toBe(2);
-    expect(player.variables.get('mochiSocial.guild.rallyParty')).toEqual(['lirabao', 'jintari', 'aozhen']);
+    expect(player.variables.get('mochiPets.guild.rallyProof')).toBe(true);
+    expect(player.variables.get('mochiPets.guild.rally')).toBe('jade-courtyard-rally');
+    expect(player.variables.get('mochiPets.guild.rallyName')).toBe('Jade Courtyard Rally');
+    expect(player.variables.get('mochiPets.guild.rallyScore')).toBe(30);
+    expect(player.variables.get('mochiPets.guild.rallyPresenceCount')).toBe(2);
+    expect(player.variables.get('mochiPets.guild.rallyParty')).toEqual(['lirabao', 'jintari', 'aozhen']);
     expect(player.emitted.at(-1)).toMatchObject({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: {
         guildSocialRally: {
           rallyId: 'jade-courtyard-rally',
@@ -1647,9 +1647,9 @@ describe('Mochi town event behavior', () => {
 
     await runAction(CanaryShrine(), player);
     expect(player.items.at(-1)?.item.id).toBe('lirabao-canary-certificate');
-    expect(player.variables.get('mochiSocial.alpha.canaryCertificateRequested')).toBe(true);
+    expect(player.variables.get('mochiPets.alpha.canaryCertificateRequested')).toBe(true);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: { canaryRequested: true }
     });
     expect(player.saves.at(-1)?.options.source).toBe('canary-shrine');
@@ -1657,9 +1657,9 @@ describe('Mochi town event behavior', () => {
     expect(player.texts.at(-1)).toContain('Wallet Daemon services');
 
     await runAction(CanaryShrine(), player);
-    expect(player.variables.get('mochiSocial.alpha.canaryReturnRequested')).toBe(true);
+    expect(player.variables.get('mochiPets.alpha.canaryReturnRequested')).toBe(true);
     expect(player.emitted.at(-1)).toEqual({
-      type: 'mochi-social-alpha-state',
+      type: 'mochi-pets-alpha-state',
       value: { canaryRequested: true, canaryReturnRequested: true }
     });
     expect(player.saves.at(-1)?.metadata).toEqual({ title: 'Jade Vault return proof' });

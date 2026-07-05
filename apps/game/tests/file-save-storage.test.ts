@@ -8,7 +8,7 @@ import type { RpgPlayer } from '@rpgjs/server';
 const tempDirs: string[] = [];
 
 async function makeStorage() {
-  const directory = await mkdtemp(join(tmpdir(), 'mochi-social-saves-'));
+  const directory = await mkdtemp(join(tmpdir(), 'mochi-pets-saves-'));
   tempDirs.push(directory);
   return {
     directory,

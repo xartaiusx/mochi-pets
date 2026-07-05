@@ -1,5 +1,5 @@
 import { ALPHA_EDGE_FUNCTIONS, ALPHA_FEATURES } from './alpha-contract';
-import { BRIDGE_EVENTS, MOCHI_SOCIAL_PROTOCOL_VERSION } from './protocol';
+import { BRIDGE_EVENTS, MOCHI_PETS_PROTOCOL_VERSION } from './protocol';
 
 export const UNITY_SHARED_ROOM_CONTRACT = {
   engine: 'unity-webgl',
@@ -60,7 +60,7 @@ export const MANIFEST_CONTRACTS = {
   alphaPreview: {
     status: 'closed-preview',
     stopPoint: 'alpha-preview-ready',
-    websiteEntryPath: '/games/mochi-social',
+    websiteEntryPath: '/games/mochi-pets',
     accessGateOwner: 'parent-website',
     testerPasswordOwner: 'parent-website',
     authBridgeTokenPolicy: 'short-lived-access-token-only',
@@ -102,8 +102,8 @@ export const MANIFEST_CONTRACTS = {
 } as const;
 
 export interface GameManifest {
-  name: 'Mochi Social';
-  slug: 'mochi-social';
+  name: 'Mochi Pets';
+  slug: 'mochi-pets';
   version: string;
   engine: typeof UNITY_SHARED_ROOM_CONTRACT.engine;
   origin: string;
@@ -118,7 +118,7 @@ export interface GameManifest {
   avatarUploads: typeof UNITY_SHARED_ROOM_CONTRACT.avatarUploads;
   bridge: {
     protocolVersion: number;
-    namespace: 'MOCHI_SOCIAL';
+    namespace: 'MOCHI_PETS';
     parentToGame: string[];
     gameToParent: string[];
   };
@@ -147,16 +147,16 @@ export function createGameManifest(origin: string, version = '0.1.0'): GameManif
   const base = trimTrailingSlash(origin);
 
   return {
-    name: 'Mochi Social',
-    slug: 'mochi-social',
+    name: 'Mochi Pets',
+    slug: 'mochi-pets',
     version,
     origin: base,
     playUrl: `${base}/play`,
     embedUrl: `${base}/embed`,
     healthUrl: `${base}/healthz`,
     bridge: {
-      protocolVersion: MOCHI_SOCIAL_PROTOCOL_VERSION,
-      namespace: 'MOCHI_SOCIAL',
+      protocolVersion: MOCHI_PETS_PROTOCOL_VERSION,
+      namespace: 'MOCHI_PETS',
       parentToGame: [BRIDGE_EVENTS.auth, BRIDGE_EVENTS.signOut],
       gameToParent: [BRIDGE_EVENTS.ready, BRIDGE_EVENTS.authState, BRIDGE_EVENTS.error]
     },

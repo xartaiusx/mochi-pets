@@ -1,5 +1,5 @@
-const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
-const requireUnityWebgl = process.env.MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL === 'true';
+const baseUrl = (process.env.MOCHI_PETS_BASE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const requireUnityWebgl = process.env.MOCHI_PETS_REQUIRE_UNITY_WEBGL === 'true';
 
 const checks = [
   { path: '/healthz', name: 'health' },
@@ -17,8 +17,8 @@ for (const check of checks) {
 }
 
 const manifest = await fetch(`${baseUrl}/integration/game-manifest.json`).then((response) => response.json());
-if (manifest.name !== 'Mochi Social' || manifest.bridge?.namespace !== 'MOCHI_SOCIAL') {
-  throw new Error('Manifest does not expose the Mochi Social integration contract.');
+if (manifest.name !== 'Mochi Pets' || manifest.bridge?.namespace !== 'MOCHI_PETS') {
+  throw new Error('Manifest does not expose the Mochi Pets integration contract.');
 }
 
 if (manifest.activeRuntime !== 'unity-webgl' && manifest.activeRuntime !== 'legacy-fallback') {
@@ -67,12 +67,12 @@ if (requireUnityWebgl) {
 
   const embedHtml = await fetch(`${baseUrl}/embed`).then((response) => response.text());
   if (!/createUnityInstance|Build\/.+\.loader\.js|Unity WebGL/i.test(embedHtml)) {
-    throw new Error('/embed did not serve a Unity WebGL page while MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true.');
+    throw new Error('/embed did not serve a Unity WebGL page while MOCHI_PETS_REQUIRE_UNITY_WEBGL=true.');
   }
 
   if (
-    !embedHtml.includes('data-mochi-social-unity-bridge-config') ||
-    !embedHtml.includes('__MOCHI_SOCIAL_UNITY_BRIDGE_CONFIG') ||
+    !embedHtml.includes('data-mochi-pets-unity-bridge-config') ||
+    !embedHtml.includes('__MOCHI_PETS_UNITY_BRIDGE_CONFIG') ||
     !embedHtml.includes('allowedParentOrigins.has(event.origin)') ||
     !embedHtml.includes('sanitizeAuthMessage(event.data)')
   ) {
@@ -84,7 +84,7 @@ if ('chainRuntime' in alphaStatus || 'enjinCanaryConfigured' in alphaStatus) {
   throw new Error('Alpha status must not expose future asset provider state for the Unity shared-room alpha.');
 }
 
-console.log(`Mochi Social smoke checks passed for ${baseUrl}`);
+console.log(`Mochi Pets smoke checks passed for ${baseUrl}`);
 
 function assertNoFutureSystemKeys(payload, label) {
   const json = JSON.stringify(payload);

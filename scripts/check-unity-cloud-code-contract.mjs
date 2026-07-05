@@ -21,11 +21,11 @@ async function run() {
   await verifiesInteractRejectsInvalidActorId();
   await verifiesRevisionConflictAndInvalidIntent();
   await verifiesSupabaseMirrorPayloadAndFailOpenBehavior();
-  console.log('Mochi Social Unity Cloud Code contract check passed.');
+  console.log('Mochi Pets Unity Cloud Code contract check passed.');
 }
 
 async function verifiesLoadBootstrapsSharedLirabao() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialLoadSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsLoadSharedPet.js');
   const state = await harness.handler({
     params: sharedRoomParams,
     context: { projectId },
@@ -50,7 +50,7 @@ async function verifiesLoadBootstrapsSharedLirabao() {
 }
 
 async function verifiesLoadReplacesInvalidSharedPetIdentity() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialLoadSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsLoadSharedPet.js');
   harness.cloudSave.storeSharedPet({ ...defaultSharedPetState(), displayName: 'Other pet', mood: 'market-ready' });
 
   const state = await harness.handler({
@@ -66,7 +66,7 @@ async function verifiesLoadReplacesInvalidSharedPetIdentity() {
 }
 
 async function verifiesInteractAppliesAuthoritativeCare() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsInteractSharedPet.js');
   harness.cloudSave.storeSharedPet(defaultSharedPetState());
 
   const state = await harness.handler({
@@ -90,7 +90,7 @@ async function verifiesInteractAppliesAuthoritativeCare() {
 }
 
 async function verifiesInteractRejectsInvalidSharedPetIdentity() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsInteractSharedPet.js');
   harness.cloudSave.storeSharedPet({ ...defaultSharedPetState(), displayName: 'Other pet' });
 
   const renamed = await expectRejects(() => harness.handler({
@@ -112,10 +112,10 @@ async function verifiesInteractRejectsInvalidSharedPetIdentity() {
 }
 
 async function verifiesInteractRejectsInvalidActorId() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsInteractSharedPet.js');
   harness.cloudSave.storeSharedPet(defaultSharedPetState());
-  harness.secretManager.set('MOCHI_SOCIAL_ALPHA_ACTION_URL', 'https://example.functions.supabase.co/mochi-social-alpha-action');
-  harness.secretManager.set('MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'local-server-token');
+  harness.secretManager.set('MOCHI_PETS_ALPHA_ACTION_URL', 'https://example.functions.supabase.co/mochi-pets-alpha-action');
+  harness.secretManager.set('MOCHI_PETS_GAME_SERVER_TOKEN', 'local-server-token');
 
   const invalidActor = await expectRejects(() => harness.handler({
     params: { ...sharedRoomParams, interactionType: 'care', expectedRevision: 0, actorId: 'unity-player-id' },
@@ -130,7 +130,7 @@ async function verifiesInteractRejectsInvalidActorId() {
 }
 
 async function verifiesRevisionConflictAndInvalidIntent() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsInteractSharedPet.js');
   harness.cloudSave.storeSharedPet({ ...defaultSharedPetState(), revision: 4 });
 
   const conflict = await expectRejects(() => harness.handler({
@@ -160,10 +160,10 @@ async function verifiesRevisionConflictAndInvalidIntent() {
 }
 
 async function verifiesSupabaseMirrorPayloadAndFailOpenBehavior() {
-  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiSocialInteractSharedPet.js');
+  const harness = createHarness('unity/Assets/MochiSocial/CloudCode/mochiPetsInteractSharedPet.js');
   harness.cloudSave.storeSharedPet(defaultSharedPetState());
-  harness.secretManager.set('MOCHI_SOCIAL_ALPHA_ACTION_URL', 'https://example.functions.supabase.co/mochi-social-alpha-action');
-  harness.secretManager.set('MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'local-server-token');
+  harness.secretManager.set('MOCHI_PETS_ALPHA_ACTION_URL', 'https://example.functions.supabase.co/mochi-pets-alpha-action');
+  harness.secretManager.set('MOCHI_PETS_GAME_SERVER_TOKEN', 'local-server-token');
 
   const state = await harness.handler({
     params: { ...sharedRoomParams, interactionType: 'wave', expectedRevision: 0, actorId: validActorId },
@@ -176,8 +176,8 @@ async function verifiesSupabaseMirrorPayloadAndFailOpenBehavior() {
   assert(harness.axios.posts.length === 2, 'valid actor interactions must mirror interaction and state-saved audit events when configured.');
   const interactionMirror = harness.axios.posts[0];
   const savedMirror = harness.axios.posts[1];
-  assert(interactionMirror.url === 'https://example.functions.supabase.co/mochi-social-alpha-action', 'interaction mirror must post to the configured Edge Function URL.');
-  assert(savedMirror.url === 'https://example.functions.supabase.co/mochi-social-alpha-action', 'state mirror must post to the configured Edge Function URL.');
+  assert(interactionMirror.url === 'https://example.functions.supabase.co/mochi-pets-alpha-action', 'interaction mirror must post to the configured Edge Function URL.');
+  assert(savedMirror.url === 'https://example.functions.supabase.co/mochi-pets-alpha-action', 'state mirror must post to the configured Edge Function URL.');
   assert(interactionMirror.body.type === 'unity.pet.interaction', 'mirror must record unity.pet.interaction before state save evidence.');
   assert(savedMirror.body.type === 'unity.pet.state_saved', 'mirror must record unity.pet.state_saved event type.');
   assert(interactionMirror.body.playerId === validActorId, 'interaction mirror must attribute the Supabase actor.');
@@ -188,8 +188,8 @@ async function verifiesSupabaseMirrorPayloadAndFailOpenBehavior() {
   assert(savedMirror.body.payload.roomKey === 'jade-lantern-room-alpha', 'state mirror payload must use Jade Lantern room key.');
   assert(interactionMirror.body.payload.previousRevision === 0, 'interaction mirror must include previous shared pet revision.');
   assert(savedMirror.body.payload.state.revision === 1, 'state mirror payload must include the saved shared pet revision.');
-  assert(interactionMirror.options.headers['x-mochi-social-server-token'] === 'local-server-token', 'interaction mirror must use only the server token header.');
-  assert(savedMirror.options.headers['x-mochi-social-server-token'] === 'local-server-token', 'state mirror must use only the server token header.');
+  assert(interactionMirror.options.headers['x-mochi-pets-server-token'] === 'local-server-token', 'interaction mirror must use only the server token header.');
+  assert(savedMirror.options.headers['x-mochi-pets-server-token'] === 'local-server-token', 'state mirror must use only the server token header.');
 
   harness.cloudSave.storeSharedPet(defaultSharedPetState());
   harness.axios.failNext = true;

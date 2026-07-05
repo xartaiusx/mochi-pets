@@ -29,7 +29,7 @@ namespace MochiSocial.Networking
             }.WithDistributedAuthorityNetwork();
 
             CurrentSession = await MultiplayerService.Instance.CreateOrJoinSessionAsync(MochiSocialConstants.RoomSessionId, options);
-            Debug.Log($"[Mochi Social] Joined shared room session {CurrentSession.Id} with {CurrentSession.PlayerCount}/{CurrentSession.MaxPlayers} players.");
+            Debug.Log($"[Mochi Pets] Joined shared room session {CurrentSession.Id} with {CurrentSession.PlayerCount}/{CurrentSession.MaxPlayers} players.");
             return CurrentSession;
         }
 

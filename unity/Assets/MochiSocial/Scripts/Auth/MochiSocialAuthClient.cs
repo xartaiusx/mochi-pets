@@ -23,7 +23,7 @@ namespace MochiSocial.Auth
             var endpoint = ResolveUnityAuthEndpoint(message);
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                throw new InvalidOperationException("Missing mochi-social-unity-auth endpoint.");
+                throw new InvalidOperationException("Missing mochi-pets-unity-auth endpoint.");
             }
 
             var response = await RequestUnityTokensAsync(endpoint, message.accessToken);

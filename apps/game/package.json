@@ -1,8 +1,8 @@
 {
-  "name": "@mochi-social/game",
+  "name": "@mochi-pets/game",
   "version": "0.1.0",
   "private": true,
-  "description": "Mochi Social Unity WebGL host and integration wrapper.",
+  "description": "Mochi Pets Unity WebGL host and integration wrapper.",
   "license": "MIT",
   "type": "module",
   "scripts": {

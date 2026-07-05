@@ -1,6 +1,6 @@
-# Mochi Social Docs
+# Mochi Pets Docs
 
-Mochi Social is a closed Mochirii playtest where approved members enter one shared guild room, create a curated character, meet Lirabao, and care for the guild pet together. All playtest progress has no real value.
+Mochi Pets is a closed Mochirii playtest where approved members enter one shared guild room, create a curated character, meet Lirabao, and care for the guild pet together. All playtest progress has no real value.
 
 ## Player-Facing Playtest Docs
 

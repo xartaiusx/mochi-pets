@@ -25,11 +25,16 @@ try {
   );
 
   assert.equal(
-    resolveMochiSocialSiteRepoPath(fallbackRoot, { MOCHI_SOCIAL_SITE_REPO_PATH: '../custom-site' }),
+    resolveMochiSocialSiteRepoPath(fallbackRoot, { MOCHI_PETS_SITE_REPO_PATH: '../custom-site' }),
     resolve(fallbackRoot, '../custom-site')
+  );
+
+  assert.equal(
+    resolveMochiSocialSiteRepoPath(fallbackRoot, { MOCHI_SOCIAL_SITE_REPO_PATH: '../legacy-site' }),
+    resolve(fallbackRoot, '../legacy-site')
   );
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
 }
 
-console.log('Mochi Social site repo path resolver self-test OK.');
+console.log('Mochi Pets site repo path resolver self-test OK.');
