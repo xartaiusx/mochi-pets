@@ -40,14 +40,14 @@ C:\Users\xtyty\Documents\Mochi Social Ops\reports
 
 ## Parallel-Agent Safety
 
-A second agent may be working on Mochi Social game development in parallel. This goal must stay out of that agent's gameplay/art/runtime lane unless the user explicitly merges scopes.
+A second maintainer may be working on Mochi Social game development in parallel. This goal must stay out of that maintainer's gameplay/art/runtime lane unless the user explicitly merges scopes.
 
 - Treat `docs/monero-treasury.md`, this goal file, `scripts/check-monero-treasury-guardrails.mjs`, `scripts/check-secrets.mjs`, and package script wiring as the normal scope.
 - Avoid gameplay/map/HUD/asset files unless the user explicitly merges scopes. More specifically: avoid editing gameplay files, RPGJS map files, HUD/browser bridge files, alpha content files, generated assets, visual docs, or tests unrelated to Monero treasury guardrails.
-- Before editing any file that may also be touched by the game-dev agent, run `git status --short` and inspect the file diff. If unrelated changes are present, work around them or stage only exact hunks.
+- Before editing any file that may also be touched by the game-dev maintainer, run `git status --short` and inspect the file diff. If unrelated changes are present, work around them or stage only exact hunks.
 - Do not run `npm run prepare-assets`, visual generators, map exporters, or formatting commands that could rewrite game assets during this goal.
 - Do not run destructive Git commands, broad cleanup, or `git add -A` in a mixed worktree.
-- If the second agent has unpushed local changes in the same file, preserve them and add a narrow patch. Stop only if the file-level conflict makes the goal impossible without user direction.
+- If the second maintainer has unpushed local changes in the same file, preserve them and add a narrow patch. Stop only if the file-level conflict makes the goal impossible without user direction.
 - Keep commits scoped: one Monero treasury doc/check commit is better than bundling gameplay changes.
 
 ## Implementation Order

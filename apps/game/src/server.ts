@@ -3869,7 +3869,7 @@ function showAlphaPrompt(actingPlayer: RpgPlayer, message: string) {
 
 function emitAlphaHudState(actingPlayer: RpgPlayer, patch: AlphaHudStatePatch) {
   if (typeof (actingPlayer as { emit?: unknown }).emit === 'function') {
-    (actingPlayer as { emit(type: string, value?: unknown): void }).emit('mochi-social-alpha-state', patch);
+    (actingPlayer as { emit(type: string, value?: unknown): void }).emit('mochi-pets-alpha-state', patch);
   }
 }
 
@@ -3877,7 +3877,7 @@ const player: RpgPlayerHooks = {
   async onConnected(connectedPlayer: RpgPlayer) {
     connectedPlayer.name = getGuestName(connectedPlayer);
     connectedPlayer.setGraphic('wayfarer');
-    connectedPlayer.setVariable('mochiSocial.connectedAt', new Date().toISOString());
+    connectedPlayer.setVariable('mochiPets.connectedAt', new Date().toISOString());
     await connectedPlayer.changeMap('mochi-town', getSpawn(connectedPlayer));
     await connectedPlayer.load('auto', { reason: 'load', source: 'connect' }, { changeMap: false }).catch(() => null);
   },
@@ -3918,35 +3918,35 @@ function welcomeNpc(): EventDefinition {
       actingPlayer.showNotification('Guild spark found', { time: 1800, icon: 'sifu-narao' });
       showAlphaPrompt(
         actingPlayer,
-        'Welcome to Mochi Social. This closed alpha guild court is no-real-value and Canary-only, but it is ready for Mochirii spirit testing with friends.'
+        'Welcome to Mochi Pets. This closed alpha guild court is no-real-value and Canary-only, but it is ready for Mochirii spirit testing with friends.'
       );
     }
   };
 }
 
 function bondedSpirits(actingPlayer: RpgPlayer): string[] {
-  const spirits = actingPlayer.getVariable<string[]>('mochiSocial.spirits.bonded');
+  const spirits = actingPlayer.getVariable<string[]>('mochiPets.spirits.bonded');
   return Array.isArray(spirits) ? spirits : [];
 }
 
 function activeSpiritId(actingPlayer: RpgPlayer) {
-  return actingPlayer.getVariable<string>('mochiSocial.spirits.active') || bondedSpirits(actingPlayer)[0];
+  return actingPlayer.getVariable<string>('mochiPets.spirits.active') || bondedSpirits(actingPlayer)[0];
 }
 
 function partyIds(actingPlayer: RpgPlayer) {
-  const party = actingPlayer.getVariable<string[]>('mochiSocial.spirits.party');
+  const party = actingPlayer.getVariable<string[]>('mochiPets.spirits.party');
   return Array.isArray(party) ? party : [];
 }
 
 function bondMap(actingPlayer: RpgPlayer, party: readonly string[]) {
   return Object.fromEntries(
-    party.map((spiritId) => [spiritId, Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.bond`) || 1)])
+    party.map((spiritId) => [spiritId, Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${spiritId}.bond`) || 1)])
   );
 }
 
 function trainingXpTotal(actingPlayer: RpgPlayer, party: readonly string[]) {
   return party.reduce((total, spiritId) => {
-    return total + Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.trainingXp`) || 0);
+    return total + Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${spiritId}.trainingXp`) || 0);
   }, 0);
 }
 
@@ -3954,7 +3954,7 @@ function techniqueMasteryXpTotal(actingPlayer: RpgPlayer, party: readonly string
   return party.reduce((total, spiritId) => {
     const spirit = getSpirit(spiritId);
     const moveXp = spirit?.battle.moves.reduce((moveTotal, move) => {
-      return moveTotal + Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.technique.${move.id}.xp`) || 0);
+      return moveTotal + Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${spiritId}.technique.${move.id}.xp`) || 0);
     }, 0) || 0;
     return total + moveXp;
   }, 0);
@@ -3962,7 +3962,7 @@ function techniqueMasteryXpTotal(actingPlayer: RpgPlayer, party: readonly string
 
 function careStreakTotal(actingPlayer: RpgPlayer, party: readonly string[]) {
   return party.reduce((total, spiritId) => {
-    return Math.max(total, Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${spiritId}.careStreak`) || 0));
+    return Math.max(total, Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${spiritId}.careStreak`) || 0));
   }, 0);
 }
 
@@ -3977,12 +3977,12 @@ function preferredMoveIdBySpiritId() {
 
 function growthMap(actingPlayer: RpgPlayer, party: readonly string[]) {
   return Object.fromEntries(
-    party.map((spiritId) => [spiritId, actingPlayer.getVariable<string>(`mochiSocial.spirit.${spiritId}.growth`) || 'seed'])
+    party.map((spiritId) => [spiritId, actingPlayer.getVariable<string>(`mochiPets.spirit.${spiritId}.growth`) || 'seed'])
   );
 }
 
 function questSteps(actingPlayer: RpgPlayer, questId: string): string[] {
-  const completedSteps = actingPlayer.getVariable<string[]>(`mochiSocial.quest.${questId}.steps`);
+  const completedSteps = actingPlayer.getVariable<string[]>(`mochiPets.quest.${questId}.steps`);
   return Array.isArray(completedSteps) ? completedSteps : [];
 }
 
@@ -3993,7 +3993,7 @@ function completedQuestIds(actingPlayer: RpgPlayer): string[] {
 function selectQuestBoardQuest(actingPlayer: RpgPlayer) {
   const roster = bondedSpirits(actingPlayer);
   const completed = new Set(completedQuestIds(actingPlayer));
-  const activeQuestId = actingPlayer.getVariable<string>('mochiSocial.quest.active');
+  const activeQuestId = actingPlayer.getVariable<string>('mochiPets.quest.active');
   const activeQuest = quests.find((quest) => quest.id === activeQuestId);
   if (
     activeQuest &&
@@ -4024,11 +4024,11 @@ function spiritEvent(spirit: MochiSpirit): EventDefinition {
       }
 
       spirits.push(spirit.id);
-      actingPlayer.setVariable('mochiSocial.spirits.bonded', spirits);
-      actingPlayer.setVariable('mochiSocial.spirits.active', spirit.id);
-      actingPlayer.setVariable(`mochiSocial.spirit.${spirit.id}.bond`, 1);
-      actingPlayer.setVariable(`mochiSocial.spirit.${spirit.id}.growth`, 'seed');
-      actingPlayer.setVariable(`mochiSocial.spirit.${spirit.id}.journalUnlocked`, true);
+      actingPlayer.setVariable('mochiPets.spirits.bonded', spirits);
+      actingPlayer.setVariable('mochiPets.spirits.active', spirit.id);
+      actingPlayer.setVariable(`mochiPets.spirit.${spirit.id}.bond`, 1);
+      actingPlayer.setVariable(`mochiPets.spirit.${spirit.id}.growth`, 'seed');
+      actingPlayer.setVariable(`mochiPets.spirit.${spirit.id}.journalUnlocked`, true);
       actingPlayer.showNotification(`${spirit.name} bonded`, { time: 1800, icon: spirit.sprite });
       emitAlphaHudState(actingPlayer, { spirit: { id: spirit.id, bond: 1, growth: 'seed' } });
       await actingPlayer.save('auto', { title: 'Mochi Spirit bonded' }, { reason: 'auto', source: 'spirit-bond' });
@@ -4050,25 +4050,25 @@ function careShrine(): EventDefinition {
         return;
       }
 
-      const careStreakKey = `mochiSocial.spirit.${activeSpirit}.careStreak`;
+      const careStreakKey = `mochiPets.spirit.${activeSpirit}.careStreak`;
       const currentCareStreak = Number(actingPlayer.getVariable<number>(careStreakKey) || 0);
       const need = selectSpiritRaisingNeed(activeSpirit, currentCareStreak);
-      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const bondKey = `mochiPets.spirit.${activeSpirit}.bond`;
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
       const raising = need ? resolveSpiritRaisingAction(activeSpirit, need.id, currentBond, currentCareStreak) : null;
       const nextBond = raising?.ok ? raising.bond : Math.min(5, currentBond + 1);
       const nextGrowth = growthStageFromBond(nextBond);
       actingPlayer.setVariable(bondKey, nextBond);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growth`, nextGrowth);
       if (need) {
-        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.raisingProof`, true);
-        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastCareNeed`, need.id);
-        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.nextCareNeed`, raising?.nextNeedId || need.id);
+        actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.raisingProof`, true);
+        actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.lastCareNeed`, need.id);
+        actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.nextCareNeed`, raising?.nextNeedId || need.id);
         if (raising?.milestoneId) {
-          actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.bondMilestone`, raising.milestoneId);
+          actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.bondMilestone`, raising.milestoneId);
         }
         if (raising?.nextMilestoneId) {
-          actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.nextBondMilestone`, raising.nextMilestoneId);
+          actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.nextBondMilestone`, raising.nextMilestoneId);
         }
         actingPlayer.setVariable(careStreakKey, raising?.careStreak || currentCareStreak);
       }
@@ -4110,13 +4110,13 @@ function habitatGrove(): EventDefinition {
           {
             roster,
             activeSpiritId: activeSpirit,
-            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
-            careProof: Boolean(actingPlayer.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.raisingProof`)),
-            bond: Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1),
-            growth: actingPlayer.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.growth`) || 'seed',
-            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
-            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
-            statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood')
+            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || 0),
+            careProof: Boolean(actingPlayer.getVariable<boolean>(`mochiPets.spirit.${activeSpirit}.raisingProof`)),
+            bond: Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.bond`) || 1),
+            growth: actingPlayer.getVariable<string>(`mochiPets.spirit.${activeSpirit}.growth`) || 'seed',
+            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.profileViewed')),
+            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.guildBuddyProof')),
+            statusMood: actingPlayer.getVariable<string>('mochiPets.social.statusMood')
           },
           habitatBonds[0].id
         );
@@ -4126,13 +4126,13 @@ function habitatGrove(): EventDefinition {
           return;
         }
 
-        actingPlayer.setVariable('mochiSocial.spirits.habitatBondProof', true);
-        actingPlayer.setVariable('mochiSocial.spirits.habitatBond', bond.bondId);
-        actingPlayer.setVariable('mochiSocial.spirits.habitatBondName', bond.bondName);
-        actingPlayer.setVariable('mochiSocial.spirits.habitatBondScore', bond.score);
-        if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.habitatTasselClaimed')) {
+        actingPlayer.setVariable('mochiPets.spirits.habitatBondProof', true);
+        actingPlayer.setVariable('mochiPets.spirits.habitatBond', bond.bondId);
+        actingPlayer.setVariable('mochiPets.spirits.habitatBondName', bond.bondName);
+        actingPlayer.setVariable('mochiPets.spirits.habitatBondScore', bond.score);
+        if (!actingPlayer.getVariable<boolean>('mochiPets.spirits.habitatTasselClaimed')) {
           actingPlayer.addItem(alphaItems.habitatTassel, 1);
-          actingPlayer.setVariable('mochiSocial.spirits.habitatTasselClaimed', true);
+          actingPlayer.setVariable('mochiPets.spirits.habitatTasselClaimed', true);
         }
 
         actingPlayer.showNotification('Habitat bond recorded', { time: 1800, icon: 'habitat-grove' });
@@ -4164,16 +4164,16 @@ function habitatGrove(): EventDefinition {
       }
 
       const nextRoster = roster.includes(targetSpirit.id) ? roster : [...roster, targetSpirit.id];
-      actingPlayer.setVariable('mochiSocial.spirits.bonded', nextRoster);
-      actingPlayer.setVariable('mochiSocial.spirits.active', targetSpirit.id);
-      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.bond`, Math.max(1, result.bond));
-      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.growth`, result.growth);
-      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.journalUnlocked`, true);
-      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.captureEncounter`, targetSpirit.capture.encounterId);
-      actingPlayer.setVariable(`mochiSocial.spirit.${targetSpirit.id}.captureRarity`, targetSpirit.capture.rarity);
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.harmonyTeaReceived')) {
+      actingPlayer.setVariable('mochiPets.spirits.bonded', nextRoster);
+      actingPlayer.setVariable('mochiPets.spirits.active', targetSpirit.id);
+      actingPlayer.setVariable(`mochiPets.spirit.${targetSpirit.id}.bond`, Math.max(1, result.bond));
+      actingPlayer.setVariable(`mochiPets.spirit.${targetSpirit.id}.growth`, result.growth);
+      actingPlayer.setVariable(`mochiPets.spirit.${targetSpirit.id}.journalUnlocked`, true);
+      actingPlayer.setVariable(`mochiPets.spirit.${targetSpirit.id}.captureEncounter`, targetSpirit.capture.encounterId);
+      actingPlayer.setVariable(`mochiPets.spirit.${targetSpirit.id}.captureRarity`, targetSpirit.capture.rarity);
+      if (!actingPlayer.getVariable<boolean>('mochiPets.alpha.harmonyTeaReceived')) {
         actingPlayer.addItem(alphaItems.harmonyTea, 1);
-        actingPlayer.setVariable('mochiSocial.alpha.harmonyTeaReceived', true);
+        actingPlayer.setVariable('mochiPets.alpha.harmonyTeaReceived', true);
       }
 
       actingPlayer.showNotification(`${targetSpirit.name} invited`, { time: 1800, icon: 'habitat-grove' });
@@ -4207,23 +4207,23 @@ function partyBanner(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.spirits.party', formation.partyIds);
-      actingPlayer.setVariable('mochiSocial.spirits.active', formation.activeSpiritId);
-      actingPlayer.setVariable('mochiSocial.spirits.support', formation.supportIds);
+      actingPlayer.setVariable('mochiPets.spirits.party', formation.partyIds);
+      actingPlayer.setVariable('mochiPets.spirits.active', formation.activeSpiritId);
+      actingPlayer.setVariable('mochiPets.spirits.support', formation.supportIds);
       const growthRiteId = formation.partyIds
-        .map((spiritId) => actingPlayer.getVariable<string>(`mochiSocial.spirit.${spiritId}.growthRite`))
+        .map((spiritId) => actingPlayer.getVariable<string>(`mochiPets.spirit.${spiritId}.growthRite`))
         .find(Boolean);
       const harmony = resolveSpiritHarmonyForm(
         {
           partyIds: formation.partyIds,
-          routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
-          routeMasteryId: actingPlayer.getVariable<string>('mochiSocial.world.routeMastery'),
-          growthRiteProof: formation.partyIds.some((spiritId) => Boolean(actingPlayer.getVariable<boolean>(`mochiSocial.spirit.${spiritId}.growthRiteProof`))),
+          routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.world.routeMasteryProof')),
+          routeMasteryId: actingPlayer.getVariable<string>('mochiPets.world.routeMastery'),
+          growthRiteProof: formation.partyIds.some((spiritId) => Boolean(actingPlayer.getVariable<boolean>(`mochiPets.spirit.${spiritId}.growthRiteProof`))),
           growthRiteId,
-          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-          affinityProof: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+          affinityProof: Number(actingPlayer.getVariable<number>('mochiPets.battle.affinityTrialWins') || 0) > 0,
           trainingXp: trainingXpTotal(actingPlayer, formation.partyIds),
-          sparLadderXp: Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderXp') || 0)
+          sparLadderXp: Number(actingPlayer.getVariable<number>('mochiPets.battle.sparLadderXp') || 0)
         },
         harmonyForms[0].id
       );
@@ -4239,13 +4239,13 @@ function partyBanner(): EventDefinition {
       let saveTitle = 'Mochi Spirit party formed';
 
       if (harmony.formed) {
-        actingPlayer.setVariable('mochiSocial.spirits.harmonyFormProof', true);
-        actingPlayer.setVariable('mochiSocial.spirits.harmonyForm', harmony.formId);
-        actingPlayer.setVariable('mochiSocial.spirits.harmonyName', harmony.name);
-        actingPlayer.setVariable('mochiSocial.spirits.harmonyScore', harmony.score);
-        if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.harmonySashClaimed')) {
+        actingPlayer.setVariable('mochiPets.spirits.harmonyFormProof', true);
+        actingPlayer.setVariable('mochiPets.spirits.harmonyForm', harmony.formId);
+        actingPlayer.setVariable('mochiPets.spirits.harmonyName', harmony.name);
+        actingPlayer.setVariable('mochiPets.spirits.harmonyScore', harmony.score);
+        if (!actingPlayer.getVariable<boolean>('mochiPets.spirits.harmonySashClaimed')) {
           actingPlayer.addItem(alphaItems.harmonySash, 1);
-          actingPlayer.setVariable('mochiSocial.spirits.harmonySashClaimed', true);
+          actingPlayer.setVariable('mochiPets.spirits.harmonySashClaimed', true);
         }
         patch.harmonyForm = {
           formId: harmony.formId,
@@ -4283,10 +4283,10 @@ function journalPavilion(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.spirits.journalViewed', true);
-      actingPlayer.setVariable('mochiSocial.spirits.journalDiscovered', journal.records.filter((record) => record.discovered).map((record) => record.spiritId));
-      actingPlayer.setVariable('mochiSocial.spirits.journalCount', journal.discoveredCount);
-      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      actingPlayer.setVariable('mochiPets.spirits.journalViewed', true);
+      actingPlayer.setVariable('mochiPets.spirits.journalDiscovered', journal.records.filter((record) => record.discovered).map((record) => record.spiritId));
+      actingPlayer.setVariable('mochiPets.spirits.journalCount', journal.discoveredCount);
+      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiPets.world.discoveredRoutes');
       const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
       const activeSpirit = journal.activeSpiritId || activeSpiritId(actingPlayer) || roster[0];
       const research = resolveSpiritResearchFolio(
@@ -4295,11 +4295,11 @@ function journalPavilion(): EventDefinition {
           activeSpiritId: activeSpirit,
           discoveredRoutes,
           journalDiscoveredCount: journal.discoveredCount,
-          habitatBondProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.habitatBondProof')),
-          habitatBondId: actingPlayer.getVariable<string>('mochiSocial.spirits.habitatBond'),
-          techniqueProof: roster.some((spiritId) => Boolean(actingPlayer.getVariable<string>(`mochiSocial.spirit.${spiritId}.technique.lastMove`))),
-          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-          affinityProof: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+          habitatBondProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.habitatBondProof')),
+          habitatBondId: actingPlayer.getVariable<string>('mochiPets.spirits.habitatBond'),
+          techniqueProof: roster.some((spiritId) => Boolean(actingPlayer.getVariable<string>(`mochiPets.spirit.${spiritId}.technique.lastMove`))),
+          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+          affinityProof: Number(actingPlayer.getVariable<number>('mochiPets.battle.affinityTrialWins') || 0) > 0,
           trainingXp: trainingXpTotal(actingPlayer, roster)
         },
         researchFolios[0].id
@@ -4317,13 +4317,13 @@ function journalPavilion(): EventDefinition {
       let saveTitle = 'Mochi Spirit journal reviewed';
 
       if (research.recorded) {
-        actingPlayer.setVariable('mochiSocial.spirits.researchProof', true);
-        actingPlayer.setVariable('mochiSocial.spirits.researchFolio', research.folioId);
-        actingPlayer.setVariable('mochiSocial.spirits.researchFolioName', research.folioName);
-        actingPlayer.setVariable('mochiSocial.spirits.researchScore', research.score);
-        if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.researchFolioClaimed')) {
+        actingPlayer.setVariable('mochiPets.spirits.researchProof', true);
+        actingPlayer.setVariable('mochiPets.spirits.researchFolio', research.folioId);
+        actingPlayer.setVariable('mochiPets.spirits.researchFolioName', research.folioName);
+        actingPlayer.setVariable('mochiPets.spirits.researchScore', research.score);
+        if (!actingPlayer.getVariable<boolean>('mochiPets.spirits.researchFolioClaimed')) {
           actingPlayer.addItem(alphaItems.researchFolio, 1);
-          actingPlayer.setVariable('mochiSocial.spirits.researchFolioClaimed', true);
+          actingPlayer.setVariable('mochiPets.spirits.researchFolioClaimed', true);
         }
         patch.research = {
           folioId: research.folioId,
@@ -4347,23 +4347,23 @@ function journalPavilion(): EventDefinition {
             activeSpiritId: research.activeSpiritId,
             discoveredRoutes,
             journalDiscoveredCount: journal.discoveredCount,
-            habitatBondProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.habitatBondProof')),
-            habitatBondId: actingPlayer.getVariable<string>('mochiSocial.spirits.habitatBond'),
+            habitatBondProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.habitatBondProof')),
+            habitatBondId: actingPlayer.getVariable<string>('mochiPets.spirits.habitatBond'),
             researchProof: true,
             researchFolioId: research.folioId,
-            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof'))
+            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.world.routeMasteryProof'))
           },
           compendiums[0].id
         );
 
         if (compendium.completed) {
-          actingPlayer.setVariable('mochiSocial.spirits.compendiumProof', true);
-          actingPlayer.setVariable('mochiSocial.spirits.compendium', compendium.compendiumId);
-          actingPlayer.setVariable('mochiSocial.spirits.compendiumName', compendium.compendiumName);
-          actingPlayer.setVariable('mochiSocial.spirits.compendiumScore', compendium.score);
-          if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.compendiumSealClaimed')) {
+          actingPlayer.setVariable('mochiPets.spirits.compendiumProof', true);
+          actingPlayer.setVariable('mochiPets.spirits.compendium', compendium.compendiumId);
+          actingPlayer.setVariable('mochiPets.spirits.compendiumName', compendium.compendiumName);
+          actingPlayer.setVariable('mochiPets.spirits.compendiumScore', compendium.score);
+          if (!actingPlayer.getVariable<boolean>('mochiPets.spirits.compendiumSealClaimed')) {
             actingPlayer.addItem(alphaItems.compendiumSeal, 1);
-            actingPlayer.setVariable('mochiSocial.spirits.compendiumSealClaimed', true);
+            actingPlayer.setVariable('mochiPets.spirits.compendiumSealClaimed', true);
           }
           patch.compendium = {
             compendiumId: compendium.compendiumId,
@@ -4405,7 +4405,7 @@ function expeditionGate(): EventDefinition {
         return;
       }
 
-      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiPets.world.discoveredRoutes');
       const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
       const allRoutesDiscovered = expeditionRoutes.every((route) => discoveredRoutes.includes(route.id));
 
@@ -4413,10 +4413,10 @@ function expeditionGate(): EventDefinition {
         const mastery = resolveSpiritRouteMastery({
           discoveredRoutes,
           roster,
-          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || 0),
           completedQuestIds: completedQuestIds(actingPlayer),
-          guildRankProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.guild.rankTrialProof')),
-          rankTrialId: actingPlayer.getVariable<string>('mochiSocial.guild.rankTrial')
+          guildRankProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.guild.rankTrialProof')),
+          rankTrialId: actingPlayer.getVariable<string>('mochiPets.guild.rankTrial')
         });
 
         if (!mastery.mastered) {
@@ -4424,13 +4424,13 @@ function expeditionGate(): EventDefinition {
           return;
         }
 
-        actingPlayer.setVariable('mochiSocial.world.routeMasteryProof', true);
-        actingPlayer.setVariable('mochiSocial.world.routeMastery', mastery.masteryId);
-        actingPlayer.setVariable('mochiSocial.world.routeMasteryTitle', mastery.title);
-        actingPlayer.setVariable('mochiSocial.world.routeMasteryScore', mastery.score);
-        if (!actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryKnotClaimed')) {
+        actingPlayer.setVariable('mochiPets.world.routeMasteryProof', true);
+        actingPlayer.setVariable('mochiPets.world.routeMastery', mastery.masteryId);
+        actingPlayer.setVariable('mochiPets.world.routeMasteryTitle', mastery.title);
+        actingPlayer.setVariable('mochiPets.world.routeMasteryScore', mastery.score);
+        if (!actingPlayer.getVariable<boolean>('mochiPets.world.routeMasteryKnotClaimed')) {
           actingPlayer.addItem(alphaItems.routeKnot, 1);
-          actingPlayer.setVariable('mochiSocial.world.routeMasteryKnotClaimed', true);
+          actingPlayer.setVariable('mochiPets.world.routeMasteryKnotClaimed', true);
         }
         actingPlayer.showNotification('Route circuit mastered', { time: 1800, icon: 'expedition-gate' });
         emitAlphaHudState(actingPlayer, {
@@ -4448,9 +4448,9 @@ function expeditionGate(): EventDefinition {
         return;
       }
 
-      const routeCount = Number(actingPlayer.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const routeCount = Number(actingPlayer.getVariable<number>('mochiPets.world.expeditionCount') || 0);
       const route = expeditionRoutes[routeCount % expeditionRoutes.length] || expeditionRoutes[0];
-      const bond = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const bond = Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.bond`) || 1);
       const harmonyScore = bond + Math.max(1, roster.length) + partyIds(actingPlayer).length;
       const expedition = resolveSpiritExpedition(route.id, roster, activeSpirit, harmonyScore, discoveredRoutes);
       if (!expedition.ok) {
@@ -4459,15 +4459,15 @@ function expeditionGate(): EventDefinition {
       }
 
       const nextCount = routeCount + 1;
-      actingPlayer.setVariable('mochiSocial.world.lastExpeditionRoute', expedition.routeId);
-      actingPlayer.setVariable('mochiSocial.world.lastExpeditionEncounter', expedition.encounterSpiritId);
-      actingPlayer.setVariable('mochiSocial.world.discoveredRoutes', expedition.discoveredRoutes);
-      actingPlayer.setVariable('mochiSocial.world.expeditionCount', nextCount);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastExpeditionRoute`, expedition.routeId);
+      actingPlayer.setVariable('mochiPets.world.lastExpeditionRoute', expedition.routeId);
+      actingPlayer.setVariable('mochiPets.world.lastExpeditionEncounter', expedition.encounterSpiritId);
+      actingPlayer.setVariable('mochiPets.world.discoveredRoutes', expedition.discoveredRoutes);
+      actingPlayer.setVariable('mochiPets.world.expeditionCount', nextCount);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.lastExpeditionRoute`, expedition.routeId);
 
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.world.trailRibbonClaimed')) {
+      if (!actingPlayer.getVariable<boolean>('mochiPets.world.trailRibbonClaimed')) {
         actingPlayer.addItem(alphaItems.trailRibbon, 1);
-        actingPlayer.setVariable('mochiSocial.world.trailRibbonClaimed', true);
+        actingPlayer.setVariable('mochiPets.world.trailRibbonClaimed', true);
       }
 
       actingPlayer.showNotification('Route scouted', { time: 1800, icon: 'expedition-gate' });
@@ -4501,13 +4501,13 @@ function routeInvitationAltar(): EventDefinition {
 
     async onAction(actingPlayer: RpgPlayer) {
       const roster = bondedSpirits(actingPlayer);
-      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiSocial.world.discoveredRoutes');
+      const discoveredRoutesRaw = actingPlayer.getVariable<string[]>('mochiPets.world.discoveredRoutes');
       const discoveredRoutes = Array.isArray(discoveredRoutesRaw) ? discoveredRoutesRaw : [];
-      const routeId = actingPlayer.getVariable<string>('mochiSocial.world.lastExpeditionRoute') || discoveredRoutes[0] || expeditionRoutes[0].id;
+      const routeId = actingPlayer.getVariable<string>('mochiPets.world.lastExpeditionRoute') || discoveredRoutes[0] || expeditionRoutes[0].id;
       const route = expeditionRoutes.find((entry) => entry.id === routeId) || expeditionRoutes[0];
       const activeSpirit = activeSpiritId(actingPlayer);
-      const bond = activeSpirit ? Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 1;
-      const expeditionCount = Number(actingPlayer.getVariable<number>('mochiSocial.world.expeditionCount') || 0);
+      const bond = activeSpirit ? Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.bond`) || 1) : 1;
+      const expeditionCount = Number(actingPlayer.getVariable<number>('mochiPets.world.expeditionCount') || 0);
       const harmonyScore = bond + Math.max(1, roster.length) + partyIds(actingPlayer).length + expeditionCount;
       if (!discoveredRoutes.includes(route.id)) {
         const unscouted = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes);
@@ -4522,9 +4522,9 @@ function routeInvitationAltar(): EventDefinition {
           discoveredRoutes,
           harmonyScore,
           bondBySpiritId: bondMap(actingPlayer, roster),
-          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-          affinityProof: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
-          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0)
+          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+          affinityProof: Number(actingPlayer.getVariable<number>('mochiPets.battle.affinityTrialWins') || 0) > 0,
+          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || 0)
         },
         fieldAccords.find((entry) => entry.routeId === route.id)?.id
       );
@@ -4534,14 +4534,14 @@ function routeInvitationAltar(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.world.fieldAccordProof', true);
-      actingPlayer.setVariable('mochiSocial.world.lastFieldAccord', accord.accordId);
-      actingPlayer.setVariable('mochiSocial.world.lastFieldAccordRoute', accord.routeId);
-      actingPlayer.setVariable('mochiSocial.world.lastFieldAccordSpirit', accord.targetSpiritId);
-      actingPlayer.setVariable('mochiSocial.world.lastFieldAccordScore', accord.score);
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.world.fieldAccordTalismanClaimed')) {
+      actingPlayer.setVariable('mochiPets.world.fieldAccordProof', true);
+      actingPlayer.setVariable('mochiPets.world.lastFieldAccord', accord.accordId);
+      actingPlayer.setVariable('mochiPets.world.lastFieldAccordRoute', accord.routeId);
+      actingPlayer.setVariable('mochiPets.world.lastFieldAccordSpirit', accord.targetSpiritId);
+      actingPlayer.setVariable('mochiPets.world.lastFieldAccordScore', accord.score);
+      if (!actingPlayer.getVariable<boolean>('mochiPets.world.fieldAccordTalismanClaimed')) {
         actingPlayer.addItem(alphaItems.fieldAccordTalisman, 1);
-        actingPlayer.setVariable('mochiSocial.world.fieldAccordTalismanClaimed', true);
+        actingPlayer.setVariable('mochiPets.world.fieldAccordTalismanClaimed', true);
       }
 
       const invitation = resolveSpiritRouteInvitation(route.id, route.recommendedItemId, harmonyScore, roster, discoveredRoutes, true);
@@ -4551,16 +4551,16 @@ function routeInvitationAltar(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.spirits.bonded', invitation.roster);
-      actingPlayer.setVariable('mochiSocial.spirits.active', invitation.spiritId);
-      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.bond`, Math.max(1, invitation.bond));
-      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.growth`, invitation.growth);
-      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.journalUnlocked`, true);
-      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.captureEncounter`, `${invitation.routeId}-route-invitation`);
-      actingPlayer.setVariable(`mochiSocial.spirit.${invitation.spiritId}.lastRouteInvitation`, invitation.routeId);
-      actingPlayer.setVariable('mochiSocial.world.lastRouteInvitation', invitation.routeId);
-      actingPlayer.setVariable('mochiSocial.world.lastRouteInvitationSpirit', invitation.spiritId);
-      actingPlayer.setVariable('mochiSocial.world.routeInvitationProof', true);
+      actingPlayer.setVariable('mochiPets.spirits.bonded', invitation.roster);
+      actingPlayer.setVariable('mochiPets.spirits.active', invitation.spiritId);
+      actingPlayer.setVariable(`mochiPets.spirit.${invitation.spiritId}.bond`, Math.max(1, invitation.bond));
+      actingPlayer.setVariable(`mochiPets.spirit.${invitation.spiritId}.growth`, invitation.growth);
+      actingPlayer.setVariable(`mochiPets.spirit.${invitation.spiritId}.journalUnlocked`, true);
+      actingPlayer.setVariable(`mochiPets.spirit.${invitation.spiritId}.captureEncounter`, `${invitation.routeId}-route-invitation`);
+      actingPlayer.setVariable(`mochiPets.spirit.${invitation.spiritId}.lastRouteInvitation`, invitation.routeId);
+      actingPlayer.setVariable('mochiPets.world.lastRouteInvitation', invitation.routeId);
+      actingPlayer.setVariable('mochiPets.world.lastRouteInvitationSpirit', invitation.spiritId);
+      actingPlayer.setVariable('mochiPets.world.routeInvitationProof', true);
 
       actingPlayer.showNotification('Route spirit invited', { time: 1800, icon: 'route-invitation-altar' });
       emitAlphaHudState(actingPlayer, {
@@ -4625,8 +4625,8 @@ function techniqueDojo(): EventDefinition {
         return;
       }
 
-      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
-      const bond = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
+      const xpKey = `mochiPets.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const bond = Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.bond`) || 1);
       const currentXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
       const technique = resolveSpiritTechniqueMastery(activeSpirit, move.id, currentXp, bond);
       if (!technique.ok) {
@@ -4635,9 +4635,9 @@ function techniqueDojo(): EventDefinition {
       }
 
       actingPlayer.setVariable(xpKey, technique.masteryXp);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, technique.masteryLevel);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.focusScore`, technique.focusScore);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.technique.${move.id}.level`, technique.masteryLevel);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.technique.lastMove`, move.id);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.technique.focusScore`, technique.focusScore);
       const patch: AlphaHudStatePatch = {
         technique: {
           spiritId: activeSpirit,
@@ -4660,25 +4660,25 @@ function techniqueDojo(): EventDefinition {
             partyIds: loadoutParty,
             preferredMoveIdBySpiritId: preferredMoveIdBySpiritId(),
             techniqueProof: true,
-            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-            tacticId: actingPlayer.getVariable<string>('mochiSocial.battle.lastTacticScroll'),
+            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+            tacticId: actingPlayer.getVariable<string>('mochiPets.battle.lastTacticScroll'),
             techniqueMasteryXp: Math.max(technique.masteryXp, techniqueMasteryXpTotal(actingPlayer, loadoutParty)),
-            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
-            journalProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.journalProof')),
-            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0)
+            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.world.routeMasteryProof')),
+            journalProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.journalProof')),
+            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || 0)
           },
           techniqueLoadouts[0].id
         );
 
         if (loadout.prepared) {
-          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutProof', true);
-          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadout', loadout.loadoutId);
-          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutName', loadout.loadoutName);
-          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutScore', loadout.score);
-          actingPlayer.setVariable('mochiSocial.battle.techniqueLoadoutMoves', loadout.moves.map((entry) => `${entry.spiritId}:${entry.moveId}`));
-          if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.loadoutSlipClaimed')) {
+          actingPlayer.setVariable('mochiPets.battle.techniqueLoadoutProof', true);
+          actingPlayer.setVariable('mochiPets.battle.techniqueLoadout', loadout.loadoutId);
+          actingPlayer.setVariable('mochiPets.battle.techniqueLoadoutName', loadout.loadoutName);
+          actingPlayer.setVariable('mochiPets.battle.techniqueLoadoutScore', loadout.score);
+          actingPlayer.setVariable('mochiPets.battle.techniqueLoadoutMoves', loadout.moves.map((entry) => `${entry.spiritId}:${entry.moveId}`));
+          if (!actingPlayer.getVariable<boolean>('mochiPets.battle.loadoutSlipClaimed')) {
             actingPlayer.addItem(alphaItems.loadoutSlip, 1);
-            actingPlayer.setVariable('mochiSocial.battle.loadoutSlipClaimed', true);
+            actingPlayer.setVariable('mochiPets.battle.loadoutSlipClaimed', true);
           }
           patch.techniqueLoadout = {
             loadoutId: loadout.loadoutId,
@@ -4720,15 +4720,15 @@ function tacticScrollStand(): EventDefinition {
       }
 
       const spirit = spirits.find((entry) => entry.id === activeSpirit);
-      const lastMove = actingPlayer.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`);
+      const lastMove = actingPlayer.getVariable<string>(`mochiPets.spirit.${activeSpirit}.technique.lastMove`);
       const move = spirit?.battle.moves.find((entry) => entry.id === lastMove) || spirit?.battle.moves[0];
       if (!spirit || !move) {
         showAlphaPrompt(actingPlayer, 'The tactic scroll stand cannot find a registered Mochirii spirit move for this alpha save.');
         return;
       }
 
-      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
-      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
+      const xpKey = `mochiPets.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const bondKey = `mochiPets.spirit.${activeSpirit}.bond`;
       const currentXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
       const tactic = resolveSpiritBattleTactic(activeSpirit, move.id, '', currentXp, currentBond);
@@ -4741,17 +4741,17 @@ function tacticScrollStand(): EventDefinition {
       const nextGrowth = growthStageFromBond(nextBond);
       const nextLevel = techniqueMasteryLevelFromXp(tactic.masteryXp);
       actingPlayer.setVariable(xpKey, tactic.masteryXp);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.${move.id}.level`, nextLevel);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.technique.lastMove`, move.id);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.last`, tactic.tacticId);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.lastMove`, tactic.moveId);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.stance`, tactic.stance);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.tactic.focusScore`, tactic.focusScore);
-      actingPlayer.setVariable('mochiSocial.battle.lastTacticScroll', tactic.tacticId);
-      actingPlayer.setVariable('mochiSocial.battle.tacticScrollProof', true);
-      actingPlayer.setVariable('mochiSocial.battle.tacticMasteryXp', tactic.masteryXp);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.technique.${move.id}.level`, nextLevel);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.technique.lastMove`, move.id);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.tactic.last`, tactic.tacticId);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.tactic.lastMove`, tactic.moveId);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.tactic.stance`, tactic.stance);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.tactic.focusScore`, tactic.focusScore);
+      actingPlayer.setVariable('mochiPets.battle.lastTacticScroll', tactic.tacticId);
+      actingPlayer.setVariable('mochiPets.battle.tacticScrollProof', true);
+      actingPlayer.setVariable('mochiPets.battle.tacticMasteryXp', tactic.masteryXp);
       actingPlayer.setVariable(bondKey, nextBond);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growth`, nextGrowth);
       actingPlayer.showNotification('Tactic scroll studied', { time: 1800, icon: 'tactic-scroll-stand' });
       emitAlphaHudState(actingPlayer, {
         tactic: {
@@ -4794,9 +4794,9 @@ function affinityDais(): EventDefinition {
       }
 
       const trial = affinityTrials[0];
-      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
-      const xpKey = `mochiSocial.spirit.${activeSpirit}.technique.${move.id}.xp`;
-      const winsKey = 'mochiSocial.battle.affinityTrialWins';
+      const bondKey = `mochiPets.spirit.${activeSpirit}.bond`;
+      const xpKey = `mochiPets.spirit.${activeSpirit}.technique.${move.id}.xp`;
+      const winsKey = 'mochiPets.battle.affinityTrialWins';
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
       const currentTechniqueXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
       const currentWins = Number(actingPlayer.getVariable<number>(winsKey) || 0);
@@ -4805,12 +4805,12 @@ function affinityDais(): EventDefinition {
       const nextBond = affinity.victory ? Math.min(5, currentBond + affinity.bondDelta) : currentBond;
       const nextGrowth = growthStageFromBond(nextBond);
 
-      actingPlayer.setVariable('mochiSocial.battle.lastAffinityTrial', affinity.trialId);
-      actingPlayer.setVariable('mochiSocial.battle.affinityTrialWins', nextWins);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.lastAffinityTrialMove`, move.id);
+      actingPlayer.setVariable('mochiPets.battle.lastAffinityTrial', affinity.trialId);
+      actingPlayer.setVariable('mochiPets.battle.affinityTrialWins', nextWins);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.lastAffinityTrialMove`, move.id);
       actingPlayer.setVariable(xpKey, affinity.masteryXp);
       actingPlayer.setVariable(bondKey, nextBond);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growth`, nextGrowth);
       const patch: AlphaHudStatePatch = {
         affinity: {
           spiritId: activeSpirit,
@@ -4832,31 +4832,31 @@ function affinityDais(): EventDefinition {
       let saveTitle = 'Mochi Spirit affinity trial';
       let prompt = `${affinity.message} Affinity trials are no-injury alpha battle practice with no real value.`;
 
-      if (actingPlayer.getVariable<boolean>('mochiSocial.spirits.harmonyFormProof')) {
+      if (actingPlayer.getVariable<boolean>('mochiPets.spirits.harmonyFormProof')) {
         const concord = resolveSpiritHarmonyTrial(
           {
             partyIds: partyIds(actingPlayer),
-            harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.harmonyFormProof')),
-            harmonyFormId: actingPlayer.getVariable<string>('mochiSocial.spirits.harmonyForm'),
-            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
+            harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.harmonyFormProof')),
+            harmonyFormId: actingPlayer.getVariable<string>('mochiPets.spirits.harmonyForm'),
+            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
             affinityProof: nextWins > 0,
-            sparLadderWins: Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0),
-            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
-            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
-            statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
-            chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || []
+            sparLadderWins: Number(actingPlayer.getVariable<number>('mochiPets.battle.sparLadderWins') || 0),
+            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.profileViewed')),
+            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.guildBuddyProof')),
+            statusMood: actingPlayer.getVariable<string>('mochiPets.social.statusMood'),
+            chatLines: actingPlayer.getVariable<string[]>('mochiPets.social.chatLines') || []
           },
           harmonyTrials[0].id
         );
 
         if (concord.cleared) {
-          actingPlayer.setVariable('mochiSocial.battle.harmonyTrialProof', true);
-          actingPlayer.setVariable('mochiSocial.battle.harmonyTrial', concord.trialId);
-          actingPlayer.setVariable('mochiSocial.battle.harmonyTrialName', concord.trialName);
-          actingPlayer.setVariable('mochiSocial.battle.harmonyTrialScore', concord.score);
-          if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.concordTallyClaimed')) {
+          actingPlayer.setVariable('mochiPets.battle.harmonyTrialProof', true);
+          actingPlayer.setVariable('mochiPets.battle.harmonyTrial', concord.trialId);
+          actingPlayer.setVariable('mochiPets.battle.harmonyTrialName', concord.trialName);
+          actingPlayer.setVariable('mochiPets.battle.harmonyTrialScore', concord.score);
+          if (!actingPlayer.getVariable<boolean>('mochiPets.battle.concordTallyClaimed')) {
             actingPlayer.addItem(alphaItems.concordTally, 1);
-            actingPlayer.setVariable('mochiSocial.battle.concordTallyClaimed', true);
+            actingPlayer.setVariable('mochiPets.battle.concordTallyClaimed', true);
           }
           patch.harmonyTrial = {
             trialId: concord.trialId,
@@ -4902,15 +4902,15 @@ function trainingRing(): EventDefinition {
         return;
       }
 
-      const bondKey = `mochiSocial.spirit.${activeSpirit}.bond`;
-      const xpKey = `mochiSocial.spirit.${activeSpirit}.trainingXp`;
-      const victoryKey = `mochiSocial.spirit.${activeSpirit}.trainingVictories`;
+      const bondKey = `mochiPets.spirit.${activeSpirit}.bond`;
+      const xpKey = `mochiPets.spirit.${activeSpirit}.trainingXp`;
+      const victoryKey = `mochiPets.spirit.${activeSpirit}.trainingVictories`;
       const currentBond = Number(actingPlayer.getVariable<number>(bondKey) || 1);
       const currentXp = Number(actingPlayer.getVariable<number>(xpKey) || 0);
       const currentVictories = Number(actingPlayer.getVariable<number>(victoryKey) || 0);
       const result = resolveSpiritTrainingBattle(activeSpirit, move.id, currentBond, currentVictories + 1);
       const sparParty = partyIds(actingPlayer).length ? partyIds(actingPlayer) : [activeSpirit];
-      const priorSparWins = Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0);
+      const priorSparWins = Number(actingPlayer.getVariable<number>('mochiPets.battle.sparLadderWins') || 0);
       const spar = resolveSpiritSparLadder(sparParty, 'jade-echo-apprentice', bondMap(actingPlayer, sparParty), priorSparWins);
       const battleRound = resolveSpiritBattleRound({
         partyIds: sparParty,
@@ -4918,35 +4918,35 @@ function trainingRing(): EventDefinition {
         moveIdBySpiritId: { [activeSpirit]: move.id },
         bondBySpiritId: bondMap(actingPlayer, sparParty),
         opponentId: spar.opponentId,
-        tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-        harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.harmonyFormProof')),
+        tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+        harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.harmonyFormProof')),
         priorWins: priorSparWins
       });
       const nextXp = currentXp + result.trainingXp;
       const nextVictories = currentVictories + (result.victory ? 1 : 0);
-      const nextSparXp = Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderXp') || 0) + spar.trainingXp;
+      const nextSparXp = Number(actingPlayer.getVariable<number>('mochiPets.battle.sparLadderXp') || 0) + spar.trainingXp;
       const nextSparWins = priorSparWins + (spar.victory ? 1 : 0);
       const nextBond = result.victory ? Math.min(5, currentBond + result.bondDelta) : currentBond;
       const nextGrowth = growthStageFromBond(nextBond);
 
       actingPlayer.setVariable(xpKey, nextXp);
       actingPlayer.setVariable(victoryKey, nextVictories);
-      actingPlayer.setVariable('mochiSocial.battle.sparLadderXp', nextSparXp);
-      actingPlayer.setVariable('mochiSocial.battle.sparLadderWins', nextSparWins);
-      actingPlayer.setVariable('mochiSocial.battle.lastSparOpponent', spar.opponentId);
-      actingPlayer.setVariable('mochiSocial.battle.lastRound', battleRound.roundId);
-      actingPlayer.setVariable('mochiSocial.battle.lastRoundOpponent', battleRound.opponentId);
-      actingPlayer.setVariable('mochiSocial.battle.lastRoundFocusScore', battleRound.focusScore);
-      actingPlayer.setVariable('mochiSocial.battle.lastRoundOpponentScore', battleRound.opponentScore);
-      actingPlayer.setVariable('mochiSocial.battle.lastRoundVictory', battleRound.victory);
-      actingPlayer.setVariable('mochiSocial.battle.lastRoundNoInjury', battleRound.noInjury);
-      actingPlayer.setVariable('mochiSocial.battle.lastRoundParty', battleRound.partyIds);
+      actingPlayer.setVariable('mochiPets.battle.sparLadderXp', nextSparXp);
+      actingPlayer.setVariable('mochiPets.battle.sparLadderWins', nextSparWins);
+      actingPlayer.setVariable('mochiPets.battle.lastSparOpponent', spar.opponentId);
+      actingPlayer.setVariable('mochiPets.battle.lastRound', battleRound.roundId);
+      actingPlayer.setVariable('mochiPets.battle.lastRoundOpponent', battleRound.opponentId);
+      actingPlayer.setVariable('mochiPets.battle.lastRoundFocusScore', battleRound.focusScore);
+      actingPlayer.setVariable('mochiPets.battle.lastRoundOpponentScore', battleRound.opponentScore);
+      actingPlayer.setVariable('mochiPets.battle.lastRoundVictory', battleRound.victory);
+      actingPlayer.setVariable('mochiPets.battle.lastRoundNoInjury', battleRound.noInjury);
+      actingPlayer.setVariable('mochiPets.battle.lastRoundParty', battleRound.partyIds);
       actingPlayer.setVariable(
-        'mochiSocial.battle.lastRoundTranscript',
+        'mochiPets.battle.lastRoundTranscript',
         battleRound.participants.map((participant) => `${participant.name}:${participant.moveLabel}:${participant.focusContribution}`)
       );
       actingPlayer.setVariable(bondKey, nextBond);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growth`, nextGrowth);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growth`, nextGrowth);
       const patch: AlphaHudStatePatch = {
         spirit: { id: activeSpirit, bond: nextBond, growth: nextGrowth },
         training: {
@@ -4976,33 +4976,33 @@ function trainingRing(): EventDefinition {
       let saveTitle = 'Mochi Spirit training spar';
       let prompt = `Training spar complete: ${result.message} ${spar.message} ${battleRound.message} Training is no-injury guild practice with no real value.`;
 
-      if (actingPlayer.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')) {
+      if (actingPlayer.getVariable<boolean>('mochiPets.battle.harmonyTrialProof')) {
         const matchParty = partyIds(actingPlayer).length ? partyIds(actingPlayer) : sparParty;
         const match = resolveSpiritTeamSparMatch(
           {
             partyIds: matchParty,
-            harmonyTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')),
-            harmonyTrialId: actingPlayer.getVariable<string>('mochiSocial.battle.harmonyTrial'),
-            harmonyTrialScore: Number(actingPlayer.getVariable<number>('mochiSocial.battle.harmonyTrialScore') || 0),
-            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeMasteryProof')),
-            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-            growthRiteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.growthRiteProof')),
+            harmonyTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.harmonyTrialProof')),
+            harmonyTrialId: actingPlayer.getVariable<string>('mochiPets.battle.harmonyTrial'),
+            harmonyTrialScore: Number(actingPlayer.getVariable<number>('mochiPets.battle.harmonyTrialScore') || 0),
+            routeMasteryProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.world.routeMasteryProof')),
+            tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+            growthRiteProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.growthRiteProof')),
             questChainProof: completedQuestIds(actingPlayer).length >= quests.length,
             trainingXp: Math.max(trainingXpTotal(actingPlayer, matchParty), nextXp),
             sparLadderWins: nextSparWins,
-            chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || []
+            chatLines: actingPlayer.getVariable<string[]>('mochiPets.social.chatLines') || []
           },
           teamSparMatches[0].id
         );
 
         if (match.cleared) {
-          actingPlayer.setVariable('mochiSocial.battle.teamSparMatchProof', true);
-          actingPlayer.setVariable('mochiSocial.battle.teamSparMatch', match.matchId);
-          actingPlayer.setVariable('mochiSocial.battle.teamSparMatchName', match.matchName);
-          actingPlayer.setVariable('mochiSocial.battle.teamSparMatchScore', match.score);
-          if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.teamMatchRibbonClaimed')) {
+          actingPlayer.setVariable('mochiPets.battle.teamSparMatchProof', true);
+          actingPlayer.setVariable('mochiPets.battle.teamSparMatch', match.matchId);
+          actingPlayer.setVariable('mochiPets.battle.teamSparMatchName', match.matchName);
+          actingPlayer.setVariable('mochiPets.battle.teamSparMatchScore', match.score);
+          if (!actingPlayer.getVariable<boolean>('mochiPets.battle.teamMatchRibbonClaimed')) {
             actingPlayer.addItem(alphaItems.teamMatchRibbon, 1);
-            actingPlayer.setVariable('mochiSocial.battle.teamMatchRibbonClaimed', true);
+            actingPlayer.setVariable('mochiPets.battle.teamMatchRibbonClaimed', true);
           }
           patch.teamSparMatch = {
             matchId: match.matchId,
@@ -5026,22 +5026,22 @@ function trainingRing(): EventDefinition {
               battleRoundFocusScore: battleRound.focusScore,
               battleRoundOpponentScore: battleRound.opponentScore,
               techniqueMasteryXp: techniqueMasteryXpTotal(actingPlayer, match.partyIds),
-              tacticMasteryXp: Number(actingPlayer.getVariable<number>('mochiSocial.battle.tacticMasteryXp') || 0),
+              tacticMasteryXp: Number(actingPlayer.getVariable<number>('mochiPets.battle.tacticMasteryXp') || 0),
               raisingCareStreak: careStreakTotal(actingPlayer, match.partyIds),
-              profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
-              guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof'))
+              profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.profileViewed')),
+              guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.guildBuddyProof'))
             },
             mentorChallenges[0].id
           );
 
           if (mentor.cleared) {
-            actingPlayer.setVariable('mochiSocial.battle.mentorChallengeProof', true);
-            actingPlayer.setVariable('mochiSocial.battle.mentorChallenge', mentor.challengeId);
-            actingPlayer.setVariable('mochiSocial.battle.mentorChallengeName', mentor.challengeName);
-            actingPlayer.setVariable('mochiSocial.battle.mentorChallengeScore', mentor.score);
-            if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.mentorSealClaimed')) {
+            actingPlayer.setVariable('mochiPets.battle.mentorChallengeProof', true);
+            actingPlayer.setVariable('mochiPets.battle.mentorChallenge', mentor.challengeId);
+            actingPlayer.setVariable('mochiPets.battle.mentorChallengeName', mentor.challengeName);
+            actingPlayer.setVariable('mochiPets.battle.mentorChallengeScore', mentor.score);
+            if (!actingPlayer.getVariable<boolean>('mochiPets.battle.mentorSealClaimed')) {
               actingPlayer.addItem(alphaItems.mentorSeal, 1);
-              actingPlayer.setVariable('mochiSocial.battle.mentorSealClaimed', true);
+              actingPlayer.setVariable('mochiPets.battle.mentorSealClaimed', true);
             }
             patch.mentorChallenge = {
               challengeId: mentor.challengeId,
@@ -5065,29 +5065,29 @@ function trainingRing(): EventDefinition {
                 activeSpiritId: activeSpirit,
                 mentorChallengeProof: true,
                 mentorChallengeId: mentor.challengeId,
-                techniqueLoadoutProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.techniqueLoadoutProof')),
-                techniqueLoadoutId: actingPlayer.getVariable<string>('mochiSocial.battle.techniqueLoadout'),
+                techniqueLoadoutProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.techniqueLoadoutProof')),
+                techniqueLoadoutId: actingPlayer.getVariable<string>('mochiPets.battle.techniqueLoadout'),
                 battleRoundProof: battleRound.victory,
                 battleRoundVictory: battleRound.victory,
-                growthRiteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.growthRiteProof')),
+                growthRiteProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.growthRiteProof')),
                 careStreak: careStreakTotal(actingPlayer, mentor.partyIds),
-                journalProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.spirits.journalProof')),
-                journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+                journalProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.spirits.journalProof')),
+                journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || 0),
                 bondBySpiritId: bondMap(actingPlayer, mentor.partyIds)
               },
               traitAttunements[0].id
             );
 
             if (trait.unlocked) {
-              actingPlayer.setVariable('mochiSocial.spirits.traitAttunementProof', true);
-              actingPlayer.setVariable('mochiSocial.spirits.traitAttunement', trait.traitId);
-              actingPlayer.setVariable('mochiSocial.spirits.traitAttunementName', trait.traitName);
-              actingPlayer.setVariable('mochiSocial.spirits.traitAttunementScore', trait.score);
-              actingPlayer.setVariable(`mochiSocial.spirit.${trait.activeSpiritId}.traitProof`, true);
-              actingPlayer.setVariable(`mochiSocial.spirit.${trait.activeSpiritId}.trait`, trait.traitLabel);
-              if (!actingPlayer.getVariable<boolean>('mochiSocial.spirits.traitThreadClaimed')) {
+              actingPlayer.setVariable('mochiPets.spirits.traitAttunementProof', true);
+              actingPlayer.setVariable('mochiPets.spirits.traitAttunement', trait.traitId);
+              actingPlayer.setVariable('mochiPets.spirits.traitAttunementName', trait.traitName);
+              actingPlayer.setVariable('mochiPets.spirits.traitAttunementScore', trait.score);
+              actingPlayer.setVariable(`mochiPets.spirit.${trait.activeSpiritId}.traitProof`, true);
+              actingPlayer.setVariable(`mochiPets.spirit.${trait.activeSpiritId}.trait`, trait.traitLabel);
+              if (!actingPlayer.getVariable<boolean>('mochiPets.spirits.traitThreadClaimed')) {
                 actingPlayer.addItem(alphaItems.traitThread, 1);
-                actingPlayer.setVariable('mochiSocial.spirits.traitThreadClaimed', true);
+                actingPlayer.setVariable('mochiPets.spirits.traitThreadClaimed', true);
               }
               patch.traitAttunement = {
                 activeSpiritId: trait.activeSpiritId,
@@ -5111,35 +5111,35 @@ function trainingRing(): EventDefinition {
                 {
                   partyIds: trait.partyIds,
                   activeSpiritId: trait.activeSpiritId,
-                  tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-                  affinityProof: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0) > 0,
+                  tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+                  affinityProof: Number(actingPlayer.getVariable<number>('mochiPets.battle.affinityTrialWins') || 0) > 0,
                   battleRoundProof: battleRound.victory,
                   battleRoundVictory: battleRound.victory,
-                  techniqueLoadoutProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.techniqueLoadoutProof')),
-                  techniqueLoadoutId: actingPlayer.getVariable<string>('mochiSocial.battle.techniqueLoadout'),
+                  techniqueLoadoutProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.techniqueLoadoutProof')),
+                  techniqueLoadoutId: actingPlayer.getVariable<string>('mochiPets.battle.techniqueLoadout'),
                   traitAttunementProof: true,
                   traitAttunementId: trait.traitId,
                   mentorChallengeProof: true,
                   mentorChallengeId: mentor.challengeId,
                   sparLadderWins: nextSparWins,
                   trainingXp: Math.max(trainingXpTotal(actingPlayer, trait.partyIds), nextXp),
-                  profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
-                  guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
-                  statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
-                  chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || []
+                  profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.profileViewed')),
+                  guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.guildBuddyProof')),
+                  statusMood: actingPlayer.getVariable<string>('mochiPets.social.statusMood'),
+                  chatLines: actingPlayer.getVariable<string[]>('mochiPets.social.chatLines') || []
                 },
                 conditionWeaves[0].id
               );
 
               if (conditionWeave.woven) {
-                actingPlayer.setVariable('mochiSocial.battle.conditionWeaveProof', true);
-                actingPlayer.setVariable('mochiSocial.battle.conditionWeave', conditionWeave.weaveId);
-                actingPlayer.setVariable('mochiSocial.battle.conditionWeaveName', conditionWeave.weaveName);
-                actingPlayer.setVariable('mochiSocial.battle.conditionWeaveScore', conditionWeave.score);
-                actingPlayer.setVariable('mochiSocial.battle.conditionIds', conditionWeave.conditionIds);
-                if (!actingPlayer.getVariable<boolean>('mochiSocial.battle.conditionCharmClaimed')) {
+                actingPlayer.setVariable('mochiPets.battle.conditionWeaveProof', true);
+                actingPlayer.setVariable('mochiPets.battle.conditionWeave', conditionWeave.weaveId);
+                actingPlayer.setVariable('mochiPets.battle.conditionWeaveName', conditionWeave.weaveName);
+                actingPlayer.setVariable('mochiPets.battle.conditionWeaveScore', conditionWeave.score);
+                actingPlayer.setVariable('mochiPets.battle.conditionIds', conditionWeave.conditionIds);
+                if (!actingPlayer.getVariable<boolean>('mochiPets.battle.conditionCharmClaimed')) {
                   actingPlayer.addItem(alphaItems.conditionCharm, 1);
-                  actingPlayer.setVariable('mochiSocial.battle.conditionCharmClaimed', true);
+                  actingPlayer.setVariable('mochiPets.battle.conditionCharmClaimed', true);
                 }
                 patch.conditionWeave = {
                   weaveId: conditionWeave.weaveId,
@@ -5186,8 +5186,8 @@ function questBoard(): EventDefinition {
       const roster = bondedSpirits(actingPlayer);
       const completedQuestChainIds = completedQuestIds(actingPlayer);
       if (completedQuestChainIds.length >= quests.length) {
-        if (actingPlayer.getVariable<boolean>('mochiSocial.guild.commissionKnotClaimed')) {
-          if (actingPlayer.getVariable<boolean>('mochiSocial.guild.rallyKnotClaimed')) {
+        if (actingPlayer.getVariable<boolean>('mochiPets.guild.commissionKnotClaimed')) {
+          if (actingPlayer.getVariable<boolean>('mochiPets.guild.rallyKnotClaimed')) {
             showAlphaPrompt(actingPlayer, 'Your Jade Courtyard Rally is already recorded for this alpha save. Rally proof remains no-real-value.');
             return;
           }
@@ -5196,16 +5196,16 @@ function questBoard(): EventDefinition {
           const rally = resolveGuildSocialRally(
             {
               partyIds: currentPartyIds.length ? currentPartyIds : roster,
-              localPresenceCount: Number(actingPlayer.getVariable<number>('mochiSocial.social.localPresenceCount') || 1),
-              profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
-              guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
-              statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
-              chatLines: actingPlayer.getVariable<string[]>('mochiSocial.social.chatLines') || [],
-              emoteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.emoteProof')),
-              commissionProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.guild.commissionProof')),
-              harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.party.harmonyFormProof')),
-              harmonyTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.harmonyTrialProof')),
-              teamSparMatchProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.teamSparMatchProof'))
+              localPresenceCount: Number(actingPlayer.getVariable<number>('mochiPets.social.localPresenceCount') || 1),
+              profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.profileViewed')),
+              guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.guildBuddyProof')),
+              statusMood: actingPlayer.getVariable<string>('mochiPets.social.statusMood'),
+              chatLines: actingPlayer.getVariable<string[]>('mochiPets.social.chatLines') || [],
+              emoteProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.emoteProof')),
+              commissionProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.guild.commissionProof')),
+              harmonyFormProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.party.harmonyFormProof')),
+              harmonyTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.harmonyTrialProof')),
+              teamSparMatchProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.teamSparMatchProof'))
             },
             guildSocialRallies[0].id
           );
@@ -5215,14 +5215,14 @@ function questBoard(): EventDefinition {
             return;
           }
 
-          actingPlayer.setVariable('mochiSocial.guild.rallyProof', true);
-          actingPlayer.setVariable('mochiSocial.guild.rally', rally.rallyId);
-          actingPlayer.setVariable('mochiSocial.guild.rallyName', rally.rallyName);
-          actingPlayer.setVariable('mochiSocial.guild.rallyScore', rally.score);
-          actingPlayer.setVariable('mochiSocial.guild.rallyPresenceCount', rally.localPresenceCount);
-          actingPlayer.setVariable('mochiSocial.guild.rallyParty', rally.partyIds);
+          actingPlayer.setVariable('mochiPets.guild.rallyProof', true);
+          actingPlayer.setVariable('mochiPets.guild.rally', rally.rallyId);
+          actingPlayer.setVariable('mochiPets.guild.rallyName', rally.rallyName);
+          actingPlayer.setVariable('mochiPets.guild.rallyScore', rally.score);
+          actingPlayer.setVariable('mochiPets.guild.rallyPresenceCount', rally.localPresenceCount);
+          actingPlayer.setVariable('mochiPets.guild.rallyParty', rally.partyIds);
           actingPlayer.addItem(alphaItems.rallyKnot, 1);
-          actingPlayer.setVariable('mochiSocial.guild.rallyKnotClaimed', true);
+          actingPlayer.setVariable('mochiPets.guild.rallyKnotClaimed', true);
           actingPlayer.showNotification('Guild rally recorded', { time: 1800, icon: 'quest-board' });
           emitAlphaHudState(actingPlayer, {
             guildSocialRally: {
@@ -5247,17 +5247,17 @@ function questBoard(): EventDefinition {
           {
             roster,
             activeSpiritId: activeSpiritId(actingPlayer),
-            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || roster.length),
+            journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || roster.length),
             questChainProof: true,
             completedQuestIds: completedQuestChainIds,
-            provisionProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.provisionSatchelProof')),
-            provisionSatchelId: actingPlayer.getVariable<string>('mochiSocial.alpha.provisionSatchel'),
-            marketProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.charmListed')),
-            tradeProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.tradeProof')),
+            provisionProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.alpha.provisionSatchelProof')),
+            provisionSatchelId: actingPlayer.getVariable<string>('mochiPets.alpha.provisionSatchel'),
+            marketProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.alpha.charmListed')),
+            tradeProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.alpha.tradeProof')),
             trainingXp: trainingXpTotal(actingPlayer, roster),
-            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.profileViewed')),
-            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.social.guildBuddyProof')),
-            statusMood: actingPlayer.getVariable<string>('mochiSocial.social.statusMood'),
+            profileViewed: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.profileViewed')),
+            guildBuddyProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.social.guildBuddyProof')),
+            statusMood: actingPlayer.getVariable<string>('mochiPets.social.statusMood'),
             chatLines: []
           },
           guildCommissions[0].id
@@ -5268,13 +5268,13 @@ function questBoard(): EventDefinition {
           return;
         }
 
-        actingPlayer.setVariable('mochiSocial.guild.commissionProof', true);
-        actingPlayer.setVariable('mochiSocial.guild.commission', commission.commissionId);
-        actingPlayer.setVariable('mochiSocial.guild.commissionName', commission.commissionName);
-        actingPlayer.setVariable('mochiSocial.guild.commissionScore', commission.score);
-        actingPlayer.setVariable('mochiSocial.guild.commissionCompletedQuests', commission.completedQuestIds);
+        actingPlayer.setVariable('mochiPets.guild.commissionProof', true);
+        actingPlayer.setVariable('mochiPets.guild.commission', commission.commissionId);
+        actingPlayer.setVariable('mochiPets.guild.commissionName', commission.commissionName);
+        actingPlayer.setVariable('mochiPets.guild.commissionScore', commission.score);
+        actingPlayer.setVariable('mochiPets.guild.commissionCompletedQuests', commission.completedQuestIds);
         actingPlayer.addItem(alphaItems.commissionKnot, 1);
-        actingPlayer.setVariable('mochiSocial.guild.commissionKnotClaimed', true);
+        actingPlayer.setVariable('mochiPets.guild.commissionKnotClaimed', true);
         actingPlayer.showNotification('Guild commission recorded', { time: 1800, icon: 'quest-board' });
         emitAlphaHudState(actingPlayer, {
           guildCommission: {
@@ -5305,15 +5305,15 @@ function questBoard(): EventDefinition {
         return;
       }
 
-      const stepsKey = `mochiSocial.quest.${quest.id}.steps`;
-      const rewardKey = `mochiSocial.quest.${quest.id}.rewardClaimed`;
+      const stepsKey = `mochiPets.quest.${quest.id}.steps`;
+      const rewardKey = `mochiPets.quest.${quest.id}.rewardClaimed`;
       const nextCompleted = [...questSteps(actingPlayer, quest.id)];
       const nextStep = quest.steps.find((step) => !nextCompleted.includes(step));
       if (nextStep) {
         nextCompleted.push(nextStep);
       }
 
-      actingPlayer.setVariable('mochiSocial.quest.active', quest.id);
+      actingPlayer.setVariable('mochiPets.quest.active', quest.id);
       actingPlayer.setVariable(stepsKey, nextCompleted);
       const nextCompletedQuestIds = completedQuestIds(actingPlayer);
       const nextQuest = quests.find((entry) => {
@@ -5336,12 +5336,12 @@ function questBoard(): EventDefinition {
 
       if (nextCompleted.length >= quest.steps.length && !actingPlayer.getVariable<boolean>(rewardKey)) {
         actingPlayer.setVariable(rewardKey, true);
-        actingPlayer.setVariable('mochiSocial.quest.completed', nextCompletedQuestIds);
-        const bondKey = `mochiSocial.spirit.${rewardSpiritId}.bond`;
+        actingPlayer.setVariable('mochiPets.quest.completed', nextCompletedQuestIds);
+        const bondKey = `mochiPets.spirit.${rewardSpiritId}.bond`;
         const nextBond = Math.min(5, Number(actingPlayer.getVariable<number>(bondKey) || 1) + quest.rewardBond);
         const nextGrowth = growthStageFromBond(nextBond);
         actingPlayer.setVariable(bondKey, nextBond);
-        actingPlayer.setVariable(`mochiSocial.spirit.${rewardSpiritId}.growth`, nextGrowth);
+        actingPlayer.setVariable(`mochiPets.spirit.${rewardSpiritId}.growth`, nextGrowth);
         patch.spirit = { id: rewardSpiritId, bond: nextBond, growth: nextGrowth };
         const spiritName = spirits.find((entry) => entry.id === rewardSpiritId)?.name || rewardSpiritId;
         prompt = `${quest.title} complete. Guild reward recorded as no-real-value alpha progress; ${spiritName} is now ${nextGrowth} bond ${nextBond}/5.`;
@@ -5369,17 +5369,17 @@ function guildRankBell(): EventDefinition {
       const activeSpirit = activeSpiritId(actingPlayer);
       const trial = guildRankTrials[0];
       const completedQuestSteps = quests.flatMap((quest) => questSteps(actingPlayer, quest.id));
-      const bond = activeSpirit ? Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1) : 0;
+      const bond = activeSpirit ? Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.bond`) || 1) : 0;
       const rank = resolveGuildRankTrial(
         {
           roster,
           activeSpiritId: activeSpirit,
           bond,
           completedQuestSteps,
-          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.battle.tacticScrollProof')),
-          affinityWins: Number(actingPlayer.getVariable<number>('mochiSocial.battle.affinityTrialWins') || 0),
-          sparWins: Number(actingPlayer.getVariable<number>('mochiSocial.battle.sparLadderWins') || 0),
-          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || roster.length)
+          tacticProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.battle.tacticScrollProof')),
+          affinityWins: Number(actingPlayer.getVariable<number>('mochiPets.battle.affinityTrialWins') || 0),
+          sparWins: Number(actingPlayer.getVariable<number>('mochiPets.battle.sparLadderWins') || 0),
+          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || roster.length)
         },
         trial.id
       );
@@ -5389,13 +5389,13 @@ function guildRankBell(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.guild.rankTrialProof', true);
-      actingPlayer.setVariable('mochiSocial.guild.rankTrial', rank.trialId);
-      actingPlayer.setVariable('mochiSocial.guild.rankTitle', rank.rankTitle);
-      actingPlayer.setVariable('mochiSocial.guild.rankScore', rank.score);
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.guild.rankSealClaimed')) {
+      actingPlayer.setVariable('mochiPets.guild.rankTrialProof', true);
+      actingPlayer.setVariable('mochiPets.guild.rankTrial', rank.trialId);
+      actingPlayer.setVariable('mochiPets.guild.rankTitle', rank.rankTitle);
+      actingPlayer.setVariable('mochiPets.guild.rankScore', rank.score);
+      if (!actingPlayer.getVariable<boolean>('mochiPets.guild.rankSealClaimed')) {
         actingPlayer.addItem(alphaItems.rankSeal, 1);
-        actingPlayer.setVariable('mochiSocial.guild.rankSealClaimed', true);
+        actingPlayer.setVariable('mochiPets.guild.rankSealClaimed', true);
       }
 
       actingPlayer.showNotification('Guild rank recorded', { time: 1800, icon: 'guild-rank-bell' });
@@ -5430,18 +5430,18 @@ function growthMoonwell(): EventDefinition {
       }
 
       const rite = spiritGrowthRites[0];
-      const bond = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.bond`) || 1);
-      const growth = actingPlayer.getVariable<string>(`mochiSocial.spirit.${activeSpirit}.growth`) || growthStageFromBond(bond);
-      const trainingXp = Number(actingPlayer.getVariable<number>(`mochiSocial.spirit.${activeSpirit}.trainingXp`) || 0);
+      const bond = Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.bond`) || 1);
+      const growth = actingPlayer.getVariable<string>(`mochiPets.spirit.${activeSpirit}.growth`) || growthStageFromBond(bond);
+      const trainingXp = Number(actingPlayer.getVariable<number>(`mochiPets.spirit.${activeSpirit}.trainingXp`) || 0);
       const riteResult = resolveSpiritGrowthRite(
         {
           spiritId: activeSpirit,
           bond,
           growth,
           trainingXp,
-          raisingProof: Boolean(actingPlayer.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.raisingProof`)),
-          rankTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.guild.rankTrialProof')),
-          rankTrialId: actingPlayer.getVariable<string>('mochiSocial.guild.rankTrial')
+          raisingProof: Boolean(actingPlayer.getVariable<boolean>(`mochiPets.spirit.${activeSpirit}.raisingProof`)),
+          rankTrialProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.guild.rankTrialProof')),
+          rankTrialId: actingPlayer.getVariable<string>('mochiPets.guild.rankTrial')
         },
         rite.id
       );
@@ -5451,12 +5451,12 @@ function growthMoonwell(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthRiteProof`, true);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthRite`, riteResult.riteId);
-      actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthForm`, riteResult.formTitle);
-      if (!actingPlayer.getVariable<boolean>(`mochiSocial.spirit.${activeSpirit}.growthSigilClaimed`)) {
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growthRiteProof`, true);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growthRite`, riteResult.riteId);
+      actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growthForm`, riteResult.formTitle);
+      if (!actingPlayer.getVariable<boolean>(`mochiPets.spirit.${activeSpirit}.growthSigilClaimed`)) {
         actingPlayer.addItem(alphaItems.growthSigil, 1);
-        actingPlayer.setVariable(`mochiSocial.spirit.${activeSpirit}.growthSigilClaimed`, true);
+        actingPlayer.setVariable(`mochiPets.spirit.${activeSpirit}.growthSigilClaimed`, true);
       }
 
       actingPlayer.showNotification('Growth rite opened', { time: 1800, icon: 'growth-moonwell' });
@@ -5485,9 +5485,9 @@ function marketBoard(): EventDefinition {
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.charmListed')) {
+      if (!actingPlayer.getVariable<boolean>('mochiPets.alpha.charmListed')) {
         actingPlayer.addItem(alphaItems.charm, 1);
-        actingPlayer.setVariable('mochiSocial.alpha.charmListed', true);
+        actingPlayer.setVariable('mochiPets.alpha.charmListed', true);
         actingPlayer.showNotification('Fixed listing proof', { time: 1800, icon: 'market-board' });
         emitAlphaHudState(actingPlayer, { charmListed: true });
         await actingPlayer.save('auto', { title: 'Alpha market proof' }, { reason: 'auto', source: 'market-board' });
@@ -5495,7 +5495,7 @@ function marketBoard(): EventDefinition {
         return;
       }
 
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.marketReceiptProof')) {
+      if (!actingPlayer.getVariable<boolean>('mochiPets.alpha.marketReceiptProof')) {
         const receipt = resolveMarketGuildReceipt(
           {
             itemId: alphaItems.charm.id,
@@ -5517,11 +5517,11 @@ function marketBoard(): EventDefinition {
           return;
         }
 
-        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptProof', true);
-        actingPlayer.setVariable('mochiSocial.alpha.marketReceipt', receipt.receiptId);
-        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptName', receipt.receiptName);
-        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptScore', receipt.score);
-        actingPlayer.setVariable('mochiSocial.alpha.marketReceiptItemId', receipt.itemId);
+        actingPlayer.setVariable('mochiPets.alpha.marketReceiptProof', true);
+        actingPlayer.setVariable('mochiPets.alpha.marketReceipt', receipt.receiptId);
+        actingPlayer.setVariable('mochiPets.alpha.marketReceiptName', receipt.receiptName);
+        actingPlayer.setVariable('mochiPets.alpha.marketReceiptScore', receipt.score);
+        actingPlayer.setVariable('mochiPets.alpha.marketReceiptItemId', receipt.itemId);
         actingPlayer.addItem(alphaItems.marketReceipt, 1);
         actingPlayer.showNotification('Market receipt recorded', { time: 1800, icon: 'market-board' });
         emitAlphaHudState(actingPlayer, {
@@ -5545,7 +5545,7 @@ function marketBoard(): EventDefinition {
         return;
       }
 
-      if (actingPlayer.getVariable<boolean>('mochiSocial.alpha.provisionSatchelClaimed')) {
+      if (actingPlayer.getVariable<boolean>('mochiPets.alpha.provisionSatchelClaimed')) {
         showAlphaPrompt(actingPlayer, 'Your Jade Court Provision Satchel is already stocked for this alpha save. Item prep remains no-real-value.');
         return;
       }
@@ -5555,11 +5555,11 @@ function marketBoard(): EventDefinition {
         {
           roster,
           activeSpiritId: activeSpiritId(actingPlayer),
-          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiSocial.spirits.journalCount') || 0),
+          journalDiscoveredCount: Number(actingPlayer.getVariable<number>('mochiPets.spirits.journalCount') || 0),
           marketProof: true,
-          marketReceiptProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.marketReceiptProof')),
-          tradeProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.alpha.tradeProof')),
-          routeInviteProof: Boolean(actingPlayer.getVariable<boolean>('mochiSocial.world.routeInvitationProof')),
+          marketReceiptProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.alpha.marketReceiptProof')),
+          tradeProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.alpha.tradeProof')),
+          routeInviteProof: Boolean(actingPlayer.getVariable<boolean>('mochiPets.world.routeInvitationProof')),
           careStreak: careStreakTotal(actingPlayer, roster),
           completedQuestIds: completedQuestIds(actingPlayer)
         },
@@ -5571,14 +5571,14 @@ function marketBoard(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.alpha.provisionSatchelProof', true);
-      actingPlayer.setVariable('mochiSocial.alpha.provisionSatchel', satchel.satchelId);
-      actingPlayer.setVariable('mochiSocial.alpha.provisionSatchelName', satchel.satchelName);
-      actingPlayer.setVariable('mochiSocial.alpha.provisionScore', satchel.score);
-      actingPlayer.setVariable('mochiSocial.alpha.provisionStockItems', satchel.stockItemIds);
+      actingPlayer.setVariable('mochiPets.alpha.provisionSatchelProof', true);
+      actingPlayer.setVariable('mochiPets.alpha.provisionSatchel', satchel.satchelId);
+      actingPlayer.setVariable('mochiPets.alpha.provisionSatchelName', satchel.satchelName);
+      actingPlayer.setVariable('mochiPets.alpha.provisionScore', satchel.score);
+      actingPlayer.setVariable('mochiPets.alpha.provisionStockItems', satchel.stockItemIds);
       actingPlayer.addItem(alphaItems.mooncakeBox, 1);
       actingPlayer.addItem(alphaItems.provisionSatchel, 1);
-      actingPlayer.setVariable('mochiSocial.alpha.provisionSatchelClaimed', true);
+      actingPlayer.setVariable('mochiPets.alpha.provisionSatchelClaimed', true);
       actingPlayer.showNotification('Provision satchel stocked', { time: 1800, icon: 'market-board' });
       emitAlphaHudState(actingPlayer, {
         provisionSatchel: {
@@ -5609,7 +5609,7 @@ function tradePost(): EventDefinition {
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      actingPlayer.setVariable('mochiSocial.alpha.tradeProof', true);
+      actingPlayer.setVariable('mochiPets.alpha.tradeProof', true);
       actingPlayer.showNotification('Direct trade proof', { time: 1800, icon: 'trade-post' });
       emitAlphaHudState(actingPlayer, { tradeProof: true });
       await actingPlayer.save('auto', { title: 'Alpha trade proof' }, { reason: 'auto', source: 'trade-post' });
@@ -5630,9 +5630,9 @@ function canaryShrine(): EventDefinition {
         return;
       }
 
-      if (!actingPlayer.getVariable<boolean>('mochiSocial.alpha.canaryCertificateRequested')) {
+      if (!actingPlayer.getVariable<boolean>('mochiPets.alpha.canaryCertificateRequested')) {
         actingPlayer.addItem(alphaItems.certificate, 1);
-        actingPlayer.setVariable('mochiSocial.alpha.canaryCertificateRequested', true);
+        actingPlayer.setVariable('mochiPets.alpha.canaryCertificateRequested', true);
         actingPlayer.showNotification('Canary certificate staged', { time: 1800, icon: 'canary-shrine' });
         emitAlphaHudState(actingPlayer, { canaryRequested: true });
         await actingPlayer.save('auto', { title: 'Canary certificate request' }, { reason: 'auto', source: 'canary-shrine' });
@@ -5643,7 +5643,7 @@ function canaryShrine(): EventDefinition {
         return;
       }
 
-      actingPlayer.setVariable('mochiSocial.alpha.canaryReturnRequested', true);
+      actingPlayer.setVariable('mochiPets.alpha.canaryReturnRequested', true);
       actingPlayer.showNotification('Jade Vault return staged', { time: 1800, icon: 'canary-shrine' });
       emitAlphaHudState(actingPlayer, { canaryRequested: true, canaryReturnRequested: true });
       await actingPlayer.save('auto', { title: 'Jade Vault return proof' }, { reason: 'auto', source: 'canary-shrine' });
@@ -5662,13 +5662,13 @@ function guildSealChest(): EventDefinition {
     },
 
     async onAction(actingPlayer: RpgPlayer) {
-      if (actingPlayer.getVariable<boolean>('mochiSocial.guildSealClaimed')) {
+      if (actingPlayer.getVariable<boolean>('mochiPets.guildSealClaimed')) {
         showAlphaPrompt(actingPlayer, 'The chest is empty. Your Mochirii Guild Seal is already tucked away.');
         return;
       }
 
       actingPlayer.addItem(alphaItems.guildSeal, 1);
-      actingPlayer.setVariable('mochiSocial.guildSealClaimed', true);
+      actingPlayer.setVariable('mochiPets.guildSealClaimed', true);
       actingPlayer.showNotification('Guild Seal added', { time: 1800, icon: 'chest' });
       emitAlphaHudState(actingPlayer, { sealClaimed: true });
       await actingPlayer.save('auto', { title: 'Mochirii first guild seal' }, { reason: 'auto', source: 'guild-seal-chest' });
@@ -5814,8 +5814,8 @@ const mainServerModule = defineModule({
   ]
 });
 
-function provideMochiSocialMain() {
-  return createModule('mochi-social-main', [
+function provideMochiPetsMain() {
+  return createModule('mochi-pets-main', [
     {
       server: mainServerModule
     }
@@ -5916,7 +5916,7 @@ class FileSaveStorageStrategy implements SaveStorageStrategy {
 
 export default createServer({
   providers: [
-    provideMochiSocialMain(),
+    provideMochiPetsMain(),
     provideSaveStorage(new FileSaveStorageStrategy(saveDir)),
     provideAutoSave({
       shouldAutoSave: () => true,

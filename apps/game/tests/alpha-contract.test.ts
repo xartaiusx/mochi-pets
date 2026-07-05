@@ -153,88 +153,24 @@ import {
 import { ALPHA_ACTION_TYPES, ALPHA_EDGE_FUNCTIONS, ALPHA_FEATURES, SERVER_ENV_CONTRACT, isAlphaActionEnvelope } from '../src/integration/alpha-contract';
 
 describe('alpha contract', () => {
-  it('keeps the closed alpha no-real-value and Canary scoped', () => {
+  it('keeps the closed Unity shared-room alpha no-real-value and scoped', () => {
     expect(ALPHA_FEATURES.alpha.noRealValue).toBe(true);
     expect(ALPHA_FEATURES.alpha.allowlistRequired).toBe(true);
-    expect(ALPHA_FEATURES.chain.network).toBe('CANARY');
-    expect(ALPHA_FEATURES.chain.finalityRequired).toBe(true);
-    expect(ALPHA_FEATURES.chain.operationUpdates).toBe(true);
-    expect(ALPHA_FEATURES.chain.previewFinalityReviews).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.partyFormation).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.sparringLadder).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritJournal).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.techniqueMastery).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.techniqueLoadouts).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.techniqueCodexes).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritTraits).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritRelicAttunements).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritStarterVows).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.fieldExpeditions).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.routeInvitations).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.routeMastery).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.routePatrols).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.habitatBonds).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritSanctuaryRites).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritResearch).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritCompendium).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritRosterArchives).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritRosterCabinets).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritCareCycles).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritTemperamentConcords).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritFieldAlmanacs).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.routeEcologySurveys).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritWeatherVeils).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritEncounterRotations).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritEncounterAtlases).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritHabitatCensuses).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritCraftWrits).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.tradeExchangeAccords).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.routeWaystones).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.routeCharters).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritNurtureRites).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritRecoveryTeas).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritKinshipAlbums).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritNurseryGroves).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritBloomAscendances).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritLineageRegisters).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritBlossomCradles).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.itemProvisions).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritBondGiftRites).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritNameBannerRites).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.itemProvisionCatalogs).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.battleItemKits).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.remedyPouches).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.questLedgers).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.storyDialogueScrolls).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.guildCommissions).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.socialRallies).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritStoryChapters).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.guildInsigniaCases).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.wayfarerChronicles).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.guildAscensionTrials).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.affinityTrials).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.affinityMatrices).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.battleTactics).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.guildRankTrials).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritGrowthRites).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.bondMilestones).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.partyHarmony).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.harmonyTrials).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.teamSparMatches).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.mentorChallenges).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.dojoLadders).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritTournamentBrackets).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritRivalCircles).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.sifuCouncils).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.summitCircuits).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.battleChronicles).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.battleRoundTranscripts).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.conditionWeaves).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.fieldAccords).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.spiritCaptureRites).toBe(true);
-    expect(ALPHA_FEATURES.gameplay.questChains).toBe(true);
-    expect(ALPHA_FEATURES.market.guildReceipts).toBe(true);
-    expect(ALPHA_FEATURES.market.auctions).toBe(false);
+    expect(ALPHA_FEATURES.gameplay.sharedRoom).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.desktopWebgl).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.curatedCharacterPresets).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.movement).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.cameraFollow).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.emotes).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.localSocialSignal).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.lirabaoCare).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.staleRevisionReload).toBe(true);
+    expect(ALPHA_FEATURES.gameplay.avatarUploads).toBe(false);
+    expect(ALPHA_FEATURES.gameplay.multipleRooms).toBe(false);
+    expect(ALPHA_FEATURES.gameplay.sharding).toBe(false);
+    expect(ALPHA_FEATURES.gameplay.mobileSpecificUi).toBe(false);
+    expect('chain' in ALPHA_FEATURES).toBe(false);
+    expect('market' in ALPHA_FEATURES).toBe(false);
     expect(ALPHA_FEATURES.ugc).toBe('curated');
   });
 
@@ -258,95 +194,29 @@ describe('alpha contract', () => {
   });
 
   it('documents server-only environment names without service-role keys', () => {
-    expect(SERVER_ENV_CONTRACT).toContain('MOCHI_SOCIAL_GAME_SERVER_TOKEN');
+    expect(SERVER_ENV_CONTRACT).toContain('MOCHI_PETS_GAME_SERVER_TOKEN');
     expect(SERVER_ENV_CONTRACT.some((name) => name.includes('SERVICE_ROLE'))).toBe(false);
-    expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-social-alpha-progress');
+    expect(ALPHA_EDGE_FUNCTIONS.progress).toBe('mochi-pets-alpha-progress');
+    expect(ALPHA_EDGE_FUNCTIONS.unityAuth).toBe('mochi-pets-unity-auth');
   });
 
   it('validates alpha action envelopes', () => {
-    expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.starter_vow');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.capture');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.capture_rite');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.route_invite');
-    expect(ALPHA_ACTION_TYPES).toContain('world.route_mastery');
-    expect(ALPHA_ACTION_TYPES).toContain('world.route_patrol');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_bond');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.sanctuary_rite');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.research');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.compendium_complete');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_archive');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.care_cycle');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.temperament_concord');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.field_almanac');
-    expect(ALPHA_ACTION_TYPES).toContain('world.route_ecology');
-    expect(ALPHA_ACTION_TYPES).toContain('world.weather_veil');
-    expect(ALPHA_ACTION_TYPES).toContain('world.encounter_rotation');
-    expect(ALPHA_ACTION_TYPES).toContain('world.encounter_atlas');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.habitat_census');
-    expect(ALPHA_ACTION_TYPES).toContain('item.craft_writ');
-    expect(ALPHA_ACTION_TYPES).toContain('world.route_waystone');
-    expect(ALPHA_ACTION_TYPES).toContain('world.route_charter');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.nurture_rite');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.recovery_tea');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.kinship_album');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.nursery_grove');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.bloom_ascendance');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.lineage_register');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.roster_cabinet');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.blossom_cradle');
-    expect(ALPHA_ACTION_TYPES).toContain('item.bond_gift');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.name_banner');
-    expect(ALPHA_ACTION_TYPES).toContain('item.provision_satchel');
-    expect(ALPHA_ACTION_TYPES).toContain('item.provision_catalog');
-    expect(ALPHA_ACTION_TYPES).toContain('item.battle_kit');
-    expect(ALPHA_ACTION_TYPES).toContain('item.remedy_pouch');
-    expect(ALPHA_ACTION_TYPES).toContain('quest.ledger_record');
-    expect(ALPHA_ACTION_TYPES).toContain('story.dialogue_scroll');
-    expect(ALPHA_ACTION_TYPES).toContain('guild.commission_complete');
-    expect(ALPHA_ACTION_TYPES).toContain('guild.social_rally');
-    expect(ALPHA_ACTION_TYPES).toContain('story.chapter_complete');
-    expect(ALPHA_ACTION_TYPES).toContain('guild.insignia_case');
-    expect(ALPHA_ACTION_TYPES).toContain('guild.wayfarer_chronicle');
-    expect(ALPHA_ACTION_TYPES).toContain('guild.ascension_trial');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.attune');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.journal');
-    expect(ALPHA_ACTION_TYPES).toContain('world.expedition');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.technique');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.technique_loadout');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.technique_codex');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.trait_attune');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.tactic_scroll');
-    expect(ALPHA_ACTION_TYPES).toContain('guild.rank_trial');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.growth_rite');
-    expect(ALPHA_ACTION_TYPES).toContain('party.set');
-    expect(ALPHA_ACTION_TYPES).toContain('party.harmony_form');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.harmony_trial');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.team_spar_match');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.mentor_challenge');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.dojo_ladder');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.sifu_council');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.summit_circuit');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.battle_chronicle');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.tournament_bracket');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.rival_circle');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.condition_weave');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_trial');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.affinity_matrix');
-    expect(ALPHA_ACTION_TYPES).toContain('battle.spar_ladder');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.train');
-    expect(ALPHA_ACTION_TYPES).toContain('spirit.raise');
-    expect(ALPHA_ACTION_TYPES).toContain('quest.accept');
-    expect(ALPHA_ACTION_TYPES).toContain('quest.progress');
-    expect(ALPHA_ACTION_TYPES).toContain('market.fixed_list');
-    expect(ALPHA_ACTION_TYPES).toContain('market.guild_receipt');
-    expect(ALPHA_ACTION_TYPES).toContain('trade.direct_offer');
-    expect(ALPHA_ACTION_TYPES).toContain('trade.exchange_accord');
-    expect(ALPHA_ACTION_TYPES).toContain('chain.withdraw_request');
-    expect(ALPHA_ACTION_TYPES).toContain('chain.deposit_request');
-    expect(ALPHA_ACTION_TYPES).toContain('chain.operation_update');
-    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'spirit.care', payload: {} })).toBe(true);
+    expect(ALPHA_ACTION_TYPES).toEqual([
+      'chat.send',
+      'emote.send',
+      'unity.character.created',
+      'unity.character.updated',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'unity.room.joined',
+      'unity.room.left'
+    ]);
+    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'unity.pet.interaction', payload: {} })).toBe(true);
     expect(isAlphaActionEnvelope({ requestId: 'short', type: 'spirit.care', payload: {} })).toBe(false);
+    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'spirit.care', payload: {} })).toBe(false);
+    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'market.fixed_list', payload: {} })).toBe(false);
+    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'trade.direct_offer', payload: {} })).toBe(false);
+    expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'chain.operation_update', payload: {} })).toBe(false);
     expect(isAlphaActionEnvelope({ requestId: 'req_123456789', type: 'economy.cashout', payload: {} })).toBe(false);
   });
 

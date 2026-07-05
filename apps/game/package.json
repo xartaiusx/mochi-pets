@@ -1,8 +1,8 @@
 {
-  "name": "@mochi-social/game",
+  "name": "@mochi-pets/game",
   "version": "0.1.0",
   "private": true,
-  "description": "Mochi Social multiplayer browser RPG runtime.",
+  "description": "Mochi Pets Unity WebGL host and integration wrapper.",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -36,7 +36,7 @@
     "@canvasengine/compiler": "2.0.0-rc.4",
     "@eslint/js": "^10.0.0",
     "@types/express": "^5.0.6",
-    "@types/node": "^22.19.1",
+    "@types/node": "^24.13.2",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "cross-env": "^10.1.0",

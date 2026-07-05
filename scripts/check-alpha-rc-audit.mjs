@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readLocalPullRequestEvidence } from './github-pr-evidence.mjs';
+import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
@@ -25,7 +27,7 @@ addSyncApprovalRequirements();
 addManualPromptReviewRequirements();
 addLocalBranchRequirements();
 addSiteBranchRequirements();
-addPrRequirements();
+await addPrRequirements();
 addLocalHandoffRequirements();
 
 const summary = summarize(requirements);
@@ -60,16 +62,20 @@ function addStaticRequirements() {
     '/integration/game-manifest.json',
     '/integration/alpha/status',
     '/integration/alpha/progress',
-    '/integration/alpha/action',
-    '/integration/alpha/enjin/submit'
+    '/integration/alpha/action'
   ]);
-  requireFileIncludes('game.no-real-value', 'Game manifest and alpha status keep Canary/no-real-value scope.', 'apps/game/src/integration/alpha-contract.ts', [
+  requireFileIncludes('game.no-real-value', 'Game manifest and alpha status keep Preview Ready no-real-value shared-room scope.', 'apps/game/src/integration/alpha-contract.ts', [
     'noRealValue: true',
-    "network: 'CANARY'",
-    'cashout: false',
+    "stopPoint: 'alpha-preview-ready'",
+    'sharedRoom: true',
+    'lirabaoCare: true',
+    'staleRevisionReload: true',
+    'avatarUploads: false',
+    'multipleRooms: false',
+    'mobileSpecificUi: false',
     "ugc: 'curated'",
-    'socialRallies: true',
-    "'guild.social_rally'"
+    "'unity.pet.interaction'",
+    "'unity.pet.state_saved'"
   ]);
   requireFileIncludes('game.bridge-protocol', 'Bridge protocol declares Supabase access-token auth and sign-out events.', 'apps/game/src/integration/protocol.ts', [
     'MOCHI_SOCIAL_AUTH',
@@ -78,15 +84,15 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_AUTH_STATE',
     'MOCHI_SOCIAL_ERROR'
   ]);
-  requireFileIncludes('game.bridge-runtime', 'Browser bridge consumes auth/sign-out protocol and stores only the access token state.', 'apps/game/src/integration/browser-bridge.ts', [
-    'BRIDGE_EVENTS.auth',
-    'BRIDGE_EVENTS.signOut',
+  requireFileIncludes('game.bridge-runtime', 'Unity WebGL wrapper consumes auth/sign-out protocol, validates parent origins, and injects browser-safe endpoint config.', 'apps/game/src/entries/express.ts', [
+    'data-mochi-social-unity-bridge-config',
+    'allowedParentOrigins',
+    'MOCHI_SOCIAL_AUTH',
+    'MOCHI_SOCIAL_SIGN_OUT',
     'accessToken',
-    'configured-preview-stub',
-    'data-alpha-action="guild.social_rally"',
-    'data-rally-label',
-    'guildSocialRally',
-    'rallyProof'
+    'unityAuthUrl',
+    'mochi-social-unity-auth',
+    'event.stopImmediatePropagation()'
   ]);
   requireFileIncludes('game.supabase-edge-bridge', 'Supabase Edge bridge uses the scoped game server token header and keeps service-role secrets out of game requests.', 'apps/game/src/integration/supabase-edge-client.ts', [
     'MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL',
@@ -105,38 +111,29 @@ function addStaticRequirements() {
     'mochi-social-alpha-action',
     'mochi-social-alpha-progress'
   ]);
-  requireFileIncludes('game.enjin-finality', 'Enjin helper enforces Canary, Fuel Tank, idempotency, and finality before hot credit.', 'apps/game/src/integration/enjin-canary.ts', [
-    "network: 'CANARY'",
-    'fuelTank: config.fuelTankId',
-    'idempotencyKey: input.requestId',
-    'canCreditHotInventory',
-    "state === 'FINALIZED'"
+  requireFileIncludes('game.no-future-economy-exports', 'Release-facing manifest and status reject future economy keys for the Unity shared-room alpha.', 'apps/game/src/entries/express.ts', [
+    "assertNoFutureSystemKeys(manifest, 'game manifest')",
+    "assertNoFutureSystemKeys(status, 'alpha status')",
+    'must not publish future economy keys',
+    'market|trade|cashout'
   ]);
-  requireFileIncludes('game.local-acceptance', 'Local acceptance covers spirit, market, trade, chain, and fail-closed Enjin route paths.', 'scripts/check-local-alpha-acceptance.mjs', [
-    'spirit.bond',
-    'spirit.care',
-    'spirit.habitat_bond',
-    'jade-court-habitat-bond',
-    'spirit.research',
-    'jade-court-research-folio',
-    'spirit.compendium_complete',
-    'jade-court-spirit-compendium',
-    'item.provision_satchel',
-    'jade-court-provision-satchel',
-    'guild.commission_complete',
-    'jade-court-commission-ledger',
-    'guild.social_rally',
-    'jade-courtyard-rally',
-    'market.fixed_list',
-    'trade.direct_offer',
-    'chain.withdraw_request',
-    'chain.deposit_request',
-    'confirmNoCreditUntilFinalized',
+  requireFileIncludes('game.local-acceptance', 'Local acceptance covers the Unity shared-room manifest, routes, character actions, Lirabao actions, and no-real-value ledger fallback.', 'scripts/check-local-alpha-acceptance.mjs', [
+    'Unity WebGL Alpha Preview Ready contract acceptance',
+    'jade-lantern-room-alpha',
+    'JadeLanternRoom',
+    'single-shared-room',
+    'lirabao',
+    'character.v1',
+    'room:jade-lantern-room/sharedPet.v1',
+    'unity.room.joined',
+    'unity.character.created',
+    'unity.character.updated',
+    'unity.pet.interaction',
+    'unity.pet.state_saved',
+    'unity.room.left',
     'ledgerVersion=1',
-    'alphaStopPoint',
-    'chainNetwork',
-    '/integration/alpha/enjin/submit',
-    'invalid_game_server_token'
+    'alpha-preview-ready',
+    'must not expose future asset network state'
   ]);
   requireFileIncludes('game.local-suite', 'Local Alpha suite builds, starts the built runtime, runs localhost smokes, strips live provider env, and writes one no-secret report.', 'scripts/check-alpha-local-suite.mjs', [
     'No-cost localhost Alpha RC suite',
@@ -178,7 +175,7 @@ function addStaticRequirements() {
     'visual snapshot canvas PNG must be non-empty',
     'visual review must keep rendered prompt interaction as a manual pre-RC gate',
     'Wallet Daemon local check must stay no-cost and metadata-only',
-    'built server smoke must prove tokened Enjin route fails closed',
+    'built server smoke must not activate the legacy fallback',
     'local-only'
   ]);
   requireFileIncludes('game.report-hygiene-script', 'Report hygiene scans ignored local reports and generated no-secret handoff artifacts for accidental secret leakage.', 'scripts/check-alpha-report-hygiene.mjs', [
@@ -263,87 +260,32 @@ function addStaticRequirements() {
     'requiresHostedApproval',
     'Hosted game contract checks require explicit approval'
   ]);
-  requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Canary-scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
+  requireFileIncludes('game.local-ledger-writer', 'Local fallback ledger rows are versioned, Preview Ready scoped, and no-real-value.', 'apps/game/src/entries/express.ts', [
     'ledgerVersion: 1',
     "source: 'local-alpha-ledger'",
-    "alphaStopPoint: 'alpha-rc-ready'",
-    "chainNetwork: 'CANARY'",
+    "alphaStopPoint: 'alpha-preview-ready'",
     'noRealValue: true',
     'receivedAt: new Date().toISOString()'
   ]);
-  requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies canvas, movement signatures, HUD, and Nearby presence.', 'scripts/check-alpha-browser-presence.mjs', [
-    'Nearby: 2 testers',
-    'data-presence-label',
-    'data-alpha-action="spirit.care"',
-    'data-alpha-local-action="profile.view"',
-    'profileViewed',
-    'data-alpha-local-action="guild.buddy"',
-    'guildBuddyProof',
-    'data-alpha-local-action="status.set"',
-    'statusMood',
-    'data-alpha-local-action="spirit.inspect"',
-    'lastInspectedSpiritId',
-    'data-alpha-action="world.expedition"',
-    'expeditionProof',
-    'data-alpha-action="spirit.route_invite"',
-    'routeInviteProof',
-    'data-alpha-action="world.route_mastery"',
-    'routeMasteryProof',
-    'data-alpha-action="spirit.habitat_bond"',
-    'habitatBondProof',
-    'data-alpha-action="spirit.research"',
-    'researchProof',
-    'jade-court-research-folio',
-    'data-alpha-action="spirit.compendium_complete"',
-    'compendiumProof',
-    'jade-court-spirit-compendium',
-    'data-alpha-action="item.provision_satchel"',
-    'provisionProof',
-    'jade-court-provision-satchel',
-    'data-alpha-action="guild.commission_complete"',
-    'commissionProof',
-    'jade-court-commission-ledger',
-    'data-alpha-action="guild.social_rally"',
-    'rallyProof',
-    'emoteProof',
-    'Jade Courtyard Rally',
-    'data-alpha-action="party.harmony_form"',
-    'harmonyFormProof',
-    'data-alpha-action="battle.harmony_trial"',
-    'harmonyTrialProof',
-    'data-alpha-action="battle.team_spar_match"',
-    'teamSparMatchProof',
-    'data-alpha-action="battle.mentor_challenge"',
-    'mentorChallengeProof',
-    'silk-banner-mentor-drill',
-    'data-alpha-action="spirit.technique_loadout"',
-    'techniqueLoadoutProof',
-    'jade-step-loadout',
-    'data-alpha-action="spirit.trait_attune"',
-    'traitAttunementProof',
-    'jade-heart-trait',
-    'data-alpha-action="battle.condition_weave"',
-    'conditionWeaveProof',
-    'jade-mirror-condition-weave',
-    'data-alpha-action="battle.tactic_scroll"',
-    'tacticProof',
-    'data-alpha-action="guild.rank_trial"',
-    'guildRankProof',
-    'data-alpha-action="spirit.growth_rite"',
-    'growthRiteProof',
-    'data-alpha-action="battle.affinity_trial"',
-    'affinityProof',
-    'chain.withdraw_request',
-    'chain.deposit_request',
-    'canaryReturnRequested',
-    'Jade Vault Return Proof staged',
-    'mochiSocial.alphaState',
+  requireFileIncludes('game.browser-presence', 'Two-tab browser presence smoke verifies the Unity canvas, bridge surface, legacy HUD absence, and shared-room pulse.', 'scripts/check-alpha-browser-presence.mjs', [
+    'Unity WebGL two-tab room smoke',
+    'single-shared-room',
+    "sharedPetKey === 'lirabao'",
+    'unityWebglBuild?.present === true',
+    'legacyFallback?.active === false',
+    'inspectBridgeSurface',
+    'hasCreateUnityInstance',
+    'hasUnityCanvas',
+    'assertLegacyHudAbsent',
+    'data-alpha-action="market.fixed_list"',
+    'data-alpha-action="trade.direct_offer"',
+    'data-alpha-action^="chain."',
+    'Second tab did not observe the local two-tab movement pulse.',
     'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
     'reports/alpha-browser-presence.json',
     'canvasMovement',
     'changedAfterFirstTabMove',
     'ArrowLeft',
-    'ArrowDown',
     'createHash',
     'canvas'
   ]);
@@ -384,74 +326,48 @@ function addStaticRequirements() {
     'Enter',
     'Spacebar',
     'horizontalOverflow',
-    'panelOverlaps',
-    'safeRectObstructions',
     'criticalRects',
-    'actionButtonRects',
+    'legacyHits',
+    'legacy RPGJS HUD selectors are present',
     'parentBefore',
     'parentAfter',
-    'textOverflow',
     'assertScrollUnchanged',
-    'verifyLegacyInteractionKeyOwnership',
-    'verifyEditableInputKeepsText'
+    'verifyInputOwnership',
+    'legacy interaction key',
+    'editable element'
   ]);
-  requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab presence, HUD action proof, map-object coverage, and manual prompt limitations to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
+  requireFileIncludes('game.visual-review', 'Visual review bundle ties first-screen screenshots, two-tab room evidence, Lirabao contract, and absence of legacy player UI to current HEAD.', 'scripts/check-alpha-visual-review.mjs', [
     'alpha-visual-review.json',
     'alpha-visual-review.md',
     'readGitState',
     'manualPromptGate',
     'pending-human-review',
     'observerMovement',
-    'guild-seal-chest',
-    'technique-dojo',
-    'tactic-scroll-stand',
-    'guild-rank-bell',
-    'growth-moonwell',
-    'expedition-gate',
-    'route-invitation-altar',
-    'fieldExpedition',
-    'routeInvitation',
-    'habitatBond',
-    'spiritResearch',
-    'researchProof',
-    'spiritCompendium',
-    'compendiumProof',
-    'provisionSatchel',
-    'provisionProof',
-    'guildCommission',
-    'commissionProof',
-    'socialRally',
-    'guildSocialRally',
-    'rallyProof',
-    'emoteProof',
-    'affinity-dais',
-    'techniqueMastery',
-    'battleTactic',
-    'techniqueLoadout',
-    'techniqueLoadoutProof',
-    'spiritTrait',
-    'traitAttunementProof',
-    'battleConditionWeave',
-    'conditionWeaveProof',
-    'canaryReturnPreview',
-    'canaryReturnRequested',
-    'guildRank',
-    'growthRite',
-    'affinityTrial',
-    'mentorChallenge',
-    'mentorChallengeProof',
-    'Jade Lantern Court'
+    'Unity shared-room alpha',
+    'legacyHudAbsent',
+    'futureEconomyTextPresent === false',
+    'single-shared-room',
+    'lirabao',
+    'Lirabao',
+    'legacyFallback?.active === false',
+    'No future economy copy'
   ]);
-  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for rendered NPC, guild seal chest, and habitat/care prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
+  requireFileIncludes('game.manual-prompt-review-script', 'Manual prompt review gate records operator confirmation for Unity character creation, Lirabao care, and saved progress prompts.', 'scripts/write-alpha-manual-prompt-review.mjs', [
     'alpha-manual-prompt-review.json',
     'alpha-manual-prompt-review.md',
     'pending-human-review',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK',
-    'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK',
+    'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK',
     'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER',
     'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED',
+    'Unity WebGL',
+    'JadeLanternRoom',
+    'Create your character',
+    'E Care  |  Q Wave',
+    'character.v1',
+    'room:jade-lantern-room/sharedPet.v1',
     'visualArtifacts',
     'Visual Review Evidence Bundle',
     'alpha-visual-page.png',
@@ -469,54 +385,48 @@ function addStaticRequirements() {
     'MOCHI_SOCIAL_WALLET_DAEMON_REQUIRED',
     'sha256'
   ]);
-  requireFileIncludes('game.map-object-contract', 'Map-object contract test verifies stable town event IDs, prompts, save sources, habitat, and collision evidence.', 'apps/game/tests/map-object-contract.test.ts', [
-    'Mochi town map object contract',
-    'runtimeEventPlacements',
-    'welcome-npc',
-    'guild-seal-chest',
-    'care-shrine',
-    'expedition-gate',
-    'route-invitation-altar',
-    'technique-dojo',
-    'tactic-scroll-stand',
-    'guild-rank-bell',
-    'growth-moonwell',
-    'affinity-dais',
-    'market-board',
-    'trade-post',
-    'canary-shrine',
-    'no-real-value Enjin Canary certificate request',
-    'Jade Court Habitat Bond',
-    'Jade Court Research Folio',
-    'Jade Courtyard Rally',
-    'jade-courtyard-rally-knot',
-    'guild-social-rally',
-    'Jade Lantern Court',
-    '25 * 18'
+  requireFileIncludes('game.manifest-unity-contract-test', 'Manifest test proves the website iframe contract is Unity WebGL, single-room, Lirabao-only, curated, and free of market/trade/cashout exports.', 'apps/game/tests/manifest.test.ts', [
+    'publishes the Unity WebGL shared-room contract for the website iframe',
+    "engine: 'unity-webgl'",
+    "mode: 'single-shared-room'",
+    'capacity: 25',
+    "sharedPetKey: 'lirabao'",
+    "playerCharacterKey: 'character.v1'",
+    "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'",
+    "presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']",
+    'avatarUploads: false',
+    "not.toMatch(/\\b(?:market|trade|cashout)\\b/i)"
   ]);
-  requireFileIncludes('game.map-event-behavior', 'Map event behavior test executes NPC, chest, care, market, trade, and Canary event handlers with save/item/dialog assertions.', 'apps/game/tests/map-event-behavior.test.ts', [
-    'Mochi town event behavior',
-    'Welcome NPC dialog',
-    'Mochirii Guild Seal',
-    'spirit-care',
-    'bond 5/5',
-    'Jade Court Habitat Bond',
-    'Jade Court Research Folio',
-    'expedition-gate',
-    'route-invitation-altar',
-    'technique-dojo',
-    'tactic-scroll-stand',
-    'guild-rank-bell',
-    'growth-moonwell',
-    'affinity-dais',
-    'market-board',
-    'trade-post',
-    'Jade Courtyard Rally',
-    'jade-courtyard-rally-knot',
-    'guildSocialRally',
-    'mochiSocial.guild.rallyProof',
-    'no-real-value Enjin Canary certificate request',
-    'Wallet Daemon services'
+  requireFileIncludes('game.unity-editmode-tests', 'Unity EditMode tests prove JadeLanternRoom wiring, curated presets, bridge parsing, saved-state DTOs, and shared Lirabao states.', 'unity/Assets/MochiSocial/Tests/EditMode/MochiSocialContractTests.cs', [
+    'SharedRoomContractMatchesWebsitePlan',
+    'JadeLanternRoomSceneContainsAlphaRuntimeWiring',
+    'MochiAvatarPrefabIsNetworkedAndPlayerControllable',
+    'CharacterPresetCatalogAllowsOnlyCuratedPresets',
+    'BridgeParsesWebsiteNestedAuthPayload',
+    'UnityAuthEnvelopeMatchesSupabaseBrokerShape',
+    'SharedPetCareUsesCareReceivedState',
+    'SharedPetWaveUsesHappyState',
+    'SharedPetUnavailableStateIsValid',
+    'SharedPetStaleReloadStateIsValidAndKeepsRevision',
+    'SharedPetRejectsUnknownStateNames'
+  ]);
+  requireFileIncludes('game.unity-playmode-tests', 'Unity PlayMode tests prove Lirabao interactions stay authoritative, stale revisions reload cleanly, and avatars reject invalid preset state.', 'unity/Assets/MochiSocial/Tests/PlayMode/MochiSocialPlayModeTests.cs', [
+    'LirabaoCareInteractionRequestsCloudCodeWithoutMutatingState',
+    'LirabaoRejectsConflictingInteractionRevision',
+    'LirabaoRejectsInvalidInteractionIntent',
+    'LirabaoShowsUnavailableAndStaleReloadStates',
+    'AvatarAppliesCuratedCharacterAppearanceBeforeNetworkSpawn',
+    'AvatarRejectsInvalidCharacterPresetState'
+  ]);
+  requireFileIncludes('game.unity-verify-runner', 'Unity verifier runs EditMode, PlayMode, and WebGL build checks through the installed Unity editor.', 'scripts/run-unity.mjs', [
+    "['test-editmode'",
+    "['test-playmode'",
+    "['build-webgl'",
+    'runUnityTests',
+    'runBatch',
+    'BuildWebGL',
+    'result="Passed"',
+    'failed="0"'
   ]);
   requireFileIncludes('game.acceptance-docs', 'Alpha acceptance docs name every local and preview gate.', 'docs/alpha-acceptance.md', [
     'alpha:local-acceptance',
@@ -529,33 +439,41 @@ function addStaticRequirements() {
     'Alpha Preview Ready',
     'preview-live-gates',
     'funded-chain-gates',
-    'configured-preview-stub'
+    'Funded-chain work is deferred'
   ]);
-  requireFileIncludes('game.alpha-preview-ready-docs', 'Alpha Preview Ready docs split preview-live gates from funded-chain gates without faking Enjin readiness.', 'docs/alpha-preview-ready.md', [
-    'Alpha Preview Ready',
-    'Mochirii Vercel Preview',
-    'NEXT_PUBLIC_MOCHI_SOCIAL_URL',
-    'preview-live-gates',
-    'funded-chain-gates',
-    'configured-preview-stub',
-    'Do not set dummy',
-    'Never credit inventory',
-    'MOCHI_SOCIAL_AUTH'
+  requireFileIncludes('game.alpha-preview-ready-docs', 'Alpha Preview docs describe the player-facing shared-room playtest and rollback behavior.', 'docs/alpha-preview-ready.md', [
+    'Mochi Social Alpha Preview',
+    'shared Mochirii room',
+    'create a curated character',
+    'meet Lirabao',
+    'care for the guild pet together',
+    'tester password',
+    'Mochirii member sign-in',
+    'All progress has no real value',
+    'There is only one shared room',
+    'old room should not silently open'
   ]);
   requireFileIncludes('game.preview-live-ops-docs', 'Operator docs prioritize Preview Ready and leave funded-chain gates red until real Canary funding/proof approval.', 'docs/alpha-operator-handoff.md', [
     'Alpha Preview Ready',
     'Alpha RC Ready',
     'preview-live-gates',
     'funded-chain-gates',
-    'configured-preview-stub',
+    'deferred and absent from the player-facing alpha',
     'Do not set dummy'
   ]);
-  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs allow preview embedding with a no-real-value chain stub and no dummy Enjin IDs.', 'docs/site-integration.md', [
-    'Alpha Preview Ready Contract',
-    'configured-preview-stub',
-    'Do not set dummy',
-    'preview-live-gates',
-    'funded-chain-gates'
+  requireFileIncludes('game.preview-live-integration-docs', 'Site integration docs describe the live password-gated Unity doorway and saved-play contract.', 'docs/site-integration.md', [
+    'https://mochirii.com/games/mochi-social',
+    'Tester password unlocks the page shell',
+    'Mochirii member sign-in is required for saved play',
+    'Release builds must run with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`',
+    'engine="unity-webgl"',
+    'room.mode="single-shared-room"',
+    'room.sharedPetKey="lirabao"',
+    'legacyFallback.active=false',
+    'MOCHI_SOCIAL_AUTH',
+    'Player character data: `character.v1`',
+    'Shared Lirabao data: `room:jade-lantern-room/sharedPet.v1`',
+    'old room'
   ]);
 }
 
@@ -610,35 +528,70 @@ function addSiteRequirements() {
     'mochi-social-alpha-admin',
     'submit-mochi-social-feedback'
   ]);
-  requireSiteFileIncludes('site.schema', 'Mochirii migration owns allowlist, terms, spirits, inventory, trades, market, feedback, chat, and chain ledger tables.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
+  requireSiteFileIncludes('site.schema', 'Mochirii migration owns member allowlist, terms, feedback, progress snapshots, and alpha audit rows for the closed shared-room playtest.', 'supabase/migrations/20260610090000_add_mochi_social_alpha.sql', [
     'mochi_social_alpha_testers',
     'mochi_social_terms_acknowledgements',
-    'mochi_social_spirits',
-    'mochi_social_inventory',
-    'mochi_social_market_listings',
-    'mochi_social_trades',
-    'mochi_social_chat_messages',
+    'mochi_social_profiles',
     'mochi_social_feedback',
-    'mochi_social_chain_operations',
-    'mochi_social_ledger_events'
+    'mochi_social_progress_snapshots',
+    'mochi_social_ledger_events',
+    'alter table public.mochi_social_alpha_testers enable row level security',
+    'mochi_social_alpha_testers_read_own',
+    'mochi_social_feedback_insert_own'
   ]);
-  requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms and finality-aware chain updates.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
+  requireSiteFileIncludes('site.schema-grants', 'Mochirii migration makes alpha table access explicit for authenticated members and trusted Edge Functions without exposing future market or trade tables.', 'supabase/migrations/20260622204823_add_mochi_social_alpha_explicit_grants.sql', [
+    'grant select on table public.mochi_social_alpha_testers to authenticated',
+    'grant select on table public.mochi_social_terms_acknowledgements to authenticated',
+    'grant select, insert, update on table public.mochi_social_profiles to authenticated',
+    'grant select on table public.mochi_social_progress_snapshots to authenticated',
+    'grant insert on table public.mochi_social_feedback to authenticated',
+    'grant select, insert, update, delete on table public.mochi_social_alpha_testers to service_role',
+    'grant select, insert, update, delete on table public.mochi_social_ledger_events to service_role',
+    'grant select, insert, update, delete on table public.mochi_social_progress_snapshots to service_role',
+    'grant select, insert, update, delete on table public.mochi_social_feedback to service_role'
+  ]);
+  requireSiteFileIncludes('site.unity-schema', 'Mochirii migration owns Unity player mapping and the latest shared Lirabao audit mirror with explicit authenticated reads, service-role writes, and RLS policies.', 'supabase/migrations/20260621120000_add_mochi_social_unity_room.sql', [
+    'mochi_social_unity_players',
+    'mochi_social_shared_pet_snapshots',
+    "check (custom_id like 'mochirii:%')",
+    "check (room_key = 'jade-lantern-room-alpha')",
+    "check (pet_key = 'lirabao')",
+    "check (jsonb_typeof(state) = 'object')",
+    'alter table public.mochi_social_unity_players enable row level security',
+    'alter table public.mochi_social_shared_pet_snapshots enable row level security',
+    'grant select on public.mochi_social_unity_players to authenticated',
+    'grant select on public.mochi_social_shared_pet_snapshots to authenticated',
+    'grant select, insert, update, delete on public.mochi_social_unity_players to service_role',
+    'grant select, insert, update, delete on public.mochi_social_shared_pet_snapshots to service_role',
+    'mochi_social_unity_players_read_own',
+    'mochi_social_shared_pet_read_authenticated'
+  ]);
+  requireSiteFileIncludes('site.action-finality', 'Mochirii action Edge Function gates allowlist/terms, idempotent Unity actions, progress snapshots, and shared Lirabao mirrors.', 'supabase/functions/mochi-social-alpha-action/index.ts', [
     'alphaAccess(adminClient, playerId)',
     'upsertAlphaProgressSnapshot(adminClient',
     'alpha_terms_required',
-    'chain.operation_update',
-    'chain_request_missing',
-    'nextStatus === "finalized"',
-    'location: "hot"'
+    '"unity.character.created"',
+    '"unity.character.updated"',
+    '"unity.pet.interaction"',
+    '"unity.pet.state_saved"',
+    '"unity.room.joined"',
+    '"unity.room.left"',
+    'recordSharedPetState',
+    'upsertSharedPetSnapshot(adminClient',
+    'noRealValue: true'
   ]);
   requireSiteFileIncludes('site.edge-authority-check', 'Mochirii repo has a local authority guard for the alpha action Edge Function.', 'scripts/check-mochi-social-edge-authority.mjs', [
     'MOCHI_SOCIAL_GAME_SERVER_TOKEN',
     'x-mochi-social-server-token',
     'mochi_social_ledger_events',
     'noRealValue: true',
-    'chainNetwork: "CANARY"',
-    'finalityRequired: true',
-    'applyFinalizedChainInventory',
+    'unity.pet.state_saved',
+    '"market.fixed_list"',
+    'must not accept ${forbiddenAction}',
+    'UNITY_ROOM_KEY = "jade-lantern-room-alpha"',
+    'UNITY_SHARED_PET_KEY = "lirabao"',
+    'upsertSharedPetSnapshot',
+    'invalid_unity_custom_id',
     'Mochi Social Edge authority check passed'
   ]);
   requireSiteFileIncludes('site.progress-authority', 'Mochirii progress Edge Function loads account-linked alpha snapshots behind the game server token.', 'supabase/functions/mochi-social-alpha-progress/index.ts', [
@@ -742,27 +695,33 @@ function addSiteRequirements() {
     'No secret values were printed',
     'Wallet seed file reference'
   ]);
-  requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs define Preview Ready separately from funded-chain Alpha RC.', 'docs/mochi-social-alpha.md', [
-    'Alpha Preview Ready',
-    'configured-preview-stub',
-    'preview-live-gates',
-    'funded-chain-gates',
-    'Do not set dummy',
-    'prepare:mochi-social-browser-gates',
-    'check:mochi-social-report-hygiene',
-    'mochi-social-browser-gates.md',
-    'check:mochi-social-preview-ready'
+  requireSiteFileIncludes('site.alpha-preview-docs', 'Mochirii alpha docs use player-facing shared-room wording for the closed playtest.', 'docs/mochi-social-alpha.md', [
+    'closed Mochirii playtest',
+    'one shared 3D guild room',
+    'create a curated',
+    'meet Lirabao',
+    'care for the guild pet together',
+    'tester password',
+    'Saved play requires Mochirii member sign-in',
+    'All alpha progress has no real value',
+    'Avatar uploads, multiple rooms',
+    'mobile-specific play are not part',
+    'Do not open the page publicly during alpha'
   ]);
-  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii Codex ops runbook keeps website/Supabase work focused on Preview Ready before funded-chain proof.', 'docs/mochi-social-alpha-codex-ops.md', [
+  requireSiteFileIncludes('site.alpha-preview-ops-docs', 'Mochirii maintainer ops runbook keeps website/Supabase work focused on the password-gated Unity shared-room alpha and no-cost boundaries.', 'docs/mochi-social-alpha-maintainer-ops.md', [
     'Alpha Preview Ready Lane',
-    'configured-preview-stub',
-    'preview-live-gates',
-    'funded-chain-gates',
-    'Do not set dummy',
+    'tester password wall',
+    'one shared room',
+    'curated character presets',
+    'Lirabao pet',
+    'no market',
+    'no trade',
+    'no paid assets',
+    'Do not set dummy IDs or fake readiness flags',
     'prepare:mochi-social-browser-gates',
     'check:mochi-social-report-hygiene',
-    'mochi-social-browser-gates.md',
-    'check:mochi-social-preview-ready'
+    'check:mochi-social-game-contract',
+    'check:mochi-social-tester-password-gate'
   ]);
 }
 
@@ -821,12 +780,26 @@ function addProviderGateRequirements() {
     return;
   }
   const report = externalReport.data;
-  const failures = Array.isArray(report.checks)
-    ? report.checks.filter((check) => check.status === 'fail').map((check) => check.name)
-    : ['checks array missing'];
+  const previewLane = report.lanes?.previewLive;
+  const fundedLane = report.lanes?.fundedChain;
+  const failures = Array.isArray(previewLane?.failingChecks)
+    ? [...previewLane.failingChecks]
+    : ['preview-live-gates summary missing'];
+  const unverified = Array.isArray(previewLane?.unverifiedChecks)
+    ? [...previewLane.unverifiedChecks]
+    : [];
+  const deferredFundedChain = Array.isArray(fundedLane?.failingChecks)
+    ? [...fundedLane.failingChecks]
+    : [];
+  const deferredFundedChainUnverified = Array.isArray(fundedLane?.unverifiedChecks)
+    ? [...fundedLane.unverifiedChecks]
+    : [];
   failures.push(...currentGitStateFailures(report.git, 'external gate report'));
   if (typeof report.hostedChecksAllowed !== 'boolean') {
     failures.push('external gate report must include hostedChecksAllowed');
+  }
+  if (!report.lanes?.alphaPreviewReady || typeof report.lanes.alphaPreviewReady.ok !== 'boolean') {
+    failures.push('external gate report must include alphaPreviewReady lane status');
   }
   if (hasHostedUrl(report.gameUrl) && report.hostedChecksAllowed !== true && report.ok === true) {
     failures.push('hosted game contract cannot pass without explicit hosted-check approval');
@@ -835,16 +808,19 @@ function addProviderGateRequirements() {
     failures.push('hosted site contract cannot pass without explicit hosted-check approval');
   }
   add(report.ok === true ? 'provider.external-gates' : 'provider.external-gates',
-    report.ok === true && failures.length === 0 ? 'pass' : 'fail',
-    report.ok === true && failures.length === 0
-      ? 'Fly, live game/site contract, Supabase, GitHub, and Enjin readiness gates passed.'
-      : `External gates still incomplete: ${failures.join(', ')}.`,
+    report.lanes?.alphaPreviewReady?.ok === true && failures.length === 0 ? 'pass' : 'fail',
+    report.lanes?.alphaPreviewReady?.ok === true && failures.length === 0
+      ? 'Preview live gates passed; funded-chain gates remain deferred for the no-real-value alpha.'
+      : `Preview live gates still incomplete: ${failures.join(', ')}.`,
     {
       reportPath: externalReportPath,
       checkedAt: report.checkedAt,
       hostedChecksAllowed: report.hostedChecksAllowed,
       reportHead: report.git?.localHead,
-      failingChecks: failures
+      failingChecks: failures,
+      unverifiedChecks: unverified,
+      deferredFundedChainChecks: deferredFundedChain,
+      deferredFundedChainUnverified
     });
 }
 
@@ -914,6 +890,7 @@ function addBranchInventoryRequirements() {
   if (report.deletionPerformed !== false) failures.push('branch inventory must remain no-destructive');
 
   const repos = Array.isArray(report.repos) ? report.repos : [];
+  const branchInventoryWarnings = [];
   for (const id of ['game', 'site']) {
     const repo = repos.find((entry) => entry?.id === id);
     if (!repo) {
@@ -923,7 +900,15 @@ function addBranchInventoryRequirements() {
     if (repo.exists !== true) failures.push(`branch inventory ${id} repo must exist`);
     if (repo.ok !== true) failures.push(`branch inventory ${id} repo entry is not ok`);
     if (!repo.openPrRepository) failures.push(`branch inventory ${id} repo must record origin GitHub repository`);
-    if (repo.openPrStatus !== 'checked') failures.push(`branch inventory ${id} repo open PR status is ${repo.openPrStatus || 'missing'}`);
+    if (repo.openPrStatus !== 'checked') {
+      const hasCleanupCandidates = Array.isArray(repo.cleanupCandidates) && repo.cleanupCandidates.length > 0;
+      const message = `branch inventory ${id} repo open PR status is ${repo.openPrStatus || 'missing'}`;
+      if (hasCleanupCandidates) {
+        failures.push(message);
+      } else {
+        branchInventoryWarnings.push(message);
+      }
+    }
     if (!Array.isArray(repo.branches)) failures.push(`branch inventory ${id} repo branches list is missing`);
     if (!Array.isArray(repo.cleanupCandidates)) failures.push(`branch inventory ${id} repo cleanupCandidates list is missing`);
   }
@@ -947,6 +932,7 @@ function addBranchInventoryRequirements() {
         branchCount: repo.branchCount,
         cleanupCandidates: Array.isArray(repo.cleanupCandidates) ? repo.cleanupCandidates.length : null
       })),
+      warnings: branchInventoryWarnings,
       failures
     }
   );
@@ -964,6 +950,7 @@ function addOperatorChecklistRequirements() {
   const failures = [];
   if (report.ok !== true) failures.push('operator checklist report is not ok');
   failures.push(...currentGitStateFailures(report.git, 'operator checklist report'));
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.siteGit, 'operator checklist site snapshot'));
   if (!String(report.markdownPath || '').includes('mochi-social-alpha-operator-next-steps.md')) {
     failures.push('operator checklist report must point to the generated Markdown checklist');
   }
@@ -999,6 +986,7 @@ function addOperatorChecklistRequirements() {
       reportHead: report.git?.localHead,
       reportUpstream: report.git?.upstream,
       reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
+      reportSiteHead: report.siteGit?.localHead,
       externalGatePresent: report.externalGateSummary?.present,
       providerActionQueueIds: queue.map((item) => item?.id).filter(Boolean),
       failures
@@ -1018,6 +1006,8 @@ function addProviderPreflightRequirements() {
   const failures = [];
   if (report.ok !== true) failures.push('provider preflight report is not ok');
   failures.push(...currentGitStateFailures(report.git, 'provider preflight report'));
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.sources?.operatorChecklist?.siteGit, 'provider preflight operator checklist site snapshot'));
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.sources?.syncApproval?.siteGit, 'provider preflight sync approval site snapshot'));
   if (!String(report.markdownPath || '').includes('mochi-social-alpha-provider-preflight.md')) {
     failures.push('provider preflight report must point to the generated Markdown preflight');
   }
@@ -1046,6 +1036,8 @@ function addProviderPreflightRequirements() {
       generatedAt: report.generatedAt,
       markdownPath: report.markdownPath,
       reportHead: report.git?.localHead,
+      operatorChecklistSiteHead: report.sources?.operatorChecklist?.siteGit?.localHead,
+      syncApprovalSiteHead: report.sources?.syncApproval?.siteGit?.localHead,
       providerActionQueueIds: queue.map((item) => item?.id).filter(Boolean),
       missingExpectedPrivateInputFiles: report.missingExpectedPrivateInputFiles,
       failures
@@ -1156,6 +1148,7 @@ function addSyncApprovalRequirements() {
   if (head.ok && report.git?.localHead !== currentHead) failures.push('sync approval report localHead does not match current HEAD');
   if (upstream.ok && report.git?.upstream !== currentUpstream) failures.push('sync approval report upstream does not match current upstream');
   if (Array.isArray(report.git?.dirty) && report.git.dirty.length !== currentDirty.length) failures.push('sync approval report dirty state does not match current worktree');
+  failures.push(...currentGitStateFailuresForRepo(siteRepoPath, report.siteGit, 'sync approval site snapshot'));
   failures.push(...currentGitStateFailures(report.audit?.git, 'sync approval audit snapshot'));
   failures.push(...syncExternalGateSnapshotFailures(report));
   if (!Array.isArray(report.approvalActions) || report.approvalActions.length < 5) failures.push('sync approval report must include provider approval actions');
@@ -1178,6 +1171,7 @@ function addSyncApprovalRequirements() {
       reportHead: report.git?.localHead,
       currentUpstream,
       reportUpstream: report.git?.upstream,
+      reportSiteHead: report.siteGit?.localHead,
       currentDirtyFiles: currentDirty.length,
       reportDirtyFiles: Array.isArray(report.git?.dirty) ? report.git.dirty.length : null,
       approvalActionCount: Array.isArray(report.approvalActions) ? report.approvalActions.length : 0,
@@ -1192,7 +1186,7 @@ function addManualPromptReviewRequirements() {
   const promptReportPath = resolve(root, process.env.MOCHI_SOCIAL_MANUAL_PROMPT_REVIEW_JSON || 'reports/alpha-manual-prompt-review.json');
   const promptReport = readJson(promptReportPath);
   if (!promptReport.ok) {
-    add('local.manual-prompt-review', 'fail', `Manual prompt review report is missing or invalid: ${promptReport.message}. Run npm run alpha:manual-prompt-review after local NPC/chest/habitat prompt review.`, { path: promptReportPath });
+    add('local.manual-prompt-review', 'fail', `Manual prompt review report is missing or invalid: ${promptReport.message}. Run npm run alpha:manual-prompt-review after local Unity character, Lirabao, and saved-progress review.`, { path: promptReportPath });
     return;
   }
 
@@ -1210,8 +1204,9 @@ function addManualPromptReviewRequirements() {
   if (hasHostedUrl(report.review?.url) && report.review?.hostedAllowed !== true) {
     failures.push('hosted manual prompt review requires explicit hosted approval flag');
   }
+  failures.push(...manualPromptReviewContextFailures(report.reviewContext, report.review?.url, report.review?.hostedAllowed === true));
   const checks = Array.isArray(report.checks) ? report.checks : [];
-  for (const id of ['welcome-npc', 'guild-seal-chest', 'care-shrine']) {
+  for (const id of ['character-creation', 'lirabao-care', 'saved-progress']) {
     const check = checks.find((entry) => entry.id === id);
     if (!check?.ok) failures.push(`manual prompt review missing confirmation for ${id}`);
   }
@@ -1223,8 +1218,8 @@ function addManualPromptReviewRequirements() {
     'local.manual-prompt-review',
     failures.length ? 'fail' : 'pass',
     failures.length
-      ? `Manual rendered prompt review is incomplete: ${failures.join(', ')}.`
-      : 'Manual rendered NPC, chest, and habitat/care prompt review is complete and current.',
+      ? `Manual Unity prompt review is incomplete: ${failures.join(', ')}.`
+      : 'Manual Unity character, Lirabao care, and saved-progress review is complete and current.',
     {
       reportPath: promptReportPath,
       checkedAt: report.checkedAt,
@@ -1234,24 +1229,93 @@ function addManualPromptReviewRequirements() {
       completedChecks: report.completedChecks,
       pendingChecks: report.pendingChecks,
       sourceEvidence,
+      reviewContext: summarizeManualPromptReviewContext(report.reviewContext),
       failures
     }
   );
 }
 
+function manualPromptReviewContextFailures(context, reviewUrl, hostedAllowed) {
+  const failures = [];
+  if (!context || typeof context !== 'object') {
+    return ['manual prompt review must include review context'];
+  }
+
+  if (context.requiresSignedInTester !== true) failures.push('manual prompt review must require a signed-in tester');
+  if (context.passwordOnlyIsInsufficient !== true) failures.push('manual prompt review must mark password-only access insufficient');
+  if (context.requiresUnityAuthTokens !== true) failures.push('manual prompt review must require Unity auth tokens');
+  if (context.requiresSharedPetAuthorityPath !== true) failures.push('manual prompt review must require the shared Lirabao authority path');
+  if (context.localVisualOnlyIsInsufficient !== true) failures.push('manual prompt review must mark visual-only evidence insufficient');
+
+  const reviewUrlIsHosted = hasHostedUrl(reviewUrl);
+  if (reviewUrl && context.hostedUrl !== reviewUrlIsHosted) {
+    failures.push('manual prompt review hosted URL context does not match reviewed URL');
+  }
+  if (context.hostedAllowed !== hostedAllowed) {
+    failures.push('manual prompt review hosted approval context does not match review approval flag');
+  }
+
+  const preconditions = Array.isArray(context.completionPreconditions) ? context.completionPreconditions.join('\n') : '';
+  const insufficient = Array.isArray(context.cannotBeCompletedBy) ? context.cannotBeCompletedBy.join('\n') : '';
+  for (const snippet of [
+    'allowlisted tester',
+    'character.v1',
+    'room:jade-lantern-room/sharedPet.v1',
+    'reload/logout/login'
+  ]) {
+    if (!preconditions.includes(snippet)) failures.push(`manual prompt review context missing precondition: ${snippet}`);
+  }
+  for (const snippet of [
+    'visual screenshots alone',
+    'password wall alone',
+    'legacy runtime',
+    'static/mock token path',
+    'hosted URL without explicit hosted-preview approval'
+  ]) {
+    if (!insufficient.includes(snippet)) failures.push(`manual prompt review context missing insufficiency: ${snippet}`);
+  }
+  return failures;
+}
+
+function summarizeManualPromptReviewContext(context) {
+  if (!context || typeof context !== 'object') return null;
+  return {
+    reviewKind: sanitize(context.reviewKind || ''),
+    requiresSignedInTester: context.requiresSignedInTester === true,
+    passwordOnlyIsInsufficient: context.passwordOnlyIsInsufficient === true,
+    requiresUnityAuthTokens: context.requiresUnityAuthTokens === true,
+    requiresSharedPetAuthorityPath: context.requiresSharedPetAuthorityPath === true,
+    localVisualOnlyIsInsufficient: context.localVisualOnlyIsInsufficient === true,
+    hostedUrl: context.hostedUrl === true,
+    hostedAllowed: context.hostedAllowed === true,
+    completionPreconditions: sanitizeStringArray(context.completionPreconditions),
+    cannotBeCompletedBy: sanitizeStringArray(context.cannotBeCompletedBy)
+  };
+}
+
+function sanitizeStringArray(values) {
+  return Array.isArray(values) ? values.map((value) => sanitize(value)).filter(Boolean).slice(0, 12) : [];
+}
+
 function manualPromptSourceEvidence(report) {
-  const expected = [
-    {
-      label: 'eventSource',
-      path: resolve(root, 'apps/game/src/modules/main/event.ts'),
-      expectedHash: report?.sourceEvidence?.eventSource?.sha256
-    },
-    {
-      label: 'mapServerSource',
-      path: resolve(root, 'apps/game/src/modules/main/server.ts'),
-      expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
-    }
-  ];
+  const expected = Array.isArray(report?.sourceEvidence?.files)
+    ? report.sourceEvidence.files.map((entry) => ({
+        label: entry.id || entry.path,
+        path: resolve(root, entry.path || ''),
+        expectedHash: entry.sha256
+      }))
+    : [
+        {
+          label: 'eventSource',
+          path: resolve(root, 'apps/game/src/modules/main/event.ts'),
+          expectedHash: report?.sourceEvidence?.eventSource?.sha256
+        },
+        {
+          label: 'mapServerSource',
+          path: resolve(root, 'apps/game/src/modules/main/server.ts'),
+          expectedHash: report?.sourceEvidence?.mapServerSource?.sha256
+        }
+      ];
   const failures = [];
   const files = expected.map((entry) => {
     const currentHash = fileSha256(entry.path);
@@ -1299,9 +1363,9 @@ function syncExternalGateSnapshotFailures(syncReport) {
   return failures;
 }
 
-function addPrRequirements() {
-  checkPr('github.game-pr', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
-  checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
+async function addPrRequirements() {
+  await checkPr('github.game-pr', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
+  await checkPr('github.site-pr', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
 }
 
 function addLocalBranchRequirements() {
@@ -1429,7 +1493,7 @@ function requireTextIncludes(id, description, file, snippets, label) {
     { file: label, missing });
 }
 
-function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
+async function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
   const localState = localRepoPath ? readPrLocalGitState(localRepoPath) : null;
   const selector = String(pr || '').trim();
   const query = selector || localState?.branch || '';
@@ -1441,11 +1505,25 @@ function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
   const result = selector
     ? command(resolveGh(), ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
     : command(resolveGh(), ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
-  if (!result.ok) {
-    add(id, 'unverified', 'GitHub PR state could not be read from this shell.', { repo, selector: query, stderr: sanitize(result.stderr) });
+  const localEvidence = result.ok
+    ? null
+    : readLocalPullRequestEvidence(repo, query, localState?.localHead || '');
+  const fallback = result.ok
+    ? null
+    : localEvidence?.ok
+      ? localEvidence
+      : await readPublicPullRequest(repo, query, localState?.localHead || '');
+  if (!result.ok && !fallback?.ok) {
+    add(id, 'unverified', 'GitHub PR state could not be read from this shell or the public GitHub API.', {
+      repo,
+      selector: query,
+      stderr: sanitize(result.stderr),
+      localEvidenceError: sanitize(localEvidence?.message || ''),
+      fallbackError: sanitize(fallback?.message || '')
+    });
     return;
   }
-  const parsed = parseJson(result.stdout);
+  const parsed = result.ok ? parseJson(result.stdout) : fallback.data;
   const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
     add(id, 'fail', selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, { repo, selector: query, localState });
@@ -1485,7 +1563,8 @@ function checkPr(id, repo, pr, requiredCheckName, localRepoPath) {
     isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checks: checks.map((check) => check.name || check.context).filter(Boolean),
-    failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)
+    failingChecks: failing.map((check) => check.name || check.context).filter(Boolean),
+    source: result.ok ? 'gh' : data.evidenceSource || 'github-public-api'
   });
 }
 

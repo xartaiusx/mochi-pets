@@ -4,10 +4,11 @@ import type { AlphaActionEnvelope } from '../src/integration/alpha-contract';
 
 const action: AlphaActionEnvelope = {
   requestId: 'req_alpha_edge_123',
-  type: 'spirit.care',
+  type: 'unity.pet.interaction',
   playerId: 'tester-123',
   payload: {
-    spiritId: 'lirabao',
+    petKey: 'lirabao',
+    interaction: 'care',
     noRealValue: true
   }
 };
@@ -25,11 +26,11 @@ describe('supabase edge bridge client', () => {
       serverToken: 'scoped-game-token'
     });
 
-    expect(request?.url).toBe('https://example.supabase.co/functions/v1/mochi-social-alpha-action');
+    expect(request?.url).toBe('https://example.supabase.co/functions/v1/mochi-pets-alpha-action');
     expect(request?.init.method).toBe('POST');
     expect(request?.init.headers).toEqual({
       'Content-Type': 'application/json',
-      'x-mochi-social-server-token': 'scoped-game-token'
+      'x-mochi-pets-server-token': 'scoped-game-token'
     });
     expect(JSON.parse(String(request?.init.body))).toEqual(action);
     expect(String(request?.init.body)).not.toContain('scoped-game-token');
@@ -41,11 +42,11 @@ describe('supabase edge bridge client', () => {
       serverToken: 'scoped-game-token'
     });
 
-    expect(request?.url).toBe('https://example.supabase.co/functions/v1/mochi-social-alpha-progress');
+    expect(request?.url).toBe('https://example.supabase.co/functions/v1/mochi-pets-alpha-progress');
     expect(request?.init.method).toBe('POST');
     expect(request?.init.headers).toEqual({
       'Content-Type': 'application/json',
-      'x-mochi-social-server-token': 'scoped-game-token'
+      'x-mochi-pets-server-token': 'scoped-game-token'
     });
     expect(JSON.parse(String(request?.init.body))).toEqual({ playerId: '00000000-0000-4000-8000-000000000001' });
     expect(String(request?.init.body)).not.toContain('scoped-game-token');
@@ -53,7 +54,7 @@ describe('supabase edge bridge client', () => {
 
   it('ignores service-role shaped environment names in the game runtime contract', () => {
     const config = getSupabaseEdgeConfig({
-      MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL: 'https://example.supabase.co/functions/v1',
+      MOCHI_PETS_SUPABASE_FUNCTIONS_URL: 'https://example.supabase.co/functions/v1',
       SUPABASE_SERVICE_ROLE_KEY: 'service-role-keys-do-not-belong-here'
     });
 

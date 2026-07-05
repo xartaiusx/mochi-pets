@@ -30,6 +30,7 @@ const syncApproval = readJson(syncApprovalPath);
 const gitState = readGitState();
 const supabaseProjectRef = externalGates.data?.supabasePreviewRef || operatorChecklist.data?.targets?.supabaseProjectRef || 'dnxumaiooljdnbjvzbdc';
 const privateInputs = buildPrivateInputInventory(supabaseProjectRef);
+const localTooling = buildLocalToolingSummary(externalGates.data?.tooling);
 const actionQueue = Array.isArray(operatorChecklist.data?.providerActionQueue)
   ? operatorChecklist.data.providerActionQueue.map(sanitizeAction)
   : [];
@@ -56,6 +57,7 @@ const report = {
     syncApproval: summarizeSource(syncApproval, syncApprovalPath)
   },
   noCostBoundary: 'Preflight checks filenames and generated no-secret reports only. Pushing, setting secrets, deploying, hosted smokes, Wallet Daemon startup/import, Enjin operations, and Fuel Tank funding still require explicit action-specific approval.',
+  localTooling,
   privateInputs,
   deployAfterMilestonePolicy: buildDeployAfterMilestonePolicy(),
   providerActionQueue,
@@ -124,6 +126,26 @@ function buildPrivateInputInventory(projectRef) {
     exists: existsSync(resolve(credsDir, entry.fileName)),
     contentsRead: false
   }));
+}
+
+function buildLocalToolingSummary(tooling) {
+  const entries = [
+    ['supabaseCli', 'Supabase CLI'],
+    ['flyctl', 'Fly CLI']
+  ];
+
+  return entries.map(([key, fallbackLabel]) => {
+    const source = tooling?.[key] || {};
+    return {
+      id: key,
+      label: sanitize(source.label || fallbackLabel),
+      command: sanitize(source.command || (key === 'flyctl' ? 'flyctl' : 'supabase')),
+      available: source.available === true,
+      version: sanitize(source.version || ''),
+      stderr: sanitize(source.stderr || ''),
+      providerMutationPerformed: false
+    };
+  });
 }
 
 function buildDeployAfterMilestonePolicy() {
@@ -251,7 +273,9 @@ function summarizeSource(source, file) {
     path: pathForReport(resolve(root, file)),
     present: source.ok,
     checkedAt: source.data?.checkedAt || source.data?.generatedAt || null,
-    ok: source.data?.ok === true
+    ok: source.data?.ok === true,
+    git: source.data?.git || null,
+    siteGit: source.data?.siteGit || null
   };
 }
 
@@ -309,6 +333,7 @@ function sanitize(value) {
 
 function renderMarkdown(summary) {
   const privateInputLines = summary.privateInputs.map((input) => `- ${input.fileName}: ${input.exists ? 'present' : 'not found'}; contents read: no; used by ${input.usedBy.join(', ')}`).join('\n');
+  const toolingLines = summary.localTooling.map((tool) => `- ${tool.label}: ${tool.available ? 'available' : 'not found'} (${tool.command}${tool.version ? `; ${tool.version}` : ''}); provider mutation performed: no`).join('\n');
   const queueLines = summary.providerActionQueue.length
     ? summary.providerActionQueue.map((item, index) => `${index + 1}. ${item.id} (${item.provider})
    - Blocker: ${item.blocker}
@@ -345,6 +370,12 @@ This file is intentionally no-secret. It checks expected local filenames and gen
 - Operator checklist: ${summary.sources.operatorChecklist.present ? 'present' : 'missing'} (${summary.sources.operatorChecklist.checkedAt || 'not recorded'})
 - Sync approval: ${summary.sources.syncApproval.present ? 'present' : 'missing'} (${summary.sources.syncApproval.checkedAt || 'not recorded'})
 
+## Local Tooling Readiness
+
+${toolingLines}
+
+Install or authenticate local CLIs only as needed for approved provider verification. This preflight did not log in, set secrets, deploy, or create provider resources.
+
 ## Expected Private Input Filenames
 
 ${privateInputLines}
@@ -374,7 +405,7 @@ ${failureLines}
 
 ## Known Provider Action IDs
 
-These are all provider action IDs the Alpha RC tooling recognizes. Not every known action is required on every pass.
+These are all provider action IDs the Alpha RC workflow recognizes. Not every known action is required on every pass.
 
 ${expectedActionLines}
 

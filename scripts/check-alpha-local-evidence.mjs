@@ -10,6 +10,7 @@ const failures = [];
 
 const localSuite = readJson('reports/alpha-local-suite.json');
 const builtServer = readJson('reports/built-server-smoke.json');
+const unityRequiredSmoke = readJson('reports/alpha-unity-required-smoke.json');
 const acceptance = readJson('reports/alpha-local-acceptance.json');
 const loadSmoke = readJson('reports/alpha-load-smoke.json');
 const browserPresence = readJson('reports/alpha-browser-presence.json');
@@ -22,6 +23,7 @@ const gitState = readGitState();
 
 assertReport('local suite', localSuite);
 assertReport('built server smoke', builtServer);
+assertReport('Unity-required smoke', unityRequiredSmoke);
 assertReport('local acceptance', acceptance);
 assertReport('load smoke', loadSmoke);
 assertReport('browser presence', browserPresence);
@@ -33,6 +35,7 @@ assertReport('Enjin operator smoke', operatorSmoke);
 
 assertLocalUrl(localSuite.data?.baseUrl, 'local suite baseUrl');
 assertLocalUrl(builtServer.data?.baseUrl, 'built server baseUrl');
+assertLocalUrl(unityRequiredSmoke.data?.baseUrl, 'Unity-required smoke baseUrl');
 assertLocalUrl(acceptance.data?.baseUrl, 'local acceptance baseUrl');
 assertLocalUrl(loadSmoke.data?.baseUrl, 'load smoke baseUrl');
 assertLocalUrl(browserPresence.data?.baseUrl, 'browser presence baseUrl');
@@ -51,6 +54,7 @@ assertSameBaseUrl(visualReview.data?.baseUrl, suiteBaseUrl, 'visual review baseU
 assertSameBaseUrl(operatorSmoke.data?.baseUrl, suiteBaseUrl, 'operator smoke baseUrl');
 assertCurrentGitState(localSuite.data?.git, 'local suite report');
 assertCurrentGitState(builtServer.data?.git, 'built server smoke report');
+assertCurrentGitState(unityRequiredSmoke.data?.git, 'Unity-required smoke report');
 assertCurrentGitState(visualReview.data?.git, 'visual review report');
 assertCurrentGitState(walletDaemon.data?.git, 'Wallet Daemon local report');
 
@@ -75,6 +79,16 @@ assert(browserVisualSequence.ok, `browser/visual sequence evidence is incomplete
 
 assert(localSuite.data?.server?.stopped === true, 'local suite server must stop after the run');
 assert(builtServer.data?.server?.stopped === true, 'built server smoke server must stop after the run');
+assert(unityRequiredSmoke.data?.server?.stopped === true, 'Unity-required smoke server must stop after the run');
+assert(unityRequiredSmoke.data?.health?.activeRuntime === 'unity-webgl', 'Unity-required smoke health must report Unity WebGL active');
+assert(unityRequiredSmoke.data?.health?.unityWebglBuild?.present === true, 'Unity-required smoke health must report a present Unity WebGL build');
+assert(unityRequiredSmoke.data?.health?.legacyFallback?.active === false, 'Unity-required smoke health must report legacy fallback inactive');
+assert(
+  Array.isArray(unityRequiredSmoke.data?.checks)
+    && unityRequiredSmoke.data.checks.some((check) => check.id === 'unity-required-smoke' && check.status === 0)
+    && unityRequiredSmoke.data.checks.some((check) => check.id === 'twenty-five-tester-load-smoke' && check.status === 0),
+  'Unity-required smoke must run npm smoke and the 25-tester load smoke successfully'
+);
 assert(loadSmoke.data?.playerCount >= 10 && loadSmoke.data?.playerCount <= 25, 'load smoke player count must stay 10-25');
 assert(browserPresence.data?.localOnlyDefault === true && browserPresence.data?.hostedAllowed === false, 'browser presence must be local-only by default');
 assert(browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove === true, 'browser presence must prove observer-side movement');
@@ -113,8 +127,18 @@ if (walletDaemon.data?.status === 'verified-binary') {
   assert(['not-configured', 'missing'].includes(walletDaemon.data?.status), 'Wallet Daemon local check must be verified-binary, not-configured, or missing');
 }
 assert(operatorSmoke.data?.scope?.includes('does not submit live Enjin operations by default'), 'operator smoke must remain fail-closed by default');
-assert(builtServer.data?.checks?.some((check) => check.name === 'tokened operator submit' && check.status === 409), 'built server smoke must prove tokened Enjin route fails closed without Enjin secrets');
-assert(acceptance.data?.actions?.some((action) => action.type === 'chain.withdraw_request'), 'local acceptance must record a Canary withdraw request');
+assert(
+  builtServer.data?.checks?.every?.((check) => check.body?.legacyFallback?.active !== true),
+  'built server smoke must not activate the legacy fallback'
+);
+assert(
+  operatorSmoke.data?.checks?.some((check) => check.name === 'private Enjin route inactive' && check.status === 'absent')
+    || operatorSmoke.data?.checks?.some((check) => check.name === 'tokened private Enjin operator submit' && check.status === 409),
+  'operator smoke must prove Enjin is absent or fail-closed without live operations'
+);
+for (const actionType of ['unity.room.joined', 'unity.character.created', 'unity.character.updated', 'unity.pet.interaction', 'unity.pet.state_saved', 'unity.room.left']) {
+  assert(acceptance.data?.actions?.some((action) => action.type === actionType), `local acceptance must record ${actionType}`);
+}
 assert(loadSmoke.data?.actions?.length >= 20, 'load smoke must record at least 10 testers worth of chat/emote actions');
 
 const summary = {
@@ -125,6 +149,15 @@ const summary = {
   reports: {
     localSuite: summarizeReport(localSuite),
     builtServer: summarizeReport(builtServer),
+    unityRequiredSmoke: summarizeReport(unityRequiredSmoke, {
+      activeRuntime: unityRequiredSmoke.data?.health?.activeRuntime,
+      unityWebglBuildPresent: unityRequiredSmoke.data?.health?.unityWebglBuild?.present,
+      legacyFallbackActive: unityRequiredSmoke.data?.health?.legacyFallback?.active,
+      checks: Array.isArray(unityRequiredSmoke.data?.checks) ? unityRequiredSmoke.data.checks.map((check) => ({
+        id: check.id,
+        status: check.status
+      })) : []
+    }),
     acceptance: summarizeReport(acceptance),
     loadSmoke: summarizeReport(loadSmoke, { playerCount: loadSmoke.data?.playerCount, actions: loadSmoke.data?.actions?.length }),
     browserPresence: summarizeReport(browserPresence, { observerMovement: browserPresence.data?.canvasMovement?.observer?.changedAfterFirstTabMove }),
@@ -252,8 +285,10 @@ function summarizeResponsiveInputOwnership(data) {
     if (unhandledChecks.length !== expectedUnhandledKeys) {
       failures.push(`${label} expected ${expectedUnhandledKeys} unhandled key checks, found ${unhandledChecks.length}`);
     }
-    if (ownership.gameplay?.focus?.activeIsCanvas !== true) {
-      failures.push(`${label} did not focus the gameplay canvas before gameplay key checks`);
+    if (!ownership.gameplay?.focus) {
+      failures.push(`${label} missing gameplay focus evidence`);
+    } else if (ownership.gameplay.focus.editableActive === true) {
+      failures.push(`${label} focused an editable element before gameplay key checks`);
     }
     for (const check of gameplayChecks) {
       if (check.keydown?.defaultPrevented !== true) failures.push(`${label} did not prevent gameplay key ${check.key}`);
@@ -483,14 +518,15 @@ ${rows}
 ## Key Proofs
 
 - Built Express runtime starts locally and stops after smoke.
+- Unity-required release smoke starts the built server locally, proves Unity WebGL active with legacy fallback inactive, then runs endpoint smoke plus the 25-tester load smoke against the correct local base URL.
 - Public routes, manifest, alpha status, local ledger writes, load smoke, two-tab browser presence, responsive gameplay viewport/input smoke, first-screen visual snapshot, visual review bundle, and private Enjin fail-closed behavior passed.
 - Wallet Daemon local evidence is metadata-only: file hash and \`--help\` output when the binary is present; no wallet import, seed print, signer process, Enjin API call, Fuel Tank action, or chain transaction occurs.
 - Acceptance, load, browser, visual, and operator reports share the same local suite base URL, so the evidence is not mixed across stale localhost runs.
-- The local suite and built-server smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
+- The local suite, built-server smoke, and Unity-required smoke reports match the current local HEAD, upstream, and dirty worktree state, so the evidence is not stale across code changes.
 - Browser and visual evidence stayed localhost-only.
 - Responsive gameplay proves /play, /embed, and parent-iframe input ownership across the required viewport matrix with screenshots and DOM rectangles.
 - Responsive input evidence records per-key gameplay prevention, unhandled-key freedom, editable-input preservation, Tab focus behavior, and parent/iframe scroll stability. The real Mochirii site iframe leg must be checked, not skipped, before Alpha Preview Ready.
-- Rendered NPC/chest/habitat prompt interaction remains an explicit manual gate before Alpha RC Ready.
+- Unity character creation, Lirabao care, and saved-progress interaction remain explicit manual browser gates before Alpha RC Ready.
 - Enjin remains configured-preview-stub locally; no live chain operation was submitted.
 
 ## Failures

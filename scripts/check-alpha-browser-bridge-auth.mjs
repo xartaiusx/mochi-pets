@@ -8,24 +8,24 @@ const failures = [];
 
 requireSnippet(protocol, 'accessToken: string;', 'AuthPayload must expose only the short-lived access token field as required input.');
 requireSnippet(protocol, 'expiresAt?: number;', 'AuthPayload may carry optional expiry metadata only.');
-requireSnippet(bridge, "const TOKEN_KEY = 'mochiSocial.accessToken';", 'Bridge must store the access token under the expected alpha key.');
-requireSnippet(bridge, "const EXPIRES_KEY = 'mochiSocial.accessTokenExpiresAt';", 'Bridge must store only optional access-token expiry metadata.');
+requireSnippet(bridge, "const TOKEN_KEY = 'mochiPets.accessToken';", 'Bridge must store the access token under the expected alpha key.');
+requireSnippet(bridge, "const EXPIRES_KEY = 'mochiPets.accessTokenExpiresAt';", 'Bridge must store only optional access-token expiry metadata.');
 requireSnippet(bridge, 'writeLocalStore(TOKEN_KEY, payload.accessToken);', 'setAuth must persist only payload.accessToken as the token value.');
 requireSnippet(bridge, "postToParent(BRIDGE_EVENTS.authState, { state: 'linked' });", 'Linked auth response must report state only, not token values.');
 requireSnippet(bridge, 'removeLocalStore(TOKEN_KEY);', 'sign-out must clear stored access token.');
 requireSnippet(bridge, 'removeLocalStore(EXPIRES_KEY);', 'sign-out must clear stored access-token expiry metadata.');
 requireSnippet(bridge, "postToParent(BRIDGE_EVENTS.authState, { state: 'guest' });", 'Guest auth response must report state only, not token values.');
 requireSnippet(bridge, "postToParent(BRIDGE_EVENTS.error, { message: 'Missing Supabase access token.' });", 'Missing auth must report an error message without token data.');
-requireSnippet(bridge, 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'MOCHI_SOCIAL_AUTH handler must pass only accessToken and expiresAt into auth state.');
+requireSnippet(bridge, 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'MOCHI_PETS_AUTH handler must pass only accessToken and expiresAt into auth state.');
 requireSnippet(bridge, 'headers.Authorization = `Bearer ${accessToken}`;', 'Alpha action requests must derive Authorization from the stored access token only.');
 
 const authBlock = blockAround(bridge, 'if (event.data.type === BRIDGE_EVENTS.auth)', 'if (event.data.type === BRIDGE_EVENTS.signOut)');
 if (!authBlock) {
-  failures.push('MOCHI_SOCIAL_AUTH handler block was not found.');
+  failures.push('MOCHI_PETS_AUTH handler block was not found.');
 } else {
-  requireSnippet(authBlock, 'payload.accessToken', 'MOCHI_SOCIAL_AUTH handler must require payload.accessToken.');
-  requireSnippet(authBlock, 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'MOCHI_SOCIAL_AUTH handler must not forward arbitrary payload fields.');
-  assertNoForbiddenBridgeMaterial('MOCHI_SOCIAL_AUTH handler', authBlock);
+  requireSnippet(authBlock, 'payload.accessToken', 'MOCHI_PETS_AUTH handler must require payload.accessToken.');
+  requireSnippet(authBlock, 'setAuth({ accessToken: payload.accessToken, expiresAt: payload.expiresAt });', 'MOCHI_PETS_AUTH handler must not forward arbitrary payload fields.');
+  assertNoForbiddenBridgeMaterial('MOCHI_PETS_AUTH handler', authBlock);
 }
 
 for (const [label, text] of [

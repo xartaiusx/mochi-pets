@@ -1,4 +1,5 @@
-const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const baseUrl = (process.env.MOCHI_PETS_BASE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const requireUnityWebgl = process.env.MOCHI_PETS_REQUIRE_UNITY_WEBGL === 'true';
 
 const checks = [
   { path: '/healthz', name: 'health' },
@@ -16,42 +17,78 @@ for (const check of checks) {
 }
 
 const manifest = await fetch(`${baseUrl}/integration/game-manifest.json`).then((response) => response.json());
-if (manifest.name !== 'Mochi Social' || manifest.bridge?.namespace !== 'MOCHI_SOCIAL') {
-  throw new Error('Manifest does not expose the Mochi Social integration contract.');
+if (manifest.name !== 'Mochi Pets' || manifest.bridge?.namespace !== 'MOCHI_PETS') {
+  throw new Error('Manifest does not expose the Mochi Pets integration contract.');
 }
 
-if (manifest.chain?.provider !== 'enjin' || manifest.chain?.network !== 'CANARY' || manifest.alpha?.noRealValue !== true) {
-  throw new Error('Manifest does not expose the closed Enjin Canary alpha contract.');
-}
-
-const alphaStatus = await fetch(`${baseUrl}/integration/alpha/status`).then((response) => response.json());
-if (alphaStatus.market?.fixedPrice !== true || alphaStatus.market?.auctions !== false) {
-  throw new Error('Alpha status does not expose fixed-price/no-auction market scope.');
+if (manifest.activeRuntime !== 'unity-webgl' && manifest.activeRuntime !== 'legacy-fallback') {
+  throw new Error('Manifest does not expose a recognized active runtime.');
 }
 
 if (
-  alphaStatus.gameplay?.spiritAttunement !== true ||
-  alphaStatus.gameplay?.routeMastery !== true ||
-  alphaStatus.gameplay?.habitatBonds !== true ||
-  alphaStatus.gameplay?.spiritResearch !== true ||
-  alphaStatus.gameplay?.partyHarmony !== true ||
-  alphaStatus.gameplay?.harmonyTrials !== true ||
-  alphaStatus.gameplay?.teamSparMatches !== true ||
-  alphaStatus.gameplay?.trainingBattles !== true ||
-  alphaStatus.gameplay?.raisingCare !== true ||
-  alphaStatus.gameplay?.roleplayQuests !== true ||
-  alphaStatus.gameplay?.questChains !== true ||
-  alphaStatus.gameplay?.copiedUpstreamContent !== false
+  manifest.engine !== 'unity-webgl' ||
+  manifest.room?.mode !== 'single-shared-room' ||
+  manifest.room?.capacity !== 25 ||
+  manifest.room?.sharedPetKey !== 'lirabao' ||
+  manifest.runtime?.realtimeAuthority !== 'ugs-distributed-authority' ||
+  manifest.runtime?.stateAuthority !== 'ugs-cloud-save'
 ) {
-  throw new Error('Alpha status does not expose the Mochirii-native creature loop scope.');
+  throw new Error('Manifest does not expose the Unity shared-room runtime contract.');
 }
 
-if (alphaStatus.chainRuntime?.network !== 'CANARY' || !['configured', 'configured-preview-stub'].includes(alphaStatus.chainRuntime?.mode)) {
-  throw new Error('Alpha status does not expose the Enjin Canary runtime mode.');
+if (manifest.alpha?.noRealValue !== true || manifest.avatarUploads !== false) {
+  throw new Error('Manifest does not keep the Unity alpha no-real-value, curated-character posture.');
 }
 
-if (alphaStatus.enjinCanaryConfigured === false && alphaStatus.chainRuntime?.mode !== 'configured-preview-stub') {
-  throw new Error('Unconfigured Enjin Canary runtime must explain configured-preview-stub mode.');
+assertNoFutureSystemKeys(manifest, 'Manifest');
+
+const alphaStatus = await fetch(`${baseUrl}/integration/alpha/status`).then((response) => response.json());
+if (
+  alphaStatus.engine !== 'unity-webgl' ||
+  alphaStatus.room?.mode !== 'single-shared-room' ||
+  alphaStatus.room?.capacity !== 25 ||
+  alphaStatus.room?.sharedPetKey !== 'lirabao' ||
+  alphaStatus.runtime?.realtimeAuthority !== 'ugs-distributed-authority' ||
+  alphaStatus.runtime?.stateAuthority !== 'ugs-cloud-save'
+) {
+  throw new Error('Alpha status does not expose the Unity shared-room runtime contract.');
 }
 
-console.log(`Mochi Social smoke checks passed for ${baseUrl}`);
+if (alphaStatus.alpha?.noRealValue !== true || alphaStatus.avatarUploads !== false) {
+  throw new Error('Alpha status does not keep the Unity alpha no-real-value, curated-character posture.');
+}
+
+assertNoFutureSystemKeys(alphaStatus, 'Alpha status');
+
+if (requireUnityWebgl) {
+  if (manifest.activeRuntime !== 'unity-webgl' || manifest.unityWebglBuild?.present !== true) {
+    throw new Error('Release smoke requires a present Unity WebGL build.');
+  }
+
+  const embedHtml = await fetch(`${baseUrl}/embed`).then((response) => response.text());
+  if (!/createUnityInstance|Build\/.+\.loader\.js|Unity WebGL/i.test(embedHtml)) {
+    throw new Error('/embed did not serve a Unity WebGL page while MOCHI_PETS_REQUIRE_UNITY_WEBGL=true.');
+  }
+
+  if (
+    !embedHtml.includes('data-mochi-pets-unity-bridge-config') ||
+    !embedHtml.includes('__MOCHI_PETS_UNITY_BRIDGE_CONFIG') ||
+    !embedHtml.includes('allowedParentOrigins.has(event.origin)') ||
+    !embedHtml.includes('sanitizeAuthMessage(event.data)')
+  ) {
+    throw new Error('/embed did not install the Unity bridge origin and auth endpoint guard.');
+  }
+}
+
+if ('chainRuntime' in alphaStatus || 'enjinCanaryConfigured' in alphaStatus) {
+  throw new Error('Alpha status must not expose future asset provider state for the Unity shared-room alpha.');
+}
+
+console.log(`Mochi Pets smoke checks passed for ${baseUrl}`);
+
+function assertNoFutureSystemKeys(payload, label) {
+  const json = JSON.stringify(payload);
+  if (/\b(?:market|trade|cashout)\b/i.test(json)) {
+    throw new Error(`${label} must not publish future economy keys for the Unity shared-room alpha.`);
+  }
+}

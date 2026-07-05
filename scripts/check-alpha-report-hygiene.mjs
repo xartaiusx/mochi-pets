@@ -11,6 +11,7 @@ const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const files = [
   'reports/alpha-local-suite.json',
   'reports/built-server-smoke.json',
+  'reports/alpha-unity-required-smoke.json',
   'reports/alpha-local-acceptance.json',
   'reports/alpha-load-smoke.json',
   'reports/alpha-browser-presence.json',
@@ -50,7 +51,7 @@ const optionalFiles = [
 
 const secretPatterns = [
   { label: 'GitHub token', pattern: /\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{20,}\b/ },
-  { label: 'OpenAI key', pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/ },
+  { label: 'model API key', pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/ },
   { label: 'Supabase secret key', pattern: /\bsb_secret_[A-Za-z0-9_-]{20,}\b/ },
   { label: 'JWT-like token', pattern: /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/ },
   { label: 'Private key block', pattern: /-----BEGIN (?:RSA |EC |OPENSSH |)?PRIVATE KEY-----/ },

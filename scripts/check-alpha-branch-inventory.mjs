@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readPublicOpenPullRequestBranches } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_BRANCH_INVENTORY_JSON || 'reports/alpha-branch-inventory.json');
@@ -25,7 +26,7 @@ const repos = [
 ];
 
 const failures = [];
-const repoReports = repos.map(inspectRepo);
+const repoReports = await Promise.all(repos.map(inspectRepo));
 const report = {
   ok: failures.length === 0,
   checkedAt: new Date().toISOString(),
@@ -49,7 +50,7 @@ const candidates = repoReports.reduce((total, repo) => total + repo.cleanupCandi
 console.log(`Mochi Social branch inventory OK (${candidates} local-safe cleanup candidate(s), no deletion performed).`);
 console.log(`Report: ${reportPath}`);
 
-function inspectRepo(repo) {
+async function inspectRepo(repo) {
   if (!existsSync(repo.path)) {
     const message = `${repo.label} repo not found at ${repo.path}.`;
     if (repo.required) failures.push(message);
@@ -71,7 +72,7 @@ function inspectRepo(repo) {
   const mergedBranches = new Set(lines(git(['branch', '--format=%(refname:short)', '--merged', 'HEAD'], repo.path).stdout));
   const worktreeBranches = new Set(readWorktreeBranches(repo.path));
   const originRepository = readOriginRepository(repo.path);
-  const openPr = readOpenPullRequestBranches(repo.path, originRepository);
+  const openPr = await readOpenPullRequestBranches(repo.path, originRepository);
   const openPrBranches = new Set(openPr.branches.map((entry) => entry.branch));
   const branchResult = git([
     'for-each-ref',
@@ -175,7 +176,7 @@ function parseBranch(line, context) {
   };
 }
 
-function readOpenPullRequestBranches(repoPath, repository) {
+async function readOpenPullRequestBranches(repoPath, repository) {
   if (!repository) {
     return {
       repository: null,
@@ -191,11 +192,20 @@ function readOpenPullRequestBranches(repoPath, repository) {
     shell: false,
   });
   if (result.status !== 0) {
+    const fallback = await readPublicOpenPullRequestBranches(repository);
+    if (fallback.ok) {
+      return {
+        repository,
+        status: 'checked',
+        branches: fallback.branches,
+        source: 'github-public-api',
+      };
+    }
     return {
       repository,
       status: 'unavailable',
       branches: [],
-      error: sanitize(result.stderr || result.error?.message || 'gh pr list failed'),
+      error: sanitize(result.stderr || result.error?.message || fallback.message || 'gh pr list failed'),
     };
   }
 

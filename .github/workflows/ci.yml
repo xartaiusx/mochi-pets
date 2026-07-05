@@ -6,18 +6,25 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Verify Mochi Social
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install
@@ -26,8 +33,14 @@ jobs:
       - name: Secret scan
         run: npm run secret-scan
 
+      - name: Alpha public copy
+        run: npm run alpha:public-copy
+
       - name: Alpha readiness
         run: npm run alpha:readiness
+
+      - name: Unity Cloud Code contract
+        run: npm run unity:cloud-code-contract
 
       - name: Alpha gate contracts
         run: npm run alpha:gate-contracts
@@ -37,6 +50,9 @@ jobs:
 
       - name: Alpha sync approval self-test
         run: npm run alpha:sync-approval-self-test
+
+      - name: Alpha local evidence self-test
+        run: npm run alpha:local-evidence-self-test
 
       - name: Typecheck
         run: npm run typecheck

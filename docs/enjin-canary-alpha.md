@@ -58,7 +58,7 @@ aws cloudformation create-stack \
 unset PLATFORM_TOKEN
 ```
 
-After stack creation, inspect CloudWatch startup logs privately. The first run generates the seed material and prints the wallet addresses. Record only non-secret identifiers needed by the game handoff, such as the signing address, collection ID, Fuel Tank ID/address, and finalized Enjin transaction UUIDs. Never paste the mnemonic, `wallet.seed`, `KEY_PASS`, or raw Platform token into Codex chat, Git, PR comments, screenshots, or local reports.
+After stack creation, inspect CloudWatch startup logs privately. The first run generates the seed material and prints the wallet addresses. Record only non-secret identifiers needed by the game handoff, such as the signing address, collection ID, Fuel Tank ID/address, and finalized Enjin transaction UUIDs. Never paste the mnemonic, `wallet.seed`, `KEY_PASS`, or raw Platform token into chat, Git, PR comments, screenshots, or local reports.
 
 Do not create the `Mochi Social Alpha` collection until the daemon can sign. The Enjin Platform settings page should move from `Not Connected` to `Connected`, then collection creation should submit a transaction and eventually reach `FINALIZED`.
 

@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
@@ -18,8 +19,8 @@ const generatedAt = new Date().toISOString();
 const gitState = readGitState();
 const siteGitState = readGitStateAt(siteRepoPath);
 const prState = {
-  game: readPr('xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || gitState.branch, gitState.localHead),
-  site: readPr('Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || siteGitState.branch, siteGitState.localHead)
+  game: await readPr('xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || gitState.branch, gitState.localHead),
+  site: await readPr('Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || siteGitState.branch, siteGitState.localHead)
 };
 const auditSummary = readAuditSummary();
 const externalGateSummary = readExternalGateSummary();
@@ -150,7 +151,7 @@ function readExternalGateSummary() {
   };
 }
 
-function readPr(repo, selector, localHead) {
+async function readPr(repo, selector, localHead) {
   const normalizedSelector = sanitize(selector || '');
   const fixture = readPrFixture(repo, normalizedSelector, localHead);
   if (fixture) return fixture;
@@ -165,11 +166,16 @@ function readPr(repo, selector, localHead) {
     shell: false
   });
   if (result.status !== 0) {
+    const fallback = await readPublicPullRequest(repo, normalizedSelector, localHead);
+    if (fallback.ok) {
+      return buildPrState(repo, normalizedSelector, localHead, explicitNumber, fallback.data, 'github-public-api');
+    }
     return {
       repo,
       selector: normalizedSelector,
       ok: false,
-      message: sanitize(result.stderr || result.error?.message || 'GitHub PR state could not be read.')
+      source: 'unavailable',
+      message: sanitize(result.stderr || result.error?.message || fallback.message || 'GitHub PR state could not be read.')
     };
   }
 
@@ -192,37 +198,7 @@ function readPr(repo, selector, localHead) {
         message: `Multiple open GitHub PRs were found for branch ${normalizedSelector}. Set an explicit PR number.`
       };
     }
-    const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
-    const failingChecks = checks
-      .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
-      .map((check) => sanitize(check.name || check.context))
-      .filter(Boolean);
-    const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
-    const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
-    const failures = [
-      data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
-      data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
-      localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
-      ...failingChecks.map((check) => `failing check ${check}`)
-    ].filter(Boolean);
-    return {
-      repo,
-      selector: normalizedSelector,
-      number: data.number || (explicitNumber ? normalizedSelector : null),
-      ok: failures.length === 0,
-      gateFailures: failures,
-      url: sanitize(data.url),
-      title: sanitize(data.title),
-      state: sanitize(data.state),
-      headRefName: sanitize(data.headRefName),
-      isDraft: data.isDraft === true,
-      headRefOid: sanitize(data.headRefOid),
-      localHead: sanitize(localHead),
-      localHeadMatchesPrHead,
-      mergeStateStatus: sanitize(data.mergeStateStatus),
-      checkNames,
-      failingChecks
-    };
+    return buildPrState(repo, normalizedSelector, localHead, explicitNumber, data, 'gh');
   } catch {
     return {
       repo,
@@ -278,6 +254,41 @@ function readPrFixture(repo, selector, localHead) {
     url: sanitize(data.url),
     title: sanitize(data.title),
     state: sanitize(data.state || 'OPEN'),
+    headRefName: sanitize(data.headRefName),
+    isDraft: data.isDraft === true,
+    headRefOid: sanitize(data.headRefOid),
+    localHead: sanitize(localHead),
+    localHeadMatchesPrHead,
+    mergeStateStatus: sanitize(data.mergeStateStatus),
+    checkNames,
+    failingChecks
+  };
+}
+
+function buildPrState(repo, selector, localHead, explicitNumber, data, source) {
+  const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
+  const failingChecks = checks
+    .filter((check) => !['SUCCESS', 'PASS'].includes(String(check.conclusion || check.state || '').toUpperCase()))
+    .map((check) => sanitize(check.name || check.context))
+    .filter(Boolean);
+  const checkNames = checks.map((check) => sanitize(check.name || check.context)).filter(Boolean);
+  const localHeadMatchesPrHead = Boolean(localHead && data.headRefOid && localHead === data.headRefOid);
+  const failures = [
+    data.state === 'OPEN' ? '' : `PR state is ${data.state || 'unknown'}`,
+    data.mergeStateStatus === 'CLEAN' || data.isDraft === true ? '' : `merge state is ${data.mergeStateStatus || 'unknown'} and PR is not draft`,
+    localHead && data.headRefOid && !localHeadMatchesPrHead ? 'local HEAD does not match PR head' : '',
+    ...failingChecks.map((check) => `failing check ${check}`)
+  ].filter(Boolean);
+  return {
+    repo,
+    selector,
+    number: data.number || (explicitNumber ? selector : null),
+    ok: failures.length === 0,
+    source,
+    gateFailures: failures,
+    url: sanitize(data.url),
+    title: sanitize(data.title),
+    state: sanitize(data.state),
     headRefName: sanitize(data.headRefName),
     isDraft: data.isDraft === true,
     headRefOid: sanitize(data.headRefOid),
@@ -381,7 +392,7 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       action: 'Set funded-chain Fly secrets only after real Enjin Canary resources exist.',
       exactAction: `fly secrets set -a ${flyApp} ENJIN_PLATFORM_TOKEN=<private-enjin-platform-token> ENJIN_COLLECTION_ID=<private-enjin-collection-id> ENJIN_FUEL_TANK_ID=<private-enjin-fuel-tank-id>`,
       costRisk: 'Fly secret changes can restart Machines, and real Enjin values should only be set after collection/Fuel Tank resources exist and funded-chain work is approved.',
-      noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so the runtime stays configured-preview-stub for Alpha Preview Ready.',
+      noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so funded-chain work stays deferred and absent from the player alpha.',
       approvalText: `I approve setting real funded-chain Fly secret names on ${flyApp} after Enjin Canary collection and Fuel Tank resources exist. I understand this may restart hosted resources or add usage.`
     },
     {
@@ -391,21 +402,21 @@ function buildApprovalActions(currentGitState, currentSiteGitState, currentExter
       currentlyRequired: liveGameContractNeeded,
       requirementReason: liveGameContractNeeded ? 'The live game contract gate needs an approved hosted check against the Fly URL.' : 'The live game contract gate is not currently requesting Fly hosted verification.',
       action: 'Run the approved hosted Fly game contract check for Alpha Preview Ready.',
-      exactAction: `$env:MOCHI_SOCIAL_GAME_URL="${gameUrl}"; $env:MOCHI_SOCIAL_SITE_PREVIEW_URL="${sitePreviewUrl}"; $env:MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; npm run alpha:external-gates`,
+      exactAction: `$env:MOCHI_PETS_GAME_URL="${gameUrl}"; $env:MOCHI_PETS_SITE_PREVIEW_URL="${sitePreviewUrl}"; $env:MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS="true"; npm run alpha:external-gates`,
       costRisk: 'Hosted contract checks fetch the Fly runtime and can create Fly request/bandwidth/log usage. They do not deploy, scale, or run load tests.',
       noCostAlternative: 'Run npm run alpha:local-suite, npm run alpha:local-evidence, npm run alpha:responsive-gameplay, and localhost smoke checks only.',
-      approvalText: `I approve the hosted Fly game contract check for ${flyApp} using MOCHI_SOCIAL_GAME_URL=${gameUrl} with MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=true. I understand it may hit Fly resources and add usage.`
+      approvalText: `I approve the hosted Fly game contract check for ${flyApp} using MOCHI_PETS_GAME_URL=${gameUrl} with MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS=true. I understand it may hit Fly resources and add usage.`
     },
     {
       id: 'enjin-canary-operations',
       provider: 'Enjin Canary',
       phase: 'Alpha RC later',
       currentlyRequired: false,
-      requirementReason: 'Not required for Alpha Preview Ready. Keep Enjin in configured-preview-stub until funding and transaction proof work is explicitly approved.',
+      requirementReason: 'Not required for Alpha Preview Ready. Keep funded-chain work deferred and absent from the player alpha until funding and transaction proof work is explicitly approved.',
       action: 'Create/fund Fuel Tank resources or submit Canary mint, burn, listing, transfer, or proof operations.',
       exactAction: 'Use Enjin Platform dashboard/API/Wallet Daemon only for the specific approved Canary collection, Fuel Tank, and transaction proof.',
       costRisk: 'Fuel Tank funding, sponsored transactions, cloud Wallet Daemon hosting, faucets, and live chain operations can consume account resources or sponsored balances.',
-      noCostAlternative: 'Keep Enjin readiness flags unset and use configured-preview-stub plus local fail-closed operator smoke.',
+      noCostAlternative: 'Keep Enjin readiness flags unset and use local fail-closed operator smoke only; keep funded-chain work absent from the player alpha.',
       approvalText: 'I approve the specific Enjin Canary action: <exact collection, Fuel Tank, Wallet Daemon, or transaction proof action>. I understand it may add usage, sponsored transaction cost, or cloud/resource charges.'
     },
     {
@@ -748,7 +759,7 @@ Suggested explicit approval text for hosted/provider gates:
 I approve the specific provider action: <exact Fly/Vercel/Supabase/Enjin action>. I understand it may add usage or charges.
 \`\`\`
 
-Do not use this packet as approval by itself. It is a checklist for the operator and Codex before requesting or granting approval for provider/cost-sensitive work.
+Do not use this packet as approval by itself. It is a checklist for the operator and maintainers before requesting or granting approval for provider/cost-sensitive work.
 `;
 }
 

@@ -25,3 +25,23 @@ p2pool.cache
 p2pool.log
 p2pool_*_peers.txt
 p2pool_peers.txt
+
+# Unity editor/runtime generated state
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/UserSettings/
+unity/Obj/
+unity/Builds/
+unity/MemoryCaptures/
+unity/Recordings/
+unity/.vscode/
+unity/Data/
+unity/*.csproj
+unity/*.sln
+unity/*.slnx
+unity/*.suo
+unity/*.user
+unity/*.userprefs
+unity/*.pidb
+unity/*.booproj

@@ -7,7 +7,7 @@ const failures = [];
 const checks = [
   {
     file: 'package.json',
-    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"smoke"']
+    includes: ['"clean-room-scan"', '"secret-scan"', '"alpha:public-copy"', '"alpha:readiness"', '"alpha:monero-treasury"', '"alpha:monero-operator-handoff"', '"alpha:local-acceptance"', '"alpha:load-smoke"', '"alpha:browser-presence"', '"alpha:browser-bridge-auth"', '"alpha:responsive-gameplay"', '"alpha:local-site-iframe"', '"alpha:visual-snapshot"', '"alpha:visual-review"', '"alpha:manual-prompt-review"', '"alpha:wallet-daemon-check"', '"alpha:enjin-operator-smoke"', '"alpha:built-server-smoke"', '"alpha:unity-required-smoke"', '"alpha:local-suite"', '"alpha:local-evidence"', '"alpha:local-evidence-self-test"', '"alpha:report-hygiene"', '"alpha:gate-contracts"', '"alpha:preview-ready"', '"alpha:external-gates"', '"alpha:operator-checklist"', '"alpha:provider-preflight"', '"alpha:sync-approval"', '"alpha:sync-approval-self-test"', '"alpha:rc-audit"', '"build:release"', '"unity:cloud-code-contract"', '"unity:verify"', '"dev:legacy"', '"smoke"']
   },
   {
     file: 'scripts/check-clean-room-literals.mjs',
@@ -15,11 +15,19 @@ const checks = [
   },
   {
     file: '.github/workflows/ci.yml',
-    includes: ['npm run secret-scan', 'npm run alpha:readiness', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run build']
+    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:readiness', 'npm run unity:cloud-code-contract', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run alpha:local-evidence-self-test', 'npm run build']
+  },
+  {
+    file: 'scripts/check-unity-cloud-code-contract.mjs',
+    includes: ['mochiPetsLoadSharedPet.js', 'mochiPetsInteractSharedPet.js', 'shared_pet_revision_conflict', 'invalid_pet_interaction', 'invalid_pet_actor', 'unity.pet.interaction', 'unity.pet.state_saved', 'MOCHI_PETS_GAME_SERVER_TOKEN', 'Supabase mirror failure must not block the UGS primary save']
+  },
+  {
+    file: 'Dockerfile',
+    includes: ['FROM node:24.17.0-slim', 'MOCHI_PETS_REQUIRE_UNITY_WEBGL=true', 'unity/Builds/WebGL']
   },
   {
     file: 'AGENTS.md',
-    includes: ['no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/codex-external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
+    includes: ['Node 24 LTS', 'Unity WebGL is the active runtime', 'legacy rollback/reference', 'no-real-value', 'mainnet is out of scope', 'Supabase schema', 'wallet daemon', 'docs/external-ops.md', 'docs/no-cost-operations.md', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'docs/alpha-preview-ready.md', 'Monero treasury', 'operator-only', 'alpha:monero-treasury', 'alpha:monero-operator-handoff']
   },
   {
     file: 'AGENTS.md',
@@ -111,10 +119,10 @@ const checks = [
   },
   {
     file: 'docs/no-cost-operations.md',
-    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:local-site-iframe', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
+    includes: ['No-Cost Operations Guardrail', 'Stop And Ask First', 'Public-repo branch pushes are allowed', 'Fuel Tanks', 'hosted load tests', 'MOCHI_PETS_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL', 'MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS', 'Current Cost Posture', 'alpha:local-site-iframe', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:provider-preflight', 'alpha:sync-approval', 'Alpha Preview Ready', 'dummy `ENJIN_COLLECTION_ID`', 'funded-chain lane is expected red', 'verified milestone deploy queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
-    file: 'docs/codex-external-ops.md',
+    file: 'docs/external-ops.md',
     includes: [
       'Source Hierarchy',
       'Source Basis',
@@ -131,7 +139,7 @@ const checks = [
       'Fuel Tank Dispatch Contract',
       'WebSocket And Presence Verification',
       'Discord Boundary',
-      'Computer Use',
+      'desktop handoff',
       'No-Cost Default'
     ]
   },
@@ -173,83 +181,83 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:responsive-gameplay', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Responsive Gameplay Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-responsive-gameplay.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'No dummy']
+    includes: ['npm run alpha:local-acceptance', 'npm run alpha:load-smoke', 'npm run alpha:browser-presence', 'npm run alpha:responsive-gameplay', 'npm run alpha:visual-snapshot', 'npm run alpha:visual-review', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:enjin-operator-smoke', 'npm run alpha:local-suite', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:preview-ready', 'npm run alpha:operator-checklist', 'npm run alpha:sync-approval', 'npm run alpha:rc-audit', 'check:mochi-social-bridge-state', 'Two-tab Presence Gate', 'Responsive Gameplay Gate', 'Visual Snapshot Gate', 'Manual Prompt Review Gate', 'Wallet Daemon Local Check', 'canvas movement response', 'observer-side canvas change', 'current local HEAD', 'MOCHI_SOCIAL_OPERATOR_SMOKE_TOKEN', 'MOCHI_SOCIAL_BROWSER_EXECUTABLE', 'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT', 'reports/alpha-browser-presence.json', 'reports/alpha-responsive-gameplay.json', 'reports/alpha-visual-page.png', 'reports/alpha-visual-review.md', 'reports/alpha-manual-prompt-review.md', 'reports/wallet-daemon-local.md', 'reports/alpha-local-evidence.md', 'reports/alpha-operator-checklist.json', 'reports/alpha-external-gates.json', 'reports/alpha-preview-ready.json', 'reports/alpha-report-hygiene.json', 'no-real-value fallback ledger', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'Funded-chain work is deferred', 'No dummy']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['Jade Scroll Story Chapter proof', 'story-chapter', 'story, chronicle']
+    includes: ['playable Unity WebGL game', 'creates or loads a curated character', "Lirabao's `E Care | Q Wave` prompt", 'saved character and shared Lirabao progress']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.technique_codex', 'Jade Technique Codex', 'Jade Technique Codex Seal', 'techniqueCodexProof']
+    includes: ['MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.lineage_register', 'Jade Lineage Register', 'Jade Lineage Register Seal', 'lineageRegisterProof']
+    includes: ['Unity source files', 'screenshot evidence', 'shared room contract', 'browser', 'reviewer']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.roster_cabinet', 'Jade Roster Cabinet', 'Jade Roster Cabinet Tag', 'rosterCabinetProof']
+    includes: ['bootstrap', 'Lirabao prompt', 'Lirabao controller', 'state store', 'shared-room constants']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.blossom_cradle', 'Jade Blossom Cradle', 'Jade Blossom Cradle Ribbon', 'blossomCradleProof']
+    includes: ['Unity canvas evidence', 'two-tab room evidence', 'Lirabao contract', 'input guard evidence']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.dojo_ladder', 'Jade Dojo Ladder', 'Jade Dojo Ladder Seal', 'dojoLadderProof']
+    includes: ['pending-human-review', 'character creation', 'Lirabao care', 'saved-progress confirmation']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.rival_circle', 'Jade Rival Circle proof', 'rival-circle']
+    includes: ['absence of market/trade/cashout/funded-chain copy', 'no-real-value']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.sifu_council', 'Jade Sifu Council', 'Jade Sifu Council Crest', 'sifuCouncilProof']
+    includes: ['reload/logout/login', 'shared Lirabao progress']
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['battle.summit_circuit', 'Jade Summit Circuit', 'Jade Summit Circuit Laurel', 'summitCircuitProof']
+    includes: ['Hosted prompt review requires explicit hosted-preview approval first', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'configured-preview-stub', 'docs/codex-external-ops.md', 'Current Private Gates']
+    includes: ['Tester Guide', 'Rollback', 'MOCHI_SOCIAL_LOAD_PLAYERS="25"', 'alpha:browser-presence', 'alpha:responsive-gameplay', 'alpha:manual-prompt-review', 'alpha:wallet-daemon-check', 'alpha:enjin-operator-smoke', 'alpha:external-gates', 'alpha:operator-checklist', 'alpha:sync-approval', 'alpha:preview-ready', 'alpha:rc-audit', 'Wallet Daemon', 'Alpha Preview Ready', 'Alpha RC Ready', 'preview-live-gates', 'funded-chain-gates', 'deferred and absent from the player-facing alpha', 'docs/external-ops.md', 'Current Private Gates']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Scroll Story Chapter proof', 'story-chapter']
+    includes: ['two-tab Unity canvas movement signatures', 'observer-side shared-room evidence']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['technique-codex', 'seal the Jade Technique Codex proof']
+    includes: ['character creation', 'Lirabao care', 'saved-progress prompts']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['lineage-register', 'record the Jade Lineage Register proof']
+    includes: ['character creation', 'E/Return for care', 'Q for wave']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['roster-cabinet', 'organize the Jade Roster Cabinet proof']
+    includes: ['reload/logout/login', 'saved progress']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['blossom-cradle', 'record the Jade Blossom Cradle proof']
+    includes: ['Unity source files', 'visual-review screenshots']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['sifu-council', 'clear the Jade Sifu Council proof']
+    includes: ['shared room contract', 'exact env vars']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['summit-circuit', 'clear the Jade Summit Circuit proof']
+    includes: ['Unity canvas evidence', 'two-tab shared-room evidence']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['dojo-ladder', 'clear the Jade Dojo Ladder proof']
+    includes: ['Lirabao contract', 'input guard evidence']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Rival Circle proof', 'tournament-bracket/rival-circle']
+    includes: ['absence of legacy player UI/future-economy copy', 'pending human review gate']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -457,11 +465,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Insignia Case proof', 'guild-insignia-case']
+    includes: ['Unity source files', 'visual-review screenshots']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Encounter Atlas proof', 'encounter-atlas']
+    includes: ['shared room contract', 'exact env vars']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -593,11 +601,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.recovery_tea', 'Jade Teahouse Recovery proof', 'nurture-rite/recovery-tea']
+    includes: ['Unity WebGL game locally', 'character creation', 'Lirabao care', 'saved progress']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Teahouse Recovery proof', 'recovery-tea']
+    includes: ['Unity canvas evidence', 'two-tab shared-room evidence']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -633,11 +641,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.nursery_grove', 'Jade Nursery Grove proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
+    includes: ['source-tied Unity evidence', 'bootstrap', 'Lirabao prompt', 'state store']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Nursery Grove proof', 'nursery-grove']
+    includes: ['Lirabao contract', 'input guard evidence']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -673,11 +681,11 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.bloom_ascendance', 'Jade Bloom Ascendance proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
+    includes: ['review steps', 'source SHA-256 hashes', 'visual screenshot bundle']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['Jade Bloom Ascendance proof', 'bloom-ascendance']
+    includes: ['absence of legacy player UI/future-economy copy', 'pending human review gate']
   },
   {
     file: 'docs/alpha-preview-ready.md',
@@ -713,7 +721,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-acceptance.md',
-    includes: ['spirit.kinship_album', 'spirit.capture_rite', 'Jade Capture Rite proof', 'kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite']
+    includes: ['shared room and shared pet contract', 'visual-review gate reason']
   },
   {
     file: 'docs/alpha-operator-handoff.md',
@@ -773,7 +781,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['affinity-matrix', 'map the Jade Affinity Matrix proof']
+    includes: ['character creation', 'Lirabao care', 'saved-progress prompts']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -805,7 +813,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['market-receipt', 'record the Jade Court Market Receipt proof']
+    includes: ['no-real-value', 'no inventory credit', 'Do not deploy, scale, run hosted load smoke, create provider resources']
   },
   {
     file: 'AGENTS.md',
@@ -985,7 +993,7 @@ const checks = [
   },
   {
     file: 'docs/alpha-operator-handoff.md',
-    includes: ['exchange-accord', 'record the Jade Exchange Accord proof']
+    includes: ['preview-live-gates', 'funded-chain-gates', 'deferred and absent from player-facing copy']
   },
   {
     file: 'docs/alpha-acceptance.md',
@@ -1025,11 +1033,33 @@ const checks = [
   },
   {
     file: 'docs/site-integration.md',
-    includes: ['MOCHI_SOCIAL_AUTH', 'chain.operation_update', 'Hot inventory can only be credited after the Enjin state is `FINALIZED`', 'Fuel Tank sponsored Canary transactions', 'CreateTransaction(transaction: { createListing: ... })', '/integration/alpha/enjin/submit', 'Alpha Preview Ready Contract', 'configured-preview-stub', 'Do not set dummy', 'preview-live-gates', 'funded-chain-gates']
+    includes: [
+      'https://mochirii.com/games/mochi-pets',
+      'Tester password unlocks the page shell',
+      'Mochirii member sign-in is required for saved play',
+      'Release builds must run with `MOCHI_PETS_REQUIRE_UNITY_WEBGL=true`',
+      '/integration/game-manifest.json',
+      '/integration/alpha/status',
+      'engine="unity-webgl"',
+      'activeRuntime="unity-webgl"',
+      'room.mode="single-shared-room"',
+      'room.capacity=25',
+      'room.sharedPetKey="lirabao"',
+      'unityWebglBuild.present=true',
+      'legacyFallback.active=false',
+      'MOCHI_PETS_AUTH',
+      'MOCHI_PETS_SIGN_OUT',
+      'MOCHI_PETS_READY',
+      'MOCHI_PETS_AUTH_STATE',
+      'MOCHI_PETS_ERROR',
+      'Player character data: `character.v1`',
+      'Shared Lirabao data: `room:jade-lantern-room/sharedPet.v1`',
+      'old room'
+    ]
   },
   {
     file: 'docs/deployment.md',
-    includes: ['RPG_SAVE_DIR=/data/saves', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
+    includes: ['Node 24 LTS hosting wrapper plus the Unity WebGL shared-room runtime', 'MOCHI_PETS_REQUIRE_UNITY_WEBGL=true', 'MOCHI_PETS_ALLOWED_ORIGINS', 'npm run build:release', 'MOCHI_PETS_GAME_SERVER_TOKEN', 'MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS', 'alpha:wallet-daemon-check', 'Wallet Daemon must run as a separate service with no inbound ports', 'alpha:operator-checklist', 'For Alpha Preview Ready', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy']
   },
   {
     file: 'docs/enjin-canary-alpha.md',
@@ -1037,211 +1067,15 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['noRealValue: true', "network: 'CANARY'", 'spiritCapture: true', 'routeInvitations: true', 'routeMastery: true', 'habitatBonds: true', 'spiritSanctuaryRites: true', 'spiritResearch: true', 'spiritCompendium: true', 'spiritRosterArchives: true', 'spiritCareCycles: true', 'spiritTemperamentConcords: true', 'spiritFieldAlmanacs: true', 'spiritWeatherVeils: true', 'spiritEncounterRotations: true', 'spiritEncounterAtlases: true', 'spiritHabitatCensuses: true', 'spiritCraftWrits: true', 'tradeExchangeAccords: true', 'routeWaystones: true', 'spiritNurtureRites: true', 'spiritLineageRegisters: true', 'spiritTournamentBrackets: true', 'itemProvisions: true', 'guildCommissions: true', 'socialRallies: true', 'wayfarerChronicles: true', 'guildAscensionTrials: true', 'spiritJournal: true', 'fieldExpeditions: true', 'fieldAccords: true', 'techniqueMastery: true', 'battleTactics: true', 'techniqueLoadouts: true', 'spiritTraits: true', 'conditionWeaves: true', 'guildRankTrials: true', 'spiritGrowthRites: true', 'questChains: true', 'affinityTrials: true', 'partyFormation: true', 'partyHarmony: true', 'harmonyTrials: true', 'teamSparMatches: true', 'mentorChallenges: true', 'battleRoundTranscripts: true', 'sparringLadder: true', "'spirit.capture'", "'spirit.route_invite'", "'world.route_mastery'", "'spirit.habitat_bond'", "'spirit.sanctuary_rite'", "'spirit.research'", "'spirit.compendium_complete'", "'spirit.roster_archive'", "'spirit.care_cycle'", "'spirit.temperament_concord'", "'spirit.field_almanac'", "'world.weather_veil'", "'world.encounter_rotation'", "'world.encounter_atlas'", "'spirit.habitat_census'", "'item.craft_writ'", "'trade.exchange_accord'", "'world.route_waystone'", "'spirit.nurture_rite'", "'spirit.lineage_register'", "'battle.tournament_bracket'", "'item.provision_satchel'", "'guild.commission_complete'", "'guild.social_rally'", "'guild.wayfarer_chronicle'", "'guild.ascension_trial'", "'spirit.journal'", "'world.expedition'", "'spirit.technique'", "'spirit.technique_loadout'", "'spirit.trait_attune'", "'battle.condition_weave'", "'battle.tactic_scroll'", "'guild.rank_trial'", "'spirit.growth_rite'", "'party.set'", "'party.harmony_form'", "'battle.harmony_trial'", "'battle.team_spar_match'", "'battle.mentor_challenge'", "'battle.affinity_trial'", "'battle.spar_ladder'", "'chain.operation_update'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['guildReceipts: true', "'market.guild_receipt'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routePatrols: true', "'world.route_patrol'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRelicAttunements: true', "'spirit.relic_attune'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['itemProvisionCatalogs: true', "'item.provision_catalog'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['battleItemKits: true', "'item.battle_kit'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['remedyPouches: true', "'item.remedy_pouch'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['questLedgers: true', "'quest.ledger_record'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routeEcologySurveys: true', "'world.route_ecology'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritWeatherVeils: true', "'world.weather_veil'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritEncounterAtlases: true', "'world.encounter_atlas'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritHabitatCensuses: true', "'spirit.habitat_census'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritCraftWrits: true', "'item.craft_writ'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['tradeExchangeAccords: true', "'trade.exchange_accord'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routeWaystones: true', "'world.route_waystone'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['routeCharters: true', "'world.route_charter'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritNurtureRites: true', "'spirit.nurture_rite'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRecoveryTeas: true', "'spirit.recovery_tea'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritKinshipAlbums: true', "'spirit.kinship_album'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritNurseryGroves: true', "'spirit.nursery_grove'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritBloomAscendances: true', "'spirit.bloom_ascendance'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritLineageRegisters: true', "'spirit.lineage_register'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRosterCabinets: true', "'spirit.roster_cabinet'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritBlossomCradles: true', "'spirit.blossom_cradle'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritBondGiftRites: true', "'item.bond_gift'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritNameBannerRites: true', "'spirit.name_banner'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritCaptureRites: true', "'spirit.capture_rite'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritTournamentBrackets: true', "'battle.tournament_bracket'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritRivalCircles: true', "'battle.rival_circle'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['dojoLadders: true', "'battle.dojo_ladder'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['sifuCouncils: true', "'battle.sifu_council'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['summitCircuits: true', "'battle.summit_circuit'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['battleChronicles: true', "'battle.battle_chronicle'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['spiritStoryChapters: true', "'story.chapter_complete'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['storyDialogueScrolls: true', "'story.dialogue_scroll'"]
-  },
-  {
-    file: 'apps/game/src/integration/alpha-contract.ts',
-    includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
+    includes: ['noRealValue: true', 'sharedRoom: true', 'desktopWebgl: true', 'curatedCharacterPresets: true', 'lirabaoCare: true', 'staleRevisionReload: true', 'avatarUploads: false', 'multipleRooms: false', 'sharding: false', 'mobileSpecificUi: false', "'unity.character.created'", "'unity.character.updated'", "'unity.pet.interaction'", "'unity.pet.state_saved'", "'unity.room.joined'", "'unity.room.left'"]
   },
   {
     file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_ROSTER_CABINETS', 'rosterCabinetIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_BLOSSOM_CRADLES', 'blossomCradleIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_BOND_GIFT_RITES', 'bondGiftRiteIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_NAME_BANNER_RITES', 'nameBannerRiteIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['MOCHI_DIALOGUE_SCROLLS', 'dialogueScrollIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_ROUTE_CHARTERS', 'routeCharterIds']
-  },
-  {
-    file: 'apps/game/src/integration/manifest.ts',
-    includes: ['SPIRIT_BATTLE_CHRONICLES', 'battleChronicleIds']
+    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "scene: 'JadeLanternRoom'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "artDirection: 'Mochirii courtyard 3D'", "scope: 'single-shared-room'", "integration: ['/integration/alpha/status', '/integration/alpha/progress', '/integration/alpha/action']"]
   },
   {
     file: 'apps/game/src/entries/express.ts',
-    includes: ['guildReceipts: true', "'market.guild_receipt'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['guildInsigniaCases: true', "'guild.insignia_case'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['affinityMatrices: true', "'battle.affinity_matrix'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['spiritRelicAttunements: true', "'spirit.relic_attune'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['spiritStarterVows: true', "'spirit.starter_vow'"]
-  },
-  {
-    file: 'apps/game/src/entries/express.ts',
-    includes: ['techniqueCodexes: true', "'battle.technique_codex'"]
+    includes: ['UNITY_SHARED_ROOM_CONTRACT', "engine: 'unity-webgl'", "key: 'jade-lantern-room-alpha'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "states: ['idle', 'approach', 'happy', 'care_received', 'stale_revision_reload', 'unavailable']", "'unity.pet.interaction'", "'unity.pet.state_saved'", "'unity.room.joined'", "'unity.room.left'"]
   },
   {
     file: 'apps/game/src/integration/enjin-canary.ts',
@@ -1561,7 +1395,7 @@ const checks = [
   },
   {
     file: 'apps/game/src/integration/supabase-edge-client.ts',
-    includes: ['MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'x-mochi-social-server-token', 'ALPHA_EDGE_FUNCTIONS.action', 'ALPHA_EDGE_FUNCTIONS.progress', 'buildAlphaProgressRequest', 'JSON.stringify(action)', 'JSON.stringify({ playerId })']
+    includes: ['MOCHI_PETS_SUPABASE_FUNCTIONS_URL', 'MOCHI_PETS_GAME_SERVER_TOKEN', 'x-mochi-pets-server-token', 'ALPHA_EDGE_FUNCTIONS.action', 'ALPHA_EDGE_FUNCTIONS.progress', 'buildAlphaProgressRequest', 'JSON.stringify(action)', 'JSON.stringify({ playerId })']
   },
   {
     file: 'apps/game/src/entries/express.ts',
@@ -1745,23 +1579,11 @@ const checks = [
   },
   {
     file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_BLOSSOM_CRADLES', 'resolveSpiritBlossomCradle', 'spirit.blossom_cradle', 'blossomCradleProof']
-  },
-  {
-    file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_BOND_GIFT_RITES', 'resolveSpiritBondGiftRite', 'item.bond_gift', 'jade-bond-gift-ribbon']
-  },
-  {
-    file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_NAME_BANNER_RITES', 'resolveSpiritNameBannerRite', 'spirit.name_banner', 'jade-name-banner-tag']
+    includes: ['ALPHA_ACTION_TYPES).toEqual', 'unity.pet.interaction', 'unity.pet.state_saved', 'market.fixed_list', 'trade.direct_offer', 'chain.operation_update']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
-    includes: ['spiritBondGiftRites: true', "bondGiftRiteIds: ['jade-bond-gift-rite']"]
-  },
-  {
-    file: 'apps/game/tests/manifest.test.ts',
-    includes: ['spiritNameBannerRites: true', "nameBannerRiteIds: ['jade-name-banner-rite']"]
+    includes: ['publishes the Unity WebGL shared-room contract', "scene: 'JadeLanternRoom'", "sharedPetKey: 'lirabao'", 'universalStarter: true', "not.toHaveProperty('market')"]
   },
   {
     file: 'apps/game/tests/alpha-content.test.ts',
@@ -1769,23 +1591,23 @@ const checks = [
   },
   {
     file: 'apps/game/tests/alpha-contract.test.ts',
-    includes: ['SPIRIT_ROUTE_CHARTERS', 'resolveSpiritRouteCharter', 'world.route_charter', 'routeCharterProof']
+    includes: ['sharedRoom).toBe(true)', 'desktopWebgl).toBe(true)', 'curatedCharacterPresets).toBe(true)', 'lirabaoCare).toBe(true)', 'multipleRooms).toBe(false)', 'sharding).toBe(false)']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
-    includes: ['spiritBloomAscendances: true']
+    includes: ['publishes the Unity WebGL shared-room contract for the website iframe', "engine: 'unity-webgl'", "mode: 'single-shared-room'", 'capacity: 25', "sharedPetKey: 'lirabao'", "playerCharacterKey: 'character.v1'", "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'", "presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']", 'avatarUploads: false', "not.toMatch(/\\b(?:market|trade|cashout)\\b/i)"]
   },
   {
-    file: 'apps/game/tests/manifest.test.ts',
-    includes: ['dojoLadders: true']
+    file: 'unity/Assets/MochiSocial/Tests/EditMode/MochiSocialContractTests.cs',
+    includes: ['SharedRoomContractMatchesWebsitePlan', 'JadeLanternRoomSceneContainsAlphaRuntimeWiring', 'MochiAvatarPrefabIsNetworkedAndPlayerControllable', 'CharacterPresetCatalogAllowsOnlyCuratedPresets', 'BridgeParsesWebsiteNestedAuthPayload', 'UnityAuthEnvelopeMatchesSupabaseBrokerShape', 'SharedPetCareUsesCareReceivedState', 'SharedPetWaveUsesHappyState', 'SharedPetRejectsUnauditableActorIds', 'SharedPetNormalizesActorIdsForAudit', 'SharedPetUnavailableStateIsValid', 'SharedPetStaleReloadStateIsValidAndKeepsRevision', 'SharedPetRejectsUnknownStateNames']
   },
   {
-    file: 'apps/game/tests/map-object-contract.test.ts',
-    includes: ['Mochi town map object contract', 'runtimeEventPlacements', 'welcome-npc', 'guild-seal-chest', 'care-shrine', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'training-ring', 'party-banner', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'market-board', 'trade-post', 'canary-shrine', 'no-real-value Enjin Canary certificate request', 'Jade Vault Return Proof', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'guild-social-rally', 'Jade Lantern Court', '25 * 18']
+    file: 'unity/Assets/MochiSocial/Tests/PlayMode/MochiSocialPlayModeTests.cs',
+    includes: ['LirabaoCareInteractionRequestsCloudCodeWithoutMutatingState', 'LirabaoRejectsConflictingInteractionRevision', 'LirabaoRejectsInvalidInteractionIntent', 'LirabaoShowsUnavailableAndStaleReloadStates', 'AvatarAppliesCuratedCharacterAppearanceBeforeNetworkSpawn', 'AvatarRejectsInvalidCharacterPresetState']
   },
   {
-    file: 'apps/game/tests/map-event-behavior.test.ts',
-    includes: ['Mochi town event behavior', 'Welcome NPC dialog', 'Mochirii Guild Seal', 'spirit-care', 'bond 5/5', 'habitat-grove', 'journal-pavilion', 'expedition-gate', 'route-invitation-altar', 'technique-dojo', 'tactic-scroll-stand', 'affinity-dais', 'training-ring', 'quest-board', 'guild-rank-bell', 'growth-moonwell', 'market-board', 'trade-post', 'Jade Courtyard Rally', 'jade-courtyard-rally-knot', 'guildSocialRally', 'mochiSocial.guild.rallyProof', 'no-real-value Enjin Canary certificate request', 'Jade Vault Return Proof', 'Wallet Daemon services']
+    file: 'scripts/run-unity.mjs',
+    includes: ["['test-editmode'", "['test-playmode'", "['build-webgl'", 'runUnityTests', 'runBatch', 'BuildWebGL', 'result="Passed"', 'failed="0"']
   },
   {
     file: 'apps/game/tests/manifest.test.ts',
@@ -1805,7 +1627,7 @@ const checks = [
   },
   {
     file: 'apps/game/tests/supabase-edge-client.test.ts',
-    includes: ['scoped server token in a header only', 'authoritative progress snapshot request', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-social-alpha-action', 'mochi-social-alpha-progress']
+    includes: ['scoped server token in a header only', 'authoritative progress snapshot request', 'not.toContain', 'SUPABASE_SERVICE_ROLE_KEY', 'mochi-pets-alpha-action', 'mochi-pets-alpha-progress']
   },
   {
     file: 'apps/game/scripts/smoke.mjs',
@@ -2149,11 +1971,11 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-responsive-gameplay.mjs',
-    includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_SOCIAL_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'unhandledKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyGameplayKeyOwnership', 'verifyUnhandledKeyOwnership', 'verifyEditableInputKeepsText', 'verifyInputSurfaceStyles', 'touchAction', 'overscrollBehaviorY', 'preventedKeyCount']
+    includes: ['playwright-core', 'alpha-responsive-gameplay.json', 'reports/responsive-gameplay', 'MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE', 'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL', 'MOCHI_PETS_TESTER_PASSWORD', 'MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-pets', 'local-only by default', 'viewports', '1920', '390', '/play', '/embed', 'parent iframe', 'siteIframeResults', 'gameplayKeys', 'unhandledKeys', 'ArrowDown', 'Space', 'Enter', 'horizontalOverflow', 'panelOverlaps', 'safeRectObstructions', 'textOverflow', 'assertScrollUnchanged', 'verifyGameplayKeyOwnership', 'verifyUnhandledKeyOwnership', 'verifyEditableInputKeepsText', 'verifyInputSurfaceStyles', 'touchAction', 'overscrollBehaviorY', 'preventedKeyCount']
   },
   {
     file: 'scripts/check-alpha-local-site-iframe.mjs',
-    includes: ['Local-only Mochirii site iframe proof', 'resolveMochiSocialSiteRepoPath', 'apps/web', 'NEXT_PUBLIC_MOCHI_SOCIAL_URL', 'MOCHI_SOCIAL_ALPHA_ACCESS_MODE', 'tester-password', 'MOCHI_SOCIAL_TESTER_PASSWORD', 'MOCHI_SOCIAL_LOCAL_SITE_IFRAME_PASSWORD', 'alpha-site-iframe-responsive.json', 'reports/responsive-site-iframe', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-social', 'siteIframeResults', 'taskkill', 'delete env.SUPABASE_SERVICE_ROLE_KEY', 'delete env.ENJIN_PLATFORM_TOKEN', 'redacted-tester-password']
+    includes: ['Local-only Mochirii site iframe proof', 'resolveMochiSocialSiteRepoPath', 'apps/web', 'NEXT_PUBLIC_MOCHI_PETS_URL', 'MOCHI_PETS_ALPHA_ACCESS_MODE', 'tester-password', 'MOCHI_PETS_TESTER_PASSWORD', 'MOCHI_PETS_LOCAL_SITE_IFRAME_PASSWORD', 'alpha-site-iframe-responsive.json', 'reports/responsive-site-iframe', 'MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME', '/games/mochi-pets', 'siteIframeResults', 'taskkill', 'delete env.SUPABASE_SERVICE_ROLE_KEY', 'delete env.ENJIN_PLATFORM_TOKEN', 'redacted-tester-password']
   },
   {
     file: 'scripts/check-enjin-operator-smoke.mjs',
@@ -2161,7 +1983,11 @@ const checks = [
   },
   {
     file: 'scripts/check-built-server-smoke.mjs',
-    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'configured-preview-stub', 'invalid_game_server_token', 'enjin_canary_not_configured', 'Local-only built Express server smoke']
+    includes: ['dist/server/express.js', 'readGitState', 'localHead', 'brotliDecompressSync', 'MochiPetsBridgeRuntime', '__MOCHI_PETS_UNITY_BRIDGE_CONFIG', 'isAllowedParentOrigin', 'targetParentOrigin', 'Built server /embed must install the Unity bridge origin and auth endpoint guard', 'Built server manifest must not expose legacy playable content catalog', 'Built server alpha status must not expose future chain runtime state', 'Local-only built Express server smoke']
+  },
+  {
+    file: 'scripts/check-unity-required-smoke.mjs',
+    includes: ['alpha-unity-required-smoke.json', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL', 'MOCHI_SOCIAL_BASE_URL', 'MOCHI_SOCIAL_LOAD_PLAYERS', 'Unity-required smoke', '25', 'throwaway tokens', 'no provider mutations', 'legacyFallback', 'unityWebglBuild']
   },
   {
     file: 'scripts/check-alpha-local-suite.mjs',
@@ -2169,11 +1995,15 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-local-evidence.mjs',
-    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'readGitState', 'localHead', 'same-suite evidence', 'built server smoke report', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'responsive gameplay must cover the required nine-viewport matrix', 'responsive gameplay must cover /play and /embed', 'parent-iframe input ownership', 'Mochirii site iframe status', 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured', 'summarizeResponsiveInputOwnership', 'summarizeResponsiveSiteIframe', 'previewReadyEvidence', 'editable-input preservation', 'unhandled-key freedom', 'visual snapshot canvas PNG must be non-empty', 'visual review must keep rendered prompt interaction as a manual pre-RC gate', 'Wallet Daemon local check must stay no-cost and metadata-only', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+    includes: ['No-secret local Alpha RC evidence summary', 'alpha-local-evidence.json', 'alpha-local-evidence.md', 'alpha-unity-required-smoke.json', 'readGitState', 'localHead', 'same-suite evidence', 'built server smoke report', 'Unity-required smoke report', 'Unity-required release smoke starts the built server locally', 'assertCurrentGitState', 'current HEAD', 'browser presence must prove observer-side movement', 'responsive gameplay must cover the required nine-viewport matrix', 'responsive gameplay must cover /play and /embed', 'parent-iframe input ownership', 'Mochirii site iframe status', 'responsive gameplay must cover the Mochirii site iframe across all viewports when configured', 'summarizeResponsiveInputOwnership', 'summarizeResponsiveSiteIframe', 'previewReadyEvidence', 'editable-input preservation', 'unhandled-key freedom', 'visual snapshot canvas PNG must be non-empty', 'visual review must keep rendered prompt interaction as a manual pre-RC gate', 'Wallet Daemon local check must stay no-cost and metadata-only', 'built server smoke must prove tokened Enjin route fails closed', 'local-only']
+  },
+  {
+    file: 'scripts/check-alpha-local-evidence-self-test.mjs',
+    includes: ['Mochi Social local evidence self-test OK', 'alpha-unity-required-smoke.json', 'missing-unity-required-report', 'legacy-fallback-active', 'missing-load-smoke-proof', 'stale-unity-required-head', 'Unity-required smoke report unavailable', 'Unity-required smoke health must report legacy fallback inactive', 'Unity-required smoke must run npm smoke and the 25-tester load smoke successfully', 'Unity-required smoke report localHead must match current HEAD', 'reports/', 'no provider mutations']
   },
   {
     file: 'scripts/check-alpha-report-hygiene.mjs',
-    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'alpha-operator-checklist.json', 'alpha-provider-preflight.json', 'alpha-external-gates.json', 'alpha-preview-ready.json', 'alpha-responsive-gameplay.json', 'alpha-local-site-iframe.json', 'alpha-site-iframe-responsive.json', 'alpha-visual-review.json', 'alpha-manual-prompt-review.json', 'wallet-daemon-local.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochi-social-alpha-preview-ready.md', 'Unredacted local suite token', 'Unredacted local site iframe token', 'Wallet daemon password assignment', 'Supabase service role assignment']
+    includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'alpha-operator-checklist.json', 'alpha-provider-preflight.json', 'alpha-external-gates.json', 'alpha-preview-ready.json', 'alpha-unity-required-smoke.json', 'alpha-responsive-gameplay.json', 'alpha-local-site-iframe.json', 'alpha-site-iframe-responsive.json', 'alpha-visual-review.json', 'alpha-manual-prompt-review.json', 'wallet-daemon-local.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochi-social-alpha-preview-ready.md', 'Unredacted local suite token', 'Unredacted local site iframe token', 'Wallet daemon password assignment', 'Supabase service role assignment']
   },
   {
     file: 'scripts/mochi-social-site-repo-path.mjs',
@@ -2181,15 +2011,15 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-site-repo-path.mjs',
-    includes: ['Mochi Social site repo path resolver self-test OK', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', '../custom-site']
+    includes: ['Mochi Pets site repo path resolver self-test OK', 'MOCHI_PETS_SITE_REPO_PATH', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', '../custom-site']
   },
   {
     file: 'scripts/check-alpha-gate-contracts.mjs',
-    includes: ['Mochi Social alpha gate contract checks passed', 'previewLiveGateNames', 'fundedChainGateNames', 'previewFlySecrets', 'Live game contract', 'Site preview contract', 'Fly funded-chain secret names', 'Enjin Canary operator readiness', 'requiresHostedApproval(gameUrl)', 'fetchJson(`${gameUrl}/healthz`)', 'fundedChainRequiredForPreview: false']
+    includes: ['Mochi Pets alpha gate contract checks passed', 'previewLiveGateNames', 'fundedChainGateNames', 'previewFlySecrets', 'Live game contract', 'Site preview contract', 'Fly funded-chain secret names', 'Enjin Canary operator readiness', 'requiresHostedApproval(gameUrl)', 'fetchJson(`${gameUrl}/healthz`)', 'fundedChainRequiredForPreview: false']
   },
   {
     file: 'scripts/write-alpha-manual-prompt-review.mjs',
-    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED', 'interactionContract', 'reviewTargets', 'visualArtifacts', 'Visual Review Evidence Bundle', 'alpha-visual-page.png', 'alpha-visual-canvas.png', 'setAlphaInteractable', 'spirit-lirabao', 'Source-Tied Target Checklist', 'worldPx', 'logicalTile', 'adjacentWorldPx']
+    includes: ['alpha-manual-prompt-review.json', 'alpha-manual-prompt-review.md', 'pending-human-review', 'MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK', 'MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER', 'MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER', 'MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED', 'interactionContract', 'reviewTargets', 'visualArtifacts', 'Visual Review Evidence Bundle', 'alpha-visual-page.png', 'alpha-visual-canvas.png', 'Unity WebGL', 'JadeLanternRoom', 'Create your character', 'E Care  |  Q Wave', 'character.v1', 'room:jade-lantern-room/sharedPet.v1']
   },
   {
     file: 'scripts/check-wallet-daemon-local.mjs',
@@ -2341,7 +2171,11 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-external-gates.mjs',
-    includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'readPreviewEnvFile', 'urlFieldsRead', 'hostedChecksAllowed', 'readGitState', 'localHead', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'previewFlySecrets', 'fundedChainFlySecrets', 'preview-live-gates', 'funded-chain-gates', 'summarizeGateLanes', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED']
+    includes: ['MOCHI_SOCIAL_GAME_URL', 'MOCHI_SOCIAL_SITE_PREVIEW_URL', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'readPreviewEnvFile', 'urlFieldsRead', 'hostedChecksAllowed', 'readGitState', 'localHead', 'readPublicPullRequest', 'github-public-api', 'flyctl', 'MOCHI_SOCIAL_GAME_SERVER_TOKEN', 'previewFlySecrets', 'fundedChainFlySecrets', 'preview-live-gates', 'funded-chain-gates', 'summarizeGateLanes', 'ENJIN_COLLECTION_ID', 'MOCHI_SOCIAL_ENJIN_DAEMON_CONNECTED', "'unverified'", 'unverifiedChecks', 'GitHub PR state could not be read from local tooling', 'formatLaneIssues', 'unverified -']
+  },
+  {
+    file: 'scripts/github-public-prs.mjs',
+    includes: ['api.github.com', 'readPublicPullRequest', 'readPublicOpenPullRequestBranches', 'fetchCommitChecks', 'check_runs', 'statusCheckRollup', 'mochi-social-alpha-local-audit']
   },
   {
     file: 'scripts/write-alpha-operator-checklist.mjs',
@@ -2349,11 +2183,11 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-provider-preflight.mjs',
-    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'Known Provider Action IDs', 'Next Approval IDs', 'Verified Milestone Deploy Queue', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
+    includes: ['mochi-social-alpha-provider-preflight.md', 'alpha-provider-preflight.json', 'This file is intentionally no-secret', 'contentsRead: false', 'providerActionQueue', 'missingExpectedPrivateInputFiles', 'does not read private credential file contents', 'Known Provider Action IDs', 'Next Approval IDs', 'Verified Milestone Deploy Queue', 'siteGit: source.data?.siteGit', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'vercel-supabase-preview-contract', 'enjin-canary-readiness']
   },
   {
     file: 'scripts/write-alpha-sync-approval.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'readPrFixture', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readNamedUrl', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'verifiedMilestoneDeployCandidate', 'GitHub Actions/PR checks', 'Suggested combined public-repo sync command note', 'Proceed with public-repo sync', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
+    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'readPrFixture', 'readPublicPullRequest', 'github-public-api', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readNamedUrl', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'verifiedMilestoneDeployCandidate', 'GitHub Actions/PR checks', 'Suggested combined public-repo sync command note', 'Proceed with public-repo sync', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
   },
   {
     file: 'scripts/check-alpha-sync-approval-self-test.mjs',
@@ -2361,13 +2195,376 @@ const checks = [
   },
   {
     file: 'scripts/check-alpha-preview-ready.mjs',
-    includes: ['Mochi Social Alpha Preview Ready audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'tester-entry lane only', 'preview-live-gates', 'hosted contract checks have not been explicitly approved/run', 'fundedChainRequiredForPreview: false', 'preview.local-site-iframe', 'preview.responsive-site-iframe', 'alpha-site-iframe-responsive.json', 'MOCHI_SOCIAL_RESPONSIVE_REQUIRE_SITE_IFRAME=true', 'siteIframeResults', '/games/mochi-social', 'preview.game-branch-sync', 'preview.site-branch-sync', 'alpha-manual-prompt-review.json', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review']
+    includes: ['Mochi Social Alpha Preview Ready local game audit', 'reports/alpha-preview-ready.json', 'mochi-social-alpha-preview-ready.md', 'Unity-first report proves the deployable local game runtime only', 'fundedChainRequiredForPreview: false', 'hostedChecksPerformed: false', 'providerMutationPerformed: false', 'preview.unity-verify', 'preview.unity-cloud-code-contract', 'preview.build-release', 'preview.built-server-smoke', 'preview.unity-required-smoke', 'preview.load-smoke-report', 'MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL', 'MOCHI_SOCIAL_LOAD_PLAYERS', 'preview.game-branch-sync', 'preview.site-branch-sync']
   },
   {
     file: 'scripts/check-alpha-rc-audit.mjs',
-    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'readGitState', 'provider.external-gates', 'hostedChecksAllowed', 'external gate report', 'game.visual-review', 'game.manual-prompt-review-script', 'game.wallet-daemon-local-check', 'game.map-event-behavior', 'local.manual-prompt-review', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review', 'syncExternalGateSnapshotFailures', 'local.evidence-summary', 'local.operator-checklist-current', 'local.provider-preflight-current', 'providerActionQueueIds', 'operator checklist provider action queue missing', 'provider preflight queue missing', 'local.sync-approval-current', 'currentGitStateFailures', 'currentGitStateFailuresForRepo', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-vercel-preview.local.txt', 'site.bridge-helper', 'site.bridge-state-self-test', 'site.auth-bridge-check', 'resolveMochiSocialBridgeMessage', 'check-mochi-social-bridge-state.mjs', 'site.edge-authority-check', 'site.edge-authority', 'check-mochi-social-edge-authority.mjs', 'site.preview-key-loader-self-test', 'site.preview-key-loader', 'check-mochi-social-preview-key-loader.mjs', 'site.preview-url-self-test', 'check-mochi-social-preview-url-self-test.mjs', 'site.browser-gate-writer', 'write-mochi-social-browser-gates.mjs', 'site.browser-gate-self-test', 'check-mochi-social-browser-gate-self-test.mjs', 'site.report-hygiene-check', 'check-mochi-social-report-hygiene.mjs', 'site.discord-oauth-self-test', 'site.discord-oauth-detector', 'check-mochi-social-discord-oauth-self-test.mjs', 'site.preview-ready-audit', 'site.bridge-state', 'site.auth-bridge', 'MOCHI_SOCIAL_SITE_PREVIEW_READY_SKIP_SELF_TEST_COMMANDS', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readPreviewEnvFile', 'MOCHI_SOCIAL_SITE_BROWSER_GATES_JSON', 'stored browser gate report', 'MOCHI_SOCIAL_SITE_REPORT_HYGIENE_JSON', 'site.report-hygiene', 'site.preview-ready-report', 'check-mochi-social-preview-ready.mjs', 'mochi-social-preview-ready.json']
+    includes: ['Mochi Social Alpha RC audit', 'reports/alpha-rc-audit.json', 'readGitState', 'provider.external-gates', 'hostedChecksAllowed', 'external gate report', 'unverifiedChecks', 'game.visual-review', 'game.manual-prompt-review-script', 'game.wallet-daemon-local-check', 'game.manifest-unity-contract-test', 'game.unity-editmode-tests', 'game.unity-playmode-tests', 'game.unity-verify-runner', 'local.manual-prompt-review', 'manualPromptSourceEvidence', 'source hash changed since manual prompt review', 'syncExternalGateSnapshotFailures', 'local.evidence-summary', 'local.operator-checklist-current', 'local.provider-preflight-current', 'providerActionQueueIds', 'operator checklist provider action queue missing', 'operator checklist site snapshot', 'provider preflight operator checklist site snapshot', 'provider preflight sync approval site snapshot', 'provider preflight queue missing', 'sync approval site snapshot', 'local.sync-approval-current', 'currentGitStateFailures', 'currentGitStateFailuresForRepo', 'github.local-branch-sync', 'github.site-local-branch-sync', 'github.game-pr', 'github.site-pr', 'readPublicPullRequest', 'github-public-api', 'rev-list', '--porcelain', 'commandAt', 'Mochirii', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochirii-mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-vercel-preview.local.txt', 'site.bridge-helper', 'site.bridge-state-self-test', 'site.auth-bridge-check', 'resolveMochiSocialBridgeMessage', 'check-mochi-social-bridge-state.mjs', 'site.edge-authority-check', 'site.edge-authority', 'check-mochi-social-edge-authority.mjs', 'site.preview-key-loader-self-test', 'site.preview-key-loader', 'check-mochi-social-preview-key-loader.mjs', 'site.preview-url-self-test', 'check-mochi-social-preview-url-self-test.mjs', 'site.browser-gate-writer', 'write-mochi-social-browser-gates.mjs', 'site.browser-gate-self-test', 'check-mochi-social-browser-gate-self-test.mjs', 'site.report-hygiene-check', 'check-mochi-social-report-hygiene.mjs', 'site.discord-oauth-self-test', 'site.discord-oauth-detector', 'check-mochi-social-discord-oauth-self-test.mjs', 'site.preview-ready-audit', 'site.bridge-state', 'site.auth-bridge', 'MOCHI_SOCIAL_SITE_PREVIEW_READY_SKIP_SELF_TEST_COMMANDS', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readPreviewEnvFile', 'MOCHI_SOCIAL_SITE_BROWSER_GATES_JSON', 'stored browser gate report', 'MOCHI_SOCIAL_SITE_REPORT_HYGIENE_JSON', 'site.report-hygiene', 'site.preview-ready-report', 'check-mochi-social-preview-ready.mjs', 'mochi-social-preview-ready.json']
   }
 ];
+
+const unityPreviewReadinessChecks = [
+  {
+    file: 'docs/alpha-preview-ready.md',
+    includes: [
+      'Mochi Social Alpha Preview',
+      'shared Mochirii room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'tester password',
+      'Mochirii member sign-in',
+      'All progress has no real value',
+      'There is only one shared room',
+      'There is only one shared starter pet',
+      'playtest paused message',
+      'old room should not silently open'
+    ]
+  },
+  {
+    file: 'docs/implementation-brief.md',
+    includes: [
+      'closed Mochirii playtest',
+      'one shared 3D guild room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'saved progress',
+      'The playtest has no real value',
+      'Jade Lantern Room',
+      'Three curated character presets',
+      'Tester password page first',
+      'Mochirii member sign-in for saved play',
+      'Keep the old runtime from opening when the Unity room is required',
+      'Verify with two browser sessions'
+    ]
+  },
+  {
+    file: 'docs/visual-polish-brief.md',
+    includes: [
+      'one shared 3D guild room',
+      'three curated characters',
+      'shared guild pet Lirabao',
+      'cozy Jade Lantern Room',
+      'moon gate',
+      'Keep Lirabao visible from the starting area',
+      'Use three curated character presets only',
+      'Do not add upload flows',
+      'Care received should feel warm and shared',
+      'playtest paused message',
+      'The room loads as the Unity 3D room',
+      'The old runtime does not appear',
+      'Player-facing copy stays simple'
+    ]
+  },
+  {
+    file: 'docs/goals/mochi-social-alpha-rc.md',
+    includes: [
+      'Mochi Social Alpha Preview Ready Production Goal',
+      'approved guild members enter one shared 3D room',
+      'create a curated character',
+      'meet Lirabao',
+      'care for the guild pet together',
+      'Mochirii member sign-in is required for saved play',
+      'Unity WebGL is the active game runtime',
+      'There is one shared room',
+      'There is one universal shared starter pet',
+      'All alpha progress has no real value',
+      'Release builds require `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`',
+      'legacyFallback.active=false',
+      'The old runtime must not silently open',
+      'Do not add avatar uploads',
+      'Character save key: `character.v1`',
+      'Shared Lirabao save key: `room:jade-lantern-room/sharedPet.v1`',
+      'Logout and login preserve the member character and shared Lirabao progress',
+      'No new provider resources or costs are introduced'
+    ]
+  },
+  {
+    file: 'apps/game/src/entries/express.ts',
+    includes: [
+      '/healthz',
+      '/play',
+      '/embed',
+      '/integration/game-manifest.json',
+      '/integration/alpha/status',
+      '/integration/alpha/progress',
+      '/integration/alpha/action',
+      "alphaStopPoint: 'alpha-preview-ready'",
+      "source: 'local-alpha-ledger'",
+      'UNITY_SHARED_ROOM_CONTRACT',
+      "engine: 'unity-webgl'",
+      "key: 'jade-lantern-room-alpha'",
+      "mode: 'single-shared-room'",
+      'capacity: 25',
+      "sharedPetKey: 'lirabao'",
+      "realtimeAuthority: 'ugs-distributed-authority'",
+      "stateAuthority: 'ugs-cloud-save'",
+      "playerCharacterKey: 'character.v1'",
+      "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'",
+      "mode: 'curated-presets'",
+      'avatarUploads: false',
+      "universalStarter: true",
+      "stateAuthority: 'cloud-code-authoritative-save'",
+      'assertNoFutureSystemKeys',
+      'unity.character.created',
+      'unity.character.updated',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'unity.room.joined',
+      'unity.room.left'
+    ]
+  },
+  {
+    file: 'apps/game/tests/manifest.test.ts',
+    includes: [
+      'publishes the Unity WebGL shared-room contract',
+      "engine: 'unity-webgl'",
+      "key: 'jade-lantern-room-alpha'",
+      "scene: 'JadeLanternRoom'",
+      "mode: 'single-shared-room'",
+      'capacity: 25',
+      "sharedPetKey: 'lirabao'",
+      "realtimeAuthority: 'ugs-distributed-authority'",
+      "authentication: 'unity-authentication-custom-id'",
+      "playerCharacterKey: 'character.v1'",
+      "sharedPetKey: 'room:jade-lantern-room/sharedPet.v1'",
+      "presetIds: ['jade_wayfarer', 'lotus_guardian', 'lantern_scholar']",
+      'avatarUploads: false',
+      'universalStarter: true',
+      "not.toHaveProperty('market')",
+      "not.toMatch(/\\b(?:market|trade|cashout)\\b/i)"
+    ]
+  },
+  {
+    file: 'apps/game/scripts/smoke.mjs',
+    includes: [
+      'MOCHI_PETS_REQUIRE_UNITY_WEBGL',
+      "manifest.activeRuntime !== 'unity-webgl'",
+      'Release smoke requires a present Unity WebGL build',
+      '/embed did not serve a Unity WebGL page',
+      'data-mochi-pets-unity-bridge-config',
+      '__MOCHI_PETS_UNITY_BRIDGE_CONFIG',
+      'allowedParentOrigins.has(event.origin)',
+      'sanitizeAuthMessage(event.data)',
+      '/embed did not install the Unity bridge origin and auth endpoint guard',
+      "manifest.engine !== 'unity-webgl'",
+      "manifest.room?.mode !== 'single-shared-room'",
+      "manifest.room?.capacity !== 25",
+      "manifest.room?.sharedPetKey !== 'lirabao'",
+      "manifest.runtime?.realtimeAuthority !== 'ugs-distributed-authority'",
+      "manifest.runtime?.stateAuthority !== 'ugs-cloud-save'",
+      'assertNoFutureSystemKeys',
+      'curated-character',
+      'Alpha status must not expose future asset provider state'
+    ]
+  },
+  {
+    file: 'scripts/check-local-alpha-acceptance.mjs',
+    includes: [
+      'Unity WebGL Alpha Preview Ready contract acceptance',
+      'MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE',
+      'unity.room.joined',
+      'unity.character.created',
+      'unity.character.updated',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'unity.room.left',
+      'jade-lantern-room-alpha',
+      'JadeLanternRoom',
+      'single-shared-room',
+      'room:jade-lantern-room/sharedPet.v1',
+      'character.v1',
+      'jade_wayfarer',
+      'lotus_guardian',
+      'lantern_scholar',
+      'ugs-distributed-authority',
+      'ugs-cloud-save',
+      'cloud-code-authoritative-save',
+      'local-playtest-record',
+      'local-alpha-ledger',
+      'ledgerVersion=1',
+      'alpha-preview-ready',
+      'must not expose future asset network state',
+      'assertNoFutureSystemKeys',
+      'avatar uploads'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-load-smoke.mjs',
+    includes: [
+      'MOCHI_SOCIAL_LOAD_PLAYERS',
+      'local-playtest-record',
+      'local-alpha-ledger',
+      'ledgerVersion=1',
+      'alpha-preview-ready',
+      'must not expose future asset network state',
+      'simulated testers',
+      'HTTP alpha contract load smoke',
+      'unity.room.joined',
+      'unity.pet.interaction',
+      'jade-lantern-room-alpha',
+      'room:jade-lantern-room/sharedPet.v1',
+      "manifest.body.engine === 'unity-webgl'",
+      "manifest.body.room?.mode === 'single-shared-room'",
+      'assertNoFutureSystemKeys',
+      "alphaStatus.body.runtime?.stateAuthority === 'ugs-cloud-save'"
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-browser-presence.mjs',
+    includes: [
+      'Unity WebGL two-tab room smoke',
+      'MOCHI_SOCIAL_BROWSER_EXECUTABLE',
+      'MOCHI_SOCIAL_BROWSER_ALLOW_HOSTED_SMOKE',
+      'reports/alpha-browser-presence.json',
+      '/integration/game-manifest.json',
+      "manifest.engine === 'unity-webgl'",
+      "manifest.activeRuntime === 'unity-webgl'",
+      "manifest.room?.mode === 'single-shared-room'",
+      "manifest.room?.capacity === 25",
+      "manifest.room?.sharedPetKey === 'lirabao'",
+      "manifest.legacyFallback?.active === false",
+      'unityWebglBuild',
+      'firstTab.goto(`${baseUrl}/embed?tab=one`',
+      'secondTab.goto(`${baseUrl}/embed?tab=two`',
+      'legacyHudAbsent',
+      'verifyTwoTabPulse',
+      'MOCHI_SOCIAL_LOCAL_MOVEMENT',
+      'changedAfterFirstTabMove',
+      'data-alpha-action="market.fixed_list"',
+      'data-alpha-action="trade.direct_offer"',
+      'data-alpha-action^="chain."'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-visual-review.mjs',
+    includes: [
+      'Unity shared-room alpha',
+      'alpha-visual-review.json',
+      'alpha-visual-review.md',
+      'readGitState',
+      'manualPromptGate',
+      'pending-human-review',
+      'observerMovement',
+      'legacyHudAbsent',
+      'inputGuardPresent',
+      'noFutureEconomyCopy',
+      'sharedRoomRecognition',
+      'lirabaoRecognition',
+      'inputSafety',
+      'Lirabao',
+      'single-shared-room',
+      'Mochi Social local visual review bundle passed'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-local-evidence.mjs',
+    includes: [
+      'No-secret local Alpha RC evidence summary',
+      'alpha-local-evidence.json',
+      'alpha-local-evidence.md',
+      'readGitState',
+      'assertCurrentGitState',
+      'current HEAD',
+      'browser presence must prove observer-side movement',
+      'responsive gameplay must cover the required nine-viewport matrix',
+      'parent-iframe input ownership',
+      'visual snapshot canvas PNG must be non-empty',
+      'visual review must keep rendered prompt interaction as a manual pre-RC gate',
+      'Wallet Daemon local check must stay no-cost and metadata-only',
+      'built server smoke must not activate the legacy fallback',
+      'operator smoke must prove Enjin is absent or fail-closed without live operations',
+      'unity.room.joined',
+      'unity.character.created',
+      'unity.pet.interaction',
+      'unity.pet.state_saved',
+      'focused an editable element before gameplay key checks',
+      'local-only'
+    ]
+  },
+  {
+    file: 'scripts/check-alpha-responsive-gameplay.mjs',
+    includes: [
+      'Local Unity WebGL responsive gameplay and input-scroll guard',
+      'alpha-responsive-gameplay.json',
+      'reports/responsive-gameplay',
+      'MOCHI_PETS_RESPONSIVE_ALLOW_HOSTED_SMOKE',
+      'MOCHI_PETS_RESPONSIVE_SITE_BASE_URL',
+      'MOCHI_PETS_TESTER_PASSWORD',
+      'MOCHI_PETS_RESPONSIVE_REQUIRE_SITE_IFRAME',
+      '/games/mochi-pets',
+      'local-only by default',
+      'viewports',
+      '1920',
+      '390',
+      '/play',
+      '/embed',
+      'parent iframe',
+      'siteIframeResults',
+      'gameplayKeys',
+      'legacyInteractionKeys',
+      'unhandledKeys',
+      'ArrowDown',
+      'Space',
+      'Enter',
+      'horizontalOverflow',
+      'legacyHudAbsent',
+      'legacyInteraction',
+      'inputOwnership',
+      'verifyInputOwnership',
+      'assertScrollUnchanged',
+      'verifyInputSurfaceStyles',
+      'firstKeydown',
+      'focusGameplayCanvas'
+    ]
+  }
+];
+
+const legacyFeatureParityFiles = new Set([
+  'docs/alpha-preview-ready.md',
+  'docs/implementation-brief.md',
+  'docs/visual-polish-brief.md',
+  'docs/goals/mochi-social-alpha-rc.md',
+  'apps/game/src/entries/express.ts',
+  'apps/game/tests/manifest.test.ts',
+  'apps/game/scripts/smoke.mjs',
+  'scripts/check-local-alpha-acceptance.mjs',
+  'scripts/check-alpha-load-smoke.mjs',
+  'scripts/check-alpha-browser-presence.mjs',
+  'scripts/check-alpha-visual-review.mjs',
+  'scripts/check-alpha-local-evidence.mjs',
+  'scripts/check-alpha-responsive-gameplay.mjs'
+]);
+
+const legacyHandoffFeatureSnippets = [
+  'Jade Habitat Census proof',
+  'habitat-census',
+  'Jade Weather Veil proof',
+  'weather-veil',
+  'Jade Encounter Rotation proof',
+  'encounter-rotation',
+  'Jade Kinship Album proof',
+  'Jade Capture Rite proof',
+  'provision-catalog',
+  'record the Jade Provision Catalog proof',
+  'battle-kit',
+  'record the Jade Battle Kit proof',
+  'remedy-pouch',
+  'record the Jade Remedy Pouch proof',
+  'route-charter',
+  'record the Jade Route Charter proof'
+];
+
+const readinessChecks = [
+  ...checks.filter((check) => !legacyFeatureParityFiles.has(check.file) && !isLegacyHandoffFeatureCheck(check)),
+  ...unityPreviewReadinessChecks
+];
+
+function isLegacyHandoffFeatureCheck(check) {
+  return check.file === 'docs/alpha-operator-handoff.md'
+    && check.includes.some((snippet) => legacyHandoffFeatureSnippets.includes(snippet));
+}
 
 function read(file) {
   const fullPath = path.join(root, file);
@@ -2378,7 +2575,7 @@ function read(file) {
   return readFileSync(fullPath, 'utf8');
 }
 
-for (const check of checks) {
+for (const check of readinessChecks) {
   const text = read(check.file);
   for (const snippet of check.includes) {
     if (!text.includes(snippet)) {
@@ -2393,14 +2590,14 @@ if (/network:\s*['"]ENJIN['"]/.test(manifestText)) {
 }
 
 const packageJson = JSON.parse(read('package.json') || '{}');
-if (packageJson.engines?.node !== '>=22 <23') {
-  failures.push('package.json: Node 22 engine contract changed.');
+if (packageJson.engines?.node !== '>=24.17.0 <25') {
+  failures.push('package.json: Node 24 LTS engine contract changed.');
 }
 
 if (failures.length) {
-  console.error('Mochi Social alpha readiness failed:');
+  console.error('Mochi Pets alpha readiness failed:');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log('Mochi Social alpha readiness checks passed.');
+console.log('Mochi Pets alpha readiness checks passed.');

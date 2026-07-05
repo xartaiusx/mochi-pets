@@ -9,7 +9,7 @@ const syncApproval = read('scripts/write-alpha-sync-approval.mjs');
 const previewReady = read('scripts/check-alpha-preview-ready.mjs');
 const rcAudit = read('scripts/check-alpha-rc-audit.mjs');
 const noCostDocs = read('docs/no-cost-operations.md');
-const externalOpsDocs = read('docs/codex-external-ops.md');
+const externalOpsDocs = read('docs/external-ops.md');
 
 assertSnippets('external gates', externalGates, [
   "const previewFlySecrets = [",
@@ -31,7 +31,7 @@ assertSnippets('external gates', externalGates, [
   "const fundedChainGateNames = [",
   "'Fly funded-chain secret names'",
   "'Enjin Canary operator readiness'",
-  "Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while Enjin is configured-preview-stub.",
+  "Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while funded-chain work is deferred and absent from the player alpha.",
   "Alpha RC Ready requires both preview-live-gates and funded-chain-gates."
 ]);
 
@@ -39,16 +39,22 @@ assertSnippets('sync approval', syncApproval, [
   "id: 'fly-funded-chain-secret-update'",
   "currentlyRequired: false",
   "Not required for Alpha Preview Ready",
-  "noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so the runtime stays configured-preview-stub for Alpha Preview Ready.'",
+  "noCostAlternative: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset so funded-chain work stays deferred and absent from the player alpha.'",
   "id: 'fly-live-game-contract'",
-  "MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS=\"true\"",
+  "MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS=\"true\"",
   "Hosted contract checks fetch the Fly runtime"
 ]);
 
 assertSnippets('preview ready', previewReady, [
+  'Mochi Social Alpha Preview Ready local game audit',
+  'Unity-first report proves the deployable local game runtime only',
   "fundedChainRequiredForPreview: false",
-  "preview-live-gates are not green",
-  "hosted contract checks have not been explicitly approved/run"
+  "hostedChecksPerformed: false",
+  "providerMutationPerformed: false",
+  "preview.unity-verify",
+  "preview.build-release",
+  "preview.unity-required-smoke",
+  "preview.load-smoke-report"
 ]);
 
 assertSnippets('RC audit', rcAudit, [
@@ -60,7 +66,7 @@ assertSnippets('RC audit', rcAudit, [
 ]);
 
 assertSnippets('no-cost docs', noCostDocs, [
-  'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS',
+  'MOCHI_PETS_EXTERNAL_ALLOW_HOSTED_CHECKS',
   'Current Cost Posture',
   'funded-chain lane is expected red',
   'dummy `ENJIN_COLLECTION_ID`'
@@ -121,12 +127,12 @@ assertOrder('site hosted approval before site contract command', externalGates, 
 ]);
 
 if (failures.length) {
-  console.error('Mochi Social alpha gate contract checks failed:');
+  console.error('Mochi Pets alpha gate contract checks failed:');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log('Mochi Social alpha gate contract checks passed.');
+console.log('Mochi Pets alpha gate contract checks passed.');
 
 function read(file) {
   const fullPath = path.join(root, file);

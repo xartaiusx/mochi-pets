@@ -274,7 +274,7 @@ function renderChecklist() {
 
 Generated: ${generatedAt}
 
-This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into Codex chat, Git, PR comments, screenshots, or reports.
+This file is intentionally no-secret. It lists names, commands, and private-entry placeholders only. Do not paste raw API tokens, wallet seed phrases, passphrases, payment details, or one-time codes into chat, Git, PR comments, screenshots, or reports.
 
 No-cost rule: public-repo commits and pushes are allowed; verify PR checks afterward. Do not create, deploy, scale, fund, submit chain transactions, run hosted load smoke, rerun paid/quota-bearing Actions, set provider secrets/env vars, or mutate provider resources without explicit user approval for that exact cost-bearing action. Prefer local checks and read-only provider status commands.
 
@@ -317,7 +317,7 @@ ${gateList}
 
 ## Stop Points
 
-- Alpha Preview Ready means the Fly game URL, Mochirii Vercel Preview embed, Supabase allowlist/terms/feedback, short-lived iframe auth, no-real-value labels, and approved hosted contract checks pass while Enjin remains visible as \`configured-preview-stub\`.
+- Alpha Preview Ready means the Fly game URL, Mochirii Vercel Preview embed, Supabase allowlist/terms/feedback, short-lived iframe auth, no-real-value labels, approved hosted contract checks, and player-facing shared-room copy pass while funded-chain work stays deferred and absent from the player alpha.
 - Alpha RC Ready means Alpha Preview Ready plus funded-chain-gates: funded Enjin Canary collection, Fuel Tank, Wallet Daemon signing, and finalized proof smoke.
 - Do not set dummy \`ENJIN_COLLECTION_ID\`, dummy \`ENJIN_FUEL_TANK_ID\`, or fake Enjin readiness flags. Funded-chain gates may stay red until real Canary resources and approvals exist.
 
@@ -414,7 +414,7 @@ $previewFlySecrets = @(
 & $fly deploy -a ${flyApp}
 \`\`\`
 
-Leave \`ENJIN_COLLECTION_ID\` and \`ENJIN_FUEL_TANK_ID\` unset for Alpha Preview Ready unless real Canary resources exist. The game should report \`configured-preview-stub\` and keep chain requests audit-only/no-real-value.
+Leave \`ENJIN_COLLECTION_ID\` and \`ENJIN_FUEL_TANK_ID\` unset for Alpha Preview Ready unless real Canary resources exist. Funded-chain work stays deferred and absent from the player alpha; private future-chain routes may remain fail-closed for later Alpha RC validation.
 
 ## Enjin Canary Gate
 
@@ -428,7 +428,7 @@ Current required outcome:
 
 Cloud Wallet Daemon path:
 
-1. Keep one Enjin Platform API token ready. The dashboard may show that a token exists, but Codex should not read or print it.
+1. Keep one Enjin Platform API token ready. The dashboard may show that a token exists, but shared workflows should not read or print it.
 2. Deploy the official Wallet Daemon as an outbound-only cloud signer only after explicit approval for any cloud resources. The Enjin docs describe AWS CloudFormation as the simplest managed path; use the current official template/link from the docs or Enjin settings.
 3. Enter PLATFORM_KEY=<private-enjin-platform-token> and KEY_PASS=<private-wallet-daemon-passphrase> privately in the cloud secret fields.
 4. Save the generated mnemonic/seed backup and passphrase in a password manager or encrypted vault only.
@@ -466,7 +466,7 @@ npm run alpha:visual-snapshot
 npm run alpha:external-gates
 \`\`\`
 
-For Alpha Preview Ready, \`npm run alpha:external-gates\` may still show funded-chain gates red. That is expected while Enjin is \`configured-preview-stub\`.
+For Alpha Preview Ready, \`npm run alpha:external-gates\` may still show funded-chain gates red. That is expected while funded-chain work remains deferred and absent from the player alpha.
 
 ## Funded Alpha RC Verification After Enjin Gates
 
@@ -578,9 +578,9 @@ function buildProviderActionQueue() {
       id: 'fly-funded-chain-secret-update',
       provider: 'Fly.io/Enjin Canary',
       title: 'Set funded-chain Fly secret names only after real Enjin Canary resources exist.',
-      blocker: 'Fly funded-chain secrets are missing. This is expected red for Alpha Preview Ready while Enjin is configured-preview-stub.',
+      blocker: 'Fly funded-chain secrets are missing. This is expected red for Alpha Preview Ready while funded-chain work is deferred.',
       approvalText: 'I approve setting real funded-chain Fly secret names on mochi-social-game after Enjin Canary collection and Fuel Tank resources exist. I understand this may restart hosted resources or add usage.',
-      noCostFallback: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset and keep configured-preview-stub.'
+      noCostFallback: 'Leave ENJIN_COLLECTION_ID and ENJIN_FUEL_TANK_ID unset and keep funded-chain work deferred and absent from the player alpha.'
     });
   }
 
@@ -624,7 +624,7 @@ function buildProviderActionQueue() {
       title: 'Complete operator-confirmed Enjin Canary readiness before live proof smoke.',
       blocker: 'The latest report lacks Enjin token/collection/Fuel Tank inputs and connected Wallet Daemon confirmation flags.',
       approvalText: 'I approve the specific Enjin Canary action: <exact collection, Fuel Tank, Wallet Daemon, or transaction proof action>. I understand it may add usage, sponsored transaction cost, or cloud/resource charges.',
-      noCostFallback: 'Keep Enjin readiness flags unset and use configured-preview-stub plus local fail-closed operator smoke.'
+      noCostFallback: 'Keep Enjin readiness flags unset and use local fail-closed operator smoke only; keep funded-chain work absent from the player alpha.'
     });
   }
 

@@ -70,7 +70,7 @@ export function enjinCanaryReady(config = getEnjinCanaryConfig()) {
 }
 
 export function buildManagedWalletExternalId(playerId: string) {
-  return `mochi-social-alpha:${playerId}`;
+  return `mochi-pets-alpha:${playerId}`;
 }
 
 export function buildCreateManagedWalletMutation(playerId: string) {
@@ -78,7 +78,7 @@ export function buildCreateManagedWalletMutation(playerId: string) {
     operation: 'create-managed-wallet',
     idempotencyKey: buildManagedWalletExternalId(playerId),
     query: `
-mutation MochiSocialCreateManagedWallet($externalId: String!) {
+mutation MochiPetsCreateManagedWallet($externalId: String!) {
   CreateManagedWallet(externalId: $externalId)
 }`.trim(),
     variables: {
@@ -91,7 +91,7 @@ export function buildGetManagedWalletQuery(playerId: string, config = getEnjinCa
   return {
     operation: 'get-managed-wallet',
     query: `
-query MochiSocialGetManagedWallet($externalId: String!) {
+query MochiPetsGetManagedWallet($externalId: String!) {
   GetManagedWallet(network: ${config.network}, chain: MATRIX, externalId: $externalId) {
     publicKey
     externalId
@@ -108,7 +108,7 @@ export function buildHotToColdMintMutation(input: ChainOperationInput, config = 
     operation: 'hot-to-cold-mint',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $fuelTank: String!, $idempotencyKey: String!) {
+mutation MochiPetsMoveToCold($recipient: String!, $collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $fuelTank: String!, $idempotencyKey: String!) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
@@ -143,7 +143,7 @@ export function buildColdToHotBurnMutation(input: ChainOperationInput, config = 
     operation: 'cold-to-hot-burn',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
+mutation MochiPetsMoveToHot($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
@@ -179,7 +179,7 @@ export function buildFixedListingMutation(input: FixedListingInput, config = get
     operation: 'fixed-listing',
     idempotencyKey: input.requestId,
     query: `
-mutation MochiSocialFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $price: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
+mutation MochiPetsFixedListing($collectionId: BigInt!, $tokenId: BigInt!, $amount: BigInt!, $price: BigInt!, $signerExternalId: String!, $fuelTank: String!, $idempotencyKey: String!) {
   CreateTransaction(
     network: ${config.network}
     chain: MATRIX
@@ -218,7 +218,7 @@ export function buildGetTransactionQuery(enjinTransactionUuid: string, config = 
   return {
     operation: 'get-transaction',
     query: `
-query MochiSocialGetTransaction($uuid: String!) {
+query MochiPetsGetTransaction($uuid: String!) {
   GetTransaction(network: ${config.network}, uuid: $uuid) {
     uuid
     state

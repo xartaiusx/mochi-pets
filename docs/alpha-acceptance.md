@@ -1,17 +1,17 @@
 # Alpha Acceptance
 
-This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, a static map-object contract test, and the final manual map-object visual check that still needs human eyes.
+This file is the repeatable local acceptance gate for Mochi Social Alpha RC. It covers the public game routes, integration contract, local no-real-value economy writes, automated browser presence/movement evidence, Unity WebGL shared-room evidence, and the final manual Unity prompt review that still needs human eyes.
 
 ## Alpha Preview Ready
 
-Alpha Preview Ready is the live-on-site gate before full Alpha RC Ready. It is allowed to keep Enjin in `configured-preview-stub` mode.
+Alpha Preview Ready is the live-on-site gate before full Alpha RC Ready. Funded-chain work is deferred and absent from the player-facing alpha.
 
 Before inviting testers to the Mochirii Vercel Preview:
 
 - The Fly game URL is known and approved for hosted contract checks.
 - The Mochirii Vercel Preview route `/games/mochi-social` uses `NEXT_PUBLIC_MOCHI_SOCIAL_URL`.
 - Supabase allowlist, terms acknowledgement, feedback, admin audit, and `MOCHI_SOCIAL_AUTH` bridge checks pass.
-- The chain UI remains visible and no-real-value, and the Canary request, Jade Vault return preview, and Canary finality review explain `configured-preview-stub` with no inventory credit.
+- Player-facing copy has no market, trade, cashout, or funded-chain language.
 - `preview-live-gates` are green.
 - `funded-chain-gates` are documented as expected red until cENJ, collection, Fuel Tank, Wallet Daemon signing, and finality smoke are approved.
 - No dummy `ENJIN_COLLECTION_ID`, dummy `ENJIN_FUEL_TANK_ID`, or fake Enjin readiness flags are set.
@@ -35,6 +35,7 @@ In a second terminal:
 $env:MOCHI_SOCIAL_BASE_URL="http://localhost:3100"
 $env:RPG_SAVE_DIR=".local/saves"
 npm run smoke
+npm run alpha:unity-required-smoke
 npm run alpha:local-acceptance
 $env:MOCHI_SOCIAL_LOAD_PLAYERS="25"
 npm run alpha:load-smoke
@@ -89,7 +90,7 @@ The acceptance script verifies:
 - `spirit.lineage_register` records the no-real-value Jade Lineage Register payload with full Lirabao/Jintari/Aozhen roster, party, care, bond, kinship album, nursery grove, bloom ascendance, capture rite, care cycle, growth rite, raising milestone, training, spar, profile, guild, status, and chat proof. Chronicle and Ascension payloads preserve `lineageRegisterProof`, and the Jade Lineage Register Seal stays no-real-value.
 - `spirit.roster_cabinet` records the no-real-value Jade Roster Cabinet payload with full Lirabao/Jintari/Aozhen roster proof, three party slots, three reserve storage labels, Jade Court Roster Archive, Jade Court Spirit Compendium, Jade Nursery Grove, Jade Lineage Register, two-tester witness, and Jade Roster Cabinet Tag proof. Chronicle and Ascension payloads preserve `rosterCabinetProof`.
 - `spirit.blossom_cradle` records the no-real-value Jade Blossom Cradle payload with full Lirabao/Jintari/Aozhen roster proof, three party slots, three care IDs, three raising milestone labels, total bond 15, Jade Kinship Album, Jade Nursery Grove, Jade Bloom Ascendance, Jade Lineage Register, Jade Moonwell Nurture Rite, Moonwell Bloom Rite, Jade Court Care Cycle, two-tester witness, and Jade Blossom Cradle Ribbon proof. Chronicle and Ascension payloads preserve `blossomCradleProof`.
-- When Enjin secrets are not configured, alpha status and `chain.withdraw_request` / `chain.deposit_request` / `chain.operation_update` responses expose `configured-preview-stub` so testers know the Canary certificate, return, and finality review paths are staged but not externally submitted.
+- When Enjin secrets are not configured, private future-chain routes remain fail-closed for later Alpha RC validation. They must not appear as player-facing Preview Ready features or imply inventory credit.
 
 By default the script expects local fallback mode and checks `.local/saves/alpha-ledger.jsonl`. If testing a preview runtime with Supabase Edge Functions configured, set `MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true` to limit the script to endpoint and contract checks, then use the Mochirii admin audit views for authoritative ledger proof.
 
@@ -105,6 +106,8 @@ This is a release-candidate smoke, not a capacity benchmark. Use `MOCHI_SOCIAL_L
 
 `npm run alpha:built-server-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with throwaway server-token env, no Enjin live secrets, and no Supabase Edge forwarding. It verifies `/healthz`, `/play`, `/integration/game-manifest.json`, `/integration/alpha/status`, and the private Enjin operator route fail-closed path. This catches server bundle/runtime drift before any Fly deploy. The ignored `reports/built-server-smoke.json` report includes sanitized server stdout/stderr, Git state, exit code, exit signal, and stopped status even if the built server exits before readiness.
 
+`npm run alpha:unity-required-smoke` starts the built `dist/server/express.js` runtime on a disposable localhost port with `MOCHI_SOCIAL_REQUIRE_UNITY_WEBGL=true`, then runs `npm run smoke` and the 25-tester `npm run alpha:load-smoke` against the correct local base URL. It writes ignored no-secret `reports/alpha-unity-required-smoke.json`, uses throwaway local tokens, and performs no provider mutations. Use it after `npm run build:release` when proving the deployable Unity WebGL artifact.
+
 The built server smoke and local suite use file-backed saves, so they are also the local guard for save durability regressions before Fly volume deployment. Save writes must remain per-player serialized and written through a temporary file before rename, so overlapping autosave and event-save writes cannot leave malformed JSON in the save directory.
 
 ## Local Alpha Suite
@@ -113,14 +116,14 @@ The built server smoke and local suite use file-backed saves, so they are also t
 
 The suite defaults to `10` simulated testers for the HTTP load-smoke portion to keep local runs quick. Set `MOCHI_SOCIAL_LOCAL_SUITE_LOAD_PLAYERS=25` for the full local release-candidate load count. It remains localhost-only; hosted preview suite runs require explicit hosted-smoke approval and should use the individual preview commands below instead.
 
-Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. It requires the acceptance, load, browser, visual, and operator reports to share the same local suite base URL, and it requires both the suite report and built-server smoke report to match the current local HEAD, upstream, and dirty worktree state, so stale localhost evidence cannot be mixed into a fresh summary or reused across code changes. The JSON summary also records current Git state, and `npm run alpha:rc-audit` rejects it when it becomes stale. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
+Run `npm run alpha:local-evidence` after the local suite to validate the ignored localhost reports and write `reports/alpha-local-evidence.json` plus `reports/alpha-local-evidence.md`. It requires the acceptance, load, browser, visual, and operator reports to share the same local suite base URL, and it requires the suite, built-server smoke, and Unity-required smoke reports to match the current local HEAD, upstream, and dirty worktree state, so stale localhost evidence cannot be mixed into a fresh summary or reused across code changes. `npm run alpha:local-evidence-self-test` uses temporary ignored reports to prove the local evidence summary rejects missing Unity-required smoke, active legacy fallback, missing 25-tester load proof, and stale Unity smoke Git state before CI trusts the guard. The JSON summary also records current Git state, and `npm run alpha:rc-audit` rejects it when it becomes stale. These summaries are no-secret local artifacts; they do not prove hosted Fly, Vercel, Supabase, GitHub, or Enjin readiness.
 
 ## Manual Prompt Review Gate
 
-`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable game locally, focuses the game canvas, stands within one 64px logical tile of the map object, faces that object, presses Space/Action for about 200ms, confirms the rendered welcome NPC dialog, guild seal chest prompt/save feedback, and habitat/care prompt are coherent, then sets explicit confirmation env vars. The prompt-critical town entities use 64px action hitboxes so the review can be done from normal tile-adjacent RPG positioning.
-The generated manual prompt report includes both 64px logical tile coordinates and world-pixel positions for each target plus adjacent action positions, so the operator can line up the welcome NPC, guild seal chest, care shrine, and Lirabao setup interaction without guessing which coordinate system is being shown.
+`npm run alpha:manual-prompt-review` writes `reports/alpha-manual-prompt-review.json` and `reports/alpha-manual-prompt-review.md`. By default it records `pending-human-review` and exits non-zero. It passes only after an operator opens the playable Unity WebGL game locally, focuses the Unity canvas, creates or loads a curated character, confirms Lirabao's `E Care | Q Wave` prompt, cares for Lirabao, and verifies reload/logout/login returns with saved character and shared Lirabao progress. The report stays no-secret and records the Unity source files, screenshot evidence, shared room contract, browser, reviewer, and explicit confirmation env vars.
+The generated manual prompt report records the Unity review route for character creation, Lirabao care, and saved progress, so the operator can follow the current shared-room flow without referring back to the older map-object coordinate system. Do not set the completion env vars from screenshots, the tester password wall, the legacy runtime, or a static/mock token path. The saved-progress check requires a signed-in allowlisted tester path with Unity auth tokens and the shared Lirabao authority path available.
 
-The pending report includes a source-tied target checklist with current map coordinates, setup prerequisites, expected rendered phrases, graphics, and save sources for the welcome NPC, guild seal chest, Lirabao setup interaction, and care shrine. It also records a step-by-step review route, adjacent action tiles, source SHA-256 hashes, line anchors for placements, rendered phrases, notifications, and save-source calls, plus a visual review evidence bundle with `reports/alpha-visual-page.png`, `reports/alpha-visual-canvas.png`, dimensions, hashes, map-object coverage, and visual-review gate reason so the final human review can be tied to the exact current runtime sources and screenshots.
+The pending report includes source-tied Unity evidence for the bootstrap, Lirabao prompt, Lirabao controller, state store, and shared-room constants. It also records the review steps, source SHA-256 hashes, visual screenshot bundle, shared room and shared pet contract, and visual-review gate reason so the final human review can be tied to the exact current runtime sources and screenshots.
 
 Local completion example:
 
@@ -128,13 +131,13 @@ Local completion example:
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_REVIEWER="<operator name>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_BROWSER="<browser and version>"
 $env:MOCHI_SOCIAL_MANUAL_PROMPT_URL="http://localhost:3100/play"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_WELCOME_NPC_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_GUILD_SEAL_CHEST_OK="true"
-$env:MOCHI_SOCIAL_MANUAL_PROMPT_CARE_SHRINE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_CHARACTER_CREATE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_LIRABAO_CARE_OK="true"
+$env:MOCHI_SOCIAL_MANUAL_PROMPT_SAVED_PROGRESS_OK="true"
 npm run alpha:manual-prompt-review
 ```
 
-Hosted prompt review requires explicit hosted-preview approval first, then `MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true`. `npm run alpha:rc-audit` rejects a missing, stale, pending, or hosted-without-approval manual prompt review report.
+Hosted prompt review requires explicit hosted-preview approval first, then `MOCHI_SOCIAL_MANUAL_PROMPT_ALLOW_HOSTED=true`. `npm run alpha:rc-audit` rejects a missing, stale, pending, static/mock, password-only, or hosted-without-approval manual prompt review report.
 
 ## Wallet Daemon Local Check
 
@@ -163,6 +166,8 @@ The smoke refuses to submit or poll live Enjin by default when the runtime repor
 ## External Gate Audit
 
 `npm run alpha:external-gates` checks live Alpha RC gates without printing secret values. It verifies GitHub PR status, Supabase preview secret names, Fly authentication/app/volume/secret names, live game contract, Mochirii site contract, and operator-confirmed Enjin readiness flags.
+
+If local `gh` is unavailable and unauthenticated GitHub API checks are rate-limited, record connector-verified PR state in the ignored no-secret `reports/github-pr-evidence.local.json` file. The external-gates and RC audit scripts read that file by default before falling back to the public API.
 
 Read this report in two lanes while preparing the Vercel Preview:
 
@@ -227,9 +232,9 @@ For the real Mochirii page leg, set `MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL` or `
 
 `npm run alpha:visual-snapshot` opens `/play`, waits for the HUD, presence label, and canvas, and writes ignored first-screen evidence to `reports/alpha-visual-snapshot.json`, `reports/alpha-visual-page.png`, and `reports/alpha-visual-canvas.png`. It is local-only by default; set `MOCHI_SOCIAL_VISUAL_ALLOW_HOSTED_SNAPSHOT=true` only after explicit hosted-preview approval.
 
-Use the PNGs for local human/Codex visual review of the town composition. The snapshot proves the first screen is renderable and reviewable; browser presence and map-object contract tests still provide the movement, HUD action, event ID, prompt, save-source, habitat, and collision evidence.
+Use the PNGs for local visual review of the town composition. The snapshot proves the first screen is renderable and reviewable; browser presence and map-object contract tests still provide the movement, HUD action, event ID, prompt, save-source, habitat, and collision evidence.
 
-`npm run alpha:visual-review` reads `reports/alpha-visual-snapshot.json`, `reports/alpha-browser-presence.json`, the PNGs, and the first-town map-object sources, then writes ignored no-secret `reports/alpha-visual-review.json` and `reports/alpha-visual-review.md`. It verifies screenshot dimensions and hashes, HUD/presence evidence, observer movement, HUD spirit invitation/journal/field-expedition/field-accord/route-invitation/route-mastery/habitat-bond/sanctuary-rite/spirit-research/spirit-compendium/roster-archive/market-receipt/provision-satchel/care-cycle/temperament-concord/field-almanac/route-ecology/encounter-atlas/habitat-census/craft-writ/route-waystone/route-charter/nurture-rite/recovery-tea/kinship-album/nursery-grove/bloom-ascendance/lineage-register/capture-rite/tournament-bracket/rival-circle/summit-circuit/guild-commission/social-rally/quest-ledger/story-chapter/guild-insignia-case/wayfarer-chronicle/guild-ascension-trial/technique/tactic/loadout/technique-codex/trait/condition-weave/rank/growth-rite/affinity-trial/party/harmony/concord/team-match/mentor/spar/battle-round/training/quest/market/trade/Canary actions, required map-object IDs, and Jade Lantern Court habitat coverage. It keeps rendered NPC/guild-seal-chest/habitat care and bond-milestone prompt interaction as `pending-human-review`; it is a durable local review bundle, not a fake replacement for the manual prompt check.
+`npm run alpha:visual-review` reads `reports/alpha-visual-snapshot.json`, `reports/alpha-browser-presence.json`, and the PNGs, then writes ignored no-secret `reports/alpha-visual-review.json` and `reports/alpha-visual-review.md`. It verifies screenshot dimensions and hashes, Unity canvas evidence, two-tab room evidence, Lirabao contract, input guard evidence, absence of legacy player UI, and absence of market/trade/cashout/funded-chain copy. It keeps character creation, Lirabao care, and saved-progress confirmation as `pending-human-review`; it is a durable local review bundle, not a fake replacement for the manual prompt check.
 Visual review includes Jade Court Market Receipt static and browser evidence: `resolveMarketGuildReceipt`, `market-guild-receipt`, `data-alpha-action="market.guild_receipt"`, `marketReceiptProof`, `marketReceiptClaimed`, and the no-real-value Jade Market Receipt.
 Visual review includes Jade Exchange Accord static and browser evidence: `resolveTradeExchangeAccord`, `trade-exchange-accord`, `data-alpha-action="trade.exchange_accord"`, `data-exchange-accord-label`, `exchangeAccordProof`, and the no-real-value Jade Exchange Accord Tally.
 Visual review includes Jade Route Charter static and browser evidence: `resolveSpiritRouteCharter`, `world-route-charter`, `data-alpha-action="world.route_charter"`, `data-route-charter-label`, `routeCharterProof`, and the no-real-value Jade Route Charter Slip.
@@ -251,15 +256,15 @@ Those tests prove the event contract and behavior. The remaining human visual ch
 
 1. Open two browser tabs or windows to `${MOCHI_SOCIAL_BASE_URL}/play`.
 2. Confirm the game canvas, HUD, and town scene are visually coherent.
-3. Interact with the NPC, chest, and habitat/care loop in at least one tab. Focus the canvas, stand adjacent to the object, hold the relevant facing direction toward it, and press Space/Action for about 200ms so the RPGJS/CanvasEngine polling loop emits the action.
+3. Complete the Unity manual prompt path in at least one tab: focus the Unity canvas, create or load a curated character, move near Lirabao, confirm `E Care | Q Wave`, care for Lirabao, then reload/logout/login to verify saved character and shared Lirabao progress.
 4. Confirm the prompts and notifications match the alpha no-real-value scope.
-5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual map-object result in the PR or release checklist.
+5. Record the date, browser, game URL, `reports/alpha-browser-presence.json` result, and manual Unity prompt result in the PR or release checklist.
 
-Keep the manual map-object check until a later RPGJS runtime-level automation can interact with NPC, chest, habitat, and dialog state directly inside the canvas.
+Keep the manual Unity prompt review until later automation can create a curated character, care for Lirabao, and verify saved progress through the signed-in tester path inside the Unity WebGL canvas.
 
 ## Alpha RC Stop Point
 
-Alpha Preview Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved hosted preview contract checks, Mochirii preview allowlist/terms/feedback checks, rollback notes, tester guide, source/asset ledgers, and Enjin `configured-preview-stub` messaging are complete.
+Alpha Preview Ready means local acceptance, endpoint smoke, typecheck, lint, tests, build, approved hosted preview contract checks, Mochirii preview allowlist/terms/feedback checks, rollback notes, tester guide, source/asset ledgers, and player-facing no-real-value shared-room copy are complete.
 
 Alpha RC Ready means Alpha Preview Ready plus approved Enjin Canary collection, Fuel Tank, Wallet Daemon signing, finalized proof smoke, and funded-chain gate evidence are complete.
 

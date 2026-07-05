@@ -1,0 +1,23 @@
+{
+  "name": "MochiSocial.Runtime",
+  "rootNamespace": "MochiSocial",
+  "references": [
+    "Unity.Services.Authentication",
+    "Unity.Services.Core",
+    "Unity.Services.Core.Environments",
+    "Unity.Services.CloudCode",
+    "Unity.Services.CloudSave",
+    "Unity.Services.Multiplayer",
+    "Unity.Netcode.Runtime",
+    "Unity.Networking.Transport"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

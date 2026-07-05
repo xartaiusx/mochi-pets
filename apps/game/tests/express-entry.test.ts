@@ -9,9 +9,11 @@ describe('Express runtime entry', () => {
     expect(expressEntrySource).toContain('const strictIntegrationJson = express.json({ limit: integrationJsonLimit });');
     expect(expressEntrySource).not.toContain('app.use(express.json');
 
-    for (const route of ['/integration/alpha/action', '/integration/alpha/enjin/submit', '/integration/auth/verify']) {
+    for (const route of ['/integration/alpha/action', '/integration/auth/verify']) {
       expect(expressEntrySource).toContain(`app.post('${route}', strictIntegrationJson,`);
     }
+    expect(expressEntrySource).not.toContain("app.post('/integration/alpha/enjin/submit'");
+    expect(expressEntrySource).not.toContain('MOCHI_PETS_ENABLE_FUTURE_CHAIN_ROUTES');
     expect(expressEntrySource).toContain("app.get('/integration/alpha/progress', async (req, res) => {");
     expect(expressEntrySource).toContain('forwardAlphaProgress(authResult.userId)');
     expect(expressEntrySource).toContain('buildAlphaProgressRequest(playerId)');
@@ -19,5 +21,15 @@ describe('Express runtime entry', () => {
 
     expect(expressEntrySource).toContain("app.use('/parties', async (req, res, next) => {");
     expect(expressEntrySource).toContain('await transport.handleNodeRequest(req, res, next');
+  });
+
+  it('injects a fixed Unity bridge origin and auth endpoint guard', () => {
+    expect(expressEntrySource).toContain('data-mochi-pets-unity-bridge-config');
+    expect(expressEntrySource).toContain('window.__MOCHI_PETS_UNITY_BRIDGE_CONFIG');
+    expect(expressEntrySource).toContain('allowedParentOrigins.has(event.origin)');
+    expect(expressEntrySource).toContain('event.stopImmediatePropagation();');
+    expect(expressEntrySource).toContain('sanitizeAuthMessage(event.data);');
+    expect(expressEntrySource).toContain('MOCHI_PETS_SUPABASE_FUNCTIONS_URL');
+    expect(expressEntrySource).toContain('ALPHA_EDGE_FUNCTIONS.unityAuth');
   });
 });

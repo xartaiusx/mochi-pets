@@ -1,6 +1,6 @@
 # Mochi Social Asset Pipeline Contract
 
-This contract tells Codex how to upgrade Mochi Social art without breaking RPGJS multiplayer, Tiled collision, alpha tests, or the Mochirii website integration contract.
+This contract tells maintainers how to upgrade Mochi Social art without breaking RPGJS multiplayer, Tiled collision, alpha tests, or the Mochirii website integration contract.
 
 ## Source And Runtime Split
 

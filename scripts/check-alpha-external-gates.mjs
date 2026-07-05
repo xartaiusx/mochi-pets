@@ -3,6 +3,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { readLocalPullRequestEvidence } from './github-pr-evidence.mjs';
+import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
@@ -16,6 +18,8 @@ const gameUrl = (process.env.MOCHI_SOCIAL_GAME_URL || process.env.MOCHI_SOCIAL_B
 const sitePreviewUrl = (process.env.MOCHI_SOCIAL_SITE_PREVIEW_URL || previewEnv.sitePreviewUrl || '').replace(/\/+$/, '');
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const hostedChecksAllowed = process.env.MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS === 'true';
+const supabaseCliCommand = resolveSupabaseCli();
+const flyctlCommand = resolveFlyctl();
 
 const previewFlySecrets = [
   'SUPABASE_URL',
@@ -61,6 +65,10 @@ const report = {
   sitePreviewUrl: sitePreviewUrl || null,
   previewEnv,
   hostedChecksAllowed,
+  tooling: {
+    supabaseCli: detectCli('Supabase CLI', supabaseCliCommand, ['--version']),
+    flyctl: detectCli('Fly CLI', flyctlCommand, ['version'])
+  },
   lanes: null,
   git: readGitState(),
   checks: []
@@ -69,16 +77,19 @@ const report = {
 try {
   await run();
   report.lanes = summarizeGateLanes();
-  report.ok = !report.checks.some((check) => check.status === 'fail');
+  report.ok = !report.checks.some((check) => check.status === 'fail' || check.status === 'unverified');
   await writeReport();
   if (!report.ok) {
     console.error('Mochi Social external Alpha RC gates are not complete:');
     if (report.lanes) {
-      console.error(`- preview-live-gates: ${report.lanes.previewLive.ok ? 'pass' : 'fail'} (${report.lanes.previewLive.failingChecks.join(', ') || 'none'})`);
-      console.error(`- funded-chain-gates: ${report.lanes.fundedChain.ok ? 'pass' : 'fail'} (${report.lanes.fundedChain.failingChecks.join(', ') || 'none'})`);
+      console.error(`- preview-live-gates: ${report.lanes.previewLive.ok ? 'pass' : 'fail'} (${formatLaneIssues(report.lanes.previewLive) || 'none'})`);
+      console.error(`- funded-chain-gates: ${report.lanes.fundedChain.ok ? 'pass' : 'fail'} (${formatLaneIssues(report.lanes.fundedChain) || 'none'})`);
     }
     for (const check of report.checks.filter((entry) => entry.status === 'fail')) {
       console.error(`- ${check.name}: ${check.message}`);
+    }
+    for (const check of report.checks.filter((entry) => entry.status === 'unverified')) {
+      console.error(`- ${check.name}: unverified - ${check.message}`);
     }
     console.error(`Report: ${reportPath}`);
     process.exit(1);
@@ -96,8 +107,8 @@ try {
 }
 
 async function run() {
-  checkGitHubPr('game PR', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
-  checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
+  await checkGitHubPr('game PR', 'xartaiusx/mochi-social', process.env.MOCHI_SOCIAL_GAME_PR_NUMBER || '', 'Verify Mochi Social', root);
+  await checkGitHubPr('site PR', 'Mochirii-Wushu/Mochirii', process.env.MOCHI_SOCIAL_SITE_PR_NUMBER || '', undefined, siteRepoPath);
   checkSupabasePreviewSecrets();
   checkFly();
   await checkLiveGameContract();
@@ -105,27 +116,40 @@ async function run() {
   checkEnjinOperatorInputs();
 }
 
-function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
+async function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
   const localState = localRepoPath ? readLocalGitState(localRepoPath) : null;
   const selector = String(pr || '').trim();
   const query = selector || localState?.branch || '';
   if (!query) {
-    add('fail', name, 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
+    add('unverified', name, 'Current branch could not be resolved for GitHub PR verification.', { repo, localState });
     return;
   }
 
   const result = selector
     ? command('gh', ['pr', 'view', selector, '--repo', repo, '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft'])
     : command('gh', ['pr', 'list', '--repo', repo, '--head', query, '--state', 'open', '--limit', '5', '--json', 'number,url,state,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,isDraft']);
-  if (!result.ok) {
-    add('fail', name, 'GitHub PR state could not be read.', { repo, selector: query, stderr: result.stderr });
+  const localEvidence = result.ok
+    ? null
+    : readLocalPullRequestEvidence(repo, query, localState?.localHead || '');
+  const fallback = result.ok
+    ? null
+    : localEvidence?.ok
+      ? localEvidence
+      : await readPublicPullRequest(repo, query, localState?.localHead || '');
+  if (!result.ok && !fallback?.ok) {
+    add('unverified', name, 'GitHub PR state could not be read from local tooling.', {
+      repo,
+      selector: query,
+      stderr: result.stderr || localEvidence?.message || fallback?.message || '',
+      note: 'This is a local evidence limitation when gh is unavailable or unauthenticated GitHub REST is rate-limited; verify PR state through GitHub before deployment.'
+    });
     return;
   }
 
-  const parsed = parseJson(result.stdout);
+  const parsed = result.ok ? parseJson(result.stdout) : fallback.data;
   const data = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!data) {
-    add('fail', name, selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, {
+    add('unverified', name, selector ? 'GitHub PR JSON could not be parsed.' : `No open GitHub PR was found for current branch ${query}.`, {
       repo,
       selector: query,
       localState
@@ -173,7 +197,8 @@ function checkGitHubPr(name, repo, pr, requiredCheckName, localRepoPath) {
     isDraft: data.isDraft === true,
     mergeStateStatus: data.mergeStateStatus,
     checkNames: checks.map((check) => check.name || check.context).filter(Boolean),
-    failingChecks: failing.map((check) => check.name || check.context).filter(Boolean)
+    failingChecks: failing.map((check) => check.name || check.context).filter(Boolean),
+    source: result.ok ? 'gh' : fallback.data?.evidenceSource || 'github-public-api'
   });
 }
 
@@ -188,9 +213,22 @@ function readLocalGitState(cwd) {
 }
 
 function checkSupabasePreviewSecrets() {
-  const result = command('supabase', ['secrets', 'list', '--project-ref', supabasePreviewRef]);
+  if (!report.tooling.supabaseCli.available) {
+    add('fail', 'Supabase preview secrets', 'Supabase CLI is not available locally; install and authenticate the Supabase CLI before preview secret verification.', {
+      command: report.tooling.supabaseCli.command,
+      stderr: report.tooling.supabaseCli.stderr
+    });
+    return;
+  }
+
+  const result = command(report.tooling.supabaseCli.command, ['secrets', 'list', '--project-ref', supabasePreviewRef]);
   if (!result.ok) {
-    add('fail', 'Supabase preview secrets', 'Supabase preview secrets could not be listed by name/digest.', { stderr: result.stderr });
+    const authMissing = /Access token not provided|AuthRequired|supabase login|SUPABASE_ACCESS_TOKEN/i.test(`${result.stdout}\n${result.stderr}`);
+    add('fail', 'Supabase preview secrets', authMissing ? 'Supabase CLI is installed but not authenticated; run supabase login or set SUPABASE_ACCESS_TOKEN before preview secret verification.' : 'Supabase preview secrets could not be listed by name/digest.', {
+      status: result.status,
+      stdout: sanitizeMultiline(result.stdout),
+      stderr: sanitizeMultiline(result.stderr)
+    });
     return;
   }
 
@@ -202,14 +240,23 @@ function checkSupabasePreviewSecrets() {
 }
 
 function checkFly() {
-  const whoami = command(resolveFlyctl(), ['auth', 'whoami']);
+  if (!report.tooling.flyctl.available) {
+    add('fail', 'Fly authentication', 'flyctl is not available locally; install the Fly CLI before Fly auth, app, volume, and secret verification.', {
+      command: report.tooling.flyctl.command,
+      stderr: report.tooling.flyctl.stderr
+    });
+    return;
+  }
+
+  const flyctl = report.tooling.flyctl.command;
+  const whoami = command(flyctl, ['auth', 'whoami']);
   if (!whoami.ok) {
     add('fail', 'Fly authentication', 'flyctl is not authenticated.', { stderr: whoami.stderr });
     return;
   }
   add('pass', 'Fly authentication', 'flyctl is authenticated.', { account: sanitizeLine(whoami.stdout) });
 
-  const status = command(resolveFlyctl(), ['status', '-a', flyApp]);
+  const status = command(flyctl, ['status', '-a', flyApp]);
   if (!status.ok) {
     add('fail', 'Fly app', `${flyApp} is not available yet. If this mentions payment information, complete Fly billing privately before app creation.`, {
       stderr: sanitizeMultiline(status.stderr)
@@ -218,14 +265,14 @@ function checkFly() {
   }
   add('pass', 'Fly app', `${flyApp} exists and status can be read.`);
 
-  const volumes = command(resolveFlyctl(), ['volumes', 'list', '-a', flyApp]);
+  const volumes = command(flyctl, ['volumes', 'list', '-a', flyApp]);
   const volumePresent = volumes.ok && volumes.stdout.includes(flyVolume);
   add(volumePresent ? 'pass' : 'fail', 'Fly volume', volumePresent ? `${flyVolume} exists.` : `${flyVolume} is missing or could not be listed.`, {
     requiredVolume: flyVolume,
     stderr: sanitizeMultiline(volumes.stderr)
   });
 
-  const secrets = command(resolveFlyctl(), ['secrets', 'list', '-a', flyApp]);
+  const secrets = command(flyctl, ['secrets', 'list', '-a', flyApp]);
   const missingPreviewSecrets = previewFlySecrets.filter((name) => !secrets.stdout.includes(name));
   add(secrets.ok && missingPreviewSecrets.length === 0 ? 'pass' : 'fail', 'Fly preview secret names', missingPreviewSecrets.length ? `Missing Fly preview secret/config names: ${missingPreviewSecrets.join(', ')}.` : 'Required Fly preview secret/config names are present.', {
     lane: 'preview-live-gates',
@@ -234,7 +281,7 @@ function checkFly() {
   });
 
   const missingFundedChainSecrets = fundedChainFlySecrets.filter((name) => !secrets.stdout.includes(name));
-  add(secrets.ok && missingFundedChainSecrets.length === 0 ? 'pass' : 'fail', 'Fly funded-chain secret names', missingFundedChainSecrets.length ? `Missing funded-chain Fly secret names: ${missingFundedChainSecrets.join(', ')}. Leave these unset for Alpha Preview Ready when Enjin is configured-preview-stub; set only real Canary values for Alpha RC Ready.` : 'Required funded-chain Fly secret names are present.', {
+  add(secrets.ok && missingFundedChainSecrets.length === 0 ? 'pass' : 'fail', 'Fly funded-chain secret names', missingFundedChainSecrets.length ? `Missing funded-chain Fly secret names: ${missingFundedChainSecrets.join(', ')}. Leave these unset for Alpha Preview Ready while funded-chain work is deferred and absent from the player alpha; set only real Canary values for Alpha RC Ready.` : 'Required funded-chain Fly secret names are present.', {
     lane: 'funded-chain-gates',
     requiredFlySecrets: fundedChainFlySecrets,
     missingSecrets: missingFundedChainSecrets,
@@ -327,7 +374,7 @@ function checkEnjinOperatorInputs() {
     MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY: process.env.MOCHI_SOCIAL_ENJIN_FUEL_TANK_READY === 'true'
   };
   const missing = Object.entries(fields).filter(([, value]) => !value).map(([key]) => key);
-  add(missing.length ? 'fail' : 'pass', 'Enjin Canary operator readiness', missing.length ? `Missing operator-confirmed Enjin readiness flags/secrets: ${missing.join(', ')}. This is expected red for Alpha Preview Ready while Enjin remains configured-preview-stub.` : 'Enjin Canary operator inputs are present for live proof smoke.', {
+  add(missing.length ? 'fail' : 'pass', 'Enjin Canary operator readiness', missing.length ? `Missing operator-confirmed Enjin readiness flags/secrets: ${missing.join(', ')}. This is expected red for Alpha Preview Ready while funded-chain work is deferred and absent from the player alpha.` : 'Enjin Canary operator inputs are present for live proof smoke.', {
     lane: 'funded-chain-gates',
     requiredFlags: Object.keys(fields),
     missing
@@ -340,7 +387,7 @@ function summarizeGateLanes() {
     fundedChain: summarizeGateLane('funded-chain-gates', fundedChainGateNames),
     alphaPreviewReady: {
       ok: summarizeGateLane('preview-live-gates', previewLiveGateNames).ok,
-      note: 'Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while Enjin is configured-preview-stub.'
+      note: 'Alpha Preview Ready requires preview-live-gates only. Funded-chain gates may stay red while funded-chain work is deferred and absent from the player alpha.'
     },
     alphaRcReady: {
       ok: !report.checks.some((check) => check.status === 'fail'),
@@ -353,13 +400,22 @@ function summarizeGateLane(name, gateNames) {
   const checks = report.checks.filter((check) => gateNames.includes(check.name));
   const missingChecks = gateNames.filter((gateName) => !checks.some((check) => check.name === gateName));
   const failingChecks = checks.filter((check) => check.status === 'fail').map((check) => check.name);
+  const unverifiedChecks = checks.filter((check) => check.status === 'unverified').map((check) => check.name);
   return {
     name,
-    ok: checks.length > 0 && missingChecks.length === 0 && failingChecks.length === 0,
+    ok: checks.length > 0 && missingChecks.length === 0 && failingChecks.length === 0 && unverifiedChecks.length === 0,
     checks: checks.map((check) => ({ name: check.name, status: check.status })),
     missingChecks,
-    failingChecks
+    failingChecks,
+    unverifiedChecks
   };
+}
+
+function formatLaneIssues(lane) {
+  return [
+    ...(Array.isArray(lane?.failingChecks) ? lane.failingChecks : []),
+    ...(Array.isArray(lane?.unverifiedChecks) ? lane.unverifiedChecks.map((name) => `${name} unverified`) : [])
+  ].join(', ');
 }
 
 async function fetchJson(url) {
@@ -373,7 +429,7 @@ function command(commandName, args, options = {}) {
     cwd: options.cwd || root,
     env: options.env || process.env,
     encoding: 'utf8',
-    shell: Boolean(options.shell)
+    shell: options.shell ?? shouldRunThroughShell(commandName)
   });
   return {
     ok: result.status === 0,
@@ -383,10 +439,54 @@ function command(commandName, args, options = {}) {
   };
 }
 
+function shouldRunThroughShell(commandName) {
+  return process.platform === 'win32' && /\.cmd$/i.test(String(commandName || ''));
+}
+
 function resolveFlyctl() {
   if (process.env.FLYCTL_PATH) return process.env.FLYCTL_PATH;
+  const projectLocal = resolve(root, '.local', 'tools', 'flyctl', process.platform === 'win32' ? 'flyctl.exe' : 'flyctl');
+  if (existsSync(projectLocal)) return projectLocal;
   const local = process.env.USERPROFILE ? resolve(process.env.USERPROFILE, '.fly/bin/flyctl.exe') : '';
   return local && existsSync(local) ? local : 'flyctl';
+}
+
+function resolveSupabaseCli() {
+  if (process.env.SUPABASE_CLI_PATH) return process.env.SUPABASE_CLI_PATH;
+  const packagedBinary = resolveLocalSupabaseBinary();
+  if (packagedBinary) return packagedBinary;
+  const local = resolveLocalBin('supabase');
+  return local || 'supabase';
+}
+
+function resolveLocalSupabaseBinary() {
+  const packages = {
+    darwin: { arm64: 'cli-darwin-arm64', x64: 'cli-darwin-x64' },
+    linux: { arm64: 'cli-linux-arm64', x64: 'cli-linux-x64' },
+    win32: { arm64: 'cli-windows-arm64', x64: 'cli-windows-x64' }
+  };
+  const packageName = packages[process.platform]?.[process.arch];
+  if (!packageName) return '';
+  const executable = process.platform === 'win32' ? 'supabase.exe' : 'supabase';
+  const local = resolve(root, 'node_modules', '@supabase', packageName, 'bin', executable);
+  return existsSync(local) ? local : '';
+}
+
+function resolveLocalBin(name) {
+  const executable = process.platform === 'win32' ? `${name}.cmd` : name;
+  const local = resolve(root, 'node_modules', '.bin', executable);
+  return existsSync(local) ? local : '';
+}
+
+function detectCli(label, commandName, args) {
+  const result = command(commandName, args);
+  return {
+    label,
+    command: commandName,
+    available: result.ok,
+    version: result.ok ? sanitizeLine(result.stdout || result.stderr) : '',
+    stderr: result.ok ? '' : sanitizeMultiline(result.stderr)
+  };
 }
 
 function parseJson(text) {

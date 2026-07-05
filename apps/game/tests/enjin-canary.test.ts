@@ -56,8 +56,8 @@ describe('Enjin Canary orchestration helpers', () => {
   });
 
   it('builds deterministic managed wallet ids', () => {
-    expect(buildManagedWalletExternalId('player-1')).toBe('mochi-social-alpha:player-1');
-    expect(buildCreateManagedWalletMutation('player-1').variables.externalId).toBe('mochi-social-alpha:player-1');
+    expect(buildManagedWalletExternalId('player-1')).toBe('mochi-pets-alpha:player-1');
+    expect(buildCreateManagedWalletMutation('player-1').variables.externalId).toBe('mochi-pets-alpha:player-1');
     expect(buildCreateManagedWalletMutation('player-1').query).toContain('CreateManagedWallet(externalId: $externalId)');
     expect(buildGetManagedWalletQuery('player-1').query).toContain('GetManagedWallet(network: CANARY, chain: MATRIX');
   });
@@ -84,7 +84,7 @@ describe('Enjin Canary orchestration helpers', () => {
     expect(mintPlan.query).toContain('idempotencyKey: $idempotencyKey');
     expect(mintPlan.variables.idempotencyKey).toBe(input.requestId);
     expect(mintPlan.variables.fuelTank).toBe('tank-1');
-    expect(burnPlan.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
+    expect(burnPlan.variables.signerExternalId).toBe('mochi-pets-alpha:player-1');
     expect(burnPlan.variables.idempotencyKey).toBe(input.requestId);
     expect(burnPlan.variables.fuelTank).toBe('tank-1');
     const listingPlan = buildFixedListingMutation({ ...input, price: '1000' }, config);
@@ -94,7 +94,7 @@ describe('Enjin Canary orchestration helpers', () => {
     expect(listingPlan.query).not.toContain('AUCTION');
     expect(listingPlan.query).not.toContain('CreateListing(');
     expect(listingPlan.variables.idempotencyKey).toBe(input.requestId);
-    expect(listingPlan.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
+    expect(listingPlan.variables.signerExternalId).toBe('mochi-pets-alpha:player-1');
     expect(listingPlan.variables.fuelTank).toBe('tank-1');
     expect(buildGetTransactionQuery('tx-1', config).variables.uuid).toBe('tx-1');
   });
@@ -145,7 +145,7 @@ describe('Enjin Canary orchestration helpers', () => {
 
     expect(calls[0].url).toBe('https://platform.canary.enjin.io/graphql');
     expect((calls[0].init.headers as Record<string, string>).Authorization).toBe('Bearer test-token');
-    expect(JSON.parse(String(calls[0].init.body)).variables.externalId).toBe('mochi-social-alpha:player-1');
+    expect(JSON.parse(String(calls[0].init.body)).variables.externalId).toBe('mochi-pets-alpha:player-1');
     await expect(executeEnjinGraphqlPlan(buildCreateManagedWalletMutation('player-1'), getEnjinCanaryConfig({}), fetchImpl as typeof fetch)).rejects.toThrow(/not ready/);
   });
 
@@ -156,7 +156,7 @@ describe('Enjin Canary orchestration helpers', () => {
       seenQueries.push(body.query);
       if (body.query.includes('CreateManagedWallet')) return jsonResponse({ data: { CreateManagedWallet: true } });
       if (body.query.includes('GetManagedWallet')) {
-        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-social-alpha:player-1', publicKey: '0xabc' } } });
+        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-pets-alpha:player-1', publicKey: '0xabc' } } });
       }
       return jsonResponse({ data: { CreateTransaction: { uuid: 'tx-hot-cold', state: 'PENDING', extrinsicHash: null } } });
     };
@@ -182,7 +182,7 @@ describe('Enjin Canary orchestration helpers', () => {
       const body = JSON.parse(String(init?.body || '{}')) as { query: string };
       if (body.query.includes('CreateManagedWallet')) return jsonResponse({ data: { CreateManagedWallet: true } });
       if (body.query.includes('GetManagedWallet')) {
-        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-social-alpha:player-1', publicKey: '0xabc' } } });
+        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-pets-alpha:player-1', publicKey: '0xabc' } } });
       }
       if (body.query.includes('GetTransaction')) {
         return jsonResponse({ data: { GetTransaction: { uuid: 'tx-cold-hot', state: 'FINALIZED', extrinsicHash: '0x123' } } });
@@ -211,7 +211,7 @@ describe('Enjin Canary orchestration helpers', () => {
       seenBodies.push(body);
       if (body.query.includes('CreateManagedWallet')) return jsonResponse({ data: { CreateManagedWallet: true } });
       if (body.query.includes('GetManagedWallet')) {
-        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-social-alpha:player-1', publicKey: '0xabc' } } });
+        return jsonResponse({ data: { GetManagedWallet: { externalId: 'mochi-pets-alpha:player-1', publicKey: '0xabc' } } });
       }
       return jsonResponse({ data: { CreateTransaction: { uuid: 'tx-listing', action: 'Marketplace.create_listing', state: 'PENDING' } } });
     };
@@ -229,7 +229,7 @@ describe('Enjin Canary orchestration helpers', () => {
     expect(listingBody?.query).toContain('network: CANARY');
     expect(listingBody?.query).toContain('listingData: { type: FIXED_PRICE }');
     expect(listingBody?.query).not.toContain('AUCTION');
-    expect(listingBody?.variables.signerExternalId).toBe('mochi-social-alpha:player-1');
+    expect(listingBody?.variables.signerExternalId).toBe('mochi-pets-alpha:player-1');
     expect(listingBody?.variables.fuelTank).toBe('tank-1');
     expect(listingBody?.variables.idempotencyKey).toBe('chain-listing-1');
     expect(action.type).toBe('chain.operation_update');

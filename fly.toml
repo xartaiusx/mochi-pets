@@ -1,4 +1,4 @@
-app = "mochi-social-game"
+app = "mochi-pets-game"
 primary_region = "sjc"
 
 [build]
@@ -10,11 +10,8 @@ primary_region = "sjc"
   SUPABASE_AUTH_REQUIRED = "false"
   ENJIN_NETWORK = "CANARY"
   ENJIN_PLATFORM_URL = "https://platform.canary.enjin.io/graphql"
-  MOCHI_SOCIAL_PUBLIC_ORIGIN = "https://mochi-social-game.fly.dev"
-
-[mounts]
-  source = "mochi_social_data"
-  destination = "/data"
+  MOCHI_PETS_PUBLIC_ORIGIN = "https://mochi-pets-game.fly.dev"
+  MOCHI_PETS_SITE_ORIGIN = "https://mochirii.com"
 
 [[services]]
   protocol = "tcp"

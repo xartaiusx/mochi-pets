@@ -1,23 +1,23 @@
 import { mergeConfig } from '@signe/di';
 import { provideMmorpg, startGame } from '@rpgjs/client';
 import configClient from './config/config.client';
-import { installMochiSocialBridge } from './integration/browser-bridge';
+import { installMochiPetsBridge } from './integration/browser-bridge';
 import '@rpgjs/ui-css/reset.css';
 import '@rpgjs/ui-css/index.css';
 import '@rpgjs/ui-css/theme-default.css';
 import './ui/styles.css';
 
-const ACCESS_TOKEN_KEY = 'mochiSocial.accessToken';
-const CONNECTION_ID_KEY = 'mochiSocial.connectionId';
+const ACCESS_TOKEN_KEY = 'mochiPets.accessToken';
+const CONNECTION_ID_KEY = 'mochiPets.connectionId';
 let fallbackConnectionId: string | undefined;
 
-installMochiSocialBridge();
+installMochiPetsBridge();
 
 startGame(
   mergeConfig(configClient, {
     providers: [
       provideMmorpg({
-        connectionId: resolveMochiSocialConnectionId(),
+        connectionId: resolveMochiPetsConnectionId(),
         query: () => {
           const accessToken = readLocalStorage(ACCESS_TOKEN_KEY);
           return accessToken ? { accessToken } : undefined;
@@ -27,7 +27,7 @@ startGame(
   })
 );
 
-function resolveMochiSocialConnectionId() {
+function resolveMochiPetsConnectionId() {
   const existing = readLocalStorage(CONNECTION_ID_KEY);
   if (existing) return existing;
 

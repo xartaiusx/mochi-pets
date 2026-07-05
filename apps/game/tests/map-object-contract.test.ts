@@ -82,7 +82,7 @@ describe('Mochi town map object contract', () => {
       "setAlphaInteractable(this, 'guild-rank-bell')",
       "setAlphaInteractable(this, 'growth-moonwell')",
       "setAlphaInteractable(this, 'canary-shrine')",
-      'Welcome to Mochi Social',
+      'Welcome to Mochi Pets',
       'Guild Seal added',
       'Bond with a Mochi Spirit first',
       'Care complete',
