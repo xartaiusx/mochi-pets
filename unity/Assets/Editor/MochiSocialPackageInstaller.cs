@@ -24,7 +24,7 @@ namespace MochiSocial.Editor
             {
                 foreach (var packageName in Packages)
                 {
-                    Debug.Log($"[Mochi Social] Ensuring Unity package: {packageName}");
+                    Debug.Log($"[Mochi Pets] Ensuring Unity package: {packageName}");
                     AddRequest request = Client.Add(packageName);
                     while (!request.IsCompleted)
                     {
@@ -36,7 +36,7 @@ namespace MochiSocial.Editor
                         throw new InvalidOperationException($"Failed to install {packageName}: {request.Error.message}");
                     }
 
-                    Debug.Log($"[Mochi Social] Installed {request.Result.packageId}");
+                    Debug.Log($"[Mochi Pets] Installed {request.Result.packageId}");
                 }
 
                 AssetDatabase.Refresh();

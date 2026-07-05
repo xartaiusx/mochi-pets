@@ -1,6 +1,6 @@
 # Unity WebGL Shared Room Bootstrap
 
-This repo contains the Unity runtime at `unity/`. The project requires Unity editor `6000.5.0f1` with WebGL Build Support, using the Unity Hub `3D Cross-Platform` template.
+This repo contains the Mochi Pets Unity runtime at `unity/`. The project requires Unity editor `6000.5.2f1` with WebGL Build Support, using the Unity Hub `3D Cross-Platform` template.
 
 Node-side scripts now target Node `24.17.0` LTS. The Node app is the hosting and integration wrapper; Unity WebGL is the active game runtime.
 
@@ -18,7 +18,7 @@ Node-side scripts now target Node `24.17.0` LTS. The Node app is the hosting and
 
 Installed through Unity Package Manager from the Unity registry:
 
-- Netcode for GameObjects `2.12.0`
+- Netcode for GameObjects `2.13.0`
 - Multiplayer Services `2.2.3`
 - Cloud Save `3.4.1`
 - Cloud Code `2.10.3`

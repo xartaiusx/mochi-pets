@@ -2207,7 +2207,7 @@ const unityPreviewReadinessChecks = [
   {
     file: 'docs/alpha-preview-ready.md',
     includes: [
-      'Mochi Social Alpha Preview',
+      'Mochi Pets Alpha Preview',
       'shared Mochirii room',
       'create a curated character',
       'meet Lirabao',

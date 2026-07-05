@@ -32,7 +32,7 @@ $env:MOCHI_PETS_REQUIRE_UNITY_WEBGL='true'
 
 If the Unity build is missing while that setting is enabled, the room routes fail clearly instead of opening the old fallback.
 
-Unity `6000.5.0f1` with WebGL Build Support is required for the real playtest build. A contract-only WebGL bundle may satisfy endpoint checks, but it is not alpha gameplay readiness.
+Unity `6000.5.2f1` with WebGL Build Support is required for the real playtest build. A contract-only WebGL bundle may satisfy endpoint checks, but it is not alpha gameplay readiness.
 
 ## Local Checks
 

@@ -28,6 +28,7 @@
     "unity:verify": "node scripts/run-unity.mjs verify",
     "start": "npm --workspace @mochi-pets/game run start",
     "clean-room-scan": "node scripts/check-clean-room-literals.mjs",
+    "rename-hygiene": "node scripts/check-mochi-pets-rename-hygiene.mjs",
     "secret-scan": "node scripts/check-secrets.mjs",
     "alpha:public-copy": "node scripts/check-alpha-public-copy.mjs",
     "alpha:readiness": "node scripts/check-alpha-readiness.mjs",

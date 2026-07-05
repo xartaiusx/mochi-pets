@@ -1,6 +1,6 @@
-# Mochi Social Alpha Preview
+# Mochi Pets Alpha Preview
 
-Mochi Social Alpha Preview is the closed guild playtest for the shared Mochirii room.
+Mochi Pets Alpha Preview is the closed guild playtest for the shared Mochirii room.
 
 Approved members enter one 3D room, create a curated character, meet Lirabao, care for the guild pet together, leave, return, and see saved progress.
 

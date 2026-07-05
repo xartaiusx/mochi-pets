@@ -1,11 +1,11 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const unityProjectPath = resolve(readEnv('MOCHI_PETS_UNITY_PROJECT_PATH', 'MOCHI_SOCIAL_UNITY_PROJECT_PATH') || 'unity');
 const unityEditorPath = process.env.UNITY_EDITOR_PATH ||
-  'C:\\Program Files\\Unity\\Hub\\Editor\\6000.5.0f1\\Editor\\Unity.exe';
+  'C:\\Program Files\\Unity\\Hub\\Editor\\6000.5.2f1\\Editor\\Unity.exe';
 const localDir = resolve(readEnv('MOCHI_PETS_UNITY_REPORT_DIR', 'MOCHI_SOCIAL_UNITY_REPORT_DIR') || 'unity/Logs/MochiPetsLocal');
 
 const command = process.argv[2] || '';
@@ -139,7 +139,7 @@ function freshFile(file, startedAt) {
 
 function getDefaultUnityTestResultsPath() {
   if (!process.env.USERPROFILE) return '';
-  return resolve(process.env.USERPROFILE, 'AppData/LocalLow/Mochirii/Mochi Social/TestResults.xml');
+  return resolve(process.env.USERPROFILE, 'AppData/LocalLow/Mochirii/Mochi Pets/TestResults.xml');
 }
 
 function readEnv(...names) {
@@ -151,13 +151,13 @@ function readEnv(...names) {
 }
 
 function normalizeUnityYaml() {
-  for (const file of [
-    'unity/Assets/Settings/Mobile_RPAsset.asset',
-    'unity/Assets/Settings/PC_RPAsset.asset',
-    'unity/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset',
-    'unity/ProjectSettings/ProjectSettings.asset',
-    'unity/ProjectSettings/ShaderGraphSettings.asset'
-  ]) {
+  const files = [
+    ...collectUnityTextFiles('unity/Assets/MochiSocial'),
+    ...collectUnityTextFiles('unity/Assets/Settings'),
+    ...collectUnityTextFiles('unity/ProjectSettings')
+  ];
+
+  for (const file of files) {
     const path = resolve(file);
     if (!existsSync(path)) continue;
     const text = readFileSync(path, 'utf8');
@@ -166,4 +166,20 @@ function normalizeUnityYaml() {
       writeFileSync(path, normalized);
     }
   }
+}
+
+function collectUnityTextFiles(relativeDir) {
+  const dir = resolve(relativeDir);
+  if (!existsSync(dir)) return [];
+
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const child = `${relativeDir}/${entry.name}`;
+    if (entry.isDirectory()) {
+      files.push(...collectUnityTextFiles(child));
+    } else if (/\.(asset|mat|prefab|txt|unity)$/i.test(entry.name)) {
+      files.push(child);
+    }
+  }
+  return files;
 }

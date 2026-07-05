@@ -4,12 +4,12 @@ import { fileURLToPath } from 'node:url';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(currentDir, '..');
-const baseUrl = (process.env.MOCHI_SOCIAL_BASE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const baseUrl = (readEnv('MOCHI_PETS_BASE_URL', 'MOCHI_SOCIAL_BASE_URL') ?? 'http://localhost:3000').replace(/\/+$/, '');
 const saveDir = process.env.RPG_SAVE_DIR ?? '.local/saves';
-const ledgerPath = resolveFromRoot(process.env.MOCHI_SOCIAL_ALPHA_LEDGER_PATH ?? join(saveDir, 'alpha-ledger.jsonl'));
-const reportPath = resolveFromRoot(process.env.MOCHI_SOCIAL_ACCEPTANCE_REPORT ?? 'reports/alpha-local-acceptance.json');
-const allowEdgeMode = process.env.MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE === 'true';
-const requestTimeoutMs = Number(process.env.MOCHI_SOCIAL_ACCEPTANCE_REQUEST_TIMEOUT_MS || 10000);
+const ledgerPath = resolveFromRoot(readEnv('MOCHI_PETS_ALPHA_LEDGER_PATH', 'MOCHI_SOCIAL_ALPHA_LEDGER_PATH') ?? join(saveDir, 'alpha-ledger.jsonl'));
+const reportPath = resolveFromRoot(readEnv('MOCHI_PETS_ACCEPTANCE_REPORT', 'MOCHI_SOCIAL_ACCEPTANCE_REPORT') ?? 'reports/alpha-local-acceptance.json');
+const allowEdgeMode = readEnv('MOCHI_PETS_ACCEPTANCE_ALLOW_EDGE', 'MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE') === 'true';
+const requestTimeoutMs = Number(readEnv('MOCHI_PETS_ACCEPTANCE_REQUEST_TIMEOUT_MS', 'MOCHI_SOCIAL_ACCEPTANCE_REQUEST_TIMEOUT_MS') || 10000);
 const runId = `unity-local-accept-${Date.now().toString(36)}`;
 
 const unityActions = [
@@ -104,12 +104,12 @@ try {
   await run();
   report.ok = true;
   await writeReport();
-  console.log(`Mochi Social Unity local alpha acceptance passed for ${baseUrl}`);
+  console.log(`Mochi Pets Unity local alpha acceptance passed for ${baseUrl}`);
   console.log(`Report: ${reportPath}`);
 } catch (error) {
   report.error = error instanceof Error ? error.message : String(error);
   await writeReport();
-  console.error('Mochi Social Unity local alpha acceptance failed:');
+  console.error('Mochi Pets Unity local alpha acceptance failed:');
   console.error(report.error);
   console.error(`Report: ${reportPath}`);
   process.exit(1);
@@ -117,7 +117,7 @@ try {
 
 async function run() {
   const health = await getJson('/healthz', 'health');
-  assert(health.body.ok === true && health.body.name === 'Mochi Social', '/healthz did not identify Mochi Social.');
+  assert(health.body.ok === true && health.body.name === 'Mochi Pets', '/healthz did not identify Mochi Pets.');
 
   const manifest = await getJson('/integration/game-manifest.json', 'manifest');
   assertManifestContract(manifest.body, 'Manifest');
@@ -127,7 +127,7 @@ async function run() {
 
   if (alphaStatus.body.supabaseEdgeConfigured && !allowEdgeMode) {
     throw new Error(
-      'Local acceptance refuses to forward alpha actions to Supabase Edge by default. Unset MOCHI_SOCIAL_SUPABASE_FUNCTIONS_URL and MOCHI_SOCIAL_GAME_SERVER_TOKEN, or set MOCHI_SOCIAL_ACCEPTANCE_ALLOW_EDGE=true after explicit provider approval.'
+      'Local acceptance refuses to forward alpha actions to Supabase Edge by default. Unset MOCHI_PETS_SUPABASE_FUNCTIONS_URL and MOCHI_PETS_GAME_SERVER_TOKEN, or set MOCHI_PETS_ACCEPTANCE_ALLOW_EDGE=true after explicit provider approval.'
     );
   }
 
@@ -141,12 +141,12 @@ async function run() {
 }
 
 function assertManifestContract(body, label) {
-  assert(body.name === 'Mochi Social', `${label} name changed.`);
+  assert(body.name === 'Mochi Pets', `${label} name changed.`);
   assert(body.engine === 'unity-webgl', `${label} must expose Unity WebGL as the engine.`);
-  assert(body.bridge?.namespace === 'MOCHI_SOCIAL', `${label} must expose the Mochi Social bridge namespace.`);
+  assert(body.bridge?.namespace === 'MOCHI_PETS', `${label} must expose the Mochi Pets bridge namespace.`);
   assert(body.bridge?.protocolVersion === 1, `${label} must expose bridge protocol v1.`);
-  assert(includesAll(body.bridge?.parentToGame, ['MOCHI_SOCIAL_AUTH', 'MOCHI_SOCIAL_SIGN_OUT']), `${label} must expose parent-to-game bridge messages.`);
-  assert(includesAll(body.bridge?.gameToParent, ['MOCHI_SOCIAL_READY', 'MOCHI_SOCIAL_AUTH_STATE', 'MOCHI_SOCIAL_ERROR']), `${label} must expose game-to-parent bridge messages.`);
+  assert(includesAll(body.bridge?.parentToGame, ['MOCHI_PETS_AUTH', 'MOCHI_PETS_SIGN_OUT']), `${label} must expose parent-to-game bridge messages.`);
+  assert(includesAll(body.bridge?.gameToParent, ['MOCHI_PETS_READY', 'MOCHI_PETS_AUTH_STATE', 'MOCHI_PETS_ERROR']), `${label} must expose game-to-parent bridge messages.`);
   assert(body.auth?.provider === 'supabase', `${label} must keep Supabase as member authority.`);
   assert(body.auth?.tokenPolicy === 'access-token-only', `${label} must keep access-token-only auth policy.`);
   assert(body.alpha?.allowlistRequired === true, `${label} must require the tester allowlist.`);
@@ -167,7 +167,7 @@ function assertManifestContract(body, label) {
 
 function assertStatusContract(body) {
   assert(body.ok === true, 'Alpha status must be ok.');
-  assert(body.name === 'Mochi Social', 'Alpha status must identify Mochi Social.');
+  assert(body.name === 'Mochi Pets', 'Alpha status must identify Mochi Pets.');
   assert(body.alpha?.allowlistRequired === true, 'Alpha status must require the tester allowlist.');
   assert(body.alpha?.termsRequired === true, 'Alpha status must require terms acceptance.');
   assert(body.alpha?.noRealValue === true, 'Alpha status must keep no-real-value enabled.');
@@ -203,10 +203,10 @@ function assertSharedRoomContract(body, label) {
   assert(body.sharedPet?.universalStarter === true, `${label} must keep Lirabao universal.`);
   assert(body.sharedPet?.stateAuthority === 'cloud-code-authoritative-save', `${label} must keep Cloud Code authoritative shared pet saves.`);
   assert(body.avatarUploads === false, `${label} must disable avatar uploads.`);
-  assert(body.edgeFunctions?.unityAuth === 'mochi-social-unity-auth', `${label} must expose the Unity auth Edge Function.`);
-  assert(body.edgeFunctions?.action === 'mochi-social-alpha-action', `${label} must expose the alpha action Edge Function.`);
-  assert(body.edgeFunctions?.progress === 'mochi-social-alpha-progress', `${label} must expose the alpha progress Edge Function.`);
-  assert(body.edgeFunctions?.feedback === 'submit-mochi-social-feedback', `${label} must expose the feedback Edge Function.`);
+  assert(body.edgeFunctions?.unityAuth === 'mochi-pets-unity-auth', `${label} must expose the Unity auth Edge Function.`);
+  assert(body.edgeFunctions?.action === 'mochi-pets-alpha-action', `${label} must expose the alpha action Edge Function.`);
+  assert(body.edgeFunctions?.progress === 'mochi-pets-alpha-progress', `${label} must expose the alpha progress Edge Function.`);
+  assert(body.edgeFunctions?.feedback === 'submit-mochi-pets-feedback', `${label} must expose the feedback Edge Function.`);
 }
 
 function assertRoutes(routes, label) {
@@ -244,7 +244,7 @@ async function assertLocalLedger() {
 async function assertHtmlRoute(path, name) {
   const response = await request(path, { method: 'GET' }, name);
   assert(response.status === 200, `${name} endpoint failed with ${response.status}.`);
-  assert(String(response.body).includes('Mochi Social'), `${name} route must return Mochi Social HTML.`);
+  assert(String(response.body).includes('Mochi Pets'), `${name} route must return Mochi Pets HTML.`);
 }
 
 async function getJson(path, name) {
@@ -294,6 +294,14 @@ async function writeReport() {
 
 function includesAll(value, required) {
   return Array.isArray(value) && required.every((item) => value.includes(item));
+}
+
+function readEnv(...names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (value) return value;
+  }
+  return undefined;
 }
 
 function resolveFromRoot(path) {

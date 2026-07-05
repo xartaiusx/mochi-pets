@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify Mochi Social
+    name: Verify Mochi Pets
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,6 +35,9 @@ jobs:
 
       - name: Alpha public copy
         run: npm run alpha:public-copy
+
+      - name: Mochi Pets rename hygiene
+        run: npm run rename-hygiene
 
       - name: Alpha readiness
         run: npm run alpha:readiness

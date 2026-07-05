@@ -189,6 +189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 805450bf706667f4db9b7c393058c264, type: 3}
   m_Name:
   m_EditorClassIdentifier: MochiSocial.Runtime::MochiSocial.Runtime.MochiAvatarController
+  ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 3.2
   turnSpeed: 12
   visualRoot: {fileID: 0}
@@ -210,6 +211,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
