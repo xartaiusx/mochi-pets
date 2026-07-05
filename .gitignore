@@ -36,6 +36,7 @@ unity/Builds/
 unity/MemoryCaptures/
 unity/Recordings/
 unity/.vscode/
+unity/.vsconfig
 unity/Data/
 unity/*.csproj
 unity/*.sln

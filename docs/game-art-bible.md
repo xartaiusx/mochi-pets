@@ -1,4 +1,4 @@
-# Mochi Social Game Art Bible
+# Mochi Pets Game Art Bible
 
 This art bible defines the active Mochirii-native look for the Alpha Preview visual lane. It preserves the playable RPGJS town, multiplayer presence, no-real-value Enjin Canary posture, and website integration contract while moving the game identity toward smooth illustrated wuxia fantasy.
 
@@ -57,7 +57,7 @@ This art bible defines the active Mochirii-native look for the Alpha Preview vis
 ## Prompt Template
 
 ```text
-Mochirii High-Fidelity Wuxia 2D game asset for Mochi Social, smooth illustrated finish, soft lantern lighting, jade, lacquer, silk, paper, and gold materials, transparent background for sprites or cohesive world-art background for tiles, clear gameplay silhouette, no baked-in text, no logos, no third-party visual reference dependency, no production value implication, alpha no-real-value game asset.
+Mochirii High-Fidelity Wuxia 2D game asset for Mochi Pets, smooth illustrated finish, soft lantern lighting, jade, lacquer, silk, paper, and gold materials, transparent background for sprites or cohesive world-art background for tiles, clear gameplay silhouette, no baked-in text, no logos, no third-party visual reference dependency, no production value implication, alpha no-real-value game asset.
 ```
 
 Append the specific asset role, color identity, animation frame needs, source-master dimensions, runtime dimensions, and care/market/trade/Canary constraints. Record the prompt in the source card under `assets/source/game/hd/` and summarize the asset in `docs/asset-ledger.md`.

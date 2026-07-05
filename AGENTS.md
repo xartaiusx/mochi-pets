@@ -15,6 +15,7 @@ Mochi Pets is a standalone Unity WebGL shared-room game repo. Keep the game sepa
 - Unity WebGL build: `npm run unity:build:webgl`
 - Unity local verification: `npm run unity:verify`
 - Clean-room literal and asset ledger scan: `npm run clean-room-scan`
+- Mochi Pets rename hygiene: `npm run rename-hygiene`
 - Secret scan: `npm run secret-scan`
 - Alpha readiness: `npm run alpha:readiness`
 - Monero treasury guardrails: `npm run alpha:monero-treasury`

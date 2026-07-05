@@ -26,7 +26,7 @@ namespace MochiSocial.Editor
             CreateJadeLanternRoom(materials, avatarPrefab);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[Mochi Social] Unity project bootstrap complete.");
+            Debug.Log("[Mochi Pets] Unity project bootstrap complete.");
         }
 
         public static void BuildWebGL()
@@ -48,7 +48,7 @@ namespace MochiSocial.Editor
         private static void ConfigureProject()
         {
             PlayerSettings.companyName = "Mochirii";
-            PlayerSettings.productName = "Mochi Social";
+            PlayerSettings.productName = "Mochi Pets";
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
         }
 

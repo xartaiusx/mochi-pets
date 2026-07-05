@@ -1,6 +1,6 @@
-# Mochi Social Account-Linked Progression
+# Mochi Pets Account-Linked Progression
 
-Mochi Social keeps guest play local and makes signed-in Mochirii play account-linked through Supabase-owned Edge Functions in the separate Mochirii repo.
+Mochi Pets keeps guest play local and makes signed-in Mochirii play account-linked through Supabase-owned Edge Functions in the separate Mochirii repo.
 
 ## Source Basis
 
@@ -12,12 +12,14 @@ Mochi Social keeps guest play local and makes signed-in Mochirii play account-li
 
 ## Runtime Contract
 
-- The parent website sends only `MOCHI_SOCIAL_AUTH` with a short-lived Supabase access token or `MOCHI_SOCIAL_SIGN_OUT`.
+- The parent website sends only `MOCHI_PETS_AUTH` with a short-lived Supabase access token or `MOCHI_PETS_SIGN_OUT`.
 - The game backend validates the access token with Supabase `getUser(jwt)` before deriving a linked `playerId`.
 - `GET /integration/alpha/progress` loads an account snapshot from Mochirii Edge only after token validation.
-- `POST /integration/alpha/action` forwards signed-in actions to Mochirii Edge with the scoped `MOCHI_SOCIAL_GAME_SERVER_TOKEN`.
+- `POST /integration/alpha/action` forwards signed-in actions to Mochirii Edge with the scoped `MOCHI_PETS_GAME_SERVER_TOKEN`.
 - Guest and tester-password preview play remains local: RPGJS file saves plus browser HUD state. It must not claim account persistence.
 - When signed-in sync fails, the HUD must show sync-unavailable copy instead of implying the action saved to the account.
+
+Legacy `MOCHI_SOCIAL_*` names may be accepted by local scripts as temporary aliases for one transition window, but current website/game work must use `MOCHI_PETS_*`.
 
 ## Parallel-Agent Guardrail
 

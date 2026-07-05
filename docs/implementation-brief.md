@@ -1,6 +1,6 @@
-# Mochi Social Implementation Brief
+# Mochi Pets Implementation Brief
 
-Mochi Social is the closed Mochirii playtest for one shared 3D guild room.
+Mochi Pets is the closed Mochirii playtest for one shared 3D guild room.
 
 Approved members enter the room, create a curated character, meet Lirabao, care for the guild pet together, leave, return, and see saved progress. The playtest has no real value.
 

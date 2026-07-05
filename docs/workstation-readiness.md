@@ -10,12 +10,12 @@ This is the no-secret local setup gate for continued Mochi Pets development.
 - Fly CLI available from `C:\Users\xtyty\.fly\bin\flyctl.exe` or on `PATH`.
 - Repo-local Supabase CLI through `npx supabase`; do not require a global install.
 - Docker Desktop Linux engine running before local Supabase/Docker parity checks.
-- Unity Hub plus Unity Editor `6000.5.0f1` with WebGL Build Support.
+- Unity Hub plus Unity Editor `6000.5.2f1` with WebGL Build Support.
 - Chrome or a Playwright-compatible browser for local browser smokes.
 
 ## Current Workstation Findings
 
-- Unity Hub is installed, but Unity Editor `6000.5.0f1` is not installed at the repo default path.
+- Unity Hub is installed and Unity Editor `6000.5.2f1` is available at the repo default path with WebGL Build Support.
 - Docker CLI is installed, but the Docker Desktop Linux engine was not reachable from this shell.
 - Fly CLI exists under the user profile; use the explicit path if `flyctl` is not on `PATH`.
 - The recovered Fly contract endpoint is only a contract bundle. Alpha gameplay still requires a real Unity WebGL export.
@@ -46,7 +46,8 @@ npm ci
 npx supabase --version
 docker info
 & "$env:USERPROFILE\.fly\bin\flyctl.exe" version
-Test-Path "C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe"
+Test-Path "C:\Program Files\Unity\Hub\Editor\6000.5.2f1\Editor\Unity.exe"
+Test-Path "C:\Program Files\Unity\Hub\Editor\6000.5.2f1\Editor\Data\PlaybackEngines\WebGLSupport"
 npm run secret-scan
 npm run alpha:public-copy
 npm run alpha:readiness
