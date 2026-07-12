@@ -4,6 +4,13 @@ Mochi Pets is the shared guild room game for Mochirii's closed playtest.
 
 Approved members enter one 3D room, create a curated character, meet Lirabao, care for the guild pet together, and return later with saved progress. The playtest has no real value and is only for closed testing.
 
+## Repository Workspace
+
+The canonical checkout is `C:\Github Repo's\Mochirii Website\Mochi Pets`.
+The Website and Mochirii Social projects are independent sibling repositories.
+Local integration tools resolve the Website sibling automatically and accept
+`MOCHIRII_WORKSPACE_ROOT` and `MOCHIRII_CREDS_DIR` overrides when needed.
+
 ## Current Playtest Scope
 
 - One shared Jade Lantern room.

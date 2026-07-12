@@ -1,13 +1,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 
 const root = process.cwd();
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_PREVIEW_READY_JSON || 'reports/alpha-preview-ready.json');
 const reportMdPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_PREVIEW_READY_MD || 'reports/alpha-preview-ready.md');
 const handoffPath = resolve(credsDir, 'mochi-social-alpha-preview-ready.md');
@@ -421,12 +422,6 @@ ${failures}
 function commandForPlatform(command) {
   if (process.platform === 'win32' && command === 'npm') return 'npm.cmd';
   return command;
-}
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
-  return join(root, '.local', 'creds');
 }
 
 function delay(ms) {

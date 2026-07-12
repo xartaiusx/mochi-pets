@@ -1,11 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 
 const root = process.cwd();
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST || 'mochi-social-alpha-operator-next-steps.md');
 const externalStatusPath = resolve(credsDir, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_STATUS_MD || 'mochi-social-alpha-external-gates-status.md');
 const reportJsonPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
@@ -33,12 +34,6 @@ await writeFile(reportJsonPath, `${JSON.stringify(renderReport(), null, 2)}\n`, 
 console.log(`Wrote no-secret Mochi Social alpha operator checklist: ${outputPath}`);
 console.log(`Wrote no-secret Mochi Social external gate status: ${externalStatusPath}`);
 console.log(`Wrote no-secret Mochi Social alpha operator checklist report: ${reportJsonPath}`);
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
-  return join(root, '.local', 'creds');
-}
 
 function listCredentialFiles() {
   if (!existsSync(credsDir)) return [];

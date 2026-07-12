@@ -1,12 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_SYNC_APPROVAL || 'mochi-social-alpha-sync-approval.md');
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_SYNC_APPROVAL_JSON || 'reports/alpha-sync-approval.json');
 const auditPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
@@ -49,12 +50,6 @@ await writeFile(outputPath, renderMarkdown(summary), 'utf8');
 
 console.log(`Wrote no-secret sync approval packet: ${outputPath}`);
 console.log(`Report: ${reportPath}`);
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
-  return join(root, '.local', 'creds');
-}
 
 function readGitState() {
   return readGitStateAt(root);

@@ -1,14 +1,15 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 import { readLocalPullRequestEvidence } from './github-pr-evidence.mjs';
 import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_EXTERNAL_GATES_REPORT || 'reports/alpha-external-gates.json');
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const previewEnvPath = resolve(credsDir, process.env.MOCHI_SOCIAL_PREVIEW_ENV_FILE || 'mochi-social-alpha-vercel-preview.local.txt');
 const previewEnv = readPreviewEnvFile(previewEnvPath);
 const flyApp = process.env.MOCHI_SOCIAL_FLY_APP || 'mochi-social-game';
@@ -495,12 +496,6 @@ function parseJson(text) {
   } catch {
     return null;
   }
-}
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
-  return resolve(root, '.local', 'creds');
 }
 
 function readPreviewEnvFile(file) {

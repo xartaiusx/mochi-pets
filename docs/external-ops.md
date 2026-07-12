@@ -77,7 +77,7 @@ Use Mochi Social for runtime/game changes and Mochirii for website, Supabase, al
 
 - The user types payment details, API tokens, seed phrases, passphrases, and one-time codes privately.
 - Maintainers may verify only secret names, digests, creation timestamps, deployment status, health checks, or successful API responses.
-- Repo scripts may write no-secret operator checklists into `C:\Users\xtyty\Desktop\Creds`; those files must contain placeholders, secret names, statuses, and commands only.
+- Repo scripts may write private no-secret operator checklists into `C:\Github Repo's\Mochirii Website\Mochi Creds`; those files must contain placeholders, secret names, statuses, and commands only.
 - Never print, summarize, screenshot, commit, or paste secret values.
 - Never store secrets in `.env`, docs, PR comments, local ledger output, screenshots, or chat.
 - Rotate `MOCHI_SOCIAL_GAME_SERVER_TOKEN`, Enjin Platform token, and Wallet Daemon credentials if a secret value is exposed.
