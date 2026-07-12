@@ -69,6 +69,6 @@
   },
   "devDependencies": {
     "playwright-core": "^1.60.0",
-    "supabase": "2.107.0"
+    "supabase": "2.109.1"
   }
 }
