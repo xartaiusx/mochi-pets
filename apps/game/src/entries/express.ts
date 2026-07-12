@@ -1,6 +1,6 @@
-import express, { type Request } from 'express';
+import express, { type Request, type Response } from 'express';
 import { createServer as createHttpServer, type ServerResponse } from 'node:http';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import { createRpgServerTransport } from '@rpgjs/server/node';
 import { createClient } from '@supabase/supabase-js';
 import { WebSocketServer } from 'ws';
 import startServer from '../server';
+import { createHtmlFallbackRateLimit } from '../security/html-fallback-rate-limit.js';
 
 const ALPHA_FEATURES = {
   alpha: {
@@ -176,6 +177,7 @@ const repoRootDir = resolve(currentDir, '../../../..');
 const clientDistDir = resolve(currentDir, '../client');
 const mapDistDir = resolve(clientDistDir, 'assets/data');
 const indexHtml = resolve(clientDistDir, 'index.html');
+const clientIndexHtml = readFileSync(indexHtml, 'utf8');
 const unityWebglDirEnv = readEnv('MOCHI_PETS_UNITY_WEBGL_DIR');
 const unityWebglDir = unityWebglDirEnv
   ? resolve(unityWebglDirEnv)
@@ -192,6 +194,9 @@ const transport = createRpgServerTransport(startServer, {
 });
 const integrationJsonLimit = '256kb';
 const strictIntegrationJson = express.json({ limit: integrationJsonLimit });
+const htmlFallbackRateLimit = createHtmlFallbackRateLimit({
+  trustFlyClientIp: Boolean(process.env.FLY_APP_NAME)
+});
 
 app.disable('x-powered-by');
 
@@ -352,13 +357,9 @@ if (unityWebglBuildPresent) {
 }
 app.use(express.static(clientDistDir, { index: false }));
 
-app.get(['/', '/play', '/embed'], (_req, res) => {
-  res.sendFile(indexHtml);
-});
+app.get(['/', '/play', '/embed'], htmlFallbackRateLimit, sendClientIndexHtml);
 
-app.get(/.*/, (_req, res) => {
-  res.sendFile(indexHtml);
-});
+app.get(/.*/, htmlFallbackRateLimit, sendClientIndexHtml);
 
 const httpServer = createHttpServer(app);
 const wsServer = new WebSocketServer({ noServer: true });
@@ -393,6 +394,10 @@ httpServer.on('upgrade', (request, socket, head) => {
 httpServer.listen(port, () => {
   console.log(`Mochi Pets listening on ${port}`);
 });
+
+function sendClientIndexHtml(_req: Request, res: Response) {
+  res.type('html').send(clientIndexHtml);
+}
 
 function getPublicOrigin(req: Request) {
   const publicOrigin = readEnv('MOCHI_PETS_PUBLIC_ORIGIN');
