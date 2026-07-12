@@ -67,7 +67,7 @@ Do not put Supabase service-role keys, Enjin Wallet Daemon seeds, or Wallet Daem
 
 For the Canary operator sequence, managed-wallet id convention, Fuel Tank setup, and finality rules, see [`docs/enjin-canary-alpha.md`](enjin-canary-alpha.md).
 
-To refresh the local no-secret operator handoff in `C:\Users\xtyty\Desktop\Creds`, run:
+To refresh the local no-secret operator handoff in `C:\Github Repo's\Mochirii Website\Mochi Creds`, run:
 
 ```powershell
 npm run alpha:wallet-daemon-check

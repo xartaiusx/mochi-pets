@@ -4,12 +4,13 @@ import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 import { readLocalPullRequestEvidence } from './github-pr-evidence.mjs';
 import { readPublicPullRequest } from './github-public-prs.mjs';
 
 const root = process.cwd();
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_ALPHA_RC_AUDIT_REPORT || 'reports/alpha-rc-audit.json');
 const checkedAt = new Date().toISOString();
 const requirements = [];
@@ -1649,12 +1650,6 @@ function parseJson(text) {
 
 function firstLine(value) {
   return String(value || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean) || '';
-}
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return resolve(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return resolve(process.env.HOME, 'Desktop', 'Creds');
-  return resolve(root, '.local', 'creds');
 }
 
 function pathForReport(file) {

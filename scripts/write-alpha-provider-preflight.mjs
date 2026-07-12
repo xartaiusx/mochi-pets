@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 
 const root = process.cwd();
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_PROVIDER_PREFLIGHT_JSON || 'reports/alpha-provider-preflight.json');
 const outputPath = resolve(credsDir, process.env.MOCHI_SOCIAL_PROVIDER_PREFLIGHT_MD || 'mochi-social-alpha-provider-preflight.md');
 const operatorReportPath = resolve(root, process.env.MOCHI_SOCIAL_OPERATOR_CHECKLIST_JSON || 'reports/alpha-operator-checklist.json');
@@ -73,12 +74,6 @@ await writeFile(outputPath, renderMarkdown(report), 'utf8');
 
 console.log(`Wrote no-secret Mochi Social provider preflight: ${outputPath}`);
 console.log(`Report: ${reportPath}`);
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
-  return join(root, '.local', 'creds');
-}
 
 function readJson(file) {
   if (!existsSync(file)) return { ok: false, message: 'not found', data: null };

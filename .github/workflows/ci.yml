@@ -39,6 +39,9 @@ jobs:
       - name: Mochi Pets rename hygiene
         run: npm run rename-hygiene
 
+      - name: Workspace path contract
+        run: npm run alpha:workspace-paths
+
       - name: Alpha readiness
         run: npm run alpha:readiness
 

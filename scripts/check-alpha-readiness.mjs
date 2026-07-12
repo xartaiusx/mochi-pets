@@ -15,7 +15,7 @@ const checks = [
   },
   {
     file: '.github/workflows/ci.yml',
-    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:readiness', 'npm run unity:cloud-code-contract', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run alpha:local-evidence-self-test', 'npm run build']
+    includes: ['node-version-file: .nvmrc', 'npm run secret-scan', 'npm run alpha:public-copy', 'npm run alpha:workspace-paths', 'npm run alpha:readiness', 'npm run unity:cloud-code-contract', 'npm run alpha:gate-contracts', 'npm run alpha:browser-bridge-auth', 'npm run alpha:sync-approval-self-test', 'npm run alpha:local-evidence-self-test', 'npm run build']
   },
   {
     file: 'scripts/check-unity-cloud-code-contract.mjs',
@@ -2006,12 +2006,16 @@ const checks = [
     includes: ['No-secret hygiene scan', 'alpha-report-hygiene.json', 'alpha-operator-checklist.json', 'alpha-provider-preflight.json', 'alpha-external-gates.json', 'alpha-preview-ready.json', 'alpha-unity-required-smoke.json', 'alpha-responsive-gameplay.json', 'alpha-local-site-iframe.json', 'alpha-site-iframe-responsive.json', 'alpha-visual-review.json', 'alpha-manual-prompt-review.json', 'wallet-daemon-local.json', 'readGitState', 'localHead', 'mochi-social-alpha-operator-next-steps.md', 'mochi-social-alpha-provider-preflight.md', 'mochi-social-alpha-sync-approval.md', 'mochi-social-alpha-preview-ready.md', 'Unredacted local suite token', 'Unredacted local site iframe token', 'Wallet daemon password assignment', 'Supabase service role assignment']
   },
   {
+    file: 'scripts/mochirii-workspace-paths.mjs',
+    includes: ['resolveMochiriiWorkspaceRoot', 'resolveMochiriiCredsDir', 'MOCHIRII_WORKSPACE_ROOT', 'MOCHIRII_CREDS_DIR', 'MOCHI_SOCIAL_CREDS_DIR', 'Mochi Creds']
+  },
+  {
     file: 'scripts/mochi-social-site-repo-path.mjs',
-    includes: ['resolveMochiSocialSiteRepoPath', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', 'existsSync']
+    includes: ['resolveMochiSocialSiteRepoPath', 'resolveMochiriiWorkspaceRoot', 'MOCHI_SOCIAL_SITE_REPO_PATH', 'Website', '../Mochirii-mochi-social-alpha', '../Mochirii', 'existsSync']
   },
   {
     file: 'scripts/check-alpha-site-repo-path.mjs',
-    includes: ['Mochi Pets site repo path resolver self-test OK', 'MOCHI_PETS_SITE_REPO_PATH', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', '../custom-site']
+    includes: ['Mochi Pets workspace path resolver self-test OK', "Github Repo's", 'Mochirii Website', 'Mochi Creds', 'MOCHIRII_WORKSPACE_ROOT', 'MOCHIRII_CREDS_DIR', 'MOCHI_PETS_SITE_REPO_PATH', 'MOCHI_SOCIAL_SITE_REPO_PATH', '../Mochirii-mochi-social-alpha', '../Mochirii', '../custom-site']
   },
   {
     file: 'scripts/check-alpha-gate-contracts.mjs',
@@ -2179,7 +2183,7 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-operator-checklist.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-operator-next-steps.md', 'alpha-operator-checklist.json', 'readGitState', 'localHead', 'walletDaemonSummary', 'manualPromptSummary', 'providerActionQueue', 'buildProviderActionQueue', 'Provider Action Queue', 'approvalText', 'noCostFallback', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'vercel-supabase-preview-contract', 'enjin-canary-readiness', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'noCostRule', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:local-suite', 'npm run alpha:responsive-gameplay', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:external-gates']
+    includes: ['resolveMochiriiCredsDir', 'mochi-social-alpha-operator-next-steps.md', 'alpha-operator-checklist.json', 'readGitState', 'localHead', 'walletDaemonSummary', 'manualPromptSummary', 'providerActionQueue', 'buildProviderActionQueue', 'Provider Action Queue', 'approvalText', 'noCostFallback', 'github-branch-sync', 'github-site-branch-sync', 'fly-secret-update', 'fly-funded-chain-secret-update', 'fly-live-game-contract', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'vercel-supabase-preview-contract', 'enjin-canary-readiness', 'Alpha Preview Ready', 'preview-live-gates', 'funded-chain-gates', 'noCostRule', 'This file is intentionally no-secret', 'KEY_PASS=<private-wallet-daemon-passphrase>', 'PLATFORM_KEY=<private-enjin-platform-token>', 'MOCHI_SOCIAL_EXTERNAL_ALLOW_HOSTED_CHECKS', 'MOCHI_SOCIAL_RESPONSIVE_SITE_BASE_URL', 'npm run alpha:manual-prompt-review', 'npm run alpha:wallet-daemon-check', 'npm run alpha:local-suite', 'npm run alpha:responsive-gameplay', 'npm run alpha:local-evidence', 'npm run alpha:report-hygiene', 'npm run alpha:external-gates']
   },
   {
     file: 'scripts/write-alpha-provider-preflight.mjs',
@@ -2187,7 +2191,7 @@ const checks = [
   },
   {
     file: 'scripts/write-alpha-sync-approval.mjs',
-    includes: ['Desktop', 'Creds', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'readPrFixture', 'readPublicPullRequest', 'github-public-api', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readNamedUrl', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'verifiedMilestoneDeployCandidate', 'GitHub Actions/PR checks', 'Suggested combined public-repo sync command note', 'Proceed with public-repo sync', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
+    includes: ['resolveMochiriiCredsDir', 'mochi-social-alpha-sync-approval.md', 'alpha-sync-approval.json', 'This file is intentionally no-secret', 'hostedChecksAllowed', 'git: audit.data.git', 'git: report.data.git', 'siteGit', 'prState', 'readPr', 'readPrFixture', 'readPublicPullRequest', 'github-public-api', 'MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE', 'MOCHI_SOCIAL_PREVIEW_ENV_FILE', 'Local Preview URL File', 'readNamedUrl', 'localHeadMatchesPrHead', 'PR State', 'github-site-branch-sync', 'approvalsRequired', 'approvalActions', 'costRisk', 'noCostAlternative', 'Cost-Sensitive Action Matrix', 'Verified Milestone Deploy Queue', 'fly-verified-milestone-deploy', 'vercel-verified-milestone-deploy', 'verifiedMilestoneDeployCandidate', 'GitHub Actions/PR checks', 'Suggested combined public-repo sync command note', 'Proceed with public-repo sync', 'fly-funded-chain-secret-update', 'preview-live-gates', 'funded-chain-gates']
   },
   {
     file: 'scripts/check-alpha-sync-approval-self-test.mjs',

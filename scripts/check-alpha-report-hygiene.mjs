@@ -1,11 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { resolveMochiSocialSiteRepoPath } from './mochi-social-site-repo-path.mjs';
+import { resolveMochiriiCredsDir } from './mochirii-workspace-paths.mjs';
 
 const root = process.cwd();
-const credsDir = resolve(process.env.MOCHI_SOCIAL_CREDS_DIR || defaultCredsDir());
+const credsDir = resolveMochiriiCredsDir(root);
 const reportPath = resolve(root, process.env.MOCHI_SOCIAL_REPORT_HYGIENE_JSON || 'reports/alpha-report-hygiene.json');
 const siteRepoPath = resolveMochiSocialSiteRepoPath(root);
 const files = [
@@ -102,12 +103,6 @@ if (failures.length) {
 await writeReport(true);
 console.log(`Mochi Social local report hygiene OK (${scanned.length} no-secret artifact(s) scanned).`);
 console.log(`Report: ${reportPath}`);
-
-function defaultCredsDir() {
-  if (process.env.USERPROFILE) return join(process.env.USERPROFILE, 'Desktop', 'Creds');
-  if (process.env.HOME) return join(process.env.HOME, 'Desktop', 'Creds');
-  return join(root, '.local', 'creds');
-}
 
 function pathForReport(absolutePath) {
   return absolutePath.startsWith(root)
