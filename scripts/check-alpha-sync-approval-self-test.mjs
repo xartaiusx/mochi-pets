@@ -46,7 +46,9 @@ try {
   assert(markdown.includes('## Verified Milestone Deploy Queue'), 'markdown packet should include verified milestone deploy queue section.');
   assert(markdown.includes('fly-verified-milestone-deploy'), 'markdown packet should include the Fly verified milestone deploy action.');
   assert(markdown.includes('vercel-verified-milestone-deploy'), 'markdown packet should include the Vercel verified milestone deploy action.');
-  assert(markdown.includes('https://preview.example.test'), 'markdown packet should include sanitized preview URL.');
+  const previewOrigin = new URL('https://preview.example.test').origin;
+  assert(markdownHttpOrigins(markdown).has(previewOrigin), 'markdown packet should include the exact sanitized preview origin.');
+  assert(!markdownHttpOrigins('https://preview.example.test.attacker.invalid').has(previewOrigin), 'preview origin validation must reject suffix hosts.');
   assert(markdown.includes('local HEAD does not match PR head'), 'markdown packet should explain PR head drift.');
 
   for (const output of [JSON.stringify(report), markdown, result.stdout, result.stderr]) {
@@ -100,4 +102,18 @@ function writePrFixture() {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function markdownHttpOrigins(value) {
+  const origins = new Set();
+  for (const match of String(value || '').matchAll(/https?:\/\/[^\s`<>()]+/g)) {
+    const candidate = match[0].replace(/[.,;!?]+$/, '');
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') origins.add(parsed.origin);
+    } catch {
+      // Ignore malformed text fragments; only parsed HTTP origins are accepted.
+    }
+  }
+  return origins;
 }

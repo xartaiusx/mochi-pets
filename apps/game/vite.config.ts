@@ -20,7 +20,8 @@ export default defineConfig({
           client: './src/client.ts',
           server: './src/server.ts',
           adapters: {
-            express: './src/entries/express.ts'
+            express: './src/entries/express.ts',
+            'security/html-fallback-rate-limit': './src/security/html-fallback-rate-limit.ts'
           }
         }
       }
