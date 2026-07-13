@@ -2,6 +2,19 @@
 
 Mochi Pets stays in this game repo. The Mochirii website stays in its own repo and opens the game through the public game URL. Mochirii Social is the separate Pixelfed/fediverse platform and is not this game.
 
+## Repository Ownership
+
+| Capability | Source owner |
+| --- | --- |
+| `/games/mochi-pets`, member access, Supabase authority, and the browser bridge | `Mochirii-Wushu/Mochirii` |
+| Game source, assets, Unity builds, server wrapper, and runtime manifests | `xartaiusx/mochi-pets` |
+
+The repositories connect only through the versioned routes, messages, and
+environment-variable names in this contract. They do not copy each other's
+source, production assets, or secrets. Provider credentials stay in protected
+runtime stores or the external `Mochi Creds` boundary and never enter either
+repository.
+
 ## Live Doorway
 
 The live player path is:

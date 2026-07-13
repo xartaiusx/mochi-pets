@@ -57,15 +57,14 @@ try {
 
   assert.equal(
     resolveMochiriiCredsDir(fallbackRoot, {
-      MOCHIRII_CREDS_DIR: '../canonical-creds',
-      MOCHI_SOCIAL_CREDS_DIR: '../legacy-creds'
+      MOCHIRII_CREDS_DIR: '../canonical-creds'
     }),
     resolve(fallbackRoot, '../canonical-creds')
   );
 
   assert.equal(
-    resolveMochiriiCredsDir(fallbackRoot, { MOCHI_SOCIAL_CREDS_DIR: '../legacy-creds' }),
-    resolve(fallbackRoot, '../legacy-creds')
+    resolveMochiriiCredsDir(fallbackRoot, {}),
+    resolve(fallbackRoot, '..', 'Mochi Creds')
   );
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
