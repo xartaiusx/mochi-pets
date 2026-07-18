@@ -19,7 +19,7 @@ try {
     encoding: 'utf8',
     env: {
       ...process.env,
-      MOCHI_SOCIAL_CREDS_DIR: tempDir,
+      MOCHIRII_CREDS_DIR: tempDir,
       MOCHI_SOCIAL_SYNC_APPROVAL: markdownPath,
       MOCHI_SOCIAL_SYNC_APPROVAL_JSON: reportPath,
       MOCHI_SOCIAL_SYNC_APPROVAL_PR_STATE_FILE: prFixturePath,

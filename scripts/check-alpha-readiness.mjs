@@ -2007,7 +2007,7 @@ const checks = [
   },
   {
     file: 'scripts/mochirii-workspace-paths.mjs',
-    includes: ['resolveMochiriiWorkspaceRoot', 'resolveMochiriiCredsDir', 'MOCHIRII_WORKSPACE_ROOT', 'MOCHIRII_CREDS_DIR', 'MOCHI_SOCIAL_CREDS_DIR', 'Mochi Creds']
+    includes: ['resolveMochiriiWorkspaceRoot', 'resolveMochiriiCredsDir', 'MOCHIRII_WORKSPACE_ROOT', 'MOCHIRII_CREDS_DIR', 'Mochi Creds']
   },
   {
     file: 'scripts/mochi-social-site-repo-path.mjs',

@@ -119,12 +119,6 @@ function defaultWalletDaemonPath() {
     resolve(credsDir, 'enjin-wallet-daemon', 'wallet-daemon.exe'),
     resolve(credsDir, 'Enjin', 'enjin-wallet-daemon', 'wallet-daemon.exe')
   ];
-  if (process.env.USERPROFILE) {
-    candidates.push(
-      resolve(process.env.USERPROFILE, 'Desktop', 'Creds', 'enjin-wallet-daemon', 'wallet-daemon.exe'),
-      resolve(process.env.USERPROFILE, 'Downloads', 'wallet-daemon_v3.0.7_x86_64-pc-windows-msvc', 'wallet-daemon.exe')
-    );
-  }
   return candidates.find((candidate) => existsSync(candidate)) || candidates[0] || '';
 }
 

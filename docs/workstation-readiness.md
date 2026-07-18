@@ -4,7 +4,7 @@ This is the no-secret local setup gate for continued Mochi Pets development.
 
 ## Required Local Tools
 
-- Git and GitHub CLI authenticated for `xartaiusx/mochi-social`.
+- Git and GitHub CLI authenticated for `xartaiusx/mochi-pets`.
 - `fnm` with Node `24.17.0`, matching `.nvmrc`.
 - npm from the active Node runtime and lockfile-based installs with `npm ci`.
 - Fly CLI available from `C:\Users\xtyty\.fly\bin\flyctl.exe` or on `PATH`.
@@ -25,14 +25,14 @@ This is the no-secret local setup gate for continued Mochi Pets development.
 - Do not run `fly deploy`, create Fly resources, change Fly secrets, scale Machines, add volumes, or run hosted load/smoke checks without a fresh approval.
 - Keep local checks on localhost until hosted verification is explicitly approved.
 - Enjin remains Canary-only and no-real-value. Do not start signers, import wallets, fund Fuel Tanks, mint, transfer, or submit chain operations during workstation setup.
-- Credentials stay under `C:\Users\xtyty\Documents\Creds`; never print or commit secret values.
+- Project credentials stay under `C:\Github Repo's\Mochirii Website\Mochi Creds`; never print or commit secret values.
 
 ## PR Order
 
 1. Finish PR #6 into `alpha/unity-webgl-shared-room-bootstrap`.
 2. Refresh and undraft PR #5 after PR #6 lands.
 3. Merge PR #5 to `main` only after checks, review policy, and CodeQL/private-repo policy are satisfied.
-4. After `main` is current, create or refresh the clean local clone at `C:\Users\xtyty\Documents\Mochi Pets`.
+4. After `main` is current, create or refresh the clean local clone at `C:\Github Repo's\Mochirii Website\Mochi Pets`.
 
 ## Ready Check
 
